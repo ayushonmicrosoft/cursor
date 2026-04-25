@@ -50,5 +50,67 @@ insert into public."teams" ("id", "slug", "name", "created_by", "created_at", "m
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'demo-team', 'Floorcraft Demo Team', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-04-25T19:59:56.729Z', 'members')
 on conflict do nothing;
 
+-- Expanded demo set: add multiple users, offices, memberships, and
+-- share/invite rows so local+hosted reset environments mirror a fuller
+-- team workspace without requiring manual setup.
+insert into auth.users (id, email, encrypted_password, email_confirmed_at) values
+  ('9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'ops.admin@floorcraft.local', 'seed-password-not-used', now()),
+  ('4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'design.lead@floorcraft.local', 'seed-password-not-used', now()),
+  ('5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer@floorcraft.local', 'seed-password-not-used', now())
+on conflict (id) do update set email = excluded.email;
+
+insert into public."profiles" ("id", "email", "name", "avatar_url", "active_team_id", "created_at") values
+  ('9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'ops.admin@floorcraft.local', 'Ops Admin', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z'),
+  ('4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'design.lead@floorcraft.local', 'Design Lead', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z'),
+  ('5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer@floorcraft.local', 'Team Viewer', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z')
+on conflict do nothing;
+
+insert into public."team_members" ("team_id", "user_id", "role", "joined_at") values
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'admin', '2026-04-25T20:00:01.000Z'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'member', '2026-04-25T20:00:01.000Z'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'member', '2026-04-25T20:00:01.000Z')
+on conflict do nothing;
+
+with base as (
+  select team_id, payload
+  from public.offices
+  where id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'
+  limit 1
+)
+insert into public.offices ("id", "team_id", "slug", "name", "created_by", "is_private", "payload", "created_at", "updated_at")
+select
+  v.id::uuid,
+  b.team_id,
+  v.slug,
+  v.name,
+  v.created_by::uuid,
+  v.is_private,
+  b.payload,
+  '2026-04-25T20:00:02.000Z'::timestamptz,
+  '2026-04-25T20:00:02.000Z'::timestamptz
+from base b
+cross join (
+  values
+    ('f0c7b7dd-3f44-43cb-b8ab-1d4791ca0101', 'engineering-hub', 'Engineering Hub', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', false),
+    ('9099431e-7f95-47db-8b96-97e6ad507202', 'design-studio', 'Design Studio', '4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', true),
+    ('8870947d-e96a-4f84-a415-59ec8cfe0303', 'ops-command', 'Ops Command', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', false)
+) as v(id, slug, name, created_by, is_private)
+on conflict do nothing;
+
+insert into public.office_permissions (office_id, user_id, role, created_at) values
+  ('f0c7b7dd-3f44-43cb-b8ab-1d4791ca0101', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'owner', '2026-04-25T20:00:02.000Z'),
+  ('9099431e-7f95-47db-8b96-97e6ad507202', '4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'owner', '2026-04-25T20:00:02.000Z'),
+  ('8870947d-e96a-4f84-a415-59ec8cfe0303', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'owner', '2026-04-25T20:00:02.000Z'),
+  ('9099431e-7f95-47db-8b96-97e6ad507202', '5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer', '2026-04-25T20:00:03.000Z')
+on conflict do nothing;
+
+insert into public.share_tokens (id, office_id, token, created_by, created_at, revoked_at) values
+  ('1aa8d9d2-6275-4de8-93a4-d63668d0a404', 'f0c7b7dd-3f44-43cb-b8ab-1d4791ca0101', 'demo-share-engineering-hub', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', '2026-04-25T20:00:04.000Z', null)
+on conflict do nothing;
+
+insert into public.invites (id, team_id, email, token, invited_by, created_at, expires_at, accepted_at, role) values
+  ('6f875995-4f18-4829-8bc3-1f22c5a6f505', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'new.member@floorcraft.local', 'f8fa5ee7-48b0-4b11-b4c2-2f9e2cbf6606', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', '2026-04-25T20:00:05.000Z', '2026-05-02T20:00:05.000Z', null, 'member')
+on conflict do nothing;
+
 set session_replication_role = origin;
 commit;

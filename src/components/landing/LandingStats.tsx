@@ -34,10 +34,7 @@ export function LandingStats() {
   const teamIds = useMemo(() => (teams ?? []).map((t) => t.id), [teams])
 
   useEffect(() => {
-    if (session.status !== 'authenticated' || teamIds.length === 0) {
-      setStats(FALLBACK_STATS)
-      return
-    }
+    if (session.status !== 'authenticated' || teamIds.length === 0) return
 
     let cancelled = false
 
@@ -81,12 +78,15 @@ export function LandingStats() {
     }
   }, [session.status, teamIds])
 
+  const displayStats =
+    session.status === 'authenticated' && teamIds.length > 0 ? stats : FALLBACK_STATS
+
   return (
     <ul
       aria-label="Floorcraft usage"
       className="mt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-center"
     >
-      {stats.map((stat, i) => (
+      {displayStats.map((stat, i) => (
         <li
           key={stat.label}
           className={
