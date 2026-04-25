@@ -190,6 +190,15 @@ npx supabase start
 npx supabase db reset
 ```
 
+### Seed Demo Data
+
+`supabase/seed.sql` now seeds a full demo workspace (team + demo office payload)
+with multi-floor components, employees, neighborhoods, and annotations.
+
+- Local reset path: `npx supabase db reset` (loads migrations + `seed.sql`)
+- Remote path: run your migration flow, then execute `supabase/seed.sql` against
+  your hosted database if you want the same full demo payload in hosted envs
+
 ### Development
 
 ```bash
