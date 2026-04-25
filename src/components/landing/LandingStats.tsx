@@ -1,3 +1,8 @@
+import { useEffect, useMemo, useState } from 'react'
+import { supabase } from '../../lib/supabase'
+import { useSession } from '../../lib/auth/session'
+import { useMyTeams } from '../../lib/teams/useMyTeams'
+
 /**
  * Micro-stats row that sits under the hero CTA.
  *
@@ -15,19 +20,73 @@
 
 type Stat = { value: string; label: string }
 
-const STATS: ReadonlyArray<Stat> = [
+const FALLBACK_STATS: ReadonlyArray<Stat> = [
   { value: '120+', label: 'Teams planning' },
   { value: '18k', label: 'Seats mapped' },
   { value: '3.4k', label: 'Floors published' },
 ]
 
 export function LandingStats() {
+  const session = useSession()
+  const teams = useMyTeams()
+  const [stats, setStats] = useState<ReadonlyArray<Stat>>(FALLBACK_STATS)
+
+  const teamIds = useMemo(() => (teams ?? []).map((t) => t.id), [teams])
+
+  useEffect(() => {
+    if (session.status !== 'authenticated' || teamIds.length === 0) {
+      setStats(FALLBACK_STATS)
+      return
+    }
+
+    let cancelled = false
+
+    void (async () => {
+      const { data, error } = await supabase
+        .from('offices')
+        .select('payload')
+        .in('team_id', teamIds)
+
+      if (cancelled || error || !data) return
+
+      let floors = 0
+      let seats = 0
+
+      for (const row of data) {
+        const payload = row.payload as {
+          floors?: Array<unknown>
+          employees?: Record<string, { seatId?: string | null }>
+        } | null
+        if (!payload) continue
+
+        floors += payload.floors?.length ?? 0
+
+        if (payload.employees) {
+          for (const employee of Object.values(payload.employees)) {
+            if (employee?.seatId) seats += 1
+          }
+        }
+      }
+
+      const next: ReadonlyArray<Stat> = [
+        { value: `${teamIds.length}`, label: 'Teams planning' },
+        { value: seats.toLocaleString(), label: 'Seats mapped' },
+        { value: floors.toLocaleString(), label: 'Floors published' },
+      ]
+      setStats(next)
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [session.status, teamIds])
+
   return (
     <ul
       aria-label="Floorcraft usage"
       className="mt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-center"
     >
-      {STATS.map((stat, i) => (
+      {stats.map((stat, i) => (
         <li
           key={stat.label}
           className={
