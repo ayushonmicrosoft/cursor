@@ -26,7 +26,7 @@ import { LandingFooter } from './LandingFooter'
  *   - Signed in, no teams yet → /dashboard, which itself redirects to
  *     /onboarding/team (via `DashboardRedirect` + `RequireTeam`).
  *
- * Visual direction: Linear-adjacent, indigo accent, no stock
+ * Visual direction: O&O-adjacent, navy and bronze accents, no stock
  * photography — the product's own stylized floor plan is the hero
  * illustration. Wave 15A added a sticky top nav, micro-stat row under
  * the hero CTA, a three-step "How it works" explainer, a 2x3 feature
@@ -44,7 +44,7 @@ export function LandingPage() {
       <div className="flex justify-center">
         <Link
           to={teams && teams.length > 0 ? `/t/${teams[0].slug}` : '/dashboard'}
-          className="px-8 py-3 bg-blue-600 text-white text-lg font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-blue-950/40 transition-all inline-block"
+          className="px-8 py-3 bg-[#1f3653] text-white text-lg font-medium rounded-xl hover:bg-[#172941] shadow-lg shadow-[#1f3653]/20 transition-all inline-block"
         >
           Open dashboard
         </Link>
@@ -53,9 +53,9 @@ export function LandingPage() {
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <Link
           to="/signup"
-          className="px-6 py-3 bg-blue-600 text-white text-lg font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-blue-950/40 transition-all text-center"
+          className="px-6 py-3 bg-[#1f3653] text-white text-lg font-medium rounded-xl hover:bg-[#172941] shadow-lg shadow-[#1f3653]/20 transition-all text-center"
         >
-          Start free
+          Start planning
         </Link>
         <Link
           to="/help"
@@ -67,7 +67,7 @@ export function LandingPage() {
     )
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(157,135,108,0.18),transparent_34%),linear-gradient(180deg,#f7f4ef_0%,#ffffff_56%,#f5f7fa_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(157,135,108,0.16),transparent_34%),linear-gradient(180deg,#050b17_0%,#0b1628_55%,#050b17_100%)]">
       <LandingNav />
 
       {/* Hero */}
@@ -75,14 +75,14 @@ export function LandingPage() {
         aria-labelledby="hero-heading"
         className="max-w-5xl mx-auto px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center"
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-500 dark:text-blue-400 mb-5">
-          Workplace planning, reimagined
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f6a52] dark:text-[#c8b69f] mb-5">
+          O&O workplace planning
         </p>
         <h1
           id="hero-heading"
           className="text-5xl sm:text-6xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4"
         >
-          Plan your office.
+          Plan your O&O workspace.
           <br />
           <span className="text-gray-500 dark:text-gray-400">Seat your team.</span>
         </h1>
@@ -95,7 +95,7 @@ export function LandingPage() {
             free. */}
         <p className="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
           Draft a floor plan in minutes, seat your whole team by the afternoon, and share a
-          living map with every stakeholder that needs it.
+          living map with every stakeholder who needs it.
         </p>
         {primaryCta}
 
@@ -107,7 +107,7 @@ export function LandingPage() {
         <div className="relative mt-16 sm:mt-20 max-w-4xl mx-auto">
           <div
             aria-hidden="true"
-            className="absolute inset-x-8 top-10 bottom-0 rounded-3xl bg-blue-400/20 dark:bg-blue-500/10 blur-3xl"
+            className="absolute inset-x-8 top-10 bottom-0 rounded-3xl bg-[#9d876c]/20 dark:bg-[#9d876c]/10 blur-3xl"
           />
           <div className="relative">
             <BrowserFrame>
@@ -193,31 +193,26 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Secondary CTA band doubles as a pricing teaser — the
-          #pricing anchor from the top nav lands here. A full pricing
-          table would be overkill while the product is still
-          "free for small teams". */}
       <section
-        id="pricing"
         aria-labelledby="cta-heading"
-        className="bg-gradient-to-r from-blue-600 to-indigo-700 scroll-mt-16"
+        className="bg-gradient-to-r from-[#10233b] via-[#1f3653] to-[#7f6a52] scroll-mt-16"
       >
         <div className="max-w-4xl mx-auto px-6 py-16 sm:py-20 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200 mb-4">
-            Free for teams up to 25
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d9cbb8] mb-4">
+            Built for planning teams
           </p>
           <h2
             id="cta-heading"
             className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3"
           >
-            Start planning today.
+            Bring the next office plan online.
           </h2>
-          <p className="text-lg text-blue-100 mb-8">
-            No credit card. Upgrade when your team outgrows the free tier.
+          <p className="text-lg text-slate-100 mb-8">
+            Build layouts, assign seats, and share read-only views from one live workspace.
           </p>
           <Link
             to="/signup"
-            className="inline-block px-8 py-3 bg-white dark:bg-gray-900 text-blue-700 dark:text-blue-300 text-lg font-medium rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/40 shadow-lg transition-all"
+            className="inline-block px-8 py-3 bg-white dark:bg-gray-900 text-[#1f3653] dark:text-[#d9cbb8] text-lg font-medium rounded-xl hover:bg-[#f4efe8] dark:hover:bg-[#10233b] shadow-lg transition-all"
           >
             Create your first office
           </Link>

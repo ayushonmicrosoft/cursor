@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom'
  * columns signal "there is a business behind this" without needing
  * the links to actually go anywhere substantive yet.
  *
- * Because no /pricing, /changelog, /privacy, or /terms routes exist in
+ * Because no /changelog, /privacy, or /terms routes exist in
  * the app shell, every placeholder link points at /help. This keeps
  * the layout honest (no 404s) and the help page is where a curious
  * user would plausibly land anyway when clicking "Privacy" or
@@ -26,7 +26,7 @@ const COLUMNS: ReadonlyArray<FooterColumn> = [
     title: 'Product',
     links: [
       { label: 'Features', to: '/help' },
-      { label: 'Pricing', to: '/help' },
+      { label: 'Templates', to: '/help' },
       { label: 'Changelog', to: '/help' },
       { label: 'Sign up', to: '/signup' },
     ],
@@ -72,9 +72,9 @@ export function LandingFooter() {
           >
             <span
               aria-hidden="true"
-              className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-blue-500 to-indigo-600"
+              className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-[#1f3653] to-[#9d876c]"
             />
-            <span>Floorcraft</span>
+            <span>OandOCraft</span>
           </Link>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
             Office layout &amp; seat management for hybrid teams.
@@ -104,7 +104,7 @@ export function LandingFooter() {
 
       <div className="border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-500">
-          <p className="tabular-nums">&copy; {year} Floorcraft. All rights reserved.</p>
+          <p className="tabular-nums">&copy; {year} OandOCraft. All rights reserved.</p>
           <p>Built for hybrid workplace teams.</p>
         </div>
       </div>

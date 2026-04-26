@@ -2,7 +2,7 @@
 
 /*
  * Tailwind v4 dark-mode strategy. By default v4 enables dark mode via the
- * `prefers-color-scheme` media query. Floocraft uses a class-based opt-in
+ * `prefers-color-scheme` media query. OandOCraft uses a class-based opt-in
  * (toggled by `ThemeProvider`), so we override the `dark` variant to
  * activate when an ancestor has `class="dark"`.
  */
@@ -20,9 +20,9 @@
  * (e.g. `bg-surface` → `background-color: var(--color-surface)`).
  */
 @theme {
-  --color-muted: #6B7280;        /* gray-500 — secondary text            */
-  --color-muted-strong: #374151; /* gray-700 — emphasized secondary      */
-  --color-muted-subtle: #9CA3AF; /* gray-400 — tertiary / placeholder    */
+  --color-muted: #4a5c76;        /* O&O slate — secondary text           */
+  --color-muted-strong: #1b2940; /* O&O ink — emphasized secondary       */
+  --color-muted-subtle: #7b8aa2; /* O&O slate — tertiary / placeholder   */
 
   --spacing-panel: 0.75rem;      /* 12px — sidebar panel inner padding   */
   --spacing-card: 1rem;          /* 16px — card inner padding            */
@@ -34,18 +34,22 @@
   --text-icon-md--line-height: 1.25rem;
 
   /* Semantic surface + text tokens (light defaults; dark below). */
-  --color-surface: #ffffff;            /* white                           */
-  --color-surface-raised: #ffffff;     /* white                           */
-  --color-surface-sunken: #f9fafb;     /* gray-50                         */
-  --color-border: #e5e7eb;             /* gray-200                        */
-  --color-border-strong: #d1d5db;      /* gray-300                        */
-  --color-text: #111827;               /* gray-900                        */
-  --color-text-muted: #6b7280;         /* gray-500                        */
-  --color-text-subtle: #9ca3af;        /* gray-400                        */
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f5f7fa;
+  --color-border: #d2dce7;
+  --color-border-strong: #aebbd0;
+  --color-text: #050b17;
+  --color-text-muted: #4a5c76;
+  --color-text-subtle: #7b8aa2;
 
-  /* Accents stay constant across themes — accent doesn't flip. */
-  --color-accent: #2563eb;             /* blue-600                        */
-  --color-accent-soft: #eff6ff;        /* blue-50                         */
+  /* O&O-inspired accents: midnight navy with warm bronze support. */
+  --color-accent: #1f3653;
+  --color-accent-soft: #f4efe8;
+  --color-brand-navy: #1f3653;
+  --color-brand-navy-strong: #10233b;
+  --color-brand-bronze: #9d876c;
+  --color-brand-bronze-strong: #7f6a52;
 
   --color-danger: #dc2626;             /* red-600                         */
   --color-danger-soft: #fef2f2;        /* red-50                          */
@@ -62,16 +66,16 @@
  */
 @layer base {
   .dark {
-    --color-surface: #030712;          /* gray-950                        */
-    --color-surface-raised: #111827;   /* gray-900                        */
-    --color-surface-sunken: #030712;   /* gray-950                        */
-    --color-border: #1f2937;           /* gray-800                        */
-    --color-border-strong: #374151;    /* gray-700                        */
-    --color-text: #f3f4f6;             /* gray-100                        */
-    --color-text-muted: #9ca3af;       /* gray-400                        */
-    --color-text-subtle: #6b7280;      /* gray-500                        */
+    --color-surface: #050b17;
+    --color-surface-raised: #0b1628;
+    --color-surface-sunken: #030712;
+    --color-border: #223249;
+    --color-border-strong: #344765;
+    --color-text: #f7f4ef;
+    --color-text-muted: #c8d0dc;
+    --color-text-subtle: #8fa0b8;
 
-    --color-accent-soft: rgb(23 37 84 / 0.5); /* blue-950 / 50%          */
+    --color-accent-soft: rgb(157 135 108 / 0.18);
 
     --color-danger-soft: rgb(69 10 10 / 0.4); /* red-950 / 40%           */
     --color-success-soft: rgb(5 46 22 / 0.4); /* green-950 / 40%         */
@@ -83,11 +87,65 @@
     color-scheme: dark;
   }
 
-  /* Selection color is surprisingly distracting on dark left at default;
-     pin it to a translucent blue that works against either surface. */
+  /* Selection color follows the bronze accent against either surface. */
   ::selection {
-    background-color: rgb(37 99 235 / 0.30); /* blue-600 / 30% */
+    background-color: rgb(157 135 108 / 0.30);
     color: inherit;
+  }
+}
+
+@layer utilities {
+  .bg-blue-600 {
+    background-color: #1f3653;
+  }
+
+  .hover\:bg-blue-700:hover {
+    background-color: #10233b;
+  }
+
+  .bg-blue-500 {
+    background-color: #1f3653;
+  }
+
+  .text-blue-700,
+  .text-blue-600,
+  .text-blue-500 {
+    color: #1f3653;
+  }
+
+  .hover\:text-blue-600:hover {
+    color: #7f6a52;
+  }
+
+  .bg-blue-50,
+  .hover\:bg-blue-50:hover {
+    background-color: #f4efe8;
+  }
+
+  .border-blue-100,
+  .border-blue-200 {
+    border-color: #e3d8cb;
+  }
+
+  .from-blue-600,
+  .from-blue-500 {
+    --tw-gradient-from: #1f3653 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgb(31 54 83 / 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+
+  .to-indigo-700,
+  .to-indigo-600 {
+    --tw-gradient-to: #7f6a52 var(--tw-gradient-to-position);
+  }
+
+  .text-indigo-700,
+  .text-indigo-600 {
+    color: #7f6a52;
+  }
+
+  .bg-indigo-50 {
+    background-color: #f4efe8;
   }
 }
 

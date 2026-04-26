@@ -54,6 +54,8 @@ export function NeighborhoodEditOverlay({ preview }: NeighborhoodEditOverlayProp
   const floorNeighborhoods = Object.values(neighborhoods).filter(
     (n) => n.floorId === activeFloorId,
   )
+  const hasPickers = activeTool === 'neighborhood' && floorNeighborhoods.length > 0
+  const shouldRenderLayer = preview || selectedNeighborhood || hasPickers
 
   // Per-handle drag state. We hold the original size and anchor the
   // opposing corner so a drag that crosses the anchor flips width/height
@@ -190,6 +192,8 @@ export function NeighborhoodEditOverlay({ preview }: NeighborhoodEditOverlayProp
       </>
     )
   }
+
+  if (!shouldRenderLayer) return null
 
   return (
     <Layer>

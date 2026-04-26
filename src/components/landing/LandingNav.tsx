@@ -19,10 +19,8 @@ import { useSession } from '../../lib/auth/session'
  *
  * Sign-in behavior mirrors the hero CTA: authenticated users see a
  * direct link to their dashboard, unauthenticated users see Log in.
- * We deliberately keep /pricing and /help as anchors even though there
- * is no /pricing route yet — clicking it falls through to the in-page
- * pricing teaser via the hash, which is cheaper than building a full
- * pricing page for a "free for small teams" product.
+ * Help stays as the single public resource link so the marketing chrome
+ * does not imply a separate pricing surface.
  */
 export function LandingNav() {
   const session = useSession()
@@ -39,18 +37,12 @@ export function LandingNav() {
               without committing to a full SVG logotype. */}
           <span
             aria-hidden="true"
-            className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-blue-500 to-indigo-600"
+            className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-[#1f3653] to-[#9d876c]"
           />
-          <span>Floorcraft</span>
+          <span>OandOCraft</span>
         </Link>
 
         <nav aria-label="Primary" className="hidden sm:flex items-center gap-6 text-sm">
-          <a
-            href="#pricing"
-            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
-          >
-            Pricing
-          </a>
           <Link
             to="/help"
             className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
