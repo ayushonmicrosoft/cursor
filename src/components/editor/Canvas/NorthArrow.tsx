@@ -82,7 +82,8 @@ export function NorthArrow() {
     <div
       ref={ref}
       data-testid="north-arrow"
-      className={`absolute top-4 left-4 z-20 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-center ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+      data-compass-anchor="top-right"
+      className={`absolute top-4 right-4 z-20 w-14 rounded border border-gray-300 bg-white/95 shadow-md backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
       onPointerDown={handlePointerDown}
       onKeyDown={handleKeyDown}
       aria-label={`North arrow rotated ${Math.round(northRotation)} degrees.${canEdit ? ' Drag or use arrow keys to rotate.' : ''}`}
@@ -92,35 +93,24 @@ export function NorthArrow() {
       aria-valuemax={canEdit ? 360 : undefined}
       tabIndex={canEdit ? 0 : -1}
     >
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        style={{ transform: `rotate(${northRotation}deg)` }}
-        className="transition-transform"
-        aria-hidden
-      >
-        {/* Red half points to "north"; gray half is the tail. */}
-        <polygon
-          points="16,3 12,18 16,15 20,18"
-          className="fill-red-500"
-        />
-        <polygon
-          points="16,29 12,14 16,17 20,14"
-          className="fill-gray-400 dark:fill-gray-500"
-        />
-        {/* N label rendered inside the SVG so it inherits the rotation
-            without manual trig. */}
-        <text
-          x="16"
-          y="9"
-          textAnchor="middle"
-          className="fill-gray-700 dark:fill-gray-200"
-          style={{ fontSize: 7, fontWeight: 700 }}
+      <div className="flex items-center justify-between border-b border-gray-200 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-600 dark:border-gray-800 dark:text-gray-300">
+        <span>N</span>
+        <span className="tabular-nums">{Math.round(northRotation)}°</span>
+      </div>
+      <div className="flex h-10 items-center justify-center">
+        <svg
+          width="30"
+          height="30"
+          viewBox="0 0 32 32"
+          style={{ transform: `rotate(${northRotation}deg)` }}
+          className="transition-transform"
+          aria-hidden
         >
-          N
-        </text>
-      </svg>
+          <polygon points="16,3 11,18 16,15 21,18" className="fill-red-600" />
+          <polygon points="16,29 11,14 16,17 21,14" className="fill-gray-500 dark:fill-gray-500" />
+          <circle cx="16" cy="16" r="2.25" className="fill-white stroke-gray-600 dark:fill-gray-900 dark:stroke-gray-300" />
+        </svg>
+      </div>
     </div>
   )
 }

@@ -91,7 +91,7 @@ export function CanvasActionDock() {
         <Minus className="w-4 h-4" />
       </DockButton>
       <div
-        className="mx-1 rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-[#f4efe8] px-1.5 py-1 text-[10px] font-semibold tabular-nums text-gray-600 text-center select-none dark:border-gray-800 dark:from-gray-900 dark:to-[#1b2940] dark:text-gray-300"
+        className="mx-1 rounded border border-gray-200/80 bg-gradient-to-b from-white to-[#f4efe8] px-1.5 py-1 text-center text-[10px] font-semibold tabular-nums text-gray-600 select-none dark:border-gray-800 dark:from-gray-900 dark:to-[#1b2940] dark:text-gray-300"
         aria-live="polite"
         aria-atomic="true"
       >
@@ -168,7 +168,7 @@ interface DockButtonProps {
 
 function DockButton({ label, title, onClick, pressed, children }: DockButtonProps) {
   const base =
-    'w-10 h-10 inline-flex items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+    'inline-flex h-10 w-10 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
   const idle =
     'text-gray-600 dark:text-gray-300 hover:bg-[#f4efe8] dark:hover:bg-[#16263d] active:bg-[#eadfce] dark:active:bg-[#203552]'
   const active =

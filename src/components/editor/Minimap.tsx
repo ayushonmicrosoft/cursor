@@ -9,6 +9,7 @@ import { elementBounds } from '../../lib/elementBounds'
 const MINIMAP_WIDTH = 180
 const MINIMAP_HEIGHT = 120
 const COLLAPSED_SIZE = 40
+const MINIMAP_ANCHOR_CLASS = 'absolute bottom-12 right-24 z-20'
 
 /**
  * Lower-right overview panel. Split into three concerns so a pan
@@ -293,7 +294,8 @@ export function Minimap() {
         ref={ref}
         role="region"
         aria-label="Canvas overview"
-        className="absolute bottom-10 right-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg overflow-hidden flex items-center justify-center"
+        data-minimap-anchor="bottom-right-offset"
+        className={`${MINIMAP_ANCHOR_CLASS} flex items-center justify-center overflow-hidden rounded border border-gray-300 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900`}
         style={{ width: COLLAPSED_SIZE, height: COLLAPSED_SIZE }}
       >
         <button
@@ -302,7 +304,7 @@ export function Minimap() {
           onClick={() => setCollapsed(false)}
           aria-expanded={false}
           aria-label="Expand overview"
-          className="w-full h-full flex items-center justify-center cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex h-full w-full cursor-pointer items-center justify-center text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800"
         >
           <Maximize2 size={16} />
         </button>
@@ -315,7 +317,8 @@ export function Minimap() {
       ref={ref}
       role="region"
       aria-label="Canvas overview"
-      className="absolute bottom-10 right-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing"
+      data-minimap-anchor="bottom-right-offset"
+      className={`${MINIMAP_ANCHOR_CLASS} cursor-grab select-none overflow-hidden rounded border border-gray-300 bg-white shadow-md touch-none active:cursor-grabbing dark:border-gray-800 dark:bg-gray-900`}
       style={{ width: MINIMAP_WIDTH, height: MINIMAP_HEIGHT }}
       onPointerDown={handlePointerDown}
     >
@@ -340,7 +343,7 @@ export function Minimap() {
         }}
         aria-expanded={true}
         aria-label="Collapse overview"
-        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded cursor-pointer text-gray-600 dark:text-gray-300 bg-white/80 dark:bg-gray-900/80 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="absolute right-1 top-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm bg-white/85 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900/85 dark:text-gray-300 dark:hover:bg-gray-800"
       >
         <Minimize2 size={12} />
       </button>

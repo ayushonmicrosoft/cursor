@@ -150,7 +150,7 @@ describe('layoutChrome', () => {
   it('places the watermark centered horizontally near the bottom edge', () => {
     const layout = layoutChrome(ctx())
     expect(layout.watermark.x).toBe(layout.outer.width / 2)
-    expect(layout.watermark.text).toBe('floorcraft.app')
+    expect(layout.watermark.text).toBe('oando.co.in/OandOcraft')
     expect(layout.watermark.y).toBeLessThan(layout.outer.height)
     expect(layout.watermark.y).toBeGreaterThan(layout.bottomBand.y)
   })

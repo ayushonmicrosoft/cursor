@@ -28,6 +28,19 @@ describe('NorthArrow', () => {
     expect(screen.getByTestId('north-arrow')).toBeInTheDocument()
   })
 
+  it('anchors away from the admin HUD zone', () => {
+    render(<NorthArrow />)
+    const arrow = screen.getByTestId('north-arrow')
+    expect(arrow).toHaveAttribute('data-compass-anchor', 'top-right')
+    expect(arrow.className).toContain('right-4')
+    expect(arrow.className).not.toContain('left-4')
+  })
+
+  it('keeps the north label readable outside the rotating needle', () => {
+    render(<NorthArrow />)
+    expect(screen.getByText('N')).toBeInTheDocument()
+  })
+
   it('is hidden in presentation mode', () => {
     useUIStore.setState({ presentationMode: true })
     render(<NorthArrow />)

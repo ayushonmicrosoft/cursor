@@ -79,6 +79,14 @@ describe('Minimap interactive (Wave 10A)', () => {
     expect(region.getAttribute('aria-label')).toBe('Canvas overview')
   })
 
+  it('uses an offset lower-right anchor so it does not cover the action dock', () => {
+    const { container } = render(<Minimap />)
+    const region = getRegion(container)
+    expect(region).toHaveAttribute('data-minimap-anchor', 'bottom-right-offset')
+    expect(region.className).toContain('right-24')
+    expect(region.className).not.toContain('right-4')
+  })
+
   it('click in empty minimap area updates stage position', async () => {
     const setStagePosition = vi.fn()
     useCanvasStore.setState({ setStagePosition } as any)

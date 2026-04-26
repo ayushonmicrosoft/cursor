@@ -2,38 +2,47 @@
 
 This checklist is the working execution board. It is more detailed than the phase checklist and should be used during active implementation.
 
+Status key:
+
+- Repo-local: can be completed in this repository without production host access.
+- Host-only: requires GitHub, production hosting, Supabase dashboard, DNS, or owner/admin credentials outside this repository.
+- Blocked-by-host: repo-local work is ready to verify, but final completion depends on host-only access.
+
 ## 0. Repo And Delivery Control
 
 - [x] Product name is `OandOcraft`.
 - [x] Package name is `oandocraft`.
 - [x] Remote repo exists for OandOcraft work.
 - [x] `/OandOcraft/` build command exists.
-- [ ] Branch protection and required checks are configured in GitHub.
-- [ ] Release artifact retention is documented for production rollback.
-- [ ] Changelog process is defined.
+- [ ] Host-only: Branch protection and required checks are configured in GitHub.
+- [ ] Repo-local: Release artifact naming, storage path, retention window, and restore owner are documented for production rollback.
+- [ ] Repo-local: Changelog process is defined, including release-note owner, source commits/PRs, and user-visible/ops sections.
+- [ ] Repo-local: Release artifact checklist covers `npm run build:oando`, generated `dist/` contents, checksum/version label, upload location, rollback artifact, and retention verification.
+- [ ] Repo-local: Release runbook checklist covers preflight checks, build, smoke test, deploy, Supabase redirect verification, rollback trigger, and owner sign-off.
 
 ## 1. Main-Site Integration
 
 - [x] Main-site integration plan exists.
 - [x] Subpath deployment is the selected first production model.
 - [x] `npm run build:oando` emits `/OandOcraft/` assets.
-- [ ] Real host serves `dist/` under `/OandOcraft/`.
-- [ ] Real host rewrites nested routes to `/OandOcraft/index.html`.
-- [ ] Real host keeps planner assets separate from main-site assets.
-- [ ] Supabase production Site URL is set to `https://oando.co.in/OandOcraft`.
-- [ ] Supabase production redirect allow-list includes verify, reset, and invite routes.
-- [ ] Edge Function `APP_URL` is set to `https://oando.co.in/OandOcraft`.
-- [ ] Production smoke test passes.
+- [ ] Host-only: Real host serves `dist/` under `/OandOcraft/`.
+- [ ] Host-only: Real host rewrites nested routes to `/OandOcraft/index.html`.
+- [ ] Host-only: Real host keeps planner assets separate from main-site assets.
+- [ ] Host-only: Supabase production Site URL is set to `https://oando.co.in/OandOcraft`.
+- [ ] Host-only: Supabase production redirect allow-list includes verify, reset, and invite routes.
+- [ ] Host-only: Edge Function `APP_URL` is set to `https://oando.co.in/OandOcraft`.
+- [ ] Blocked-by-host: Production smoke test passes after host and Supabase production settings are available.
 
 ## 2. UI Quality And SmartDraw Standard
 
-- [ ] Canvas compass/minimap control works and does not visually glitch.
+- [x] Canvas compass/minimap control works and does not visually glitch.
 - [ ] UI corners are sharpened across buttons, cards, panels, menus, modals, drawers, and toolbars.
+- [x] Repo-local: Key editor overlay corners are sharpened for compass, minimap, dockable toolbars, action dock, and admin stats.
 - [ ] Cards use 8px radius or less unless a component has a specific reason.
 - [ ] Editor shell feels clean and professional against SmartDraw/Lucidchart expectations.
 - [ ] Canvas remains the visual focus.
 - [ ] Left and right sidebars do not cause horizontal overflow.
-- [ ] Docked and floating toolbars do not cover core canvas controls.
+- [x] Docked and floating toolbars do not cover core canvas controls.
 - [ ] Hover states are consistent across toolbars, library cards, rows, tabs, and panel controls.
 - [ ] Focus states are keyboard-visible.
 - [ ] Cursor states exist for pan, select, draw, drag, resize, rotate, and invalid interactions.
@@ -50,7 +59,8 @@ This checklist is the working execution board. It is more detailed than the phas
 - [ ] Toolbar positions persist reliably.
 - [ ] Toolbars can be reset to default positions.
 - [ ] Toolbars are keyboard accessible.
-- [ ] Admin stats show live office health, object counts, assignments, save state, and conflict/recovery signals.
+- [x] Admin stats show live office health, object counts, assignments, save state, warnings, and payload size.
+- [ ] Admin stats expose explicit conflict/recovery shortcuts and audit drilldowns.
 - [ ] Admin HUD is hidden from non-admin users.
 
 ## 4. Floor-Plan Blocks
@@ -84,8 +94,8 @@ This checklist is the working execution board. It is more detailed than the phas
 - [x] Seed payload verification script exists.
 - [x] Seed data includes non-empty floor-plan objects.
 - [x] Seed demo emails use `oandocraft.local`.
-- [ ] Hosted table counts are captured before and after full seed work.
-- [ ] Duplicate demo offices are reviewed and removed where needed.
+- [ ] Host-only: Hosted table counts are captured before and after full seed work.
+- [ ] Host-only: Duplicate demo offices are reviewed and removed where needed if the hosted dump already contains real offices.
 - [ ] Local reset is verified to load people, seats, assignments, and floor-plan objects.
 - [ ] RLS tests cover admin override behavior.
 - [ ] RLS tests cover viewer denial behavior.
@@ -97,10 +107,10 @@ This checklist is the working execution board. It is more detailed than the phas
 - [x] Anonymous sharing is not presented as the primary workflow.
 - [x] Admins can recover history and force-save.
 - [x] Access changes are audited.
-- [ ] Invite resend, revoke, accept, and expiry events are fully audited.
+- [ ] Repo-local: Invite resend, revoke, accept, and expiry events are fully audited in code/tests where possible.
 - [ ] Public token policy is reviewed and documented.
-- [ ] CSP is finalized for production domains.
-- [ ] Security headers are configured on the main host.
+- [ ] Blocked-by-host: CSP is finalized for production domains and verified against the live host.
+- [ ] Host-only: Security headers are configured on the main host.
 - [ ] Lost-admin-access recovery is documented.
 
 ## 8. Testing And Quality Gates
@@ -110,9 +120,9 @@ This checklist is the working execution board. It is more detailed than the phas
 - [x] `npm run build` exists.
 - [x] `npm run build:oando` exists.
 - [x] `npm run audit:pages` exists.
-- [ ] Browser smoke tests cover `/OandOcraft/`, login, dashboard, office map, and auth routes.
+- [ ] Repo-local: Browser smoke tests cover local `/OandOcraft/`, login, dashboard, office map, and auth routes.
 - [ ] Layout overflow regression test exists.
-- [ ] Compass/minimap regression test exists.
+- [x] Compass/minimap regression test exists.
 - [ ] Toolbar persistence regression test exists.
 - [ ] Sharp-corner visual audit is completed.
 - [ ] Accessibility audit is completed for core routes.
@@ -125,19 +135,28 @@ This checklist is the working execution board. It is more detailed than the phas
 - [x] Project workflow exists.
 - [x] Project checklist exists.
 - [x] Interactive project map exists.
-- [ ] Release checklist is promoted into the README or deployment docs.
-- [ ] Admin runbook exists.
-- [ ] Supabase recovery runbook exists.
-- [ ] Production smoke-test record is added after first host deployment.
+- [ ] Repo-local: Release checklist is promoted into the README or deployment docs.
+- [ ] Repo-local: Changelog template exists with summary, user-visible changes, operational steps, known issues, rollback artifact, and verification results.
+- [ ] Repo-local: Admin runbook exists.
+- [ ] Repo-local: Supabase recovery runbook exists.
+- [ ] Blocked-by-host: Production smoke-test record is added after first host deployment.
 
 ## 10. Launch Gate
 
-- [ ] Production build is generated from clean `main`.
-- [ ] Production host serves `/OandOcraft/`.
-- [ ] Supabase Auth redirects work in production.
+- [ ] Repo-local: Production build is generated from clean `main`.
+- [ ] Host-only: Production host serves `/OandOcraft/`.
+- [ ] Host-only: Supabase Auth redirects work in production.
 - [ ] Demo and production accounts are clearly separated.
-- [ ] No blocking console errors exist on core routes.
-- [ ] Admin can recover a test office history entry.
-- [ ] One end-to-end flow works: login, open office, draw room, add desk, assign person, export.
-- [ ] Rollback artifact is available.
-- [ ] Owner sign-off is recorded.
+- [ ] Blocked-by-host: No blocking console errors exist on production core routes.
+- [ ] Blocked-by-host: Admin can recover a test office history entry in production or approved staging.
+- [ ] Blocked-by-host: One end-to-end production flow works: login, open office, draw room, add desk, assign person, export.
+- [ ] Repo-local: Rollback artifact is generated and documented before release handoff.
+- [ ] Host-only: Owner sign-off is recorded.
+
+## Current Host-Only Blockers
+
+- GitHub branch protection and required checks need repository admin access.
+- Production host must serve `dist/` under `/OandOcraft/`, rewrite nested routes, isolate planner assets, and set security headers.
+- Supabase production settings must be updated for Site URL, redirect allow-list, and Edge Function `APP_URL`.
+- Hosted database row-count capture and duplicate-office cleanup need hosted database credentials/access.
+- Production smoke tests, auth redirect verification, admin recovery verification, end-to-end production flow, and owner sign-off require the live host or approved staging environment.

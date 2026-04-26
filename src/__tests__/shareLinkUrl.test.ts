@@ -44,12 +44,12 @@ describe('buildShareUrl (options form)', () => {
 
   it('emits an absolute URL with the supplied origin', () => {
     const url = buildShareUrl({
-      origin: 'https://app.floorcraft.app',
+      origin: 'https://oando.co.in/OandOcraft',
       officeSlug: 'hq',
       token: 'abc',
       embed: true,
     })
-    expect(url).toBe('https://app.floorcraft.app/share/hq?t=abc&embed=1')
+    expect(url).toBe('https://oando.co.in/OandOcraft/share/hq?t=abc&embed=1')
   })
 
   it('round-trips the token via parseShareToken', () => {
@@ -63,13 +63,13 @@ describe('buildShareUrl (options form)', () => {
 describe('buildEmbedSnippet', () => {
   it('produces an iframe HTML string with the embed=1 src', () => {
     const html = buildEmbedSnippet({
-      origin: 'https://app.floorcraft.app',
+      origin: 'https://oando.co.in/OandOcraft',
       officeSlug: 'hq',
       token: 'abc',
     })
     expect(html).toContain('<iframe')
     expect(html).toContain('</iframe>')
-    expect(html).toContain('https://app.floorcraft.app/share/hq?t=abc&embed=1')
+    expect(html).toContain('https://oando.co.in/OandOcraft/share/hq?t=abc&embed=1')
     // Default height is 600px; absent users assume the snippet is "tall
     // enough", so the default has to ship in the string.
     expect(html).toContain('height="600"')
@@ -78,7 +78,7 @@ describe('buildEmbedSnippet', () => {
 
   it('honours a custom height', () => {
     const html = buildEmbedSnippet({
-      origin: 'https://app.floorcraft.app',
+      origin: 'https://oando.co.in/OandOcraft',
       officeSlug: 'hq',
       token: 'abc',
       height: 800,
@@ -88,7 +88,7 @@ describe('buildEmbedSnippet', () => {
 
   it('renders a data-url-safe encoded slug', () => {
     const html = buildEmbedSnippet({
-      origin: 'https://app.floorcraft.app',
+      origin: 'https://oando.co.in/OandOcraft',
       officeSlug: 'san francisco',
       token: 'abc',
     })

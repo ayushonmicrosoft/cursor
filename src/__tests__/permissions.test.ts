@@ -5,7 +5,7 @@ describe('permissions matrix', () => {
   it('owner can do everything', () => {
     const actions: Action[] = [
       'editRoster', 'editMap', 'manageTeam',
-      'viewAuditLog', 'viewReports', 'manageBilling', 'generateShareLink',
+      'viewAuditLog', 'viewReports', 'manageWorkspace', 'generateShareLink',
     ]
     for (const a of actions) expect(can('owner', a)).toBe(true)
   })
@@ -13,7 +13,7 @@ describe('permissions matrix', () => {
   it('viewer has no permissions (read-only through routes only)', () => {
     const allActions: Action[] = [
       'editRoster', 'editMap', 'manageTeam',
-      'viewAuditLog', 'viewReports', 'manageBilling', 'generateShareLink',
+      'viewAuditLog', 'viewReports', 'manageWorkspace', 'generateShareLink',
     ]
     for (const a of allActions) expect(can('viewer', a)).toBe(false)
   })

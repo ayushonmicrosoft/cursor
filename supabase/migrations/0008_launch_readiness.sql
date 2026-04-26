@@ -286,7 +286,7 @@ create policy profiles_teammate_read on profiles
 -- scheduled job or manual ops step in the first weeks post-launch).
 -- Keeping a queue row rather than deleting immediately:
 --   - lets the user cancel within 30 days
---   - gives support time to handle billing/contract unwinds
+--   - gives support time to handle access/contract unwinds
 --   - protects against a compromised account being insta-nuked
 create table if not exists account_deletion_requests (
   user_id uuid primary key references auth.users(id) on delete cascade,

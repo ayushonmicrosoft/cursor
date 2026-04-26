@@ -127,7 +127,7 @@ export function DockableToolbar({
   }
 
   const containerClassName =
-    `absolute z-20 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/96 dark:bg-gray-900/96 backdrop-blur shadow-xl overflow-hidden ${className}`.trim()
+    `absolute z-20 overflow-hidden rounded border border-gray-300 bg-white/96 shadow-lg backdrop-blur dark:border-gray-800 dark:bg-gray-900/96 ${className}`.trim()
 
   const positioning =
     layout.mode === 'docked'

@@ -33,7 +33,7 @@ export function buildShareUrl(
 
 export interface BuildShareUrlOptions {
   /**
-   * Absolute origin (e.g. `https://app.floorcraft.app`). Optional — when
+   * Absolute origin (e.g. `https://oando.co.in/OandOcraft`). Optional — when
    * omitted we emit a relative path. Tests and snippet builders generally
    * pass an explicit origin; in-app copy buttons compose with
    * `window.location.origin`.
@@ -56,7 +56,9 @@ function buildShareUrlFromOptions(opts: BuildShareUrlOptions): string {
   if (opts.embed) params.set('embed', '1')
   const query = params.toString()
   if (opts.origin) {
-    const u = new URL(path, opts.origin)
+    const base = new URL(opts.origin)
+    const basePath = base.pathname.replace(/\/$/, '')
+    const u = new URL(`${basePath}${path}`, base.origin)
     u.search = query
     return u.toString()
   }

@@ -17,7 +17,7 @@ export type Action =
   | 'viewAuditLog'
   | 'viewReports'
   | 'viewSeatHistory'
-  | 'manageBilling'
+  | 'manageWorkspace'
   | 'generateShareLink'
   // Lowest-privilege read: "may see the map + the redacted roster". A
   // share-link visitor gets exactly this and nothing else. Roles that
@@ -45,7 +45,7 @@ const MATRIX: Record<Role, Action[]> = {
   owner: [
     'editRoster', 'editMap', 'manageTeam',
     'viewAuditLog', 'viewReports', 'viewSeatHistory',
-    'manageBilling', 'generateShareLink', 'viewMap', 'viewPII',
+    'manageWorkspace', 'generateShareLink', 'viewMap', 'viewPII',
   ],
   editor: ['editRoster', 'editMap', 'viewReports', 'viewSeatHistory', 'viewMap', 'viewPII'],
   'hr-editor': ['editRoster', 'viewAuditLog', 'viewReports', 'viewSeatHistory', 'viewMap', 'viewPII'],

@@ -103,7 +103,7 @@ const sections: Section[] = [
     label: 'Getting started',
     icon: '🚀',
     searchText:
-      'getting started floorcraft floor-plan editor roster offices map demo office sign up create team three-minute tour drag desk library assign person status bar double-click row side drawer auto-save cloud icon saving saved save failed',
+      'getting started oandocraft floor-plan editor roster offices map demo office sign up create team three-minute tour drag desk library assign person status bar double-click row side drawer auto-save cloud icon saving saved save failed',
     body: (
       <div className="space-y-4">
         <p>
@@ -186,7 +186,7 @@ const sections: Section[] = [
         <p>
           Permissions come in two layers. The <strong>team role</strong>{' '}
           (<strong>Admin</strong> or <strong>Member</strong>) controls team
-          settings, billing, and the ability to delete offices. Each office
+          settings, access, and the ability to delete offices. Each office
           then has its own <strong>office role</strong>:
         </p>
         <ul className="list-disc pl-6 space-y-1.5 text-gray-700 dark:text-gray-200">
@@ -1061,7 +1061,7 @@ const sections: Section[] = [
     label: 'Dark mode & accessibility',
     icon: '🌓',
     searchText:
-      "dark mode light theme system aware toggle cycle user menu paired classes tailwind landing page sticky backdrop-blurred nav wordmark pricing help sign in anchors hero stats tabular-nums teams seats floors how it works draw seat share three-step numbered circles connector line 2x3 feature grid multi-floor orchestration live presence cursors presentation mode footer columns product resources company a11y accessibility skip-link aria tabs aria-live save state focus rings primitives 104 components paired",
+      "dark mode light theme system aware toggle cycle user menu paired classes tailwind landing page sticky backdrop-blurred nav wordmark help sign in anchors hero stats tabular-nums teams seats floors how it works draw seat share three-step numbered circles connector line 2x3 feature grid multi-floor orchestration live presence cursors presentation mode footer columns product resources company a11y accessibility skip-link aria tabs aria-live save state focus rings primitives 104 components paired",
     body: (
       <div className="space-y-4">
         <h3 className="font-semibold text-gray-900 dark:text-gray-100">Dark mode</h3>
@@ -1106,7 +1106,7 @@ const sections: Section[] = [
         <p>
           The public landing page got a refresh alongside dark mode. The
           top nav is sticky and backdrop-blurred, with the wordmark,{' '}
-          <em>Pricing</em>, <em>Help</em>, <em>Sign in</em> anchors, and a
+          <em>Help</em> and <em>Sign in</em> anchors, plus a
           theme toggle. The hero now includes a stats row (with{' '}
           <code>tabular-nums</code> so the numbers don't jitter) showing
           total teams using OandOcraft, seats planned, and floors. A{' '}
@@ -1215,7 +1215,7 @@ const sections: Section[] = [
 
         <FaqItem q="What's the difference between Admin and Owner?">
           <strong>Admin</strong> and <strong>Member</strong> are{' '}
-          <em>team-level</em> roles — they decide who can manage billing,
+          <em>team-level</em> roles — they decide who can manage access,
           invite collaborators, and delete offices at the team level.{' '}
           <strong>Owner</strong>, <strong>HR Editor</strong>,{' '}
           <strong>Space Planner</strong>, and <strong>Viewer</strong> are{' '}
@@ -1692,7 +1692,7 @@ export function HelpPage() {
             <p>
               Guide out of date?{' '}
               <a
-                href="https://github.com/rcasto123/Floorcraft/issues/new"
+                href="https://github.com/ayushonmicrosoft/OandOcraft/issues/new"
                 className="text-blue-600 dark:text-blue-400 hover:underline"
                 target="_blank"
                 rel="noreferrer"

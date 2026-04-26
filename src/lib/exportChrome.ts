@@ -185,7 +185,7 @@ export function layoutChrome(ctx: ExportChromeContext): ChromeLayout {
   const watermark = {
     x: outerWidth / 2,
     y: bottomBand.y + bottomBand.height - 12,
-    text: 'floorcraft.app',
+    text: 'oando.co.in/OandOcraft',
   }
 
   return {
