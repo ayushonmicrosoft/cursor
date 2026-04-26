@@ -937,23 +937,28 @@ const sections: Section[] = [
   },
   {
     id: 'sharing',
-    label: 'Sharing & read-only view',
+    label: 'Legacy share links',
     icon: '🔗',
     searchText:
-      'sharing read-only links owners public link roster sign-in url snapshot contractor recruiter exec creating link share top bar create share link token revoke audit events scope share view full chrome canvas embed mode ?embed=1 watermark status bar minimap default off pii gated',
+      'legacy sharing read-only links owners public link roster sign-in url snapshot contractor recruiter exec share token revoke audit events scope share view full chrome canvas embed mode ?embed=1 watermark status bar minimap default off pii gated direct access named users',
     body: (
       <div className="space-y-4">
         <p>
-          Owners can generate a public read-only link so anyone with the URL
-          can see the office without signing in — useful for contractors,
-          recruiters, execs, or dashboard embeds.
+          OandOcraft now treats <strong>direct named-person access</strong> as
+          the default workflow. Internal and approved external people should be
+          invited into the office with explicit roles.
         </p>
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Creating a link</h3>
-        <ol className="list-decimal pl-6 space-y-1.5 text-gray-700 dark:text-gray-200">
-          <li>On the map, open <strong>Share</strong> from the File menu (top bar).</li>
-          <li>Click <strong>Create share link</strong>. The URL is of the form <code>/shared/&lt;office-id&gt;/&lt;token&gt;</code>.</li>
-          <li>Copy the link. Anyone with it opens straight into the read-only view — no sign-in required.</li>
-        </ol>
+        <p>
+          Anonymous read-only links remain a <strong>controlled legacy path</strong>
+          for special cases like embeds or one-off stakeholder review, but they
+          are no longer generated from the primary map UI.
+        </p>
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Legacy token behavior</h3>
+        <ul className="list-disc pl-6 space-y-1.5 text-gray-700 dark:text-gray-200">
+          <li>Existing token URLs still resolve under <code>/shared/&lt;office-id&gt;/&lt;token&gt;</code>.</li>
+          <li>They open a read-only canvas with no sign-in requirement.</li>
+          <li>They should be treated as exceptional access, not the normal collaboration path.</li>
+        </ul>
         <h3 className="font-semibold text-gray-900 dark:text-gray-100 mt-4">Share view vs embed mode</h3>
         <p>
           The share link opens into a <strong>read-only canvas</strong> with
@@ -972,9 +977,9 @@ const sections: Section[] = [
         </p>
         <h3 className="font-semibold text-gray-900 dark:text-gray-100 mt-4">Revoking</h3>
         <p>
-          Hit <strong>Revoke</strong> in the same panel. The token is marked
-          revoked immediately; subsequent visits show "This share link isn't
-          valid."
+          Revoke the token through the legacy admin flow or remove the row from
+          <code>share_tokens</code>. The token is marked revoked immediately;
+          subsequent visits show "This share link isn't valid."
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Personal details on hover cards are PII-gated for share viewers:
@@ -1186,11 +1191,11 @@ const sections: Section[] = [
         </FaqItem>
 
         <FaqItem q="How do I share a read-only view with someone who doesn't have an account?">
-          Open <strong>Share</strong> in the top bar (Owner role required),
-          click <strong>Create share link</strong>, and copy the URL. The
-          recipient opens it and sees the roster as a static table — no sign-in
-          needed. Hit <strong>Revoke</strong> in the same panel when the link
-          is no longer needed. See the Sharing section above for details.
+          The preferred path is to invite them directly and give them the
+          lowest role they need. Anonymous share links are now legacy-only and
+          are not generated from the main UI. If you still have an existing
+          tokenized link, it will open read-only without sign-in. See the{' '}
+          <SectionLink to="sharing">Legacy share links</SectionLink> section.
         </FaqItem>
 
         <FaqItem q="I signed up but never got the verification email.">
@@ -1215,8 +1220,9 @@ const sections: Section[] = [
           <strong>Owner</strong>, <strong>HR Editor</strong>,{' '}
           <strong>Space Planner</strong>, and <strong>Viewer</strong> are{' '}
           <em>office-level</em> roles that govern what you can do inside a
-          specific office. A team Admin isn't automatically an office Owner —
-          check the office permissions.
+          specific office. In the current O&O workspace model, a team Admin is
+          treated as <strong>owner-equivalent across offices</strong> even if
+          there is no manual office-owner row.
         </FaqItem>
 
         <FaqItem q="How do I schedule someone's departure without deleting them yet?">
@@ -1285,12 +1291,11 @@ const sections: Section[] = [
         </FaqItem>
 
         <FaqItem q="Can I embed the floor plan in another page?">
-          Yes — create a share link, then append{' '}
-          <code>?embed=1</code> to the URL. Embed mode drops the chrome,
-          keeps the canvas, and shows a small watermark status bar. Great
-          for iframes in Notion, intranet dashboards, or a README.
-          Full details in{' '}
-          <SectionLink to="sharing">Sharing & read-only view</SectionLink>.
+          Yes — for legacy anonymous tokens, append <code>?embed=1</code> to
+          the URL. Embed mode drops the chrome, keeps the canvas, and shows a
+          small watermark status bar. Use it only when named access is not the
+          right fit. Full details in{' '}
+          <SectionLink to="sharing">Legacy share links</SectionLink>.
         </FaqItem>
 
         <FaqItem q="A toast is blocking the button I need — can I dismiss it faster?">

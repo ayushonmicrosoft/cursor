@@ -1,10 +1,9 @@
-export type Visibility = 'team-edit' | 'team-view' | 'private'
+export type Visibility = 'workspace-edit' | 'private'
 
 /**
- * Three-way visibility selector used by ShareModal. The labels are the
- * user-facing strings; the underlying office row only stores `is_private`.
- * `team-view` is modeled as "default role = viewer" via explicit permission
- * overrides on teammates, but the caller owns that translation.
+ * Two-mode visibility selector used by the access modal. The underlying
+ * office row only stores `is_private`, so the UI keeps the model honest:
+ * either the workspace can edit, or access is restricted to named people.
  */
 export function VisibilityRadio({
   value,
@@ -14,9 +13,16 @@ export function VisibilityRadio({
   onChange: (v: Visibility) => void
 }) {
   const opts: { v: Visibility; label: string; hint: string }[] = [
-    { v: 'team-edit', label: 'Team can edit', hint: 'Default. Every team member can open + edit.' },
-    { v: 'team-view', label: 'Team can view', hint: 'Read-only for team; override individuals.' },
-    { v: 'private', label: 'Private', hint: 'Only people you explicitly add.' },
+    {
+      v: 'workspace-edit',
+      label: 'Workspace can edit',
+      hint: 'Everyone on the O&O workspace can open and edit this office.',
+    },
+    {
+      v: 'private',
+      label: 'Restricted access',
+      hint: 'Only named people you grant below can open this office.',
+    },
   ]
   return (
     <div className="space-y-1.5 text-sm">

@@ -5,7 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_KEY = Deno.env.get('RESEND_API_KEY')!
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://floorcraft.space'
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://oando.co.in/OandOcraft'
 const FROM_ADDRESS = Deno.env.get('INVITE_FROM') ?? 'invites@floorcraft.space'
 
 // CORS preflight for browser callers. Supabase Functions sit on a

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { History, Armchair, DoorOpen, Square, Minus, Box, Coffee, LayoutGrid, MousePointer2 } from 'lucide-react'
+import { History, Armchair, DoorOpen, Square, Minus, Box, Coffee, LayoutGrid, MousePointer2, TriangleAlert, ChevronDown, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useUIStore } from '../../../stores/uiStore'
@@ -55,7 +55,7 @@ const WALL_TYPE_LABELS: Record<WallType, string> = {
  */
 const LABEL_CLASS = 'text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block'
 const INPUT_CLASS =
-  'w-full text-sm border border-gray-200 dark:border-gray-800 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 disabled:bg-gray-50 disabled:text-gray-500 bg-white dark:bg-gray-900'
+  'w-full text-sm border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-500 bg-white dark:bg-gray-900 dark:focus:ring-blue-950'
 
 /**
  * Section helper — wraps a labeled group of fields with an uppercase tracking
@@ -65,16 +65,113 @@ const INPUT_CLASS =
 function Section({
   title,
   children,
+  collapsible = true,
+  defaultCollapsed = false,
   ...rest
-}: { title: string; children: React.ReactNode } & React.HTMLAttributes<HTMLElement>) {
+}: {
+  title: string
+  children: React.ReactNode
+  collapsible?: boolean
+  defaultCollapsed?: boolean
+} & React.HTMLAttributes<HTMLElement>) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed)
   return (
-    <section {...rest} className={`flex flex-col gap-3 ${rest.className ?? ''}`}>
-      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-        {title}
-      </h3>
-      <div className="flex flex-col gap-4">{children}</div>
+    <section
+      {...rest}
+      className={`flex flex-col gap-3 rounded-xl border border-gray-200/80 bg-white/90 p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900/80 ${rest.className ?? ''}`}
+    >
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          className="flex items-center justify-between gap-2 text-left"
+          aria-expanded={!collapsed}
+          title={collapsed ? `Expand ${title}` : `Collapse ${title}`}
+        >
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+            {title}
+          </h3>
+          {collapsed ? (
+            <ChevronRight size={14} className="text-gray-400 dark:text-gray-500" aria-hidden="true" />
+          ) : (
+            <ChevronDown size={14} className="text-gray-400 dark:text-gray-500" aria-hidden="true" />
+          )}
+        </button>
+      ) : (
+        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          {title}
+        </h3>
+      )}
+      {!collapsed && <div className="flex flex-col gap-4">{children}</div>}
     </section>
   )
+}
+
+function ActionButton({
+  label,
+  onClick,
+  disabled,
+  tone = 'neutral',
+}: {
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  tone?: 'neutral' | 'danger'
+}) {
+  const toneClass =
+    tone === 'danger'
+      ? 'border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400 dark:hover:bg-red-950/30'
+      : 'border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-gray-800/60'
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${toneClass}`}
+    >
+      {label}
+    </button>
+  )
+}
+
+function elementValidationWarnings(
+  el: CanvasElement,
+  elements: Record<string, CanvasElement>,
+  employees: Record<string, Employee>,
+): string[] {
+  const warnings: string[] = []
+
+  if (isDeskElement(el)) {
+    const deskProblem = validateDeskId(el.deskId, el.id, elements)
+    if (deskProblem) warnings.push(deskProblem)
+    if (el.assignedEmployeeId && !employees[el.assignedEmployeeId]) {
+      warnings.push('Assigned employee record is missing.')
+    }
+  }
+
+  if (isWorkstationElement(el) || isPrivateOfficeElement(el)) {
+    const deskProblem = validateDeskId(el.deskId, el.id, elements)
+    if (deskProblem) warnings.push(deskProblem)
+    const missingCount = el.assignedEmployeeIds.filter((id) => !!id && !employees[id]).length
+    if (missingCount > 0) {
+      warnings.push(`${missingCount} assigned occupant record${missingCount === 1 ? ' is' : 's are'} missing.`)
+    }
+  }
+
+  if (isConferenceRoomElement(el) && el.capacity < 1) {
+    warnings.push('Conference room capacity must be at least 1.')
+  }
+
+  if (isCommonAreaElement(el) && !el.areaName.trim()) {
+    warnings.push('Common areas should have a visible area name.')
+  }
+
+  if (!el.visible) {
+    warnings.push('This object is hidden on the canvas.')
+  }
+
+  return warnings
 }
 
 /**
@@ -500,6 +597,13 @@ export function PropertiesPanel() {
   const selectedIds = useUIStore((s) => s.selectedIds)
   const elements = useElementsStore((s) => s.elements)
   const updateElement = useElementsStore((s) => s.updateElement)
+  const duplicateElements = useElementsStore((s) => s.duplicateElements)
+  const bringToFront = useElementsStore((s) => s.bringToFront)
+  const sendToBack = useElementsStore((s) => s.sendToBack)
+  const bringForward = useElementsStore((s) => s.bringForward)
+  const sendBackward = useElementsStore((s) => s.sendBackward)
+  const groupElements = useElementsStore((s) => s.groupElements)
+  const ungroupElements = useElementsStore((s) => s.ungroupElements)
   // Display-layer read — the assigned-employee name preview in the Desk
   // section should go through redaction when the viewer lacks `viewPII`.
   const employees = useVisibleEmployees()
@@ -543,6 +647,12 @@ export function PropertiesPanel() {
       .map((id) => elements[id])
       .filter((e): e is NonNullable<typeof e> => Boolean(e))
     const allWalls = selectedEls.length > 0 && selectedEls.every(isWallElement)
+    const allLocked = selectedEls.length > 0 && selectedEls.every((item) => item.locked)
+    const sharedGroupId =
+      selectedEls.length > 1 &&
+      selectedEls.every((item) => item.groupId && item.groupId === selectedEls[0]?.groupId)
+        ? selectedEls[0]?.groupId ?? null
+        : null
     // For the shared controls we seed the inputs from the first wall; edits
     // always broadcast to the full selection so a mixed-value display is an
     // acceptable simplification (common in pro editors like Figma).
@@ -566,6 +676,56 @@ export function PropertiesPanel() {
         <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
           {selectedIds.length} elements selected
         </div>
+
+        <Section title="Quick actions">
+          <div className="flex flex-wrap gap-2">
+            <ActionButton
+              label="Duplicate"
+              disabled={inputDisabled}
+              onClick={() => {
+                const newIds = duplicateElements(selectedIds)
+                useUIStore.getState().setSelectedIds(newIds)
+              }}
+            />
+            <ActionButton
+              label={allLocked ? 'Unlock' : 'Lock'}
+              disabled={inputDisabled}
+              onClick={() => {
+                for (const id of selectedIds) {
+                  updateElement(id, { locked: !allLocked })
+                }
+              }}
+            />
+            <ActionButton
+              label="Group"
+              disabled={inputDisabled || selectedIds.length < 2}
+              onClick={() => {
+                groupElements(selectedIds)
+              }}
+            />
+            <ActionButton
+              label="Ungroup"
+              disabled={inputDisabled || !sharedGroupId}
+              onClick={() => {
+                if (sharedGroupId) ungroupElements(sharedGroupId)
+              }}
+            />
+            <ActionButton
+              label="Forward"
+              disabled={inputDisabled}
+              onClick={() => {
+                for (const id of selectedIds) bringForward(id)
+              }}
+            />
+            <ActionButton
+              label="Back"
+              disabled={inputDisabled}
+              onClick={() => {
+                for (const id of selectedIds) sendBackward(id)
+              }}
+            />
+          </div>
+        </Section>
 
         {/* Alignment + distribution. Distribution needs ≥3 elements, so the
             distribution buttons disable below that count but stay visible
@@ -700,6 +860,7 @@ export function PropertiesPanel() {
   if (!el) return null
 
   const update = (updates: Record<string, unknown>) => updateElement(el.id, updates)
+  const validationWarnings = elementValidationWarnings(el, elements, employees)
 
   // Derive which "details" section to render after Appearance based on type.
   // Walls / tables / conference rooms / common areas have their own custom
@@ -709,6 +870,60 @@ export function PropertiesPanel() {
   return (
     <div className="flex flex-col gap-5">
       <ElementHeader el={el} />
+
+      <Section title="Quick actions" collapsible={false}>
+        <div className="flex flex-wrap gap-2">
+          <ActionButton
+            label="Duplicate"
+            disabled={inputDisabled}
+            onClick={() => {
+              const newIds = duplicateElements([el.id])
+              useUIStore.getState().setSelectedIds(newIds)
+            }}
+          />
+          <ActionButton
+            label={el.locked ? 'Unlock' : 'Lock'}
+            disabled={inputDisabled}
+            onClick={() => update({ locked: !el.locked })}
+          />
+          <ActionButton
+            label="Front"
+            disabled={inputDisabled}
+            onClick={() => bringToFront(el.id)}
+          />
+          <ActionButton
+            label="Forward"
+            disabled={inputDisabled}
+            onClick={() => bringForward(el.id)}
+          />
+          <ActionButton
+            label="Back"
+            disabled={inputDisabled}
+            onClick={() => sendBackward(el.id)}
+          />
+          <ActionButton
+            label="To back"
+            disabled={inputDisabled}
+            onClick={() => sendToBack(el.id)}
+          />
+        </div>
+      </Section>
+
+      {validationWarnings.length > 0 && (
+        <Section title="Warnings">
+          <div className="rounded-lg border border-amber-200 bg-amber-50/90 p-3 dark:border-amber-900/40 dark:bg-amber-950/30">
+            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-amber-900 dark:text-amber-100">
+              <TriangleAlert size={15} aria-hidden="true" />
+              Needs attention
+            </div>
+            <ul className="space-y-1 text-xs text-amber-800 dark:text-amber-200">
+              {validationWarnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          </div>
+        </Section>
+      )}
 
       <Section title="Identity">
         <div>

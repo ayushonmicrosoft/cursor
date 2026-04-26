@@ -42,7 +42,7 @@ const RETRY_DELAYS = [2000, 5000, 15000, 30000]
  * retry ships their *current* edits, not the edits that existed when the
  * first attempt was queued.
  */
-function buildCurrentPayload(): Record<string, unknown> {
+export function buildCurrentPayload(): Record<string, unknown> {
   const elements = useElementsStore.getState().elements
   const { employees, departmentColors } = useEmployeeStore.getState()
   const { floors, activeFloorId } = useFloorStore.getState()

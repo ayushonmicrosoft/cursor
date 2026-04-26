@@ -33,7 +33,7 @@ OandOcraft is a browser-based office floor planner built for IT operations teams
 - **Export** — export the active floor as PNG (configurable pixel ratio), PDF (A4/A3/Letter, portrait or landscape, 150 or 300 DPI), or JSON (full project payload for backup/migration)
 - **Undo/redo with temporal Zustand** — up to 50-step undo history via `zundo`; assignment fields are deliberately excluded from the undo tree to prevent element ↔ employee state desync
 - **Team workspaces** — each account belongs to one or more named teams (identified by a URL slug); team admins can rename/delete the team, invite members by email (via a Resend-powered Edge Function), and remove members
-- **Per-office sharing and permissions** — offices can be public (all team members get editor access by default) or private (owner-only unless an explicit per-user role is set); a ShareModal exposes a visibility toggle and a per-member role table (owner / editor / viewer) backed by Supabase RLS
+- **Direct office access and permissions** — offices can be workspace-edit or restricted; named internal/external people are invited directly and managed from a ShareModal with visibility control, per-person roles (owner / editor / hr editor / space planner / viewer), revoke actions, and admin overwrite-history recovery backed by Supabase RLS
 - **Conflict-safe cloud sync** — changes are debounced 2 seconds then saved with an optimistic-lock (`updated_at` predicate); if another session wrote first, a ConflictModal lets the user choose Reload (discard local) or Overwrite (force-save); transient errors retry with exponential backoff up to 30 s
 - **Auth flows** — email/password sign-up, login, forgot-password, and email-link verify/reset; invite tokens in email links pre-fill the sign-up form and auto-accept team membership on first sign-in
 - **Code-split lazy loading** — the Konva canvas tree and all editor chunks are loaded on demand; the landing page ships the minimum JS bundle
@@ -177,7 +177,7 @@ cp .env.example .env.local
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase `anon` / public key. Same location as above. Injected into the browser bundle — safe to expose. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge Functions only | Service role key for server-side operations. Never expose in the browser. |
 | `RESEND_API_KEY` | Edge Functions only | API key from [resend.com](https://resend.com) dashboard. Powers team invite emails. |
-| `APP_URL` | Edge Functions only | Base URL of the deployed app (e.g. `https://floorcraft.space`). Used to construct invite callback URLs. |
+| `APP_URL` | Edge Functions only | Base URL of the deployed app (for O&O production use `https://oando.co.in/OandOcraft`). Used to construct invite callback URLs. |
 
 > `VITE_*` variables are bundled into the client at build time. The other three are only read inside Supabase Edge Functions and should be set as Supabase secrets, not in `.env.local`.
 
@@ -198,6 +198,10 @@ with multi-floor components, employees, neighborhoods, and annotations.
 - Local reset path: `npx supabase db reset` (loads migrations + `seed.sql`)
 - Remote path: run your migration flow, then execute `supabase/seed.sql` against
   your hosted database if you want the same full demo payload in hosted envs
+- Row counts: `npm run seed:counts -- "<postgres-url>"` prints every public table
+  row count without mutating the database
+- Payload verification: `npm run seed:verify` fails if the SQL contains headings
+  without actual floor objects
 
 ### Development
 
@@ -312,13 +316,13 @@ src/
 
 ## Deployment
 
-OandOcraft deploys to **Netlify**. The `netlify.toml` sets the build command to `npm run build`, publishes `dist/`, and adds a catch-all redirect to `index.html` for client-side routing. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Netlify → Project settings → Environment variables.
+For the main-site deployment path, build with `npm run build:oando` and serve the emitted `dist/` bundle from `/OandOcraft/`. The host must rewrite nested client routes such as `/OandOcraft/login`, `/OandOcraft/dashboard`, `/OandOcraft/t/*`, `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and `/OandOcraft/invite/*` back to `/OandOcraft/index.html`. See [docs/OandOcraft_MAIN_SITE_INTEGRATION.md](docs/OandOcraft_MAIN_SITE_INTEGRATION.md) for the exact host rules, Supabase redirect URLs, and production env vars.
 
 Edge Functions are deployed to Supabase:
 
 ```bash
 npx supabase functions deploy send-invite-email
-npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://floorcraft.space
+npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://oando.co.in/OandOcraft
 ```
 
 ---

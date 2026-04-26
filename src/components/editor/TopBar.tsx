@@ -11,7 +11,7 @@ import {
   Maximize2, Minimize2,
   Cloud, CloudOff, UploadCloud, X as XIcon,
   Ruler, Grid3x3, Compass, Printer, Image as ImageIcon,
-  ChevronDown, Link2, Eye, Check, Share2, Download, Hash,
+  ChevronDown, Eye, Check, Share2, Download, Hash,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -28,7 +28,6 @@ import { TeamSwitcher } from '../team/TeamSwitcher'
 import { UserMenu } from '../team/UserMenu'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'
 import { ViewAsMenu } from './ViewAsMenu'
-import { ShareLinkDialog } from './ShareLinkDialog'
 import { PlanHealthPill } from './PlanHealthPill'
 
 export function TopBar() {
@@ -67,11 +66,6 @@ export function TopBar() {
   const { canUndo, canRedo } = useTemporalState()
   const canViewAudit = useCan('viewAuditLog')
   const canViewReports = useCan('viewReports')
-  // Gate the share-link dialog behind `editMap` — editors/owners can hand
-  // out read-only links to their work, but a viewer (or a shareViewer who
-  // somehow lands here) cannot.
-  const canShareMap = useCan('editMap')
-  const [shareLinkOpen, setShareLinkOpen] = useState(false)
 
   // View dropdown stays inline — its items are tightly coupled to the
   // canvas store (zoom, grid, dimensions). Share + Export moved into the
@@ -247,24 +241,14 @@ export function TopBar() {
       ],
     },
     {
-      heading: 'Share',
+      heading: 'Access',
       items: [
         {
-          id: 'share-invite',
-          label: 'Invite collaborators',
+          id: 'manage-access',
+          label: 'Manage office access',
           icon: Share2,
           onSelect: () => setShareModalOpen(true),
         },
-        ...(canShareMap
-          ? [
-              {
-                id: 'share-link',
-                label: 'Create view-only link',
-                icon: Link2,
-                onSelect: () => setShareLinkOpen(true),
-              },
-            ]
-          : []),
       ],
     },
   ]
@@ -556,12 +540,6 @@ export function TopBar() {
         keeps the TopBar focused on document-level concerns and makes
         the collapse control visually adjacent to what it controls.
       */}
-
-      {/* Share + Export collapsed into the FileMenu at the left of the
-          TopBar (Wave 8B). The view-only link dialog stays mounted here
-          because it's owned by the share-link button — the FileMenu only
-          flips its open state via setShareLinkOpen. */}
-      <ShareLinkDialog open={shareLinkOpen} onClose={() => setShareLinkOpen(false)} />
 
       {/* MAP / ROSTER view toggle. React Router owns the active state so
           we don't need UI-store bookkeeping. Moved to the action cluster

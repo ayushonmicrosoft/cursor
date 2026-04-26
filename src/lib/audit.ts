@@ -16,6 +16,7 @@ export async function emit(
   targetId: string | null,
   metadata: Record<string, unknown> = {},
 ): Promise<void> {
+  if (typeof useProjectStore.getState !== 'function') return
   const { currentTeamId, currentUserId } = useProjectStore.getState()
   if (!currentTeamId || !currentUserId) return
   try {

@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "audit:pages": "node scripts/audit-pages.cjs",
     "seed:pull": "node scripts/generate_full_seed.cjs",
+    "seed:counts": "node scripts/report_public_table_counts.cjs",
     "seed:verify": "node scripts/verify_seed_payload.cjs",
     "test": "vitest run",
     "test:watch": "vitest"

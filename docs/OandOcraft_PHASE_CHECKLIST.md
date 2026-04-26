@@ -14,9 +14,9 @@ Product scope: one O&O workspace, internal and approved external people, direct 
 - [x] Rename visible product/package identity to `OandOcraft` / `oandocraft`.
 - [x] Make light mode the default while keeping dark mode available.
 - [x] Add a repeatable `/OandOcraft/` subpath build path.
-- [ ] Document main-site rewrite rules for `oando.co.in/OandOcraft/* -> /OandOcraft/index.html`.
-- [ ] Add Supabase redirect URLs for `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and invite acceptance.
-- [ ] Confirm production env vars for the O&O host.
+- [x] Document main-site rewrite rules for `oando.co.in/OandOcraft/* -> /OandOcraft/index.html`.
+- [x] Add Supabase redirect URLs for `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and invite acceptance.
+- [x] Confirm production env vars for the O&O host.
 
 Exit criteria:
 
@@ -28,21 +28,21 @@ Exit criteria:
 
 ## Phase 1 - Access Model And Admin Powers
 
-- [ ] Replace sharing-first language with direct person access in UI copy.
+- [x] Replace sharing-first language with direct person access in UI copy.
 - [x] Keep invite flow for named internal/external users.
-- [ ] Stop presenting anonymous share links as a primary workflow.
+- [x] Stop presenting anonymous share links as a primary workflow.
 - [x] Make team admins owner-equivalent for all offices in RLS.
 - [x] Make team admins resolve as `owner` in client permission checks.
-- [ ] Add admin controls for office visibility, person role, revoke access, recover history, and force-save.
-- [ ] Add audit events for admin changes.
+- [x] Add admin controls for office visibility, person role, revoke access, recover history, and force-save.
+- [x] Add audit events for admin changes.
 - [x] Add RLS tests for admin read/update on private offices.
 
 Exit criteria:
 
-- [ ] Named internal/external users can be invited and permissioned.
-- [ ] Admins can modify any office without manual office-owner rows.
-- [ ] Viewers cannot edit offices.
-- [ ] Anonymous sharing is disabled or clearly relegated to a controlled legacy path.
+- [x] Named internal/external users can be invited and permissioned.
+- [x] Admins can modify any office without manual office-owner rows.
+- [x] Viewers cannot edit offices.
+- [x] Anonymous sharing is disabled or clearly relegated to a controlled legacy path.
 
 ## Phase 2 - Full Supabase Data Load
 
@@ -64,33 +64,33 @@ Exit criteria:
 
 - [ ] Redesign the editor shell around a clean canvas, restrained chrome, and professional spacing.
 - [x] Replace crude floor-plan blocks with cleaner SVG library previews and Konva canvas symbols for desks, rooms, tables, seating, facilities, and generic objects.
-- [ ] Add better hover states for toolbar buttons, library cards, canvas objects, rows, tabs, and panel controls.
-- [ ] Add obvious selected, focused, disabled, locked, dirty, saving, and error states.
-- [ ] Replace noisy panels with collapsible SmartDraw-style sections.
-- [ ] Improve tooltips so every primary action explains itself.
-- [ ] Make object insertion more intuitive with search, recent tools, favorites, and drag previews.
+- [x] Add better hover states for toolbar buttons, library cards, canvas objects, rows, tabs, and panel controls.
+- [x] Add obvious selected, focused, disabled, locked, dirty, saving, and error states.
+- [x] Replace noisy panels with collapsible SmartDraw-style sections.
+- [x] Improve tooltips so every primary action explains itself.
+- [x] Make object insertion more intuitive with search, recent tools, favorites, and drag previews.
 - [ ] Add consistent cursor feedback for draw, select, pan, resize, rotate, drag, and invalid-drop states.
-- [ ] Tune animations for panel open, hover reveal, selection, and toast transitions without slowing editing.
+- [x] Tune animations for panel open, hover reveal, selection, and toast transitions without slowing editing.
 
 Exit criteria:
 
 - [ ] A first-time user can create a room, add desks, assign one person, and export without help text.
-- [ ] Hover/focus states are visible and consistent across the app.
+- [x] Hover/focus states are visible and consistent across the app.
 - [ ] Canvas and panels look professional against SmartDraw/Lucidchart/Visio-class expectations.
 
 ## Phase 4 - Editor Depth And Object Modification
 
-- [ ] Expand Properties panel controls for every object type.
-- [ ] Add batch edit for common multi-select properties.
-- [ ] Add lock/unlock, duplicate, align, distribute, group, ungroup, bring forward/back, and delete affordances.
-- [ ] Add precise numeric controls for position, size, rotation, wall thickness, room capacity, and labels.
-- [ ] Add object validation warnings for broken assignments and missing metadata.
-- [ ] Add templates for common O&O space patterns.
+- [x] Expand Properties panel controls for every object type.
+- [x] Add batch edit for common multi-select properties.
+- [x] Add lock/unlock, duplicate, align, distribute, group, ungroup, bring forward/back, and delete affordances.
+- [x] Add precise numeric controls for position, size, rotation, wall thickness, room capacity, and labels.
+- [x] Add object validation warnings for broken assignments and missing metadata.
+- [x] Add templates for common O&O space patterns.
 
 Exit criteria:
 
-- [ ] Admin/planner can modify all key object attributes without editing JSON.
-- [ ] Multi-select editing works predictably.
+- [x] Admin/planner can modify all key object attributes without editing JSON.
+- [x] Multi-select editing works predictably.
 - [ ] Properties panel has regression tests for each supported object type.
 
 ## Phase 5 - Main-Site Integration
@@ -98,8 +98,8 @@ Exit criteria:
 - [x] Build with `npm run build:oando`.
 - [ ] Serve `dist/` under the main site's `/OandOcraft/` path.
 - [ ] Configure the host to return the app `index.html` for nested client routes.
-- [ ] Scope app CSS so it does not leak into the main site.
-- [ ] Confirm direct refresh works for `/OandOcraft/login`, `/OandOcraft/dashboard`, and office routes.
+- [x] Scope app CSS so it does not leak into the main site.
+- [x] Confirm direct refresh works for `/OandOcraft/login`, `/OandOcraft/dashboard`, and office routes.
 - [ ] Confirm Supabase auth redirects land back under `/OandOcraft/`.
 
 Exit criteria:

@@ -28,9 +28,9 @@ function buildGroups() {
       ],
     },
     {
-      heading: 'Share',
+      heading: 'Access',
       items: [
-        { id: 'share-invite', label: 'Invite collaborators', icon: Share2, onSelect: onShare },
+        { id: 'manage-access', label: 'Manage office access', icon: Share2, onSelect: onShare },
       ],
     },
   ]
@@ -60,7 +60,7 @@ describe('FileMenu', () => {
     fireEvent.click(screen.getByTestId('file-menu-trigger'))
     expect(screen.getByTestId('file-menu-panel')).toBeInTheDocument()
     const headings = screen.getAllByTestId('file-menu-heading').map((h) => h.textContent)
-    expect(headings).toEqual(['Project', 'Export', 'Share'])
+    expect(headings).toEqual(['Project', 'Export', 'Access'])
   })
 
   it('closes when Escape is pressed', () => {
@@ -102,7 +102,7 @@ describe('FileMenu', () => {
     fireEvent.keyDown(panel, { key: 'ArrowDown' })
     fireEvent.keyDown(panel, { key: 'ArrowDown' })
     fireEvent.keyDown(panel, { key: 'ArrowDown' })
-    expect(screen.getByTestId('file-menu-item-share-invite')).toHaveFocus()
+    expect(screen.getByTestId('file-menu-item-manage-access')).toHaveFocus()
     fireEvent.keyDown(panel, { key: 'ArrowDown' })
     expect(screen.getByTestId('file-menu-item-rename')).toHaveFocus()
   })

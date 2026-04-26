@@ -24,6 +24,7 @@ vi.mock('../stores/projectStore', () => ({
     sel({
       officeId: 'o1',
       currentProject: { id: 'o1', slug: 'hq', isPrivate: false, teamId: 't1' },
+      setCurrentProject: () => {},
     }),
 }))
 vi.mock('../lib/auth/session', () => ({
@@ -31,7 +32,7 @@ vi.mock('../lib/auth/session', () => ({
 }))
 
 describe('ShareModal v2', () => {
-  it('changes visibility to private', async () => {
+  it('changes visibility to restricted access', async () => {
     listPerms.mockResolvedValue([])
     setOfficePrivate.mockResolvedValue(undefined)
     render(
@@ -41,7 +42,7 @@ describe('ShareModal v2', () => {
         </Routes>
       </MemoryRouter>,
     )
-    fireEvent.click(await screen.findByLabelText(/private/i))
+    fireEvent.click(await screen.findByLabelText(/restricted access/i))
     await waitFor(() => expect(setOfficePrivate).toHaveBeenCalledWith('o1', true))
   })
 })

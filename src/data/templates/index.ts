@@ -47,4 +47,20 @@ export const TEMPLATES: Template[] = [
     createElements: createExecutiveFloorTemplate,
     canvasSettings: DEFAULT_CANVAS_SETTINGS,
   },
+  {
+    id: 'oando-client-suite',
+    name: 'O&O Client Suite',
+    category: 'office',
+    description: 'Reception-led client suite with mixed offices, meeting rooms, and presentation space',
+    createElements: createMixedOfficeTemplate,
+    canvasSettings: DEFAULT_CANVAS_SETTINGS,
+  },
+  {
+    id: 'oando-ops-hub',
+    name: 'O&O Ops Hub',
+    category: 'office',
+    description: 'Dense operations floor with clustered desks, focus booths, support rooms, and shared amenities',
+    createElements: createOpenPlanOfficeTemplate,
+    canvasSettings: DEFAULT_CANVAS_SETTINGS,
+  },
 ]
