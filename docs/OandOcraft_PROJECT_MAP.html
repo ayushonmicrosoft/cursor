@@ -19,8 +19,8 @@
       --blue: #1d5c96;
       --green: #236a47;
       --red: #a43a32;
-      --radius: 6px;
-      --shadow: 0 18px 42px rgba(16, 35, 63, 0.12);
+      --radius: 3px;
+      --shadow: 0 10px 26px rgba(16, 35, 63, 0.08);
       font-family: "Aptos", "Segoe UI", sans-serif;
     }
 
@@ -30,7 +30,7 @@
 
     body {
       margin: 0;
-      background: linear-gradient(180deg, #fbfbfa 0%, var(--page) 42%, #eef1f4 100%);
+      background: #f4f6f7;
       color: var(--ink);
     }
 
@@ -39,12 +39,12 @@
       top: 0;
       z-index: 20;
       border-bottom: 1px solid var(--line);
-      background: rgba(246, 247, 245, 0.94);
-      backdrop-filter: blur(14px);
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
     }
 
     .shell {
-      width: min(1480px, calc(100vw - 32px));
+      width: min(1240px, calc(100vw - 32px));
       margin: 0 auto;
     }
 
@@ -53,22 +53,22 @@
       grid-template-columns: 1fr auto;
       gap: 18px;
       align-items: center;
-      padding: 18px 0 14px;
+      padding: 14px 0 12px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 52px);
-      line-height: 0.95;
+      font-size: clamp(28px, 3vw, 40px);
+      line-height: 1;
       letter-spacing: 0;
       color: var(--navy);
     }
 
     .subtitle {
       margin: 8px 0 0;
-      max-width: 980px;
+      max-width: 820px;
       color: var(--muted);
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.45;
     }
 
@@ -80,7 +80,7 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: var(--panel);
-      box-shadow: var(--shadow);
+      box-shadow: none;
       font-size: 13px;
     }
 
@@ -92,13 +92,13 @@
       display: grid;
       grid-template-columns: 1fr auto auto;
       gap: 10px;
-      padding: 0 0 16px;
+      padding: 0 0 10px;
     }
 
     input,
     select,
     button {
-      min-height: 38px;
+      min-height: 36px;
       border: 1px solid var(--line-strong);
       border-radius: var(--radius);
       background: var(--panel);
@@ -126,8 +126,8 @@
     .tabs {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      padding: 0 0 18px;
+      gap: 6px;
+      padding: 0 0 10px;
     }
 
     .tab {
@@ -145,12 +145,12 @@
     .quick-actions {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 8px;
-      padding: 0 0 18px;
+      gap: 6px;
+      padding: 0 0 12px;
     }
 
     .quick-actions button {
-      min-height: 46px;
+      min-height: 42px;
       border-color: var(--line);
       background: linear-gradient(180deg, #fff 0%, #f4f6f7 100%);
       color: var(--navy);
@@ -170,13 +170,13 @@
     }
 
     main {
-      padding: 24px 0 48px;
+      padding: 18px 0 42px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
+      gap: 12px;
     }
 
     .card {
@@ -184,8 +184,8 @@
       min-height: 170px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 10px 24px rgba(16, 35, 63, 0.08);
+      background: #fff;
+      box-shadow: none;
       overflow: hidden;
     }
 
@@ -199,10 +199,10 @@
 
     .card h2 {
       margin: 0;
-      padding: 14px 14px 10px;
+      padding: 12px 14px 10px;
       border-bottom: 1px solid var(--line);
       color: var(--navy);
-      font-size: 17px;
+      font-size: 16px;
       letter-spacing: 0;
     }
 
@@ -587,8 +587,8 @@
         <button id="reset">Reset local checks</button>
       </div>
       <nav class="tabs" aria-label="Project sections">
-        <button class="tab active" data-tab="all">All</button>
-        <button class="tab" data-tab="product">Product</button>
+        <button class="tab" data-tab="all">All</button>
+        <button class="tab active" data-tab="product">Product</button>
         <button class="tab" data-tab="admin">Admin</button>
         <button class="tab" data-tab="workflow">Workflow</button>
         <button class="tab" data-tab="repo">Repo</button>
@@ -627,38 +627,7 @@
         </div>
       </article>
 
-      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="master document governance source truth decision log ownership">
-        <h2>Master Document Rules</h2>
-        <div class="body">
-          <ul>
-            <li>This file is the interactive master index; markdown docs remain detailed source files for their owned areas.</li>
-            <li>Every major decision should be reflected here first, then expanded in the owning markdown plan if detail is needed.</li>
-            <li>Project Details and Plans must stay above technical sections so the document starts with orientation.</li>
-            <li>Admin functions, UI quality, schema, deployment, and release state must remain searchable from the top controls.</li>
-            <li>When implementation changes the product direction, update this file in the same commit or immediately after.</li>
-          </ul>
-        </div>
-      </article>
-
-      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="vision mandate scope workspace named access internal external admin">
-        <h2>Product Mandate</h2>
-        <div class="body">
-          <div class="pill-row">
-            <span class="pill phase">all phases</span>
-            <span class="pill">one workspace</span>
-            <span class="pill">named access</span>
-          </div>
-          <p class="lead">OandOcraft is a controlled O&O workplace planning product, not a generic floor-plan demo. The app must support planning, seating, assignments, admin recovery, reporting, and controlled access for internal and approved external users.</p>
-          <div class="decision-strip">
-            <div class="decision"><b>Current work</b><span>Fix the planning control board, then move into UI code for compass, corners, and toolbar polish.</span></div>
-            <div class="decision"><b>Primary deploy</b><span>Keep the Vite app bounded under <code>/OandOcraft/</code> on the non-Vite main site.</span></div>
-            <div class="decision"><b>Data stance</b><span>Supabase remains source of truth; seed data must include real objects and assignments.</span></div>
-            <div class="decision"><b>Design stance</b><span>Premium, sharper, calm, SmartDraw-like, and operational rather than decorative.</span></div>
-          </div>
-        </div>
-      </article>
-
-      <article class="card full" data-tab="workflow" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="plans plan subtabs strategy checklist workflow integration blocks">
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="plans plan subtabs strategy checklist workflow integration blocks">
         <h2>Plans</h2>
         <div class="body">
           <div class="subtabs" aria-label="Plan subtabs">
@@ -686,6 +655,37 @@
           </div>
           <div class="plan-panel" data-plan-panel="blocks">
             <p><code>OandOcraft_BLOCK_LIBRARY_SOURCES.md</code> owns the manufacturer-reference plan: MillerKnoll, Steelcase, then BIMobject for gaps.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="master document governance source truth decision log ownership">
+        <h2>Master Document Rules</h2>
+        <div class="body">
+          <ul>
+            <li>This file is the interactive master index; markdown docs remain detailed source files for their owned areas.</li>
+            <li>Every major decision should be reflected here first, then expanded in the owning markdown plan if detail is needed.</li>
+            <li>Project Details and Plans must stay above technical sections so the document starts with orientation.</li>
+            <li>Admin functions, UI quality, schema, deployment, and release state must remain searchable from the top controls.</li>
+            <li>When implementation changes the product direction, update this file in the same commit or immediately after.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="vision mandate scope workspace named access internal external admin">
+        <h2>Product Mandate</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill phase">all phases</span>
+            <span class="pill">one workspace</span>
+            <span class="pill">named access</span>
+          </div>
+          <p class="lead">OandOcraft is a controlled O&O workplace planning product, not a generic floor-plan demo. The app must support planning, seating, assignments, admin recovery, reporting, and controlled access for internal and approved external users.</p>
+          <div class="decision-strip">
+            <div class="decision"><b>Current work</b><span>Fix the planning control board, then move into UI code for compass, corners, and toolbar polish.</span></div>
+            <div class="decision"><b>Primary deploy</b><span>Keep the Vite app bounded under <code>/OandOcraft/</code> on the non-Vite main site.</span></div>
+            <div class="decision"><b>Data stance</b><span>Supabase remains source of truth; seed data must include real objects and assignments.</span></div>
+            <div class="decision"><b>Design stance</b><span>Premium, sharper, calm, SmartDraw-like, and operational rather than decorative.</span></div>
           </div>
         </div>
       </article>
@@ -1068,7 +1068,7 @@
     const progressText = document.querySelector("#progressText");
     const progressBar = document.querySelector("#progressBar");
     const stateKey = "oandocraft-project-map-checks";
-    let activeTab = "all";
+    let activeTab = "product";
 
     function loadChecks() {
       const saved = JSON.parse(localStorage.getItem(stateKey) || "{}");
