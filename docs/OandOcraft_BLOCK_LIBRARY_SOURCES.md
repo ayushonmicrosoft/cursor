@@ -14,7 +14,8 @@ manufacturer planning symbols as the reference language, not generic icon packs.
 - Core office families now use a sharper, top-view planning language in `LibraryPreview`.
 - Workstations, private offices, conference rooms, tables, phone booths, lounge/common areas, reception, chairs, and sofas use rectilinear chair/table components instead of cartoon circles and soft blobs.
 - Canvas Konva symbols now use tighter corner radii so placed objects match the sharper library previews.
-- Remaining source pass: storage, lockers, printer bays, appliance clusters, and deeper BIMobject gap-fill categories.
+- Facility canvas symbols now include sharper printer/copier, kitchenette, fridge, reception, whiteboard, seating, and counter treatments.
+- Remaining source pass: storage, lockers, credenzas, and deeper BIMobject gap-fill categories.
 
 ## Core Families To Rebuild First
 

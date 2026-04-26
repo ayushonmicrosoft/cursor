@@ -35,7 +35,7 @@ export function SofaRenderer({ element }: Props) {
         fill={element.style.fill}
         stroke={stroke}
         strokeWidth={strokeWidth}
-        cornerRadius={Math.min(12, h / 3)}
+        cornerRadius={Math.min(3, h / 8)}
         opacity={element.style.opacity}
       />
       {/* Left armrest */}
@@ -46,7 +46,7 @@ export function SofaRenderer({ element }: Props) {
         height={h}
         fill={element.style.stroke}
         opacity={element.style.opacity * 0.35}
-        cornerRadius={[6, 0, 0, 6]}
+        cornerRadius={[2, 0, 0, 2]}
         listening={false}
       />
       {/* Right armrest */}
@@ -57,7 +57,7 @@ export function SofaRenderer({ element }: Props) {
         height={h}
         fill={element.style.stroke}
         opacity={element.style.opacity * 0.35}
-        cornerRadius={[0, 6, 6, 0]}
+        cornerRadius={[0, 2, 2, 0]}
         listening={false}
       />
     </Group>

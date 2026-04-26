@@ -109,7 +109,7 @@ Exit criteria:
 - [x] Add templates for common O&O space patterns.
 - [ ] Expand all remaining toolbars into movable/dockable controls or document why they must stay fixed.
 - [x] Expand the admin stats toolbar into a production-useful operations HUD baseline.
-- [ ] Add explicit admin conflict/recovery shortcuts and audit drilldowns to the HUD.
+- [x] Add explicit admin conflict/recovery shortcuts and audit drilldowns to the HUD.
 - [x] Rebuild first professional block families from MillerKnoll and Steelcase references, with BIMobject only for gaps.
 
 Exit criteria:

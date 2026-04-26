@@ -5,9 +5,9 @@ export function DecorArmchair({ element }: { element: DecorElement }) {
   const w = element.width, h = element.height
   return (
     <>
-      <Rect x={0} y={0} width={w} height={h} cornerRadius={6}
+      <Rect x={0} y={0} width={w} height={h} cornerRadius={2}
         fill={element.style.stroke} stroke={element.style.stroke} strokeWidth={1} />
-      <Rect x={w * 0.1} y={h * 0.2} width={w * 0.8} height={h * 0.65} cornerRadius={4}
+      <Rect x={w * 0.1} y={h * 0.2} width={w * 0.8} height={h * 0.65} cornerRadius={2}
         fill={element.style.fill} stroke={element.style.stroke} strokeWidth={element.style.strokeWidth} />
     </>
   )

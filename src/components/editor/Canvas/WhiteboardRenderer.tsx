@@ -1,4 +1,4 @@
-import { Group, Rect } from 'react-konva'
+import { Group, Line, Rect } from 'react-konva'
 import type { WhiteboardElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
 
@@ -29,6 +29,20 @@ export function WhiteboardRenderer({ element }: Props) {
         // as "framed" against the light fill.
         strokeWidth={(isSelected ? 2.5 : element.style.strokeWidth) + 2}
         opacity={element.style.opacity}
+      />
+      <Line
+        points={[-element.width * 0.42, element.height * 0.15, element.width * 0.42, element.height * 0.15]}
+        stroke={element.style.stroke}
+        strokeWidth={1}
+        opacity={element.style.opacity * 0.45}
+        listening={false}
+      />
+      <Line
+        points={[-element.width * 0.32, 0, -element.width * 0.08, 0]}
+        stroke={element.style.stroke}
+        strokeWidth={1}
+        opacity={element.style.opacity * 0.3}
+        listening={false}
       />
     </Group>
   )

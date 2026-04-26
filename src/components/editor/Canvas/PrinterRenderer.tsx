@@ -1,4 +1,4 @@
-import { Group, Rect } from 'react-konva'
+import { Group, Rect, Line } from 'react-konva'
 import type { PrinterElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
 
@@ -36,6 +36,17 @@ export function PrinterRenderer({ element }: Props) {
         cornerRadius={2}
         opacity={element.style.opacity}
       />
+      <Rect
+        x={-w * 0.34}
+        y={-h / 2 + h * 0.08}
+        width={w * 0.68}
+        height={Math.max(4, h * 0.16)}
+        fill="#FFFFFF"
+        stroke={element.style.stroke}
+        strokeWidth={0.75}
+        opacity={element.style.opacity}
+        listening={false}
+      />
       {/* Paper tray indicator */}
       <Rect
         x={-trayW / 2}
@@ -46,6 +57,13 @@ export function PrinterRenderer({ element }: Props) {
         stroke={element.style.stroke}
         strokeWidth={0.75}
         opacity={element.style.opacity}
+        listening={false}
+      />
+      <Line
+        points={[-w * 0.32, h * 0.28, w * 0.32, h * 0.28]}
+        stroke={element.style.stroke}
+        strokeWidth={1}
+        opacity={element.style.opacity * 0.55}
         listening={false}
       />
     </Group>
