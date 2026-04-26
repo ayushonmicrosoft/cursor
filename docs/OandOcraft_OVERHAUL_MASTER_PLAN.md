@@ -5,14 +5,14 @@ Reference repo: https://github.com/rcasto123/Floorcraft
 
 ## 1. Executive Mandate
 
-OandOcraft should become a production-grade workplace planning platform, not a renamed floor-plan demo. The standard is an enterprise-ready product that can support O&O-branded deployment, secure multi-tenant workspaces, high-fidelity floor planning, role-based operations, operational reporting, integrations with a non-Vite main site, and a maintainable engineering system.
+OandOcraft should become a production-grade O&O workplace planning tool, not a renamed floor-plan demo. The standard is a clean, professional SmartDraw-class product for one O&O workspace that supports internal and approved external people, direct person-level access, high-fidelity floor planning, admin-first operations, operational reporting, integration at `https://oando.co.in/OandOcraft/`, and a maintainable engineering system.
 
 The overhaul must cover six layers at once:
 
-- Product: clear workflows for planners, admins, facilities, IT, HR, and read-only stakeholders.
+- Product: clear workflows for planners, admins, facilities, IT, HR, and approved external people.
 - Brand: O&O visual language, copy, naming, exports, emails, and documents.
 - Platform: robust React/Konva editor, scalable state, Supabase data model, CI, observability, and deployment.
-- Security: RLS, auth, invitations, share links, audit logs, data export/deletion, headers, and incident process.
+- Security: RLS, auth, person-level invitations, audit logs, data export/deletion, headers, and incident process.
 - Integration: safe deployment into a non-Vite main-site environment without breaking routing, CSS, auth, or performance.
 - Operations: seed data, release process, support playbooks, monitoring, rollback, and ownership.
 
@@ -73,7 +73,7 @@ Core promise:
 - Plan floor layouts visually.
 - Assign people, teams, rooms, assets, and neighborhoods accurately.
 - Forecast occupancy and capacity.
-- Share trusted views with stakeholders.
+- Grant trusted internal/external people direct access without making anonymous sharing the core workflow.
 - Preserve governance, auditability, and data privacy.
 - Integrate cleanly with the main O&O digital environment.
 
@@ -84,7 +84,7 @@ Primary users:
 - HR/people operations: reviews department placement, employee lifecycle, accessibility accommodations, and reporting.
 - Team leads: validate neighborhoods and seating plans.
 - Executives: consume summary reports and presentation views.
-- External/anonymous stakeholders: receive controlled read-only share links when approved.
+- Approved external people: receive named access with explicit role and revocation.
 
 ## 4. Product Pillars
 
@@ -105,13 +105,13 @@ Primary users:
 - Saved roster views and filters.
 - Move planning, reservations, hot desks, and seat history.
 
-### 4.3 Governance And Sharing
+### 4.3 Governance And Access
 
-- Team workspaces.
+- One O&O workspace with direct person access.
 - Office-level roles: owner, editor, viewer.
 - Private/public office visibility.
 - Invite flows with preview, expiry, role assignment, rate limiting, and audit logging.
-- Share tokens with explicit expiry/revocation and user-visible risk language.
+- Anonymous share tokens are not a primary workflow; keep them disabled or tightly controlled as a legacy/exception path.
 - Audit log UI for critical changes.
 
 ### 4.4 Insights And Reports
@@ -239,21 +239,21 @@ Benefits:
 - Clear auth redirect behavior.
 - Independent release velocity.
 
-### 6.2 Strong Alternative: Subpath Reverse Proxy
+### 6.2 Required Model: Subpath Reverse Proxy
 
 Use when the app must live under the main domain.
 
 Example:
 
-- `https://oando.co.in/craft/*`
+- `https://oando.co.in/OandOcraft/*`
 
 Implementation:
 
-- Set Vite `base: '/craft/'`.
-- Add React Router basename `/craft`.
-- Configure host/proxy fallback `/craft/* -> /craft/index.html`.
-- Ensure static assets are served from `/craft/assets/*`.
-- Add Supabase redirect URLs for `/craft/auth/verify`, `/craft/auth/reset`, and invite flows.
+- Build with `npm run build:oando`, which emits assets for `/OandOcraft/`.
+- Add React Router basename from Vite `BASE_URL`.
+- Configure host/proxy fallback `/OandOcraft/* -> /OandOcraft/index.html`.
+- Ensure static assets are served from `/OandOcraft/assets/*`.
+- Add Supabase redirect URLs for `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and invite flows.
 
 Benefits:
 

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:oando": "tsc -b && vite build --base=/OandOcraft/",
     "lint": "eslint .",
     "preview": "vite preview",
     "audit:pages": "node scripts/audit-pages.cjs",

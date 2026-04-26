@@ -25,14 +25,14 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 const STORAGE_KEY = 'theme'
 
 function readStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'system'
+  if (typeof window === 'undefined') return 'light'
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (raw === 'light' || raw === 'dark' || raw === 'system') return raw
   } catch {
     // localStorage may throw in private mode; fall through to default.
   }
-  return 'system'
+  return 'light'
 }
 
 function getSystemTheme(): ResolvedTheme {
@@ -118,7 +118,7 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
  * via App.tsx, so this only kicks in for isolated component tests.
  */
 const FALLBACK_CONTEXT: ThemeContextValue = {
-  theme: 'system',
+  theme: 'light',
   resolvedTheme: 'light',
   setTheme: () => {},
 }

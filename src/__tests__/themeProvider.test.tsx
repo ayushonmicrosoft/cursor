@@ -57,14 +57,27 @@ describe('ThemeProvider', () => {
     document.documentElement.classList.remove('dark')
   })
 
-  it('defaults to system when nothing is stored and resolves from matchMedia', () => {
-    installMatchMedia(false)
+  it('defaults to light when nothing is stored and ignores OS dark mode', () => {
+    installMatchMedia(true)
     render(
       <ThemeProvider>
         <Probe />
       </ThemeProvider>,
     )
-    expect(screen.getByTestId('theme').textContent).toBe('system')
+    expect(screen.getByTestId('theme').textContent).toBe('light')
+    expect(screen.getByTestId('resolved').textContent).toBe('light')
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
+  it('falls back to light when localStorage contains an invalid theme', () => {
+    installMatchMedia(true)
+    window.localStorage.setItem('theme', 'sepia')
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>,
+    )
+    expect(screen.getByTestId('theme').textContent).toBe('light')
     expect(screen.getByTestId('resolved').textContent).toBe('light')
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
@@ -111,6 +124,9 @@ describe('ThemeProvider', () => {
         <Probe />
       </ThemeProvider>,
     )
+    act(() => {
+      screen.getByText('set system').click()
+    })
     expect(screen.getByTestId('resolved').textContent).toBe('light')
 
     act(() => {

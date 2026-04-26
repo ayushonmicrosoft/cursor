@@ -45,6 +45,7 @@ const VENDOR_CHUNKS: Array<{ name: string; test: (id: string) => boolean }> = [
 ]
 
 export default defineConfig({
+  base: process.env.VITE_APP_BASE_PATH ?? '/',
   plugins: [react(), tailwindcss()],
   build: {
     rolldownOptions: {

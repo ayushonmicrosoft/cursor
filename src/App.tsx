@@ -11,6 +11,9 @@ import { RequireTeam } from './components/auth/RequireTeam'
 import { RouteLoadingFallback } from './components/ui/RouteLoadingFallback'
 import type { Team } from './types/team'
 
+const routerBasename =
+  import.meta.env.BASE_URL === '/' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '')
+
 // Editor chunks pull in react-konva and the whole Canvas tree. Auth and
 // team pages are cheap by comparison but still gated behind the router
 // so the landing page (the entry point) ships the minimum possible JS.
@@ -142,7 +145,7 @@ function TeamSettingsMembersBridge() {
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={routerBasename}>
         <AuthProvider>
         <Suspense fallback={<RouteLoadingFallback />}>
           <Routes>
