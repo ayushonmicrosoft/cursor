@@ -102,6 +102,33 @@ do $$ begin
   end if;
 end $$;
 
+-- TEST 5B: Team admins can read and update private offices without
+-- explicit office_permissions rows.
+set local "request.jwt.claim.sub" = '11111111-1111-1111-1111-111111111111';
+update team_members
+   set role = 'admin'
+ where team_id = 'aaaa1111-1111-1111-1111-111111111111'
+   and user_id = '22222222-2222-2222-2222-222222222222';
+
+set local "request.jwt.claim.sub" = '22222222-2222-2222-2222-222222222222';
+do $$ begin
+  if (select count(*) from offices where slug='hq') = 0 then
+    raise exception 'PRIVATE-ADMIN: Bob admin should see private office';
+  end if;
+end $$;
+
+update offices set payload='{"v":3}'::jsonb where slug='hq';
+do $$ begin
+  if (select payload->>'v' from offices where slug='hq') <> '3' then
+    raise exception 'ADMIN-UPDATE: Bob admin update did not land';
+  end if;
+end $$;
+
+set local "request.jwt.claim.sub" = '11111111-1111-1111-1111-111111111111';
+update team_members
+   set role = 'member'
+ where team_id = 'aaaa1111-1111-1111-1111-111111111111'
+   and user_id = '22222222-2222-2222-2222-222222222222';
 -- -------------------------------------------------------------------
 -- 0006 regression tests — P0 security fixes from the senior-dev review.
 -- -------------------------------------------------------------------

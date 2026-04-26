@@ -38,9 +38,14 @@ describe('ProjectShell loader', () => {
   beforeEach(() => {
     loadOffice.mockReset()
     fromMock.mockReset()
-    fromMock.mockImplementation(() => ({
+    fromMock.mockImplementation((table: string) => ({
       select: () => ({
         eq: () => ({
+          maybeSingle: () =>
+            Promise.resolve({
+              data: table === 'offices' ? { team_id: 't1' } : { role: 'member' },
+              error: null,
+            }),
           single: () => Promise.resolve({ data: { id: 't1', slug: 'acme', name: 'Acme' }, error: null }),
         }),
       }),
@@ -92,16 +97,19 @@ describe('ProjectShell loader', () => {
       updated_at: '2026-04-20T00:00:00Z',
       payload: {},
     })
-    // Once the shell is "ready" it fires a fire-and-forget
-    // currentUserOfficeRole(...) chain; give the mock a two-level .eq()
-    // shape so that Promise resolves cleanly and doesn't surface as a
-    // vitest unhandled rejection.
-    fromMock.mockImplementation(() => ({
+    // Once the shell is "ready" it fires currentUserOfficeRole(...), which
+    // reads offices, team_members, then office_permissions.
+    fromMock.mockImplementation((table: string) => ({
       select: () => ({
         eq: () => ({
           eq: () => ({
             maybeSingle: () => Promise.resolve({ data: null, error: null }),
           }),
+          maybeSingle: () =>
+            Promise.resolve({
+              data: table === 'offices' ? { team_id: 't1' } : { role: 'member' },
+              error: null,
+            }),
           single: () => Promise.resolve({ data: { id: 't1', slug: 'acme', name: 'Acme' }, error: null }),
         }),
       }),

@@ -4,20 +4,29 @@ const { Client } = require('pg');
 const conn = process.env.SEED_DB_URL;
 if (!conn) throw new Error('SEED_DB_URL missing');
 
+function normalizeConnectionString(value) {
+  const url = new URL(value);
+  // node-postgres' URL sslmode parser can override the explicit ssl object
+  // below. Keep TLS config in one place so hosted Supabase pulls work on
+  // Windows environments with custom/root certificate chains.
+  url.searchParams.delete('sslmode');
+  return url.toString();
+}
+
 const EXPANDED_DEMO_SQL = `
 -- Expanded demo set: add multiple users, offices, memberships, and
 -- share/invite rows so local+hosted reset environments mirror a fuller
 -- team workspace without requiring manual setup.
 insert into auth.users (id, email, encrypted_password, email_confirmed_at) values
-  ('9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'ops.admin@floorcraft.local', 'seed-password-not-used', now()),
-  ('4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'design.lead@floorcraft.local', 'seed-password-not-used', now()),
-  ('5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer@floorcraft.local', 'seed-password-not-used', now())
+  ('9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'ops.admin@oandocraft.local', 'seed-password-not-used', now()),
+  ('4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'design.lead@oandocraft.local', 'seed-password-not-used', now()),
+  ('5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer@oandocraft.local', 'seed-password-not-used', now())
 on conflict (id) do update set email = excluded.email;
 
 insert into public."profiles" ("id", "email", "name", "avatar_url", "active_team_id", "created_at") values
-  ('9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'ops.admin@floorcraft.local', 'Ops Admin', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z'),
-  ('4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'design.lead@floorcraft.local', 'Design Lead', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z'),
-  ('5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer@floorcraft.local', 'Team Viewer', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z')
+  ('9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', 'ops.admin@oandocraft.local', 'Ops Admin', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z'),
+  ('4c77a3a2-9b3c-4db1-9ac6-6e921fec3e22', 'design.lead@oandocraft.local', 'Design Lead', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z'),
+  ('5decb5fe-0e8c-4b39-b7b7-8a53b74e7a33', 'viewer@oandocraft.local', 'Team Viewer', NULL, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-04-25T20:00:01.000Z')
 on conflict do nothing;
 
 insert into public."team_members" ("team_id", "user_id", "role", "joined_at") values
@@ -64,7 +73,7 @@ insert into public.share_tokens (id, office_id, token, created_by, created_at, r
 on conflict do nothing;
 
 insert into public.invites (id, team_id, email, token, invited_by, created_at, expires_at, accepted_at, role) values
-  ('6f875995-4f18-4829-8bc3-1f22c5a6f505', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'new.member@floorcraft.local', 'f8fa5ee7-48b0-4b11-b4c2-2f9e2cbf6606', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', '2026-04-25T20:00:05.000Z', '2026-05-02T20:00:05.000Z', null, 'member')
+  ('6f875995-4f18-4829-8bc3-1f22c5a6f505', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'new.member@oandocraft.local', 'f8fa5ee7-48b0-4b11-b4c2-2f9e2cbf6606', '9f0b6f3d-2b74-4a8c-92d8-8f6f0d2a1e11', '2026-04-25T20:00:05.000Z', '2026-05-02T20:00:05.000Z', null, 'member')
 on conflict do nothing;
 `;
 
@@ -84,8 +93,8 @@ function qLit(v) {
 
 (async () => {
   const client = new Client({
-    connectionString: conn,
-    ssl: { rejectUnauthorized: false },
+    connectionString: normalizeConnectionString(conn),
+    ssl: { rejectUnauthorized: process.env.SEED_DB_SSL_REJECT_UNAUTHORIZED === '1' },
   });
   await client.connect();
 
@@ -156,6 +165,8 @@ function qLit(v) {
   out += EXPANDED_DEMO_SQL + '\n';
   out += 'set session_replication_role = origin;\n';
   out += 'commit;\n';
+
+  out = out.replaceAll('floorcraft.local', 'oandocraft.local');
 
   fs.writeFileSync('supabase/seed.sql', out, { encoding: 'utf8' });
   await client.end();

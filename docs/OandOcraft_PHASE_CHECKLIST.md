@@ -29,13 +29,13 @@ Exit criteria:
 ## Phase 1 - Access Model And Admin Powers
 
 - [ ] Replace sharing-first language with direct person access in UI copy.
-- [ ] Keep invite flow for named internal/external users.
+- [x] Keep invite flow for named internal/external users.
 - [ ] Stop presenting anonymous share links as a primary workflow.
-- [ ] Make team admins owner-equivalent for all offices in RLS.
-- [ ] Make team admins resolve as `owner` in client permission checks.
+- [x] Make team admins owner-equivalent for all offices in RLS.
+- [x] Make team admins resolve as `owner` in client permission checks.
 - [ ] Add admin controls for office visibility, person role, revoke access, recover history, and force-save.
 - [ ] Add audit events for admin changes.
-- [ ] Add RLS tests for admin read/update on private offices.
+- [x] Add RLS tests for admin read/update on private offices.
 
 Exit criteria:
 
@@ -46,19 +46,19 @@ Exit criteria:
 
 ## Phase 2 - Full Supabase Data Load
 
-- [ ] Decide source of truth: hosted Supabase dump, local seed, or curated MIT dataset import.
-- [ ] Run the full-data seed generator against the hosted database using `SEED_DB_URL`.
+- [x] Decide source of truth: hosted Supabase dump, local seed, or curated MIT dataset import.
+- [x] Run the full-data seed generator against the hosted database using `SEED_DB_URL`.
 - [ ] Verify every public table row count before and after seed generation.
-- [ ] Confirm office payloads include all floors, elements, employees, neighborhoods, annotations, and assignments.
+- [x] Confirm office payloads include all floors, elements, employees, neighborhoods, annotations, and assignments.
 - [ ] Remove demo-only duplicate office clones if the hosted dump already contains real offices.
-- [ ] Rename seed demo emails/domains from `floorcraft.local` to `oandocraft.local`.
-- [ ] Add a seed verification script that fails when payload headings exist but floor objects are missing.
+- [x] Rename seed demo emails/domains from `floorcraft.local` to `oandocraft.local`.
+- [x] Add a seed verification script that fails when payload headings exist but floor objects are missing.
 
 Exit criteria:
 
-- [ ] `supabase/seed.sql` includes full office payload JSON, not headings-only data.
+- [x] `supabase/seed.sql` includes full office payload JSON, not headings-only data.
 - [ ] Local reset loads floor-plan components, people, seats, and assignments.
-- [ ] Seed verification reports non-zero objects for walls, desks, rooms, doors, windows, furniture, employees, and annotations.
+- [x] Seed verification reports non-zero objects for walls, desks, rooms, doors, windows, furniture, employees, and annotations.
 
 ## Phase 3 - SmartDraw-Level UI/UX Foundation
 
