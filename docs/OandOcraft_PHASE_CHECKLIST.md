@@ -24,7 +24,7 @@ Exit criteria:
 - [x] `npm run build` passes.
 - [x] `npm run build:oando` passes and emits assets for `/OandOcraft/`.
 - [x] `npm run test` passes.
-- [ ] Git worktree is clean and pushed to `OandOcraft`.
+- [x] Git worktree is clean and pushed to `OandOcraft`.
 
 ## Phase 1 - Access Model And Admin Powers
 
