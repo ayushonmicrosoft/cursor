@@ -56,12 +56,12 @@ Status key:
 - [x] Align/distribute toolbar uses the dockable toolbar system.
 - [x] Admin stats toolbar exists.
 - [x] All remaining editor toolbars are movable or intentionally fixed with documented reason.
-- [ ] Toolbar positions persist reliably.
-- [ ] Toolbars can be reset to default positions.
-- [ ] Toolbars are keyboard accessible.
+- [x] Toolbar positions persist reliably.
+- [x] Toolbars can be reset to default positions.
+- [x] Toolbars are keyboard accessible.
 - [x] Admin stats show live office health, object counts, assignments, save state, warnings, and payload size.
-- [ ] Admin stats expose explicit conflict/recovery shortcuts and audit drilldowns.
-- [ ] Admin HUD is hidden from non-admin users.
+- [x] Admin stats expose explicit conflict/recovery shortcuts and audit drilldowns.
+- [x] Admin HUD is hidden from non-admin users.
 
 ## 4. Floor-Plan Blocks
 
@@ -123,7 +123,7 @@ Status key:
 - [ ] Repo-local: Browser smoke tests cover local `/OandOcraft/`, login, dashboard, office map, and auth routes.
 - [ ] Layout overflow regression test exists.
 - [x] Compass/minimap regression test exists.
-- [ ] Toolbar persistence regression test exists.
+- [x] Toolbar persistence regression test exists.
 - [ ] Sharp-corner visual audit is completed.
 - [ ] Accessibility audit is completed for core routes.
 
