@@ -20,6 +20,7 @@ Working docs:
 - `docs/OandOcraft_PROJECT_MAP.html`
 - `docs/OandOcraft_MAIN_SITE_INTEGRATION.md`
 - `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
+- `docs/OandOcraft_TOOLBAR_DOCKING_AUDIT.md`
 
 ## Phase 0 - Repo, Deployment, And Ground Rules
 
@@ -107,7 +108,7 @@ Exit criteria:
 - [x] Add precise numeric controls for position, size, rotation, wall thickness, room capacity, and labels.
 - [x] Add object validation warnings for broken assignments and missing metadata.
 - [x] Add templates for common O&O space patterns.
-- [ ] Expand all remaining toolbars into movable/dockable controls or document why they must stay fixed.
+- [x] Expand all remaining toolbars into movable/dockable controls or document why they must stay fixed.
 - [x] Expand the admin stats toolbar into a production-useful operations HUD baseline.
 - [x] Add explicit admin conflict/recovery shortcuts and audit drilldowns to the HUD.
 - [x] Rebuild first professional block families from MillerKnoll and Steelcase references, with BIMobject only for gaps.

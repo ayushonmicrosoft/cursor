@@ -78,6 +78,8 @@ export function StatusBar() {
       role="status"
       aria-label="Canvas status"
       className="absolute bottom-0 left-0 right-0 h-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-[11px] text-gray-500 dark:text-gray-400 overflow-x-auto whitespace-nowrap"
+      data-fixed-toolbar="canvas-status"
+      data-fixed-toolbar-reason="Status telemetry reserves the bottom edge and protects dockable controls from overlapping readouts."
     >
       <Group>
         <StatItem label="Desks" value={totalDesks} />

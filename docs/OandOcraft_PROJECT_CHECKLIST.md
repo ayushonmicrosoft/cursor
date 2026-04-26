@@ -55,7 +55,7 @@ Status key:
 - [x] Canvas action dock uses the dockable toolbar system.
 - [x] Align/distribute toolbar uses the dockable toolbar system.
 - [x] Admin stats toolbar exists.
-- [ ] All remaining editor toolbars are movable or intentionally fixed with documented reason.
+- [x] All remaining editor toolbars are movable or intentionally fixed with documented reason.
 - [ ] Toolbar positions persist reliably.
 - [ ] Toolbars can be reset to default positions.
 - [ ] Toolbars are keyboard accessible.

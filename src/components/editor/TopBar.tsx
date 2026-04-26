@@ -254,7 +254,11 @@ export function TopBar() {
   ]
 
   return (
-    <div className="h-14 min-w-0 overflow-x-auto bg-gradient-to-r from-white via-[#faf6f1] to-white border-b border-gray-200 dark:from-gray-950 dark:via-[#0f1e32] dark:to-gray-950 dark:border-gray-800 flex items-center px-4 gap-3 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]">
+    <div
+      className="h-14 min-w-0 overflow-x-auto bg-gradient-to-r from-white via-[#faf6f1] to-white border-b border-gray-200 dark:from-gray-950 dark:via-[#0f1e32] dark:to-gray-950 dark:border-gray-800 flex items-center px-4 gap-3 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
+      data-fixed-toolbar="top-bar"
+      data-fixed-toolbar-reason="Global app navigation and save state must remain outside the canvas dock host."
+    >
       {/* ───── Identity cluster ─────
           Who am I, what file, is it saved, can I undo? These answer the
           "where am I" and "am I safe" mental-model questions that precede
