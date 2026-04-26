@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OandOcraft Project Map</title>
+  <title>OandOcraft Master Document</title>
   <style>
     :root {
       color-scheme: light;
@@ -142,6 +142,33 @@
       color: #fff;
     }
 
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      padding: 0 0 18px;
+    }
+
+    .quick-actions button {
+      min-height: 46px;
+      border-color: var(--line);
+      background: linear-gradient(180deg, #fff 0%, #f4f6f7 100%);
+      color: var(--navy);
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .quick-actions button strong {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .quick-actions button span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     main {
       padding: 24px 0 48px;
     }
@@ -181,6 +208,126 @@
 
     .body {
       padding: 12px 14px 14px;
+    }
+
+    .lead {
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    .decision-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .decision {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .decision b {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--navy);
+      font-size: 13px;
+    }
+
+    .decision span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .subtabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .subtab {
+      min-height: 34px;
+      border-color: var(--line);
+      color: var(--navy);
+      background: #fff;
+      font-size: 13px;
+    }
+
+    .subtab.active {
+      border-color: var(--bronze);
+      background: #fff8ee;
+    }
+
+    .plan-panel {
+      display: none;
+    }
+
+    .plan-panel.active {
+      display: block;
+    }
+
+    .workflow-board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .lane {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .lane h3 {
+      margin: 0;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--navy);
+      font-size: 14px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 9px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .flow-step:last-child {
+      border-bottom: 0;
+    }
+
+    .num {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 800;
+      background: #fff;
+    }
+
+    .flow-step b {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--ink);
+      font-size: 13px;
+    }
+
+    .flow-step span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
     }
 
     .pill-row {
@@ -259,6 +406,39 @@
       margin-top: 2px;
     }
 
+    .progress {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--navy);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--panel-2);
+    }
+
+    .bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--bronze), var(--green));
+      transition: width 160ms ease;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -286,6 +466,38 @@
       color: var(--navy);
       font-family: "Cascadia Mono", "Consolas", monospace;
       font-size: 12px;
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .matrix.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .fact {
+      min-height: 62px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .fact strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--navy);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .fact span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
     }
 
     .timeline {
@@ -329,6 +541,17 @@
       .timeline {
         grid-template-columns: 1fr;
       }
+
+      .matrix,
+      .matrix.three {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-actions,
+      .decision-strip,
+      .workflow-board {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -337,13 +560,15 @@
     <div class="shell">
       <div class="top">
         <div>
-          <h1>OandOcraft Project Map</h1>
-          <p class="subtitle">Interactive control board for the O&O workplace planner: product direction, UI polish, Supabase data, main-site integration, testing, security, operations, and launch gates.</p>
+          <h1>OandOcraft Master Document</h1>
+          <p class="subtitle">Single interactive source of truth for the O&O workplace planner: project details, plans, admin functions, repo state, runtime engine, Supabase schema, workflow, main-site integration, quality gates, and launch operations.</p>
         </div>
         <div class="meta">
+          <div><strong>Document role:</strong> master project record</div>
           <div><strong>Target:</strong> https://oando.co.in/OandOcraft/</div>
           <div><strong>Model:</strong> bounded Vite SPA under main-site subpath</div>
           <div><strong>Scope:</strong> one O&O workspace with named access</div>
+          <div><strong>Repo:</strong> ayushonmicrosoft/OandOcraft on `oando`</div>
           <div><strong>UI bar:</strong> SmartDraw-like, sharp, professional</div>
         </div>
       </div>
@@ -364,17 +589,57 @@
       <nav class="tabs" aria-label="Project sections">
         <button class="tab active" data-tab="all">All</button>
         <button class="tab" data-tab="product">Product</button>
+        <button class="tab" data-tab="admin">Admin</button>
+        <button class="tab" data-tab="workflow">Workflow</button>
+        <button class="tab" data-tab="repo">Repo</button>
+        <button class="tab" data-tab="engine">Engine</button>
+        <button class="tab" data-tab="schema">Schema</button>
         <button class="tab" data-tab="ui">UI</button>
         <button class="tab" data-tab="data">Data</button>
         <button class="tab" data-tab="integration">Integration</button>
         <button class="tab" data-tab="quality">Quality</button>
         <button class="tab" data-tab="ops">Ops</button>
       </nav>
+      <div class="quick-actions" aria-label="Quick project jumps">
+        <button data-jump-tab="workflow"><strong>Start</strong><span>workflow and docs</span></button>
+        <button data-jump-tab="admin"><strong>Admin</strong><span>powers and HUD</span></button>
+        <button data-jump-tab="ui" data-jump-search="compass"><strong>Fix UI</strong><span>compass and corners</span></button>
+        <button data-jump-tab="schema"><strong>Schema</strong><span>tables and RLS</span></button>
+        <button data-jump-tab="engine"><strong>Engine</strong><span>runtime and routes</span></button>
+        <button data-jump-tab="integration"><strong>Deploy</strong><span>main-site contract</span></button>
+        <button data-jump-tab="quality"><strong>Launch</strong><span>risks and gates</span></button>
+      </div>
     </div>
   </header>
 
   <main class="shell">
     <section class="grid" id="cards">
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="project details master document source truth product repo deployment engine schema admin status">
+        <h2>Project Details</h2>
+        <div class="body matrix three">
+          <div class="fact"><strong>Document role</strong><span>This HTML is the master project document and interactive index for active execution.</span></div>
+          <div class="fact"><strong>Product</strong><span>OandOcraft, an O&O workplace planning app for one controlled workspace.</span></div>
+          <div class="fact"><strong>Primary URL</strong><span><code>https://oando.co.in/OandOcraft/</code></span></div>
+          <div class="fact"><strong>Repo</strong><span><code>oando</code> remote points to <code>ayushonmicrosoft/OandOcraft</code>; <code>origin</code> keeps Floorcraft history.</span></div>
+          <div class="fact"><strong>Engine</strong><span>React 19, Vite 8, TypeScript 6, Konva, Zustand, Supabase, Tailwind 4.</span></div>
+          <div class="fact"><strong>Data</strong><span>Supabase Auth/Postgres with RLS, office payload JSONB, invites, audit, history, share tokens.</span></div>
+          <div class="fact"><strong>Active focus</strong><span>Make the map complete, then implement compass fix, sharper corners, admin HUD, and professional blocks.</span></div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="master document governance source truth decision log ownership">
+        <h2>Master Document Rules</h2>
+        <div class="body">
+          <ul>
+            <li>This file is the interactive master index; markdown docs remain detailed source files for their owned areas.</li>
+            <li>Every major decision should be reflected here first, then expanded in the owning markdown plan if detail is needed.</li>
+            <li>Project Details and Plans must stay above technical sections so the document starts with orientation.</li>
+            <li>Admin functions, UI quality, schema, deployment, and release state must remain searchable from the top controls.</li>
+            <li>When implementation changes the product direction, update this file in the same commit or immediately after.</li>
+          </ul>
+        </div>
+      </article>
+
       <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="vision mandate scope workspace named access internal external admin">
         <h2>Product Mandate</h2>
         <div class="body">
@@ -383,7 +648,166 @@
             <span class="pill">one workspace</span>
             <span class="pill">named access</span>
           </div>
-          <p>OandOcraft is a controlled O&O workplace planning product, not a generic floor-plan demo. The app must support planning, seating, assignments, admin recovery, reporting, and controlled access for internal and approved external users.</p>
+          <p class="lead">OandOcraft is a controlled O&O workplace planning product, not a generic floor-plan demo. The app must support planning, seating, assignments, admin recovery, reporting, and controlled access for internal and approved external users.</p>
+          <div class="decision-strip">
+            <div class="decision"><b>Current work</b><span>Fix the planning control board, then move into UI code for compass, corners, and toolbar polish.</span></div>
+            <div class="decision"><b>Primary deploy</b><span>Keep the Vite app bounded under <code>/OandOcraft/</code> on the non-Vite main site.</span></div>
+            <div class="decision"><b>Data stance</b><span>Supabase remains source of truth; seed data must include real objects and assignments.</span></div>
+            <div class="decision"><b>Design stance</b><span>Premium, sharper, calm, SmartDraw-like, and operational rather than decorative.</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="workflow" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="plans plan subtabs strategy checklist workflow integration blocks">
+        <h2>Plans</h2>
+        <div class="body">
+          <div class="subtabs" aria-label="Plan subtabs">
+            <button class="subtab active" data-plan-tab="strategy">Strategy</button>
+            <button class="subtab" data-plan-tab="phase">Phase Checklist</button>
+            <button class="subtab" data-plan-tab="execution">Execution Checklist</button>
+            <button class="subtab" data-plan-tab="workflow">Workflow</button>
+            <button class="subtab" data-plan-tab="integration">Main Site</button>
+            <button class="subtab" data-plan-tab="blocks">Blocks</button>
+          </div>
+          <div class="plan-panel active" data-plan-panel="strategy">
+            <p><code>OandOcraft_OVERHAUL_MASTER_PLAN.md</code> owns the full product, technical, UX, security, data, and launch strategy.</p>
+          </div>
+          <div class="plan-panel" data-plan-panel="phase">
+            <p><code>OandOcraft_PHASE_CHECKLIST.md</code> stays short and phase-level: repo, admin, data, UI, editor depth, integration, and launch hardening.</p>
+          </div>
+          <div class="plan-panel" data-plan-panel="execution">
+            <p><code>OandOcraft_PROJECT_CHECKLIST.md</code> is the active execution board for implementation details and acceptance items.</p>
+          </div>
+          <div class="plan-panel" data-plan-panel="workflow">
+            <p><code>OandOcraft_WORKFLOW.md</code> defines daily start, implementation, verification, release, and emergency workflows.</p>
+          </div>
+          <div class="plan-panel" data-plan-panel="integration">
+            <p><code>OandOcraft_MAIN_SITE_INTEGRATION.md</code> defines how the Vite app is built and hosted under the non-Vite main site at <code>/OandOcraft/</code>.</p>
+          </div>
+          <div class="plan-panel" data-plan-panel="blocks">
+            <p><code>OandOcraft_BLOCK_LIBRARY_SOURCES.md</code> owns the manufacturer-reference plan: MillerKnoll, Steelcase, then BIMobject for gaps.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="workflow" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="start here intuitive how to use map next step command center">
+        <h2>Start Here</h2>
+        <div class="body matrix three">
+          <div class="fact"><strong>1. Pick the lane</strong><span>Use the top tabs for workflow, repo, engine, schema, UI, data, integration, quality, or ops.</span></div>
+          <div class="fact"><strong>2. Narrow the phase</strong><span>Use the phase filter when you only want current Phase 3/4 UI work or Phase 5 deployment work.</span></div>
+          <div class="fact"><strong>3. Search directly</strong><span>Search for terms like <code>compass</code>, <code>schema</code>, <code>auth</code>, <code>seed</code>, <code>build:oando</code>, or <code>rollback</code>.</span></div>
+          <div class="fact"><strong>4. Use local checks</strong><span>The checklist saves to browser localStorage so the page can track a working session.</span></div>
+          <div class="fact"><strong>5. Open source docs</strong><span>The document-system card tells you which markdown file owns each planning layer.</span></div>
+          <div class="fact"><strong>6. Commit completed work</strong><span>Every finished slice should be verified, committed, and left with a clean worktree.</span></div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="admin" data-phase="phase-1 phase-3 phase-4 phase-6" data-keywords="admin functions powers access roles force save restore history live stats audit">
+        <h2>Admin Functions</h2>
+        <div class="body matrix three">
+          <div class="fact"><strong>Access control</strong><span>Manage named internal/external users, office roles, revoke actions, and visibility.</span></div>
+          <div class="fact"><strong>Office override</strong><span>Admins should be able to force-save, restore history, and repair bad office states.</span></div>
+          <div class="fact"><strong>Live stats HUD</strong><span>Show object count, seat assignment coverage, save state, conflicts, warnings, and payload health.</span></div>
+          <div class="fact"><strong>Data operations</strong><span>Expose seed verification, row-count checks, duplicate office review, and payload completeness warnings.</span></div>
+          <div class="fact"><strong>Audit visibility</strong><span>Surface access changes, invite actions, revoke events, recovery actions, and force-save operations.</span></div>
+          <div class="fact"><strong>Release control</strong><span>Keep production smoke status, rollback artifact status, and owner sign-off visible before launch.</span></div>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="admin" data-phase="phase-4 phase-6" data-keywords="admin backlog planned functions permissions telemetry recovery moderation">
+        <h2>Admin Backlog</h2>
+        <div class="body">
+          <ul>
+            <li>Add a dedicated admin toolbar section for live workspace stats and health.</li>
+            <li>Add recovery actions that expose office history restore points clearly.</li>
+            <li>Add data-quality warnings for empty payloads, missing assignments, duplicate offices, and oversized JSON.</li>
+            <li>Add audit filters for access, invite, save, restore, and share-token activity.</li>
+            <li>Hide admin-only controls from viewers and regular editors.</li>
+          </ul>
+        </div>
+      </article>
+
+
+      <article class="card full" data-tab="workflow" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="workflow daily start understand change verify commit release emergency admin deployment pipeline">
+        <h2>Workflow Board</h2>
+        <div class="body">
+          <div class="workflow-board">
+            <section class="lane">
+              <h3>Build Workflow</h3>
+              <div class="flow-step"><span class="num">1</span><div><b>Intake</b><span>Confirm the newest user request and active phase.</span></div></div>
+              <div class="flow-step"><span class="num">2</span><div><b>Inspect</b><span>Read owning files, stores, routes, and docs before editing.</span></div></div>
+              <div class="flow-step"><span class="num">3</span><div><b>Implement</b><span>Patch the smallest coherent slice using existing patterns.</span></div></div>
+              <div class="flow-step"><span class="num">4</span><div><b>Verify</b><span>Run lint, test, build, route, or seed checks based on risk.</span></div></div>
+              <div class="flow-step"><span class="num">5</span><div><b>Commit</b><span>Commit finished work and leave a clean worktree.</span></div></div>
+            </section>
+            <section class="lane">
+              <h3>Admin Workflow</h3>
+              <div class="flow-step"><span class="num">1</span><div><b>Review health</b><span>Open admin HUD for object count, assignments, save state, and warnings.</span></div></div>
+              <div class="flow-step"><span class="num">2</span><div><b>Control access</b><span>Manage named users, roles, visibility, invite actions, and revokes.</span></div></div>
+              <div class="flow-step"><span class="num">3</span><div><b>Repair data</b><span>Use history restore, force-save, duplicate review, and seed checks.</span></div></div>
+              <div class="flow-step"><span class="num">4</span><div><b>Audit</b><span>Review access, invite, share-token, and recovery events.</span></div></div>
+              <div class="flow-step"><span class="num">5</span><div><b>Sign off</b><span>Confirm workspace health before launch or major release.</span></div></div>
+            </section>
+            <section class="lane">
+              <h3>Deployment Workflow</h3>
+              <div class="flow-step"><span class="num">1</span><div><b>Build</b><span>Run <code>npm run build:oando</code> for the production subpath.</span></div></div>
+              <div class="flow-step"><span class="num">2</span><div><b>Upload</b><span>Place <code>dist/</code> under the host's <code>/OandOcraft/</code> folder.</span></div></div>
+              <div class="flow-step"><span class="num">3</span><div><b>Route</b><span>Serve assets directly and rewrite client routes to index.html.</span></div></div>
+              <div class="flow-step"><span class="num">4</span><div><b>Smoke</b><span>Check home, login, dashboard, office map, auth, reset, and invite routes.</span></div></div>
+              <div class="flow-step"><span class="num">5</span><div><b>Rollback</b><span>Keep the previous artifact ready and avoid database rollback unless required.</span></div></div>
+            </section>
+          </div>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="repo" data-phase="phase-0 phase-5 phase-6" data-keywords="repo remotes branch package scripts oando origin floorcraft">
+        <h2>Repository Details</h2>
+        <div class="body matrix">
+          <div class="fact"><strong>Package</strong><span><code>oandocraft</code>, private ESM package, version <code>0.0.0</code>.</span></div>
+          <div class="fact"><strong>Primary remote</strong><span><code>oando</code> -> <code>ayushonmicrosoft/OandOcraft</code>.</span></div>
+          <div class="fact"><strong>Historical remote</strong><span><code>origin</code> -> <code>rcasto123/Floorcraft</code> for upstream context.</span></div>
+          <div class="fact"><strong>Key folders</strong><span><code>src/components</code>, <code>src/hooks</code>, <code>src/lib</code>, <code>src/stores</code>, <code>src/types</code>, <code>supabase</code>, <code>docs</code>.</span></div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="engine" data-phase="phase-0 phase-3 phase-4 phase-6" data-keywords="engine runtime react vite typescript konva zustand tailwind radix supabase vitest playwright">
+        <h2>Engine And Runtime</h2>
+        <div class="body matrix three">
+          <div class="fact"><strong>Frontend</strong><span>React 19.2, React DOM 19.2, React Router 7.14.</span></div>
+          <div class="fact"><strong>Build</strong><span>Vite 8, TypeScript 6, Tailwind CSS 4 Vite plugin.</span></div>
+          <div class="fact"><strong>Canvas</strong><span>Konva 10.2 with React Konva 19.2 for floor-plan rendering.</span></div>
+          <div class="fact"><strong>State</strong><span>Zustand 5 with zundo 2.3 for undo/redo history.</span></div>
+          <div class="fact"><strong>Backend</strong><span>Supabase JS 2.104, Supabase CLI, Auth, Postgres, Edge Functions.</span></div>
+          <div class="fact"><strong>UI primitives</strong><span>Radix Dialog, Menu, Popover, Tabs, Tooltip, lucide-react icons.</span></div>
+          <div class="fact"><strong>Data tools</strong><span>PapaParse CSV, jsPDF export, nanoid IDs, TanStack Virtual rosters.</span></div>
+          <div class="fact"><strong>Testing</strong><span>Vitest, Testing Library, jsdom, Playwright for browser checks.</span></div>
+          <div class="fact"><strong>Design target</strong><span>Light-first, sharper-corner, dense SmartDraw-like operational UI.</span></div>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="repo" data-phase="phase-0 phase-2 phase-5 phase-6" data-keywords="scripts npm dev build build:oando lint test seed audit preview">
+        <h2>Command Surface</h2>
+        <div class="body">
+          <ul>
+            <li><code>npm run dev</code> starts Vite development.</li>
+            <li><code>npm run build</code> runs TypeScript build and Vite build.</li>
+            <li><code>npm run build:oando</code> builds for the `/OandOcraft/` production subpath.</li>
+            <li><code>npm run lint</code>, <code>npm run test</code>, and <code>npm run audit:pages</code> are quality gates.</li>
+            <li><code>npm run seed:pull</code>, <code>npm run seed:counts</code>, and <code>npm run seed:verify</code> support hosted/local Supabase data work.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="engine" data-phase="phase-3 phase-4" data-keywords="state stores canvas elements floors employees insights collaboration project ui">
+        <h2>Client State Model</h2>
+        <div class="body">
+          <ul>
+            <li><code>canvasStore</code> owns viewport, zoom, tools, and grid behavior.</li>
+            <li><code>elementsStore</code> owns canvas objects and undo/redo history.</li>
+            <li><code>floorStore</code> owns floor order, active floor, and per-floor element snapshots.</li>
+            <li><code>projectStore</code> owns save state, optimistic-lock metadata, conflicts, and office identity.</li>
+            <li><code>employeeStore</code>, <code>insightsStore</code>, <code>collaborationStore</code>, and <code>uiStore</code> cover people, analysis, collaboration groundwork, and UI chrome.</li>
+          </ul>
         </div>
       </article>
 
@@ -436,6 +860,33 @@
         </div>
       </article>
 
+      <article class="card full" data-tab="schema" data-phase="phase-1 phase-2 phase-5 phase-6" data-keywords="schema supabase postgres tables rls audit offices profiles teams invites permissions share tokens history">
+        <h2>Supabase Schema Atlas</h2>
+        <div class="body matrix three">
+          <div class="fact"><strong>Identity</strong><span><code>profiles</code> mirrors Auth users and normalizes email.</span></div>
+          <div class="fact"><strong>Workspace</strong><span><code>teams</code> and <code>team_members</code> define O&O workspace membership and admin roles.</span></div>
+          <div class="fact"><strong>Planning</strong><span><code>offices</code> stores office metadata and JSONB floor-plan payloads.</span></div>
+          <div class="fact"><strong>Permissions</strong><span><code>office_permissions</code> stores direct person-level office access.</span></div>
+          <div class="fact"><strong>Invites</strong><span><code>invites</code> supports named internal/external onboarding.</span></div>
+          <div class="fact"><strong>History</strong><span><code>offices_history</code> supports recovery and force-save workflows.</span></div>
+          <div class="fact"><strong>Audit</strong><span><code>audit_events</code> captures sensitive access and admin changes.</span></div>
+          <div class="fact"><strong>Share tokens</strong><span><code>share_tokens</code> exists as a controlled legacy/exception path.</span></div>
+          <div class="fact"><strong>Ops</strong><span><code>edge_rate_limit_events</code> and <code>account_deletion_requests</code> support launch readiness and account governance.</span></div>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="schema" data-phase="phase-1 phase-2 phase-6" data-keywords="rls functions rpc triggers security policies">
+        <h2>RLS, RPC, And Triggers</h2>
+        <div class="body">
+          <ul>
+            <li>RLS helper functions include <code>is_team_member</code>, <code>is_team_admin</code>, <code>office_perm_role</code>, and <code>has_office_perm</code>.</li>
+            <li>RPC functions include <code>accept_invite</code>, <code>create_team</code>, <code>preview_invite</code>, <code>save_office_force</code>, <code>export_user_data</code>, and account-deletion helpers.</li>
+            <li>Triggers create profiles, default team/office ownership, normalize emails, sync profile email changes, and bump office timestamps.</li>
+            <li>Admin office control is intentionally handled in policy and client permission behavior, not by anonymous share-first workflows.</li>
+          </ul>
+        </div>
+      </article>
+
       <article class="card" data-tab="data" data-phase="phase-2" data-keywords="supabase seed data floor payload objects assignments employees rls">
         <h2>Supabase Data</h2>
         <div class="body">
@@ -447,6 +898,18 @@
             <li>Seeded offices must include real objects, not headings-only data.</li>
             <li>Verify floors, walls, rooms, doors, windows, desks, furniture, employees, annotations, neighborhoods, and assignments.</li>
             <li>Capture hosted table counts before and after full-data work.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="engine" data-phase="phase-0 phase-3 phase-5" data-keywords="routes router basename pages auth dashboard map roster settings invite reset verify">
+        <h2>Route Map</h2>
+        <div class="body">
+          <ul>
+            <li>Public/auth routes: <code>/</code>, <code>/login</code>, <code>/signup</code>, <code>/forgot</code>, <code>/auth/verify</code>, <code>/auth/reset</code>, <code>/invite/:token</code>.</li>
+            <li>Workspace routes: <code>/dashboard</code>, <code>/t/:teamSlug</code>, <code>/t/:teamSlug/settings</code>.</li>
+            <li>Editor routes: <code>/t/:teamSlug/o/:officeSlug/map</code> and <code>/t/:teamSlug/o/:officeSlug/roster</code>.</li>
+            <li>Production host must serve the same routes under the <code>/OandOcraft/</code> basename.</li>
           </ul>
         </div>
       </article>
@@ -467,6 +930,17 @@
         </div>
       </article>
 
+      <article class="card" data-tab="integration" data-phase="phase-5 phase-6" data-keywords="environment variables env supabase resend app url secrets">
+        <h2>Environment Contract</h2>
+        <div class="body">
+          <ul>
+            <li>Client build requires <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>.</li>
+            <li>Edge functions use <code>APP_URL=https://oando.co.in/OandOcraft</code> and <code>RESEND_API_KEY</code>.</li>
+            <li>Service-role keys and production database URLs must remain server-only and never enter the browser bundle.</li>
+          </ul>
+        </div>
+      </article>
+
       <article class="card" data-tab="quality" data-phase="phase-6" data-keywords="testing lint test build audit pages browser smoke accessibility">
         <h2>Quality Gates</h2>
         <div class="body">
@@ -480,6 +954,19 @@
             <li><code>npm run build</code></li>
             <li><code>npm run build:oando</code></li>
             <li><code>npm run audit:pages</code> when available</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="quality" data-phase="phase-3 phase-4 phase-5 phase-6" data-keywords="known risks risk register compass minimap overflow auth seed rls blocks css">
+        <h2>Active Risk Register</h2>
+        <div class="body">
+          <ul>
+            <li>Compass/minimap visual glitch needs a code fix and regression check.</li>
+            <li>Current UI needs sharper professional corners to avoid a soft, toy-like feel.</li>
+            <li>Real host deployment can fail through base-path, rewrite, cache, or auth redirect mistakes.</li>
+            <li>Hosted Supabase data still needs full table-count verification and duplicate-office cleanup.</li>
+            <li>Professional block sources need careful redrawing to avoid licensing and visual inconsistency problems.</li>
           </ul>
         </div>
       </article>
@@ -512,19 +999,40 @@
         </div>
       </article>
 
+      <article class="card full" data-tab="workflow" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="docs workflow checklist master plan integration block library map">
+        <h2>Planning Document System</h2>
+        <div class="body matrix three">
+          <div class="fact"><strong>Strategy</strong><span><code>OandOcraft_OVERHAUL_MASTER_PLAN.md</code></span></div>
+          <div class="fact"><strong>Phase status</strong><span><code>OandOcraft_PHASE_CHECKLIST.md</code></span></div>
+          <div class="fact"><strong>Execution</strong><span><code>OandOcraft_PROJECT_CHECKLIST.md</code></span></div>
+          <div class="fact"><strong>Daily workflow</strong><span><code>OandOcraft_WORKFLOW.md</code></span></div>
+          <div class="fact"><strong>Host deployment</strong><span><code>OandOcraft_MAIN_SITE_INTEGRATION.md</code></span></div>
+          <div class="fact"><strong>Objects</strong><span><code>OandOcraft_BLOCK_LIBRARY_SOURCES.md</code></span></div>
+        </div>
+      </article>
+
       <article class="card full" data-tab="quality" data-phase="phase-3 phase-4 phase-5 phase-6" data-keywords="interactive checklist local storage tasks">
         <h2>Local Working Checklist</h2>
-        <div class="body checklist" id="todoList">
-          <label class="todo"><input type="checkbox" data-id="compass">Fix and browser-test the compass/minimap control.</label>
-          <label class="todo"><input type="checkbox" data-id="corners">Apply sharper corners across core UI chrome.</label>
-          <label class="todo"><input type="checkbox" data-id="overflow">Verify no horizontal overflow on desktop and mobile.</label>
-          <label class="todo"><input type="checkbox" data-id="toolbar">Finish toolbar movement, persistence, reset, and keyboard access.</label>
-          <label class="todo"><input type="checkbox" data-id="admin-hud">Expand admin stats into a production-useful HUD.</label>
-          <label class="todo"><input type="checkbox" data-id="blocks">Rebuild first professional block families from approved references.</label>
-          <label class="todo"><input type="checkbox" data-id="seed">Verify full Supabase seed and hosted row counts.</label>
-          <label class="todo"><input type="checkbox" data-id="host">Deploy and smoke-test `/OandOcraft/` on the real main host.</label>
-          <label class="todo"><input type="checkbox" data-id="auth">Verify production auth, invite, and reset redirects.</label>
-          <label class="todo"><input type="checkbox" data-id="release">Complete release, rollback, and owner sign-off.</label>
+        <div class="body">
+          <div class="progress">
+            <div class="progress-top">
+              <span>Session progress</span>
+              <span id="progressText">0/10 complete</span>
+            </div>
+            <div class="track"><div class="bar" id="progressBar"></div></div>
+          </div>
+          <div class="checklist" id="todoList">
+            <label class="todo"><input type="checkbox" data-id="compass">Fix and browser-test the compass/minimap control.</label>
+            <label class="todo"><input type="checkbox" data-id="corners">Apply sharper corners across core UI chrome.</label>
+            <label class="todo"><input type="checkbox" data-id="overflow">Verify no horizontal overflow on desktop and mobile.</label>
+            <label class="todo"><input type="checkbox" data-id="toolbar">Finish toolbar movement, persistence, reset, and keyboard access.</label>
+            <label class="todo"><input type="checkbox" data-id="admin-hud">Expand admin stats into a production-useful HUD.</label>
+            <label class="todo"><input type="checkbox" data-id="blocks">Rebuild first professional block families from approved references.</label>
+            <label class="todo"><input type="checkbox" data-id="seed">Verify full Supabase seed and hosted row counts.</label>
+            <label class="todo"><input type="checkbox" data-id="host">Deploy and smoke-test `/OandOcraft/` on the real main host.</label>
+            <label class="todo"><input type="checkbox" data-id="auth">Verify production auth, invite, and reset redirects.</label>
+            <label class="todo"><input type="checkbox" data-id="release">Complete release, rollback, and owner sign-off.</label>
+          </div>
         </div>
       </article>
 
@@ -553,7 +1061,12 @@
     const cards = Array.from(document.querySelectorAll(".card"));
     const empty = document.querySelector("#empty");
     const tabs = Array.from(document.querySelectorAll(".tab"));
+    const jumpButtons = Array.from(document.querySelectorAll("[data-jump-tab]"));
+    const planTabs = Array.from(document.querySelectorAll("[data-plan-tab]"));
+    const planPanels = Array.from(document.querySelectorAll("[data-plan-panel]"));
     const checks = Array.from(document.querySelectorAll("[data-id]"));
+    const progressText = document.querySelector("#progressText");
+    const progressBar = document.querySelector("#progressBar");
     const stateKey = "oandocraft-project-map-checks";
     let activeTab = "all";
 
@@ -564,12 +1077,20 @@
       });
     }
 
+    function updateProgress() {
+      const complete = checks.filter((box) => box.checked).length;
+      const total = checks.length;
+      progressText.textContent = `${complete}/${total} complete`;
+      progressBar.style.width = `${total ? (complete / total) * 100 : 0}%`;
+    }
+
     function saveChecks() {
       const saved = {};
       checks.forEach((box) => {
         saved[box.dataset.id] = box.checked;
       });
       localStorage.setItem(stateKey, JSON.stringify(saved));
+      updateProgress();
     }
 
     function applyFilters() {
@@ -598,15 +1119,38 @@
       });
     });
 
+    jumpButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        activeTab = button.dataset.jumpTab;
+        search.value = button.dataset.jumpSearch || "";
+        phase.value = "all";
+        tabs.forEach((item) => item.classList.toggle("active", item.dataset.tab === activeTab));
+        applyFilters();
+        document.querySelector("main").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    planTabs.forEach((button) => {
+      button.addEventListener("click", () => {
+        const selected = button.dataset.planTab;
+        planTabs.forEach((item) => item.classList.toggle("active", item === button));
+        planPanels.forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.planPanel === selected);
+        });
+      });
+    });
+
     search.addEventListener("input", applyFilters);
     phase.addEventListener("change", applyFilters);
     checks.forEach((box) => box.addEventListener("change", saveChecks));
     reset.addEventListener("click", () => {
       localStorage.removeItem(stateKey);
       loadChecks();
+      updateProgress();
     });
 
     loadChecks();
+    updateProgress();
     applyFilters();
   </script>
 </body>
