@@ -8,6 +8,65 @@ export interface CSVImportSummary {
   warnings: ImportIssue[]
 }
 
+export type DockableToolbarId =
+  | 'canvas-actions'
+  | 'align-distribute'
+  | 'admin-stats'
+
+export interface DockableToolbarLayout {
+  mode: 'docked' | 'floating'
+  position: { x: number; y: number }
+}
+
+export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, DockableToolbarLayout> = {
+  'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
+  'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
+  'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
+}
+
+const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts'
+
+function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLayout> {
+  if (typeof window === 'undefined') {
+    return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+  }
+  try {
+    const raw = window.localStorage.getItem(TOOLBAR_LAYOUTS_STORAGE_KEY)
+    if (!raw) return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+    const parsed = JSON.parse(raw) as Partial<Record<DockableToolbarId, Partial<DockableToolbarLayout>>>
+    return {
+      'canvas-actions': sanitizeToolbarLayout('canvas-actions', parsed['canvas-actions']),
+      'align-distribute': sanitizeToolbarLayout('align-distribute', parsed['align-distribute']),
+      'admin-stats': sanitizeToolbarLayout('admin-stats', parsed['admin-stats']),
+    }
+  } catch {
+    return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+  }
+}
+
+function sanitizeToolbarLayout(
+  id: DockableToolbarId,
+  layout: Partial<DockableToolbarLayout> | undefined,
+): DockableToolbarLayout {
+  const fallback = DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS[id]
+  const x = Number.isFinite(layout?.position?.x) ? Number(layout?.position?.x) : fallback.position.x
+  const y = Number.isFinite(layout?.position?.y) ? Number(layout?.position?.y) : fallback.position.y
+  return {
+    mode: layout?.mode === 'floating' ? 'floating' : 'docked',
+    position: { x, y },
+  }
+}
+
+function persistToolbarLayouts(layouts: Record<DockableToolbarId, DockableToolbarLayout>) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(TOOLBAR_LAYOUTS_STORAGE_KEY, JSON.stringify(layouts))
+  } catch {
+    // Storage can fail in private mode / quota pressure. The current
+    // session still works; only persistence is skipped.
+  }
+}
+
 interface UIState {
   // Selection
   selectedIds: string[]
@@ -85,6 +144,7 @@ interface UIState {
   seatMapColorMode: 'department' | 'team' | 'employment-type' | 'office-days' | null
   movePlannerActive: boolean
   employeeDirectoryOpen: boolean
+  dockableToolbarLayouts: Record<DockableToolbarId, DockableToolbarLayout>
 
   // Actions
   setSelectedIds: (ids: string[]) => void
@@ -112,6 +172,9 @@ interface UIState {
   setSeatMapColorMode: (mode: UIState['seatMapColorMode']) => void
   setMovePlannerActive: (active: boolean) => void
   setEmployeeDirectoryOpen: (open: boolean) => void
+  setDockableToolbarMode: (id: DockableToolbarId, mode: DockableToolbarLayout['mode']) => void
+  setDockableToolbarPosition: (id: DockableToolbarId, position: DockableToolbarLayout['position']) => void
+  resetDockableToolbarLayout: (id: DockableToolbarId) => void
   /** Bump `drawingCancelTick` to ask any active drawing session to cancel. */
   requestCancelDrawing: () => void
   /** Increment `modalOpenCount`. Call from drawer/dialog mount effect. */
@@ -129,6 +192,7 @@ interface UIState {
 type UIStore = ReturnType<typeof createUIStore>
 
 function createUIStore() {
+  const initialToolbarLayouts = readStoredToolbarLayouts()
   return create<UIState>((set) => ({
   selectedIds: [],
   hoveredId: null,
@@ -152,6 +216,7 @@ function createUIStore() {
   seatMapColorMode: null,
   movePlannerActive: false,
   employeeDirectoryOpen: false,
+  dockableToolbarLayouts: initialToolbarLayouts,
   drawingCancelTick: 0,
   modalOpenCount: 0,
   assignmentQueue: [],
@@ -192,6 +257,33 @@ function createUIStore() {
   setSeatMapColorMode: (mode) => set({ seatMapColorMode: mode }),
   setMovePlannerActive: (active) => set({ movePlannerActive: active }),
   setEmployeeDirectoryOpen: (open) => set({ employeeDirectoryOpen: open }),
+  setDockableToolbarMode: (id, mode) =>
+    set((s) => {
+      const next = {
+        ...s.dockableToolbarLayouts,
+        [id]: { ...s.dockableToolbarLayouts[id], mode },
+      }
+      persistToolbarLayouts(next)
+      return { dockableToolbarLayouts: next }
+    }),
+  setDockableToolbarPosition: (id, position) =>
+    set((s) => {
+      const next = {
+        ...s.dockableToolbarLayouts,
+        [id]: { ...s.dockableToolbarLayouts[id], position },
+      }
+      persistToolbarLayouts(next)
+      return { dockableToolbarLayouts: next }
+    }),
+  resetDockableToolbarLayout: (id) =>
+    set((s) => {
+      const next = {
+        ...s.dockableToolbarLayouts,
+        [id]: DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS[id],
+      }
+      persistToolbarLayouts(next)
+      return { dockableToolbarLayouts: next }
+    }),
   requestCancelDrawing: () =>
     set((s) => ({ drawingCancelTick: s.drawingCancelTick + 1 })),
   registerModalOpen: () =>

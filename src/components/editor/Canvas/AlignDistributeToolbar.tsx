@@ -16,6 +16,7 @@ import { useCanvasStore } from '../../../stores/canvasStore'
 import { useCan } from '../../../hooks/useCan'
 import { alignElements, distributeElements } from '../../../lib/alignment'
 import { unionBounds } from '../../../lib/elementBounds'
+import { DockableToolbar } from '../DockableToolbar'
 
 /**
  * Floating align/distribute pill that hovers above the multi-selection
@@ -109,60 +110,67 @@ export function AlignDistributeToolbar() {
 
   return (
     <div className="pointer-events-none absolute inset-0">
-      <div
-        data-testid="align-distribute-toolbar"
-        role="toolbar"
-        aria-label="Align and distribute selection"
-        className="pointer-events-auto absolute flex items-center gap-0.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-1.5 py-1 shadow-md"
-        style={{ left: screenLeft, top, transform }}
+      <DockableToolbar
+        id="align-distribute"
+        title="Align selection"
+        dockedClassName="pointer-events-auto"
+        dockedStyle={{ left: screenLeft, top, transform }}
+        className="pointer-events-auto"
       >
-        <AlignButton
-          label="Align left"
-          icon={AlignHorizontalJustifyStart}
-          onClick={() => alignElements(selectedIds, 'left')}
-        />
-        <AlignButton
-          label="Align horizontal center"
-          icon={AlignHorizontalJustifyCenter}
-          onClick={() => alignElements(selectedIds, 'h-center')}
-        />
-        <AlignButton
-          label="Align right"
-          icon={AlignHorizontalJustifyEnd}
-          onClick={() => alignElements(selectedIds, 'right')}
-        />
-        <Separator />
-        <AlignButton
-          label="Align top"
-          icon={AlignVerticalJustifyStart}
-          onClick={() => alignElements(selectedIds, 'top')}
-        />
-        <AlignButton
-          label="Align vertical center"
-          icon={AlignVerticalJustifyCenter}
-          onClick={() => alignElements(selectedIds, 'v-center')}
-        />
-        <AlignButton
-          label="Align bottom"
-          icon={AlignVerticalJustifyEnd}
-          onClick={() => alignElements(selectedIds, 'bottom')}
-        />
-        {showDistribute && (
-          <>
-            <Separator />
-            <AlignButton
-              label="Distribute horizontally"
-              icon={AlignHorizontalSpaceAround}
-              onClick={() => distributeElements(selectedIds, 'horizontal')}
-            />
-            <AlignButton
-              label="Distribute vertically"
-              icon={AlignVerticalSpaceAround}
-              onClick={() => distributeElements(selectedIds, 'vertical')}
-            />
-          </>
-        )}
-      </div>
+        <div
+          data-testid="align-distribute-toolbar"
+          role="toolbar"
+          aria-label="Align and distribute selection"
+          className="flex items-center gap-0.5 px-1.5 py-1"
+        >
+          <AlignButton
+            label="Align left"
+            icon={AlignHorizontalJustifyStart}
+            onClick={() => alignElements(selectedIds, 'left')}
+          />
+          <AlignButton
+            label="Align horizontal center"
+            icon={AlignHorizontalJustifyCenter}
+            onClick={() => alignElements(selectedIds, 'h-center')}
+          />
+          <AlignButton
+            label="Align right"
+            icon={AlignHorizontalJustifyEnd}
+            onClick={() => alignElements(selectedIds, 'right')}
+          />
+          <Separator />
+          <AlignButton
+            label="Align top"
+            icon={AlignVerticalJustifyStart}
+            onClick={() => alignElements(selectedIds, 'top')}
+          />
+          <AlignButton
+            label="Align vertical center"
+            icon={AlignVerticalJustifyCenter}
+            onClick={() => alignElements(selectedIds, 'v-center')}
+          />
+          <AlignButton
+            label="Align bottom"
+            icon={AlignVerticalJustifyEnd}
+            onClick={() => alignElements(selectedIds, 'bottom')}
+          />
+          {showDistribute && (
+            <>
+              <Separator />
+              <AlignButton
+                label="Distribute horizontally"
+                icon={AlignHorizontalSpaceAround}
+                onClick={() => distributeElements(selectedIds, 'horizontal')}
+              />
+              <AlignButton
+                label="Distribute vertically"
+                icon={AlignVerticalSpaceAround}
+                onClick={() => distributeElements(selectedIds, 'vertical')}
+              />
+            </>
+          )}
+        </div>
+      </DockableToolbar>
     </div>
   )
 }

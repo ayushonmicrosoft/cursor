@@ -18,6 +18,7 @@ import { NorthArrow } from './Canvas/NorthArrow'
 import { AlignDistributeToolbar } from './Canvas/AlignDistributeToolbar'
 import { ElementHoverCard } from './Canvas/ElementHoverCard'
 import { FirstRunCoach } from './FirstRunCoach'
+import { AdminStatsToolbar } from './AdminStatsToolbar'
 import { useUIStore } from '../../stores/uiStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { useFloorStore } from '../../stores/floorStore'
@@ -163,7 +164,7 @@ export function MapView() {
   return (
     <>
       <FloorSwitcher />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-w-0 overflow-hidden">
         {/*
           The sidebar scrolls as a single unit. ToolSelector +
           LayerVisibilityPanel + ElementLibrary stack at their natural
@@ -173,7 +174,7 @@ export function MapView() {
           library owned its own `overflow-y-auto` inside a `min-h-0`
           column, which clipped tiles when its siblings took more space.
         */}
-        <div className="w-[260px] flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-y-auto">
+        <div className="w-[260px] flex-shrink-0 bg-gradient-to-b from-white to-[#f8f3ed] dark:from-gray-950 dark:to-[#0f1e32] border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-y-auto">
           <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
             <ToolSelector />
           </CollapsibleSection>
@@ -184,13 +185,17 @@ export function MapView() {
             <ElementLibrary />
           </CollapsibleSection>
         </div>
-        <div className="flex-1 relative bg-gray-100 dark:bg-gray-800 overflow-hidden">
+        <div
+          className="flex-1 min-w-0 relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.95),_rgba(244,239,232,0.9)_40%,_rgba(226,232,240,0.82)_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(20,31,50,0.98),_rgba(11,22,40,0.96)_45%,_rgba(3,7,18,0.98)_100%)]"
+          data-canvas-toolbar-host
+        >
           <CanvasStage />
           <StatusBar />
           <Minimap />
           <AlignDistributeToolbar />
           <ElementHoverCard />
           <CanvasActionDock />
+          <AdminStatsToolbar />
           <CanvasScaleBar />
           {showNorthArrow && <NorthArrow />}
           <FirstRunCoach />
@@ -201,7 +206,7 @@ export function MapView() {
           {!rightSidebarOpen && <SidebarToggle variant="floating" />}
         </div>
         {rightSidebarOpen && (
-          <div className="w-[320px] flex-shrink-0 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
+          <div className="w-[320px] flex-shrink-0 bg-gradient-to-b from-white to-[#f8f3ed] dark:from-gray-950 dark:to-[#0f1e32] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
             <RightSidebar />
           </div>
         )}

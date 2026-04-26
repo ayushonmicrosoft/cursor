@@ -253,7 +253,7 @@ function occupancyColorFor(pct: number): 'green' | 'amber' | 'red' | undefined {
 function toolHint(tool: string): string | null {
   switch (tool) {
     case 'wall':
-      return 'Click to add vertices, drag to curve, double-click to finish — Esc to cancel'
+      return 'Click to add vertices, drag to curve, double-click to finish and return to pan — Esc to cancel'
     case 'door':
       return 'Hover a wall to preview — click to place a door — Esc to cancel'
     case 'window':

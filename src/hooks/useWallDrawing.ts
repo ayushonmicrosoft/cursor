@@ -332,6 +332,10 @@ export function useWallDrawing() {
         ...(wallDrawStyle && wallDrawStyle !== 'solid' ? { dashStyle: wallDrawStyle } : {}),
       }
       addElement(wall)
+      // SmartDraw-style completion: once the room/wall chain is committed,
+      // drop back to navigation so the next drag pans the canvas instead of
+      // silently extending the wall tool.
+      useCanvasStore.getState().setActiveTool('pan')
     }
     resetSession()
   }, [activeTool, addElement, getMaxZIndex, resetSession])

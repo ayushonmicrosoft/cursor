@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useUIStore } from '../../../stores/uiStore'
+import { DockableToolbar } from '../DockableToolbar'
 
 /**
  * Floating bottom-right action dock for the canvas, modeled after the
@@ -63,12 +64,18 @@ export function CanvasActionDock() {
   }
 
   return (
-    <div
-      className="absolute bottom-12 right-4 z-20 flex flex-col gap-0.5 p-1 rounded-xl bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200 dark:border-gray-800 shadow-lg"
-      data-testid="canvas-action-dock"
-      role="toolbar"
-      aria-label="Canvas controls"
+    <DockableToolbar
+      id="canvas-actions"
+      title="Canvas controls"
+      dockedClassName="bottom-12 right-4"
+      className="w-[60px]"
     >
+      <div
+        data-testid="canvas-action-dock"
+        role="toolbar"
+        aria-label="Canvas controls"
+        className="flex flex-col gap-0.5 p-1"
+      >
       <DockButton
         label="Zoom in"
         title="Zoom in (+ or =)"
@@ -84,7 +91,7 @@ export function CanvasActionDock() {
         <Minus className="w-4 h-4" />
       </DockButton>
       <div
-        className="px-1.5 py-1 text-[10px] font-medium tabular-nums text-gray-500 dark:text-gray-400 text-center select-none"
+        className="mx-1 rounded-lg border border-gray-200/80 bg-gradient-to-b from-white to-[#f4efe8] px-1.5 py-1 text-[10px] font-semibold tabular-nums text-gray-600 text-center select-none dark:border-gray-800 dark:from-gray-900 dark:to-[#1b2940] dark:text-gray-300"
         aria-live="polite"
         aria-atomic="true"
       >
@@ -146,7 +153,8 @@ export function CanvasActionDock() {
       >
         <Maximize className="w-4 h-4" />
       </DockButton>
-    </div>
+      </div>
+    </DockableToolbar>
   )
 }
 
@@ -160,11 +168,11 @@ interface DockButtonProps {
 
 function DockButton({ label, title, onClick, pressed, children }: DockButtonProps) {
   const base =
-    'w-9 h-9 inline-flex items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+    'w-10 h-10 inline-flex items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
   const idle =
-    'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700'
+    'text-gray-600 dark:text-gray-300 hover:bg-[#f4efe8] dark:hover:bg-[#16263d] active:bg-[#eadfce] dark:active:bg-[#203552]'
   const active =
-    'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/60'
+    'bg-[#f4efe8] dark:bg-[#16263d] text-[#1f3653] dark:text-[#d6c2a6] ring-1 ring-[#e3d8cb] dark:ring-[#294161]'
   return (
     <button
       type="button"
@@ -183,7 +191,7 @@ function DockDivider() {
   return (
     <div
       role="separator"
-      className="h-px bg-gray-200 dark:bg-gray-800 mx-1.5 my-0.5"
+      className="h-px bg-gray-200 dark:bg-gray-800 mx-1.5 my-1"
     />
   )
 }

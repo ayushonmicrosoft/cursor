@@ -67,8 +67,8 @@ export function RightSidebar() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-stretch border-b border-gray-200 dark:border-gray-800">
+    <div className="flex flex-col h-full min-w-0">
+      <div className="flex items-stretch border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/50 backdrop-blur-sm">
         {/* Collapse handle lives at the leftmost slot of the tablist
             row so it reads as part of the side panel, not part of the
             top ribbon. The four content tabs follow to the right. */}
@@ -76,7 +76,7 @@ export function RightSidebar() {
         <div
           role="tablist"
           aria-label="Right sidebar"
-          className="flex flex-1"
+          className="flex flex-1 gap-1 px-1 py-1"
           onKeyDown={onKeyDown}
         >
         {tabs.map((t) => {
@@ -94,10 +94,10 @@ export function RightSidebar() {
               aria-controls={panelId(t.id)}
               tabIndex={selected ? 0 : -1}
               onClick={() => setTab(t.id)}
-              className={`flex-1 px-2 py-2.5 text-xs font-medium transition-colors relative flex items-center justify-center gap-1.5 ${
+              className={`flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-colors relative flex items-center justify-center gap-1.5 ${
                 selected
-                  ? 'text-blue-700 dark:text-blue-300 border-b-2 border-blue-700'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-[#f4efe8] text-[#1f3653] dark:bg-[#16263d] dark:text-[#d6c2a6] shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-900/60'
               }`}
             >
               {t.icon}

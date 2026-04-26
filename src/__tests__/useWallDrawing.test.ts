@@ -116,4 +116,16 @@ describe('useWallDrawing click-drag', () => {
     expect(result.current.wallDrawingState.points).toEqual([])
     expect(result.current.wallDrawingState.bulges).toEqual([])
   })
+
+  it('returns to pan after committing a wall chain', () => {
+    const { result } = renderHook(() => useWallDrawing())
+    act(() => {
+      result.current.handleCanvasMouseDown(0, 0)
+      result.current.handleCanvasMouseUp(0, 0)
+      result.current.handleCanvasMouseDown(100, 0)
+      result.current.handleCanvasMouseUp(100, 0)
+      result.current.handleCanvasDoubleClick()
+    })
+    expect(useCanvasStore.getState().activeTool).toBe('pan')
+  })
 })
