@@ -6,6 +6,15 @@ Target deployment: `https://oando.co.in/OandOcraft/`.
 
 Product scope: one O&O workspace, internal and approved external people, direct person-level access, no anonymous sharing-first workflow.
 
+Working docs:
+
+- `docs/OandOcraft_OVERHAUL_MASTER_PLAN.md`
+- `docs/OandOcraft_WORKFLOW.md`
+- `docs/OandOcraft_PROJECT_CHECKLIST.md`
+- `docs/OandOcraft_PROJECT_MAP.html`
+- `docs/OandOcraft_MAIN_SITE_INTEGRATION.md`
+- `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
+
 ## Phase 0 - Repo, Deployment, And Ground Rules
 
 - [x] Create remote repo named `OandOcraft`.
@@ -17,6 +26,7 @@ Product scope: one O&O workspace, internal and approved external people, direct 
 - [x] Document main-site rewrite rules for `oando.co.in/OandOcraft/* -> /OandOcraft/index.html`.
 - [x] Add Supabase redirect URLs for `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and invite acceptance.
 - [x] Confirm production env vars for the O&O host.
+- [x] Add workflow, detailed checklist, and interactive project-map documentation.
 
 Exit criteria:
 
@@ -69,6 +79,8 @@ Exit criteria:
 - [x] Replace noisy panels with collapsible SmartDraw-style sections.
 - [x] Improve tooltips so every primary action explains itself.
 - [x] Make object insertion more intuitive with search, recent tools, favorites, and drag previews.
+- [ ] Fix the broken compass/minimap control and add a regression check for it.
+- [ ] Sharpen UI corners across cards, panels, toolbars, menus, modals, drawers, buttons, and compact controls.
 - [ ] Add consistent cursor feedback for draw, select, pan, resize, rotate, drag, and invalid-drop states.
 - [x] Tune animations for panel open, hover reveal, selection, and toast transitions without slowing editing.
 
@@ -86,6 +98,9 @@ Exit criteria:
 - [x] Add precise numeric controls for position, size, rotation, wall thickness, room capacity, and labels.
 - [x] Add object validation warnings for broken assignments and missing metadata.
 - [x] Add templates for common O&O space patterns.
+- [ ] Expand all remaining toolbars into movable/dockable controls or document why they must stay fixed.
+- [ ] Expand the admin stats toolbar into a production-useful operations HUD.
+- [ ] Rebuild first professional block families from MillerKnoll and Steelcase references, with BIMobject only for gaps.
 
 Exit criteria:
 

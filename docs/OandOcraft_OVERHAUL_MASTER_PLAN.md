@@ -2,712 +2,406 @@
 
 Audit date: 2026-04-26
 Reference repo: https://github.com/rcasto123/Floorcraft
+Primary deployment target: `https://oando.co.in/OandOcraft/`
+Operating model: one O&O workspace, one controlling client context, internal users plus approved external users, direct named access instead of sharing-first behavior.
 
 ## 1. Executive Mandate
 
-OandOcraft should become a production-grade O&O workplace planning tool, not a renamed floor-plan demo. The standard is a clean, professional SmartDraw-class product for one O&O workspace that supports internal and approved external people, direct person-level access, high-fidelity floor planning, admin-first operations, operational reporting, integration at `https://oando.co.in/OandOcraft/`, and a maintainable engineering system.
+OandOcraft should stop behaving like a renamed open-source floor-plan demo and start behaving like a controlled O&O workplace planning product. The bar is not "functional enough." The bar is a clean, professional, SmartDraw-class planning environment with credible admin control, polished object editing, reliable data, and a bounded deployment model under the main O&O site.
 
-The overhaul must cover six layers at once:
+The overhaul has to deliver across six layers at the same time:
 
-- Product: clear workflows for planners, admins, facilities, IT, HR, and approved external people.
-- Brand: O&O visual language, copy, naming, exports, emails, and documents.
-- Platform: robust React/Konva editor, scalable state, Supabase data model, CI, observability, and deployment.
-- Security: RLS, auth, person-level invitations, audit logs, data export/deletion, headers, and incident process.
-- Integration: safe deployment into a non-Vite main-site environment without breaking routing, CSS, auth, or performance.
-- Operations: seed data, release process, support playbooks, monitoring, rollback, and ownership.
+- Product: planning, seating, move management, and reporting must feel intentional and efficient.
+- UX: the app must look premium, restrained, and reliable rather than generic or hobby-grade.
+- Platform: the React/Konva editor, routing, state, and build outputs must be stable and maintainable.
+- Security: named access, RLS, auditability, recovery, and production-safe environment handling must be explicit.
+- Integration: OandOcraft must work under `oando.co.in/OandOcraft/` without fighting the main site's non-Vite stack.
+- Operations: seeding, release discipline, rollback, monitoring, and admin recovery must exist before launch.
 
 ## 2. Current-State Audit
 
-### 2.1 What Works
+### 2.1 What Already Exists
 
-- React 19 + TypeScript + React Router app with route-level lazy loading.
-- Konva canvas supports multi-floor editing, walls, curved walls, doors, windows, desks, rooms, furniture, annotations, neighborhoods, minimap, presentation mode, exports, and keyboard shortcuts.
-- Supabase backend includes Auth, RLS, teams, offices, invites, permissions, share tokens, audit events, account export/deletion, and save conflict history.
-- Existing hosted/demo data flow works with a full demo payload in `supabase/seed.sql`.
-- Build passes.
-- Test suite is substantial: 234 files and 1,539 tests passed in the latest local run.
-- Page audit script now exists as `npm run audit:pages`.
-- The GitHub README and changelog establish a v1.0.0 feature baseline.
+- React 19 + TypeScript + React Router application with route-level lazy loading.
+- Konva editor with walls, curved walls, doors, windows, desks, rooms, furniture, annotations, neighborhoods, exports, and multi-floor planning.
+- Supabase model with Auth, RLS, teams, offices, invites, audit events, share tokens, history recovery, and account export/deletion flows.
+- Repeatable `/OandOcraft/` build path through `npm run build:oando`.
+- Main-site integration doc and rewrite guidance for subpath deployment.
+- A large automated test base and working build/test/lint gates.
 
-### 2.2 What Is Not Yet World-Class
+### 2.2 What Has Been Improved Recently
 
-- Brand transition is incomplete across code, docs, emails, exports, seed data, titles, tests, and help content.
-- Public pricing references still exist in help/docs surfaces and should be removed or reframed if OandOcraft is internal/enterprise.
-- Large files reduce maintainability and review quality:
-  - `RosterPage.tsx`
-  - `HelpPage.tsx`
+- The editor shell has started moving toward a cleaner SmartDraw-like structure instead of a noisy app-chrome layout.
+- Toolbars can now be docked or moved rather than being treated as permanently fixed chrome.
+- Admins now have stronger operational controls, including access-management and recovery-oriented actions.
+- A live admin stats toolbar concept now exists and should be expanded into a proper operations HUD.
+- Object rendering has improved from crude generic blocks toward more professional top-view symbols.
+- Wall-drawing flow now returns to pan after completion, which is closer to professional drafting behavior.
+- Manufacturer-led block sourcing has been defined: MillerKnoll first, Steelcase second, BIMobject only for gaps.
+
+### 2.3 What Still Falls Short
+
+- The visual system is still inconsistent across routes. Some surfaces feel more premium while others still feel like a default web app.
+- The app chrome is improved but not yet elegant enough. Layout rhythm, typography hierarchy, and panel density still need a full pass.
+- SmartDraw-like editor ergonomics are only partially there. Cursor feedback, context actions, drafting flow, and visual calm need more work.
+- Main-site integration is documented but not yet proven in the real host environment.
+- The object library is better than before but still not yet professional enough for a design/planning tool.
+- Several large files still reduce maintainability and increase regression risk:
+  - `ProjectShell.tsx`
   - `CanvasStage.tsx`
   - `PropertiesPanel.tsx`
-  - `ElementLibrary.tsx`
-  - `RosterDetailDrawer.tsx`
-- The production build still reports a large `ProjectShell` chunk.
-- App is Vite-first while the main site is not Vite-based.
-- Global Tailwind utilities and app CSS can collide if embedded in another shell.
-- Supabase payloads are mostly JSONB for office state; this is fast for product iteration but needs scaling budgets and history strategy.
-- Observability is minimal: no structured client error reporting, performance tracking, save-failure dashboards, or Supabase health reporting.
-- No formal release checklist, staging promotion policy, rollback drill, or incident process beyond basic SECURITY.md.
-- Accessibility needs a full product audit, especially dense canvas/editor workflows.
+  - `HelpPage.tsx`
+  - `RosterPage.tsx`
+- Observability is still thin. There is no complete client error pipeline, no performance budget dashboard, and no mature release runbook set.
 
-### 2.3 Upstream Change Context To Track
+### 2.4 Upstream Change Context
 
-The upstream commit `8b7d3d078632bd16a76c34190a518426fbd8e907` should be treated as a specific planning input, not background noise. The linked diffs introduce a Properties panel expansion and test coverage workstream that belongs in the OandOcraft overhaul.
-
-Reference:
-
-- https://github.com/rcasto123/Floorcraft/commit/8b7d3d078632bd16a76c34190a518426fbd8e907
+The upstream commit `8b7d3d078632bd16a76c34190a518426fbd8e907` remains a planning input, especially around the Properties panel and related tests.
 
 Planning implications:
 
-- Preserve the intent of the Properties panel overhaul: clearer sectioning, type-specific controls, multi-select behavior, actions, and lock-state affordances.
-- Verify whether the local branch already contains the commit's functional changes before re-implementing anything.
-- Treat Properties panel coverage as a regression suite requirement for every element type.
-- Fold the same structure into the design-system effort so the panel does not stay as a one-off editor surface.
-- Add route and component tests for key editing affordances, not just render presence.
+- Preserve the intent of the upstream panel work: clearer structure, type-aware controls, safer editing affordances, and regression coverage.
+- Do not re-implement upstream ideas blindly. Assimilate what helps the OandOcraft editor model.
+- Treat panel coverage as a release requirement for core element types.
 
-## 3. Target Product Vision
+## 3. Product Vision
 
-OandOcraft should be the O&O workplace planning command center.
+OandOcraft should become the O&O workplace planning command center.
 
-Core promise:
+Core outcomes:
 
-- Plan floor layouts visually.
-- Assign people, teams, rooms, assets, and neighborhoods accurately.
-- Forecast occupancy and capacity.
-- Grant trusted internal/external people direct access without making anonymous sharing the core workflow.
-- Preserve governance, auditability, and data privacy.
-- Integrate cleanly with the main O&O digital environment.
+- Draw and edit floor plans quickly.
+- Place rooms, walls, desks, booths, tables, reception, storage, and facilities with professional-looking blocks.
+- Assign people, departments, neighborhoods, and seats without brittle data flow.
+- Give named internal or approved external users direct access with clear roles.
+- Let admins override, repair, inspect, and recover without engineering intervention.
+- Produce presentable exports and operational reports.
 
-Primary users:
+This is not a many-tenant SaaS product. It is a controlled planning environment for a narrow ownership model. That means the system should bias toward clarity, admin power, data integrity, and speed of operations rather than community-style sharing features.
 
-- Workplace/facilities planner: creates layouts and manages space capacity.
-- IT operations: tracks desks, equipment needs, onboarding readiness, and moves.
-- HR/people operations: reviews department placement, employee lifecycle, accessibility accommodations, and reporting.
-- Team leads: validate neighborhoods and seating plans.
-- Executives: consume summary reports and presentation views.
-- Approved external people: receive named access with explicit role and revocation.
+## 4. UX And Design Direction
 
-## 4. Product Pillars
+### 4.1 Visual Standard
 
-### 4.1 Planning Canvas
+The target is closer to SmartDraw, Lucidchart, and professional CAD-adjacent planning tools than to a generic React dashboard. The interface should feel clean, deliberate, and calm.
 
-- Multi-floor editing with clear floor hierarchy.
-- Wall, door, window, room, desk, workstation, booth, table, decor, and custom-shape support.
-- Accurate snapping, alignment, measurement calibration, and scale controls.
-- Layer toggles for seats, labels, departments, neighborhoods, equipment, reservations, and annotations.
-- Performance budget for large offices and many floors.
-- Export-ready rendering for PNG/PDF/report snapshots.
+Design requirements:
 
-### 4.2 People And Seats
+- Light mode is the default.
+- Dark mode remains available but secondary.
+- Chrome should be restrained, with the canvas as the primary visual focus.
+- Typography should feel professional and hierarchical rather than flat.
+- Panels should feel precise and dense without becoming cramped.
+- Hover, focus, lock, selection, dirty, error, and saving states must be obvious and consistent.
 
-- Employee roster management with department, title, manager, status, office days, equipment, accommodations, and lifecycle fields.
-- Bulk import/export with validation, duplicate detection, and review steps.
-- Seat assignment rules that prevent employee/element desync.
-- Saved roster views and filters.
-- Move planning, reservations, hot desks, and seat history.
+### 4.2 Editor Interaction Standard
 
-### 4.3 Governance And Access
+Required interaction behavior:
 
-- One O&O workspace with direct person access.
-- Office-level roles: owner, editor, viewer.
-- Private/public office visibility.
-- Invite flows with preview, expiry, role assignment, rate limiting, and audit logging.
-- Anonymous share tokens are not a primary workflow; keep them disabled or tightly controlled as a legacy/exception path.
-- Audit log UI for critical changes.
+- Drawing a wall or room should complete cleanly and return the user to navigation when appropriate.
+- Toolbars should be movable, dockable, and dismissible where that improves workflow.
+- Admins should have a real operations overlay or toolbar for live health and workspace metrics.
+- Contextual actions should appear where the user needs them instead of being hidden in distant panels.
+- Cursor states must tell the truth for pan, draw, drag, rotate, resize, invalid-drop, and locked interactions.
+- The editor should feel calm. No noisy hover spam, excessive shadows, or unstable layout shifts.
 
-### 4.4 Insights And Reports
+### 4.3 Block Library Standard
 
-- Occupancy and utilization reports.
+The object library should be rebuilt as an OandOcraft-owned top-view planning language.
+
+Source strategy:
+
+- MillerKnoll for core office planning references
+- Steelcase for core office planning references
+- BIMobject only to fill missing categories
+
+Conversion rules:
+
+- Use manufacturer assets as references, not direct pasted raw imports.
+- Normalize everything into one SVG/Konva top-view language.
+- Preserve believable dimensions and circulation.
+- Prefer readability over decorative detail.
+
+## 5. Product Pillars
+
+### 5.1 Planning Canvas
+
+- Multi-floor planning with clear floor hierarchy.
+- Walls, doors, windows, rooms, desks, booths, tables, decor, facilities, and custom shapes.
+- Snapping, alignment, measurement, scaling, and better cursor/state feedback.
+- Performance that remains usable for large offices.
+- Export-safe rendering for PDF/PNG and presentation snapshots.
+
+### 5.2 People And Space Data
+
+- Employee roster with department, title, manager, status, accommodations, and equipment context.
+- Seat assignment that stays in sync with the plan model.
+- Bulk import/export with validation.
+- History and recovery for planner mistakes.
+
+### 5.3 Governance And Access
+
+- One O&O workspace with direct named-user access.
+- Roles centered on owner, admin/editor, and viewer behavior.
+- Invite-based access for approved external users.
+- Anonymous/public sharing not treated as the normal workflow.
+- Strong admin override powers, with audit logging.
+
+### 5.4 Admin Operations
+
+- Live stats for office count, object count, assignment coverage, and save status.
+- Recovery actions for bad saves or stale history states.
+- Access-control management without backend manual intervention.
+- Basic operational dashboards for planner health and data quality.
+
+### 5.5 Reporting And Exports
+
+- Occupancy and capacity reporting.
 - Department and neighborhood summaries.
-- Move and churn reporting.
-- Equipment readiness reporting.
-- Onboarding seat readiness.
-- Executive summary report exports.
-- Trend and capacity forecasting.
+- Move-readiness and equipment-readiness reporting.
+- Executive export views that look presentable without manual cleanup.
 
-### 4.5 Enterprise Operations
+## 6. Main-Site Integration Strategy
 
-- Staging and production Supabase projects.
-- Deterministic seeding.
-- Backup and rollback playbooks.
-- Structured release notes.
-- Error and performance monitoring.
-- Access review process.
+The main site does not use Vite. OandOcraft should therefore be treated as a bounded SPA deployed inside the main domain, not as code folded into the host's own frontend stack.
 
-## 5. Brand And Design System
+### 6.1 Integration Principle
 
-### 5.1 Naming Standard
+Primary model: subpath deployment at `https://oando.co.in/OandOcraft/`.
 
-Canonical visible product name: `OandOcraft`.
+This means:
 
-Rules:
+- OandOcraft keeps its own Vite build.
+- The host serves the built app as a self-contained route boundary.
+- The host does not import OandOcraft components into its own page templates.
+- React Router owns navigation inside `/OandOcraft/`.
+- The main site and the planner should interact by URL boundary and shared auth/domain setup, not by bundle fusion.
 
-- Use `OandOcraft` in visible UI, emails, exports, browser titles, docs, README, changelog, support copy, and seed/demo author names.
-- Use `oandocraft` for package names, internal npm-safe IDs, and lowercase identifiers where appropriate.
-- Keep legacy `floocraft.*` localStorage keys unless a migration is intentionally implemented. Renaming storage keys without migration can break existing user preferences and migrated autosave payloads.
-- Preserve historical GitHub URLs that still point to `rcasto123/Floorcraft` unless the repository is actually renamed remotely.
+### 6.2 Why Not Fold Vite Into The Main Site
 
-### 5.2 Visual System
+Directly porting the editor into the non-Vite stack is the wrong first move because it creates unnecessary risk:
 
-Adopt the O&O reference direction:
+- Router collisions
+- CSS leakage in both directions
+- Asset-path bugs
+- Harder auth callback handling
+- Slower releases because the planner and main site become tightly coupled
 
-- Navy/midnight as primary authority color.
-- Bronze as accent and focus highlight.
-- Warm off-white page surfaces.
-- Glass/panel surfaces for chrome.
-- Strong heading text, restrained muted text, and enterprise-grade spacing.
+If the business later needs a micro-frontend shell, that should happen after the app surface is stable and after the subpath model is proven in production.
 
-Required token families:
+### 6.3 Host/App Contract
 
-- `brand.navy`
-- `brand.midnight`
-- `brand.bronze`
-- `surface.page`
-- `surface.panel`
-- `surface.raised`
-- `surface.glass`
-- `text.heading`
-- `text.body`
-- `text.muted`
-- `border.soft`
-- `border.strong`
-- `state.danger`
-- `state.warning`
-- `state.success`
-- `focus.ring`
+The host is responsible for:
 
-### 5.3 Design Deliverables
+- serving `/OandOcraft/assets/*` as static files
+- rewriting `/OandOcraft/*` app routes to `/OandOcraft/index.html`
+- not applying global CSS resets or script transforms to OandOcraft assets
+- allowing the needed auth callback routes to resolve under `/OandOcraft/`
 
-- Brand token file.
-- UI primitives inventory page.
-- Button, input, modal, drawer, table, badge, tooltip, empty state, toast, and canvas-control standards.
-- Light and dark mode contrast audit.
-- Export watermark standard.
-- Email template standard.
-- Loading/error/empty-state copy standard.
+OandOcraft is responsible for:
 
-### 5.4 Theme Default Requirement
+- building assets with the `/OandOcraft/` base path
+- keeping app CSS internally bounded
+- ensuring auth/invite/reset routes work under the subpath
+- keeping deep-link refresh stable for nested office routes
 
-Default theme: light mode.
+### 6.4 Future Integration Tracks
 
-Requirements:
+After the subpath model is stable, only then evaluate:
 
-- First visit resolves to light mode regardless of OS preference.
-- Users can explicitly switch to dark mode.
-- User choice persists in localStorage.
-- Existing users with a stored dark-mode preference keep that preference.
-- Theme toggle copy should make the current state obvious.
-- Tests must cover:
-  - no stored preference -> light
-  - stored `dark` -> dark
-  - stored `light` -> light
-  - toggling persists the new value
-  - invalid stored values fall back to light
-
-Implementation direction:
-
-- Change the theme provider default from `system` to `light`.
-- Keep dark-mode CSS and UI option available.
-- Consider keeping a `system` option only if the product explicitly wants three choices; otherwise simplify to Light/Dark.
-- Update screenshots and route audit expectations after the default changes.
-
-## 6. Main-Site Integration Strategy For A Non-Vite Environment
-
-The main site does not use Vite. Treat OandOcraft as a bounded application, not a folder copied into the main site.
-
-### 6.1 Recommended Model: Standalone Product Under Subdomain
-
-Use when the main site is corporate/marketing and OandOcraft is an authenticated app.
-
-Examples:
-
-- `craft.oando.co.in`
-- `planner.oando.co.in`
-
-Implementation:
-
-- Keep Vite build for OandOcraft.
-- Deploy `dist/` independently.
-- Configure Supabase Auth redirect URLs for the app domain.
-- Configure Edge Function `APP_URL` to the final app domain.
-- Link to OandOcraft from the main site header or portal.
-
-Benefits:
-
-- Lowest risk.
-- Clean routing boundary.
-- No CSS collision.
-- Clear auth redirect behavior.
-- Independent release velocity.
-
-### 6.2 Required Model: Subpath Reverse Proxy
-
-Use when the app must live under the main domain.
-
-Example:
-
-- `https://oando.co.in/OandOcraft/*`
-
-Implementation:
-
-- Build with `npm run build:oando`, which emits assets for `/OandOcraft/`.
-- Add React Router basename from Vite `BASE_URL`.
-- Configure host/proxy fallback `/OandOcraft/* -> /OandOcraft/index.html`.
-- Ensure static assets are served from `/OandOcraft/assets/*`.
-- Add Supabase redirect URLs for `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and invite flows.
-
-Benefits:
-
-- Same domain as main site.
-- Still keeps build systems mostly independent.
-
-Risks:
-
-- Base-path bugs.
-- Auth callback mismatch.
-- CDN/proxy cache mistakes.
-
-### 6.3 Advanced Model: Micro-Frontend Embed
-
-Use only if the main site must mount OandOcraft inside its own shell.
-
-Required refactor:
-
-- Extract `src/OandOcraftApp.tsx` as a mountable app component.
-- Extract `src/bootstrap.tsx` for standalone startup.
-- Allow injected router basename or memory router.
-- Namespace CSS under `.oandocraft-app`.
-- Confirm host React compatibility.
-- Decide auth ownership: host-auth bridge or Supabase Auth inside OandOcraft.
-
-Risks:
-
-- CSS bleed.
-- Router conflicts.
-- Duplicate React/runtime dependencies.
-- Harder performance ownership.
-
-### 6.4 Avoid Initially: Full Rebuild Inside Main-Site Stack
-
-Do not port the app directly into a non-Vite stack until the product architecture is stabilized. The editor is too complex to migrate casually.
-
-### 6.5 Remote Repository Strategy
-
-The remote repo should be planned deliberately. Do not create a GitHub repo as a side effect of local renaming without confirming ownership, visibility, and migration path.
-
-Recommended target:
-
-- New repo name: `OandOcraft`
-- Package name: `oandocraft`
-- Default branch: `main`
-- Visibility: private until brand, security, and deployment settings are finalized
-
-Remote setup steps:
-
-- Confirm GitHub owner or organization.
-- Create the remote repo.
-- Add it as `origin` or `oando` depending on whether the old `Floorcraft` remote remains needed.
-- Push `main`.
-- Configure branch protection.
-- Configure required checks:
-  - lint
-  - build
-  - test
-  - route audit
-  - Supabase SQL/RLS tests once wired
-- Configure Dependabot or equivalent dependency updates.
-- Add repository secrets only where needed; never commit Supabase service role keys.
-- Update README clone instructions only after the remote actually exists.
-
-If preserving the original repository:
-
-- Keep `rcasto123/Floorcraft` links as historical references.
-- Add the new remote as `oando`.
-- Push OandOcraft work to the new remote after the first clean commit.
-
-If replacing the original repository:
-
-- Rename remote repository in GitHub.
-- Update clone URLs, changelog links, issue links, and security references.
-- Confirm deployment integrations still point to the correct repo.
+- subdomain isolation such as `craft.oando.co.in`
+- a host-shell micro-frontend mount
+- SSO bridge or shared host session model
 
 ## 7. Technical Architecture Plan
 
-### 7.1 Frontend Architecture
+### 7.1 Frontend Modules
 
-Refactor toward bounded feature modules:
+Refactor toward bounded modules:
 
-- `app/` root shell, router, providers, route metadata.
-- `features/canvas/` Konva editor.
-- `features/roster/` employee management.
-- `features/reports/` reports and analytics.
-- `features/team/` workspace and members.
-- `features/auth/` auth flows.
-- `features/sharing/` share links and embeds.
-- `features/help/` documentation/search.
-- `lib/supabase/` typed backend access.
-- `lib/brand/` design tokens and UI helpers.
+- `app/` for shell, router, providers, and route metadata
+- `features/canvas/` for editor tools and rendering
+- `features/roster/` for people and seat management
+- `features/reports/` for analytics and exports
+- `features/auth/` for login, invite, verify, reset
+- `features/admin/` for operations and access power tools
+- `lib/brand/` for tokens and theme helpers
+- `lib/supabase/` for typed backend access
 
 ### 7.2 State Architecture
 
-Current Zustand stores are acceptable but need tighter boundaries.
-
-Targets:
-
-- Separate domain stores from UI stores.
-- Add store reset/hydration contracts per office load.
-- Add schema versioning for office payloads.
-- Add migration tests for every payload version.
-- Avoid cross-store mutations without a named transaction/helper.
-- Preserve undo/redo invariants for seat assignment.
+- Keep Zustand but separate domain state from UI state more rigorously.
+- Preserve persisted UI behavior for dockable toolbars and layout preferences.
+- Add schema versioning and migration tests for office payloads.
+- Reduce broad selectors that cause unnecessary editor rerenders.
 
 ### 7.3 Canvas Architecture
 
-Targets:
-
-- Split `CanvasStage` into composition, tools, viewport, events, and layers.
-- Keep Konva layer count under warning thresholds where possible.
-- Memoize heavy renderers.
-- Add viewport culling for very large plans.
-- Add performance counters for element count, layer count, render timing, and payload size.
-- Add route audit checks for Konva warnings.
+- Break `CanvasStage` into viewport, tools, layers, events, overlays, and selection systems.
+- Expand interaction-state coverage for drafting and object manipulation.
+- Add stress testing for large office plans.
+- Track object counts, render timings, and save payload size.
 
 ### 7.4 Data Architecture
 
 Short term:
 
-- Keep JSONB office payload for speed.
-- Add payload size warnings.
-- Add schema version field.
-- Add deterministic migration helpers.
-- Add history/recovery tooling.
+- Keep JSONB office payload storage for velocity.
+- Keep history recovery tooling.
+- Add payload size warnings and migration contracts.
 
 Medium term:
 
-- Normalize high-value/high-churn tables if needed:
-  - employees
-  - reservations
-  - annotations
-  - seat swaps
-  - share links already table-backed
-  - audit events already table-backed
+- Normalize high-churn reporting entities only where real product pressure appears.
+- Keep the plan model optimized for editor speed, not theoretical purity.
 
-Long term:
+## 8. Security And Supabase Plan
 
-- Consider event-sourced office updates or CRDT-like collaborative editing only after single-editor conflict handling is stable.
+### 8.1 Access Model
 
-## 8. Supabase And Security Plan
+- Maintain direct named-user access as the primary model.
+- Keep admin roles able to modify and recover any office within the workspace.
+- Limit anonymous/public share behavior to tightly controlled legacy or exceptional use.
 
-### 8.1 RLS And Database
+### 8.2 Database And RLS
 
-- Generate typed Supabase schema and use it in repositories.
-- Add SQL tests for every RLS policy.
-- Index every RLS predicate path.
-- Validate SECURITY DEFINER functions re-check auth and authorization.
-- Add migration rollback notes.
-- Keep remote seed idempotent.
+- Add SQL coverage for critical RLS paths.
+- Ensure admin power is intentional and tested.
+- Keep seeds idempotent and safe to rerun.
+- Document rollback assumptions for each migration.
 
-### 8.2 Auth And Invites
+### 8.3 Auth And Email
 
-- Confirm redirect URLs for every deployment mode.
-- Update all invite emails to OandOcraft.
-- Add rate-limit tests.
-- Add audit events for invite create, resend, accept, revoke, and expiry.
-- Make dummy/demo login available only in non-production.
+- Confirm all auth redirects under `/OandOcraft/`.
+- Ensure invite/reset/verify messaging uses OandOcraft naming consistently.
+- Keep demo credentials out of production behavior.
 
-### 8.3 Share Links
+### 8.4 Governance
 
-- Add explicit expiry UI.
-- Add revocation UI.
-- Add audit events for create/revoke/open if feasible.
-- Add warning copy for public bearer links.
-- Reassess anonymous token select policy.
-
-### 8.4 Security Headers
-
-- Full app: deny framing unless required.
-- Share/embed routes: allow only approved ancestors, not `*`, if the final embedding domains are known.
-- Add CSP with script/style/connect/img rules matching Supabase and deployment CDN.
-- Keep strict referrer policy for invite/auth/token routes.
-
-### 8.5 Compliance And Governance
-
-- Update SECURITY.md for OandOcraft reporting.
-- Add data retention notes.
-- Document export/delete behavior.
-- Add admin access review checklist.
-- Add support escalation path for lost access, bad invites, accidental overwrite, and data recovery.
+- Update security documentation for the O&O operating model.
+- Document recovery, access review, and accidental-overwrite handling.
+- Maintain audit visibility for access and recovery actions.
 
 ## 9. Performance Plan
 
-### 9.1 Budgets
+### 9.1 Route Budgets
 
-Set budgets per route:
+- Landing and auth routes should avoid pulling editor-heavy dependencies.
+- Dashboard should keep thumbnails and summaries bounded.
+- Editor route can be heavy, but the chunk strategy must be measured and improved.
+- Reports and help content should remain lazy-load friendly.
 
-- Landing: minimal app shell, no Konva.
-- Auth: no editor dependencies.
-- Dashboard: thumbnails must be bounded.
-- Editor map: heavy chunk allowed but measured.
-- Roster: virtualized table and lazy drawers.
-- Help: searchable content loaded in chunks.
+### 9.2 Runtime Priorities
 
-### 9.2 Build Work
-
-- Continue manual vendor chunking.
-- Split `ProjectShell` further.
-- Lazy-load exports and PDF/PNG dependencies only on demand.
-- Lazy-load help content by section.
-- Consider route prefetch on hover for authenticated dashboard/editor paths.
-
-### 9.3 Runtime Work
-
-- Add canvas render measurements.
-- Reduce rerenders from broad store selectors.
-- Add selectors for derived booleans rather than entire state objects.
-- Keep global event listeners deduplicated.
-- Use passive listeners where safe.
-- Add large-office stress scenarios.
+- Reduce unnecessary rerenders from broad store subscriptions.
+- Continue splitting heavyweight editor and shell code.
+- Expand browser-level checks for overflow, resize behavior, and toolbar persistence.
 
 ## 10. Accessibility Plan
 
-Required audits:
+- Audit keyboard paths across auth, dashboard, editor, modals, and drawers.
+- Ensure dockable or floating toolbars remain keyboard accessible.
+- Verify focus return and Escape behavior for overlays.
+- Maintain readable contrast in both light and dark modes.
+- Provide non-pointer alternatives for critical planner operations where practical.
 
-- Keyboard navigation across landing, auth, dashboard, editor, roster, modals, drawers, menus, and share views.
-- Focus trap correctness in modals and drawers.
-- Skip links and landmark structure.
-- Reduced-motion behavior.
-- Color contrast for navy/bronze theme.
-- Canvas alternatives: selected-element panel, keyboard shortcuts, and text-based roster/report paths.
-- Screen-reader copy for icon-only controls.
+## 11. QA And Release Strategy
 
-Acceptance:
-
-- No critical axe violations on core routes.
-- Every modal/drawer closes with Escape and restores focus.
-- Editor has non-pointer fallback for critical operations where practical.
-
-## 11. QA And Test Strategy
-
-### 11.1 Existing Gates
+Current gates:
 
 - `npm run lint`
 - `npm run build`
+- `npm run build:oando`
 - `npm run test`
 - `npm run audit:pages`
 
-### 11.2 Add Gates
+Required additions:
 
-- Supabase SQL/RLS tests in CI.
-- E2E tests for auth, create team, open demo, edit plan, assign seat, share, export, invite preview.
-- Visual screenshots for landing, auth, dashboard, map, roster, reports, help, share, invite.
-- Brand regression grep: no visible `Floorcraft` except historical GitHub URLs.
-- Pricing regression grep: no public pricing copy if pricing is intentionally removed.
-- Bundle budget check.
-- Dependency audit check.
+- browser smoke checks for key `/OandOcraft/` routes
+- RLS and auth regression tests
+- overflow and layout regression checks
+- brand-regression checks for visible `Floorcraft` remnants
+- object-editing coverage for major element types
 
-### 11.3 Test Data
+## 12. Delivery Roadmap
 
-Seed modes:
+### Phase 0 - Rename And Deployment Grounding
 
-- `minimal`: just enough to create first team/office.
-- `demo`: current rich demo workspace.
-- `full`: stress dataset with large offices and many employees.
-- `oando`: branded realistic O&O workspace.
+- Finish OandOcraft naming and package identity.
+- Keep light mode as default.
+- Preserve intentional legacy storage compatibility where required.
+- Lock the `/OandOcraft/` build and routing baseline.
 
-## 12. Observability And Operations
+### Phase 1 - Access And Admin Control
 
-### 12.1 Client Observability
+- Finish direct-access language and flows.
+- Strengthen admin power and recovery controls.
+- Expand audit coverage for sensitive admin actions.
 
-Add reporting for:
+### Phase 2 - Data Completeness
 
-- Route errors.
-- Unhandled promise rejections.
-- Supabase failures by operation.
-- Save conflicts.
-- Save retry exhaustion.
-- Export failures.
-- Invite failures.
-- Auth failures.
-- Canvas performance thresholds.
+- Finish full Supabase payload seeding verification.
+- Remove duplicate/demo pollution where needed.
+- Confirm that hosted data includes real objects, not headings-only payloads.
 
-### 12.2 Backend Observability
+### Phase 3 - Premium UI/UX Pass
 
-Track:
+- Complete the SmartDraw-like shell redesign.
+- Make the editor chrome feel premium and calm.
+- Standardize hover, selection, and interaction language.
+- Finish the cursor and drafting-behavior pass.
 
-- RLS denied operations by endpoint where possible.
-- Edge Function errors and latency.
-- Invite send rate-limit hits.
-- Share-token access patterns.
-- Database size and payload growth.
-- Slow queries.
+### Phase 4 - Editor Power And Professional Blocks
 
-### 12.3 Runbooks
+- Expand properties coverage for every key object type.
+- Improve multi-select and numeric editing behavior.
+- Rebuild more of the library around manufacturer-referenced block families.
+- Add stronger planner templates for O&O use cases.
 
-Create runbooks for:
+### Phase 5 - Main-Site Production Integration
 
-- Deployment rollback.
-- Broken auth redirect.
-- Supabase outage.
-- Bad migration.
-- Bad seed.
-- Lost admin access.
-- Accidental office overwrite.
-- Public share-link leak.
-- Invite email delivery failure.
+- Deploy the bounded app under `/OandOcraft/`.
+- Validate host rewrites, auth redirects, asset paths, and CSS isolation.
+- Prove refresh behavior on all deep links.
 
-## 13. Documentation Plan
+### Phase 6 - Launch Hardening
 
-User docs:
+- Add monitoring, rollback docs, and release checklist discipline.
+- Run final browser, accessibility, security, and data checks.
+- Launch behind controlled access and observe real usage.
 
-- Getting started.
-- Create/open office.
-- Draw floor plan.
-- Add people and seats.
-- Import roster.
-- Share plan.
-- Export reports.
-- Admin permissions.
-- Security and privacy.
-
-Developer docs:
-
-- Architecture overview.
-- State/store contracts.
-- Supabase schema and RLS model.
-- Deployment modes.
-- Main-site integration guide.
-- Brand token guide.
-- Testing guide.
-- Release process.
-
-Ops docs:
-
-- Environment variables.
-- Supabase migration flow.
-- Seed flow.
-- Edge Function deployment.
-- Monitoring and rollback.
-
-## 14. Delivery Roadmap
-
-### Phase 0: Stabilize Current Rename
-
-- Complete OandOcraft rename.
-- Preserve legacy storage keys intentionally.
-- Remove stale mixed-case spellings.
-- Update package metadata.
-- Update tests.
-- Run all gates.
-
-### Phase 1: Brand Completion
-
-- Apply O&O tokens across auth, help, dashboard, editor, reports, share, invite, exports, and emails.
-- Remove pricing content from public surfaces.
-- Update docs and screenshots.
-
-### Phase 2: Integration Foundation
-
-- Pick deployment model: subdomain, subpath, or micro-frontend.
-- Add basename support if needed.
-- Split standalone bootstrap from app component.
-- Document host integration requirements.
-
-### Phase 2B: Remote Repository And Delivery Controls
-
-- Create or rename the remote repository.
-- Push the current clean `main`.
-- Add branch protection.
-- Add CI gates.
-- Add repository secrets and environment definitions.
-- Add release/changelog discipline before production deployment.
-
-### Phase 3: Architecture Refactor
-
-- Split largest files.
-- Introduce feature modules.
-- Add route metadata.
-- Improve editor chunking.
-- Add payload schema versioning.
-
-### Phase 3B: Upstream Properties Panel Assimilation
-
-- Compare local `PropertiesPanel.tsx` and related tests against upstream commit `8b7d3d078632bd16a76c34190a518426fbd8e907`.
-- Port missing behavior intentionally, not by blind copy-paste.
-- Preserve OandOcraft theme tokens while adopting the panel structure.
-- Add or update tests for every element type controlled by the panel.
-- Add browser audit coverage for representative element selection/editing paths.
-
-### Phase 4: Security And Data Hardening
-
-- Expand SQL/RLS tests.
-- Improve share-token governance.
-- Add CSP and final headers.
-- Add audit events for sensitive actions.
-- Add backup/recovery runbooks.
-
-### Phase 5: Product Depth
-
-- Improve roster saved views.
-- Improve reports and executive summaries.
-- Add realistic O&O seed workspace.
-- Add operational dashboards.
-
-### Phase 6: Reliability And Launch
-
-- Add monitoring.
-- Add staging promotion.
-- Run full E2E and accessibility audit.
-- Complete release checklist.
-- Launch behind controlled access.
-- Monitor and iterate.
-
-### Phase 7: Theme Default And Accessibility Polish
-
-- Set light mode as default.
-- Keep explicit dark-mode option.
-- Update theme tests.
-- Verify contrast in both modes.
-- Capture screenshots in both modes for launch-critical routes.
-
-## 15. Acceptance Criteria For Launch
+## 13. Launch Acceptance Criteria
 
 Product:
 
-- All critical workflows complete without console errors.
-- OandOcraft branding is consistent across visible surfaces.
-- No unintended public pricing copy.
-- Demo and production environments are clearly separated.
+- The planner looks and feels intentionally premium, not generic.
+- First-run editing workflows are understandable without heavy help dependence.
+- Blocks, toolbars, and properties feel professional and predictable.
 
-Technical:
+Integration:
 
-- Build, lint, test, route audit, and SQL tests pass in CI.
-- Bundle budgets are documented and enforced.
-- App supports chosen main-site integration mode.
-- Auth redirects work in final environment.
+- `https://oando.co.in/OandOcraft/` works as a bounded app.
+- Nested routes refresh correctly.
+- Auth, invite, and reset flows return to the right subpath.
+- The main site and the planner do not break each other's styling.
 
-Security:
+Security and data:
 
-- RLS tests cover all tables and public routes.
-- Invite/share risks are documented and controlled.
-- Security headers are appropriate for full app and embed/share paths.
-- Incident and rollback runbooks exist.
+- Named access and admin powers behave as designed.
+- RLS-critical paths are covered.
+- Seeded data is complete and verifiable.
 
 Operations:
 
-- Staging and production configs are documented.
-- Seed and migration flows are repeatable.
-- Monitoring covers client, Supabase, and Edge Functions.
-- Release notes and changelog are updated.
+- Release, rollback, and recovery instructions exist.
+- Monitoring covers the main failure paths.
+- The worktree, CI, and deployment outputs are clean at release time.
 
-## 16. Immediate Next Actions
+## 14. Immediate Next Actions
 
-1. Finish exact rename to `OandOcraft` across visible code, docs, emails, exports, seed data, and tests.
-2. Decide final deployment model for the non-Vite main site.
-3. Decide remote repository strategy: new repo, renamed repo, or additional remote.
-4. Set light mode as default while preserving dark-mode selection.
-5. Remove pricing content from Help and public copy if OandOcraft is not sold as a priced SaaS surface.
-6. Add basename support if using `/craft/*` under the main domain.
-7. Compare and assimilate upstream Properties panel changes from commit `8b7d3d078632bd16a76c34190a518426fbd8e907`.
-8. Split the largest files in this order: `ProjectShell`, `CanvasStage`, `RosterPage`, `HelpPage`.
-9. Add CI route audit and brand-regression checks.
-10. Create staging Supabase project and O&O seed dataset.
-11. Add observability before production launch.
+1. Finish the premium UI shell pass so the editor looks decisively more professional.
+2. Expand dockable-toolbar coverage and polish admin stats into a fuller operations HUD.
+3. Complete the manufacturer-referenced block rebuild, starting with workstations, offices, meeting tables, booths, lounge, and storage.
+4. Close the remaining full-seed verification gaps in hosted Supabase.
+5. Prove the real `/OandOcraft/` deployment on the main host with auth callback verification.
+6. Add final regression coverage for properties editing, route refresh, overflow, and major planner interactions.

@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OandOcraft Project Map</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5c6672;
+      --line: #d9dee5;
+      --line-strong: #aeb7c2;
+      --page: #f6f7f5;
+      --panel: #ffffff;
+      --panel-2: #f0f2f4;
+      --navy: #10233f;
+      --bronze: #a76f2b;
+      --blue: #1d5c96;
+      --green: #236a47;
+      --red: #a43a32;
+      --radius: 6px;
+      --shadow: 0 18px 42px rgba(16, 35, 63, 0.12);
+      font-family: "Aptos", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #fbfbfa 0%, var(--page) 42%, #eef1f4 100%);
+      color: var(--ink);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(246, 247, 245, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    .shell {
+      width: min(1480px, calc(100vw - 32px));
+      margin: 0 auto;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 0 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 52px);
+      line-height: 0.95;
+      letter-spacing: 0;
+      color: var(--navy);
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      max-width: 980px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: grid;
+      gap: 7px;
+      min-width: 260px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      font-size: 13px;
+    }
+
+    .meta strong {
+      color: var(--navy);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      padding: 0 0 16px;
+    }
+
+    input,
+    select,
+    button {
+      min-height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    input,
+    select {
+      padding: 0 12px;
+    }
+
+    button {
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    button:hover,
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(167, 111, 43, 0.25);
+      border-color: var(--bronze);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 0 18px;
+    }
+
+    .tab {
+      border-color: var(--line);
+      background: var(--panel);
+      color: var(--navy);
+    }
+
+    .tab.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
+
+    main {
+      padding: 24px 0 48px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      grid-column: span 4;
+      min-height: 170px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(16, 35, 63, 0.08);
+      overflow: hidden;
+    }
+
+    .card.wide {
+      grid-column: span 6;
+    }
+
+    .card.full {
+      grid-column: 1 / -1;
+    }
+
+    .card h2 {
+      margin: 0;
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      color: var(--navy);
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .body {
+      padding: 12px 14px 14px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0 0 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .priority {
+      color: #fff;
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .phase {
+      color: #fff;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .done {
+      color: #fff;
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    p,
+    li {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.48;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 8px;
+    }
+
+    label.todo {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 9px;
+      align-items: start;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    label.todo input {
+      min-height: auto;
+      margin-top: 2px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .empty {
+      display: none;
+      grid-column: 1 / -1;
+      padding: 28px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty.show {
+      display: block;
+    }
+
+    code {
+      padding: 2px 5px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #f3f4f6;
+      color: var(--navy);
+      font-family: "Cascadia Mono", "Consolas", monospace;
+      font-size: 12px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .step {
+      min-height: 110px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--navy);
+      font-size: 13px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 980px) {
+      .top,
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .card,
+      .card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <div class="top">
+        <div>
+          <h1>OandOcraft Project Map</h1>
+          <p class="subtitle">Interactive control board for the O&O workplace planner: product direction, UI polish, Supabase data, main-site integration, testing, security, operations, and launch gates.</p>
+        </div>
+        <div class="meta">
+          <div><strong>Target:</strong> https://oando.co.in/OandOcraft/</div>
+          <div><strong>Model:</strong> bounded Vite SPA under main-site subpath</div>
+          <div><strong>Scope:</strong> one O&O workspace with named access</div>
+          <div><strong>UI bar:</strong> SmartDraw-like, sharp, professional</div>
+        </div>
+      </div>
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search project map, tasks, routes, risks, tools">
+        <select id="phase">
+          <option value="all">All phases</option>
+          <option value="phase-0">Phase 0</option>
+          <option value="phase-1">Phase 1</option>
+          <option value="phase-2">Phase 2</option>
+          <option value="phase-3">Phase 3</option>
+          <option value="phase-4">Phase 4</option>
+          <option value="phase-5">Phase 5</option>
+          <option value="phase-6">Phase 6</option>
+        </select>
+        <button id="reset">Reset local checks</button>
+      </div>
+      <nav class="tabs" aria-label="Project sections">
+        <button class="tab active" data-tab="all">All</button>
+        <button class="tab" data-tab="product">Product</button>
+        <button class="tab" data-tab="ui">UI</button>
+        <button class="tab" data-tab="data">Data</button>
+        <button class="tab" data-tab="integration">Integration</button>
+        <button class="tab" data-tab="quality">Quality</button>
+        <button class="tab" data-tab="ops">Ops</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="grid" id="cards">
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="vision mandate scope workspace named access internal external admin">
+        <h2>Product Mandate</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill phase">all phases</span>
+            <span class="pill">one workspace</span>
+            <span class="pill">named access</span>
+          </div>
+          <p>OandOcraft is a controlled O&O workplace planning product, not a generic floor-plan demo. The app must support planning, seating, assignments, admin recovery, reporting, and controlled access for internal and approved external users.</p>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="ui" data-phase="phase-3 phase-4" data-keywords="smartdraw premium elegant sharp corners compass minimap canvas overflow">
+        <h2>UI Standard</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill priority">priority</span>
+            <span class="pill phase">phase 3</span>
+            <span class="pill phase">phase 4</span>
+          </div>
+          <ul>
+            <li>Fix the broken compass/minimap control and verify it does not overlay awkwardly on the canvas.</li>
+            <li>Sharpen UI corners across panels, cards, toolbars, menus, modals, and buttons.</li>
+            <li>Keep cards and dense controls at 8px radius or less.</li>
+            <li>Make the editor feel closer to SmartDraw, Lucidchart, and Visio-class planning tools.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="ui" data-phase="phase-3 phase-4" data-keywords="toolbars dockable movable undock admin stats hud">
+        <h2>Toolbars And Admin HUD</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill done">started</span>
+            <span class="pill">dockable</span>
+            <span class="pill">admin stats</span>
+          </div>
+          <ul>
+            <li>Dockable toolbar foundation exists and should expand to every toolbar that benefits from movement.</li>
+            <li>Admin users need live stats for object count, assignments, save state, conflicts, and office health.</li>
+            <li>Toolbar positions should persist and expose a reset-to-default command.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card" data-tab="ui" data-phase="phase-4" data-keywords="blocks millerknoll steelcase bimobject svg konva furniture office symbols">
+        <h2>Block Library</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill">MillerKnoll</span>
+            <span class="pill">Steelcase</span>
+            <span class="pill">BIMobject gaps</span>
+          </div>
+          <ul>
+            <li>Use manufacturer references for proportions and typologies.</li>
+            <li>Redraw into one OandOcraft top-view SVG/Konva style.</li>
+            <li>Prioritize workstations, offices, meeting tables, booths, lounge, reception, storage, and facilities.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card" data-tab="data" data-phase="phase-2" data-keywords="supabase seed data floor payload objects assignments employees rls">
+        <h2>Supabase Data</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill phase">phase 2</span>
+            <span class="pill">seed:verify</span>
+          </div>
+          <ul>
+            <li>Seeded offices must include real objects, not headings-only data.</li>
+            <li>Verify floors, walls, rooms, doors, windows, desks, furniture, employees, annotations, neighborhoods, and assignments.</li>
+            <li>Capture hosted table counts before and after full-data work.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card" data-tab="integration" data-phase="phase-5" data-keywords="main site integration vite oando subpath build routes auth redirect">
+        <h2>Main-Site Integration</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill phase">phase 5</span>
+            <span class="pill">/OandOcraft/</span>
+          </div>
+          <ul>
+            <li>Build with <code>npm run build:oando</code>.</li>
+            <li>Serve <code>dist/</code> under <code>/OandOcraft/</code>.</li>
+            <li>Rewrite nested client routes to <code>/OandOcraft/index.html</code>.</li>
+            <li>Keep CSS and JavaScript isolated from the main site.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card" data-tab="quality" data-phase="phase-6" data-keywords="testing lint test build audit pages browser smoke accessibility">
+        <h2>Quality Gates</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill phase">phase 6</span>
+            <span class="pill">release gate</span>
+          </div>
+          <ul>
+            <li><code>npm run lint</code></li>
+            <li><code>npm run test</code></li>
+            <li><code>npm run build</code></li>
+            <li><code>npm run build:oando</code></li>
+            <li><code>npm run audit:pages</code> when available</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card" data-tab="ops" data-phase="phase-6" data-keywords="operations rollback release deploy smoke production runbook">
+        <h2>Operations</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill">rollback</span>
+            <span class="pill">runbook</span>
+          </div>
+          <ul>
+            <li>Keep previous production <code>dist/</code> artifact available for rollback.</li>
+            <li>Document broken route, broken auth, bad seed, and failed save recovery.</li>
+            <li>Record owner sign-off before launch.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="product" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="roadmap phases delivery">
+        <h2>Roadmap</h2>
+        <div class="body timeline">
+          <div class="step"><strong>Phase 0</strong><span>Rename, repo, light default, base path, build grounding.</span></div>
+          <div class="step"><strong>Phase 1</strong><span>Direct access, admin powers, audit behavior.</span></div>
+          <div class="step"><strong>Phase 2</strong><span>Full Supabase data load, seed verification, duplicate cleanup.</span></div>
+          <div class="step"><strong>Phase 3</strong><span>Premium SmartDraw-like UI shell, sharper corners, compass fix.</span></div>
+          <div class="step"><strong>Phase 4</strong><span>Editor depth, professional blocks, properties coverage.</span></div>
+          <div class="step"><strong>Phase 5</strong><span>Main-site deployment under `/OandOcraft/` with auth routes.</span></div>
+          <div class="step"><strong>Phase 6</strong><span>Security, browser smoke, release, rollback, monitoring.</span></div>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="quality" data-phase="phase-3 phase-4 phase-5 phase-6" data-keywords="interactive checklist local storage tasks">
+        <h2>Local Working Checklist</h2>
+        <div class="body checklist" id="todoList">
+          <label class="todo"><input type="checkbox" data-id="compass">Fix and browser-test the compass/minimap control.</label>
+          <label class="todo"><input type="checkbox" data-id="corners">Apply sharper corners across core UI chrome.</label>
+          <label class="todo"><input type="checkbox" data-id="overflow">Verify no horizontal overflow on desktop and mobile.</label>
+          <label class="todo"><input type="checkbox" data-id="toolbar">Finish toolbar movement, persistence, reset, and keyboard access.</label>
+          <label class="todo"><input type="checkbox" data-id="admin-hud">Expand admin stats into a production-useful HUD.</label>
+          <label class="todo"><input type="checkbox" data-id="blocks">Rebuild first professional block families from approved references.</label>
+          <label class="todo"><input type="checkbox" data-id="seed">Verify full Supabase seed and hosted row counts.</label>
+          <label class="todo"><input type="checkbox" data-id="host">Deploy and smoke-test `/OandOcraft/` on the real main host.</label>
+          <label class="todo"><input type="checkbox" data-id="auth">Verify production auth, invite, and reset redirects.</label>
+          <label class="todo"><input type="checkbox" data-id="release">Complete release, rollback, and owner sign-off.</label>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="ops" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="files docs references">
+        <h2>Core Project Files</h2>
+        <div class="body">
+          <ul>
+            <li><code>docs/OandOcraft_OVERHAUL_MASTER_PLAN.md</code> is the strategic plan.</li>
+            <li><code>docs/OandOcraft_PHASE_CHECKLIST.md</code> is the phase status board.</li>
+            <li><code>docs/OandOcraft_PROJECT_CHECKLIST.md</code> is the detailed execution checklist.</li>
+            <li><code>docs/OandOcraft_WORKFLOW.md</code> is the day-to-day implementation workflow.</li>
+            <li><code>docs/OandOcraft_MAIN_SITE_INTEGRATION.md</code> is the deployment contract for the non-Vite main site.</li>
+            <li><code>docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md</code> is the source plan for professional floor-plan objects.</li>
+          </ul>
+        </div>
+      </article>
+
+      <div class="empty" id="empty">No project sections match the current filters.</div>
+    </section>
+  </main>
+
+  <script>
+    const search = document.querySelector("#search");
+    const phase = document.querySelector("#phase");
+    const reset = document.querySelector("#reset");
+    const cards = Array.from(document.querySelectorAll(".card"));
+    const empty = document.querySelector("#empty");
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const checks = Array.from(document.querySelectorAll("[data-id]"));
+    const stateKey = "oandocraft-project-map-checks";
+    let activeTab = "all";
+
+    function loadChecks() {
+      const saved = JSON.parse(localStorage.getItem(stateKey) || "{}");
+      checks.forEach((box) => {
+        box.checked = Boolean(saved[box.dataset.id]);
+      });
+    }
+
+    function saveChecks() {
+      const saved = {};
+      checks.forEach((box) => {
+        saved[box.dataset.id] = box.checked;
+      });
+      localStorage.setItem(stateKey, JSON.stringify(saved));
+    }
+
+    function applyFilters() {
+      const query = search.value.trim().toLowerCase();
+      const selectedPhase = phase.value;
+      let visible = 0;
+
+      cards.forEach((card) => {
+        const matchesTab = activeTab === "all" || card.dataset.tab === activeTab;
+        const matchesPhase = selectedPhase === "all" || card.dataset.phase.includes(selectedPhase);
+        const haystack = `${card.textContent} ${card.dataset.keywords || ""}`.toLowerCase();
+        const matchesSearch = !query || haystack.includes(query);
+        const show = matchesTab && matchesPhase && matchesSearch;
+        card.classList.toggle("hidden", !show);
+        if (show) visible += 1;
+      });
+
+      empty.classList.toggle("show", visible === 0);
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        activeTab = tab.dataset.tab;
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        applyFilters();
+      });
+    });
+
+    search.addEventListener("input", applyFilters);
+    phase.addEventListener("change", applyFilters);
+    checks.forEach((box) => box.addEventListener("change", saveChecks));
+    reset.addEventListener("click", () => {
+      localStorage.removeItem(stateKey);
+      loadChecks();
+    });
+
+    loadChecks();
+    applyFilters();
+  </script>
+</body>
+</html>
