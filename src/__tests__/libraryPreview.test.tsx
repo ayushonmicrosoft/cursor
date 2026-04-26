@@ -32,14 +32,30 @@ describe('LibraryPreview', () => {
     expect(html).toMatch(/<text[^>]*>T</)
   })
 
-  it('rect table falls through to the default proportional rect', () => {
+  it('rect table renders as a sharp plan-view table with seat blocks', () => {
     const html = snap({ type: 'table-rect', label: 'Rect Table', category: 'Tables' })
     expect(html).toMatch(/<rect/)
     expect(html).not.toMatch(/<ellipse/)
+    expect(html.match(/rx="0\.75"/g)?.length).toBeGreaterThanOrEqual(1)
+    expect(html.match(/<rect/g)?.length).toBeGreaterThanOrEqual(8)
   })
 
   it('elevator has two crossing lines', () => {
     const html = snap({ type: 'decor', shape: 'elevator', label: 'Elevator', category: 'Structure' })
     expect(html.match(/<line/g)?.length).toBe(2)
+  })
+
+  it('workstation preview uses rectilinear bench slots and chair blocks', () => {
+    const html = snap({ type: 'workstation', label: 'Workstation', category: 'Desks' })
+    expect(html.match(/<line/g)?.length).toBe(3)
+    expect(html.match(/<rect/g)?.length).toBeGreaterThanOrEqual(9)
+    expect(html).not.toMatch(/<circle/)
+  })
+
+  it('conference room preview uses a sharp room shell and seat blocks', () => {
+    const html = snap({ type: 'conference-room', label: 'Conference Room', category: 'Rooms' })
+    expect(html.match(/<rect/g)?.length).toBeGreaterThanOrEqual(12)
+    expect(html).toMatch(/rx="0\.75"/)
+    expect(html).not.toMatch(/<circle/)
   })
 })

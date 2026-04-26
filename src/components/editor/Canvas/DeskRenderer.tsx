@@ -261,7 +261,7 @@ function DropTargetOutline({
       stroke={stroke}
       strokeWidth={isHovered ? 2.5 : 1.5}
       dash={[6, 3]}
-      cornerRadius={6}
+      cornerRadius={2}
       listening={false}
     />
   )
@@ -331,7 +331,7 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
         fill={fillColor}
         stroke={borderColor}
         strokeWidth={isSelected ? 2.5 : overrideStroke ? 2.5 : 1.5}
-        cornerRadius={4}
+        cornerRadius={2}
         dash={borderDash}
         opacity={element.style.opacity * opacityMul}
       />
@@ -429,7 +429,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
         fill={element.style.fill}
         stroke={borderColor}
         strokeWidth={isSelected ? 2.5 : overrideStroke ? 2.5 : element.style.strokeWidth}
-        cornerRadius={4}
+        cornerRadius={2}
         opacity={element.style.opacity * opacityMul}
       />
 
@@ -586,7 +586,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
             stroke={stroke}
             strokeWidth={isHoveredSlot ? 2.5 : 1.5}
             dash={[6, 3]}
-            cornerRadius={4}
+            cornerRadius={2}
             listening={false}
           />
         )
@@ -631,7 +631,7 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
             : (overrideStroke || firstDeptColor || borderColor)
         }
         strokeWidth={isSelected ? 3 : 2}
-        cornerRadius={6}
+        cornerRadius={3}
         opacity={element.style.opacity * opacityMul}
       />
 

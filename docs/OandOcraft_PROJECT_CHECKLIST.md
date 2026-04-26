@@ -67,15 +67,15 @@ Status key:
 
 - [x] Block-source strategy exists.
 - [x] Current crude blocks have been improved once.
-- [ ] Workstation and benching blocks are rebuilt from MillerKnoll/Steelcase references.
-- [ ] Private office blocks are rebuilt.
-- [ ] Meeting and boardroom blocks are rebuilt.
-- [ ] Phone booth and focus pod blocks are rebuilt.
-- [ ] Lounge and reception blocks are rebuilt.
+- [x] Workstation and benching blocks are rebuilt from MillerKnoll/Steelcase references.
+- [x] Private office blocks are rebuilt.
+- [x] Meeting and boardroom blocks are rebuilt.
+- [x] Phone booth and focus pod blocks are rebuilt.
+- [x] Lounge and reception blocks are rebuilt.
 - [ ] Storage, lockers, printer bays, and facility blocks are rebuilt.
-- [ ] SVG preview language matches canvas Konva symbols.
-- [ ] Blocks keep believable dimensions.
-- [ ] Blocks remain readable at zoomed-out planning scale.
+- [x] SVG preview language matches canvas Konva symbols.
+- [x] Blocks keep believable dimensions.
+- [x] Blocks remain readable at zoomed-out planning scale.
 
 ## 5. Editor Behavior
 

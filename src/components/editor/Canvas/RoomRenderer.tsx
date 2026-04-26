@@ -46,7 +46,7 @@ function ConferenceRoomRenderer({ element, isSelected }: ConferenceRoomRendererP
         fill="#FFF7ED"
         stroke={stroke}
         strokeWidth={isSelected ? 2.5 : 1.5}
-        cornerRadius={10}
+        cornerRadius={3}
         opacity={element.style.opacity}
       />
       <Rect
@@ -57,7 +57,7 @@ function ConferenceRoomRenderer({ element, isSelected }: ConferenceRoomRendererP
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
-        cornerRadius={Math.min(10, innerH / 2)}
+        cornerRadius={Math.min(4, innerH / 4)}
         opacity={element.style.opacity * 0.82}
         listening={false}
       />
@@ -112,7 +112,7 @@ function PhoneBoothRenderer({ element, isSelected }: PhoneBoothRendererProps) {
         fill="#F0FDF4"
         stroke={stroke}
         strokeWidth={isSelected ? 2.5 : 1.5}
-        cornerRadius={10}
+        cornerRadius={3}
         opacity={element.style.opacity}
       />
       <Rect
@@ -123,7 +123,7 @@ function PhoneBoothRenderer({ element, isSelected }: PhoneBoothRendererProps) {
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
-        cornerRadius={Math.min(8, element.width * 0.12)}
+        cornerRadius={Math.min(3, element.width * 0.08)}
         opacity={element.style.opacity * 0.85}
         listening={false}
       />
@@ -173,7 +173,7 @@ function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
         fill="#ECFDF5"
         stroke={stroke}
         strokeWidth={isSelected ? 2.5 : 1.5}
-        cornerRadius={12}
+        cornerRadius={3}
         opacity={element.style.opacity}
       />
       <Rect
@@ -184,7 +184,7 @@ function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
-        cornerRadius={Math.min(8, element.height * 0.08)}
+        cornerRadius={Math.min(3, element.height * 0.06)}
         opacity={element.style.opacity * 0.78}
         listening={false}
       />
@@ -195,7 +195,7 @@ function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
         height={Math.max(4, element.height * 0.05)}
         fill={stroke}
         opacity={element.style.opacity * 0.28}
-        cornerRadius={4}
+        cornerRadius={1}
         listening={false}
       />
 

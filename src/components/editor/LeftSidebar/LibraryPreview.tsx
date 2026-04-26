@@ -8,6 +8,10 @@ import type { LibraryItem } from './ElementLibrary'
  */
 const W = 24
 const H = 18
+const CHAIR_FILL = '#F8FAFC'
+const GLASS_FILL = '#E0F2FE'
+const DETAIL_STROKE = '#64748B'
+const R = 0.75
 
 function bboxScale(itemW: number, itemH: number) {
   // Reserve 1px padding so strokes don't clip at the edge.
@@ -19,6 +23,55 @@ function bboxScale(itemW: number, itemH: number) {
   const x = (W - w) / 2
   const y = (H - h) / 2
   return { x, y, w, h }
+}
+
+function Chair({
+  x,
+  y,
+  width = 2.8,
+  height = 2,
+  stroke,
+}: {
+  x: number
+  y: number
+  width?: number
+  height?: number
+  stroke: string
+}) {
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      rx="0.45"
+      fill={CHAIR_FILL}
+      stroke={stroke}
+      strokeWidth="0.75"
+    />
+  )
+}
+
+function PlanLine({
+  d,
+  opacity = 0.65,
+  stroke = DETAIL_STROKE,
+}: {
+  d: string
+  opacity?: number
+  stroke?: string
+}) {
+  return (
+    <path
+      d={d}
+      stroke={stroke}
+      strokeWidth="0.8"
+      fill="none"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      opacity={opacity}
+    />
+  )
 }
 
 interface Props {
@@ -39,8 +92,9 @@ export function LibraryPreview({ item }: Props) {
     if (key === 'desk/l-shape' || key === 'hot-desk/l-shape') {
       return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-          <path d="M3 3h18v12h-6V8H3z" fill={fill} stroke={stroke} strokeLinejoin="round" />
-          <rect x={5} y={5} width={8} height={2.5} rx="1" fill="#fff" opacity="0.65" />
+          <path d="M3 3h18v11h-5.5V8.5H3z" fill={fill} stroke={stroke} strokeLinejoin="miter" />
+          <rect x={5} y={5} width={8} height={1.8} rx="0.35" fill="#fff" opacity="0.7" />
+          <Chair x={9.4} y={14} width={4} height={2} stroke={stroke} />
         </svg>
       )
     }
@@ -48,17 +102,19 @@ export function LibraryPreview({ item }: Props) {
     if (key === 'desk/cubicle' || key === 'hot-desk/cubicle') {
       return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-          <path d="M4 3h16v12M4 3v12M4 15h5M15 15h5" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" />
-          <rect x={6} y={8} width={12} height={5} rx="1.5" fill={fill} stroke={stroke} />
+          <path d="M4 3h16v12M4 3v12M4 15h5M15 15h5" fill="none" stroke={stroke} strokeWidth="1.4" strokeLinecap="square" />
+          <rect x={6} y={7.5} width={12} height={5} rx={R} fill={fill} stroke={stroke} />
+          <PlanLine d="M8 6h8" stroke={stroke} />
         </svg>
       )
     }
 
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={3} y={5} width={18} height={9} rx="2" fill={fill} stroke={stroke} />
-        <rect x={5} y={7} width={14} height={2} rx="1" fill="#fff" opacity="0.7" />
-        <circle cx={12} cy={15.5} r="1.4" fill={stroke} opacity="0.75" />
+        <rect x={3} y={5} width={18} height={8.5} rx={R} fill={fill} stroke={stroke} />
+        <rect x={5} y={7} width={14} height={1.7} rx="0.35" fill="#fff" opacity="0.72" />
+        <PlanLine d="M6 10.8h12" stroke={stroke} opacity={0.42} />
+        <Chair x={9.5} y={14.1} width={5} height={2.2} stroke={stroke} />
       </svg>
     )
   }
@@ -66,12 +122,12 @@ export function LibraryPreview({ item }: Props) {
   if (item.type === 'workstation') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={2} y={5} width={20} height={8} rx="2" fill={fill} stroke={stroke} />
-        <line x1={12} y1={5} x2={12} y2={13} stroke={stroke} opacity="0.65" />
-        <circle cx={6} cy={4} r="1.5" fill="#E5E7EB" stroke={stroke} />
-        <circle cx={18} cy={4} r="1.5" fill="#E5E7EB" stroke={stroke} />
-        <circle cx={6} cy={14} r="1.5" fill="#E5E7EB" stroke={stroke} />
-        <circle cx={18} cy={14} r="1.5" fill="#E5E7EB" stroke={stroke} />
+        <rect x={2} y={5.2} width={20} height={7.6} rx={R} fill={fill} stroke={stroke} />
+        <line x1={7} y1={5.2} x2={7} y2={12.8} stroke={stroke} opacity="0.45" />
+        <line x1={12} y1={5.2} x2={12} y2={12.8} stroke={stroke} opacity="0.55" />
+        <line x1={17} y1={5.2} x2={17} y2={12.8} stroke={stroke} opacity="0.45" />
+        {[3.4, 8.4, 13.4, 18.4].map((x) => <Chair key={`bench-top-${x}`} x={x} y={2.2} stroke={stroke} />)}
+        {[3.4, 8.4, 13.4, 18.4].map((x) => <Chair key={`bench-bottom-${x}`} x={x} y={13.8} stroke={stroke} />)}
       </svg>
     )
   }
@@ -80,17 +136,21 @@ export function LibraryPreview({ item }: Props) {
     if (key === 'private-office/u-shape') {
       return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-          <path d="M4 3h4v8h8V3h4v12H4z" fill={fill} stroke={stroke} strokeLinejoin="round" />
-          <path d="M9 6h6" stroke="#fff" strokeWidth="1.4" opacity="0.8" />
+          <rect x={2.5} y={2} width={19} height={14} rx={R} fill={GLASS_FILL} stroke={stroke} opacity="0.55" />
+          <path d="M5 4h4v7h6V4h4v10H5z" fill={fill} stroke={stroke} strokeLinejoin="miter" />
+          <PlanLine d="M10 6.2h4" stroke="#fff" opacity={0.9} />
+          <Chair x={10} y={13.3} width={4} height={2} stroke={stroke} />
         </svg>
       )
     }
 
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={3} y={3} width={18} height={12} rx="2" fill={fill} stroke={stroke} />
-        <rect x={6} y={6} width={12} height={5} rx="1.5" fill="#fff" stroke={stroke} opacity="0.75" />
-        <path d="M10 15h4" stroke="#fff" strokeWidth="2" />
+        <rect x={2.5} y={2} width={19} height={14} rx={R} fill={GLASS_FILL} stroke={stroke} opacity="0.55" />
+        <path d="M4.5 14.5h4" stroke="#fff" strokeWidth="1.4" />
+        <rect x={6} y={5.5} width={12} height={4.8} rx={R} fill={fill} stroke={stroke} />
+        <Chair x={10} y={11.7} width={4} height={2} stroke={stroke} />
+        <PlanLine d="M7.8 7.3h8.4" stroke="#fff" opacity={0.75} />
       </svg>
     )
   }
@@ -98,10 +158,11 @@ export function LibraryPreview({ item }: Props) {
   if (item.type === 'conference-room') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={2} y={2} width={20} height={14} rx="2.5" fill={fill} stroke={stroke} />
-        <rect x={6} y={6} width={12} height={6} rx="2" fill="#fff" stroke={stroke} opacity="0.75" />
-        {[5, 9, 15, 19].map((x) => <circle key={`top-${x}`} cx={x} cy={4} r="1" fill={stroke} opacity="0.75" />)}
-        {[5, 9, 15, 19].map((x) => <circle key={`bot-${x}`} cx={x} cy={14} r="1" fill={stroke} opacity="0.75" />)}
+        <rect x={1.7} y={1.8} width={20.6} height={14.4} rx={R} fill={fill} stroke={stroke} />
+        <rect x={5.5} y={6.1} width={13} height={5.8} rx={R} fill="#fff" stroke={stroke} opacity="0.86" />
+        {[4, 7.8, 12, 16.2, 20].map((x) => <Chair key={`conf-top-${x}`} x={x - 1.2} y={3.1} width={2.4} height={1.8} stroke={stroke} />)}
+        {[4, 7.8, 12, 16.2, 20].map((x) => <Chair key={`conf-bottom-${x}`} x={x - 1.2} y={13.1} width={2.4} height={1.8} stroke={stroke} />)}
+        <PlanLine d="M8 9h8" stroke={stroke} opacity={0.35} />
       </svg>
     )
   }
@@ -109,9 +170,10 @@ export function LibraryPreview({ item }: Props) {
   if (item.type === 'phone-booth') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={7} y={2} width={10} height={14} rx="2" fill={fill} stroke={stroke} />
-        <path d="M10 5c2 1 2 4 0 5" stroke={stroke} strokeWidth="1.2" fill="none" strokeLinecap="round" />
-        <circle cx={14} cy={13} r="0.8" fill={stroke} />
+        <rect x={7} y={2} width={10} height={14} rx={R} fill={fill} stroke={stroke} />
+        <rect x={9} y={4.2} width={6} height={7.6} rx="0.55" fill="#fff" stroke={stroke} opacity="0.82" />
+        <PlanLine d="M16.9 4.3v9.3M14.2 13.6h2.7" stroke={stroke} opacity={0.75} />
+        <circle cx={14} cy={13.6} r="0.6" fill={stroke} />
       </svg>
     )
   }
@@ -119,8 +181,10 @@ export function LibraryPreview({ item }: Props) {
   if (item.type === 'common-area') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={2} y={4} width={20} height={10} rx="3" fill={fill} stroke={stroke} />
-        <path d="M6 11h12M6 8h4m4 0h4" stroke={stroke} strokeWidth="1.2" strokeLinecap="round" opacity="0.75" />
+        <rect x={2} y={3.2} width={20} height={11.6} rx={R} fill={fill} stroke={stroke} />
+        <rect x={4.2} y={6} width={6.5} height={5.2} rx={R} fill="#fff" stroke={stroke} opacity="0.78" />
+        <rect x={13.3} y={6} width={6.5} height={5.2} rx={R} fill="#fff" stroke={stroke} opacity="0.78" />
+        <rect x={10.6} y={11.8} width={2.8} height={1.2} rx="0.35" fill={stroke} opacity="0.45" />
       </svg>
     )
   }
@@ -150,7 +214,9 @@ export function LibraryPreview({ item }: Props) {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
         <ellipse cx={W / 2} cy={H / 2} rx={W / 2 - 3} ry={H / 2 - 5} fill={fill} stroke={stroke} />
-        <path d="M7 9h10" stroke="#fff" strokeWidth="1.4" opacity="0.75" />
+        <path d="M7 9h10" stroke="#fff" strokeWidth="1.2" opacity="0.75" />
+        <Chair x={5} y={2.7} stroke={stroke} />
+        <Chair x={16.2} y={13.3} stroke={stroke} />
       </svg>
     )
   }
@@ -160,10 +226,20 @@ export function LibraryPreview({ item }: Props) {
     const tableW = item.type === 'table-conference' ? 20 : 16
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={tableX} y={5} width={tableW} height={8} rx="2" fill={fill} stroke={stroke} />
-        <path d="M7 9h10" stroke="#fff" strokeWidth="1.2" opacity="0.75" />
-        {[4, 8, 16, 20].map((x) => <circle key={`top-${x}`} cx={x} cy={4} r="1" fill={stroke} opacity="0.7" />)}
-        {[4, 8, 16, 20].map((x) => <circle key={`bot-${x}`} cx={x} cy={14} r="1" fill={stroke} opacity="0.7" />)}
+        <rect x={tableX} y={5} width={tableW} height={8} rx={R} fill={fill} stroke={stroke} />
+        <path d="M7 9h10" stroke="#fff" strokeWidth="1.05" opacity="0.75" />
+        {[
+          tableX + 1.2,
+          tableX + tableW * 0.35,
+          tableX + tableW * 0.65,
+          tableX + tableW - 3.6,
+        ].map((x) => <Chair key={`top-${x}`} x={x} y={2.4} width={2.4} height={1.8} stroke={stroke} />)}
+        {[
+          tableX + 1.2,
+          tableX + tableW * 0.35,
+          tableX + tableW * 0.65,
+          tableX + tableW - 3.6,
+        ].map((x) => <Chair key={`bot-${x}`} x={x} y={13.8} width={2.4} height={1.8} stroke={stroke} />)}
       </svg>
     )
   }
@@ -200,9 +276,9 @@ export function LibraryPreview({ item }: Props) {
   if (key === 'decor/couch') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={2} y={5} width={W - 4} height={H - 7} fill={fill} stroke={stroke} rx={3} />
-        <rect x={3} y={7} width={3} height={H - 10} fill={stroke} opacity="0.35" rx="1.5" />
-        <rect x={W - 6} y={7} width={3} height={H - 10} fill={stroke} opacity="0.35" rx="1.5" />
+        <rect x={2} y={5} width={W - 4} height={H - 7} fill={fill} stroke={stroke} rx={R} />
+        <rect x={3} y={7} width={3} height={H - 10} fill={stroke} opacity="0.35" rx="0.45" />
+        <rect x={W - 6} y={7} width={3} height={H - 10} fill={stroke} opacity="0.35" rx="0.45" />
       </svg>
     )
   }
@@ -218,8 +294,8 @@ export function LibraryPreview({ item }: Props) {
   if (key === 'decor/reception') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={2} y={3} width={W - 4} height={5} fill={fill} stroke={stroke} />
-        <rect x={2} y={10} width={W - 4} height={5} fill={fill} stroke={stroke} />
+        <path d="M3 4h18v4H7v6H3z" fill={fill} stroke={stroke} strokeLinejoin="miter" />
+        <rect x={9} y={10} width={9} height={4} rx={R} fill="#fff" stroke={stroke} opacity="0.72" />
       </svg>
     )
   }
@@ -243,11 +319,12 @@ export function LibraryPreview({ item }: Props) {
   }
 
   if (key === 'decor/armchair' || item.type === 'chair') {
-    // Chair: rect seat + semicircle back.
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={4} y={8} width={W - 8} height={H - 10} fill={fill} stroke={stroke} rx={1} />
-        <path d={`M 4,8 A 7 7 0 0 1 ${W - 4} 8`} fill="none" stroke={stroke} />
+        <rect x={5} y={6.2} width={14} height={8.8} fill={fill} stroke={stroke} rx={R} />
+        <rect x={6.5} y={4} width={11} height={3.4} fill={CHAIR_FILL} stroke={stroke} rx="0.55" />
+        <rect x={6.5} y={9} width={2.4} height={5} fill={stroke} opacity="0.28" rx="0.35" />
+        <rect x={15.1} y={9} width={2.4} height={5} fill={stroke} opacity="0.28" rx="0.35" />
       </svg>
     )
   }
@@ -276,9 +353,9 @@ export function LibraryPreview({ item }: Props) {
   if (item.type === 'sofa') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
-        <rect x={2} y={5} width={W - 4} height={H - 8} fill={fill} stroke={stroke} rx={4} />
-        <rect x={3} y={7} width={4} height={H - 11} fill={stroke} opacity="0.35" rx="2" />
-        <rect x={W - 7} y={7} width={4} height={H - 11} fill={stroke} opacity="0.35" rx="2" />
+        <rect x={2} y={5} width={W - 4} height={H - 8} fill={fill} stroke={stroke} rx={R} />
+        <rect x={3} y={7} width={4} height={H - 11} fill={stroke} opacity="0.35" rx="0.5" />
+        <rect x={W - 7} y={7} width={4} height={H - 11} fill={stroke} opacity="0.35" rx="0.5" />
       </svg>
     )
   }

@@ -45,7 +45,7 @@ export function TableRenderer({ element }: TableRendererProps) {
         fill={element.style.fill}
         stroke={stroke}
         strokeWidth={strokeWidth}
-        cornerRadius={Math.min(10, element.height / 5)}
+        cornerRadius={Math.min(3, element.height / 7)}
       />
       <Rect
         x={-highlightW / 2}
@@ -54,7 +54,7 @@ export function TableRenderer({ element }: TableRendererProps) {
         height={Math.max(3, element.height * 0.08)}
         fill="#FFFFFF"
         opacity={0.45}
-        cornerRadius={Math.max(2, element.height * 0.04)}
+        cornerRadius={1}
         listening={false}
       />
 
