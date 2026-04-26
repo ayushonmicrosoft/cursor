@@ -21,6 +21,7 @@ Working docs:
 - `docs/OandOcraft_MAIN_SITE_INTEGRATION.md`
 - `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
 - `docs/OandOcraft_TOOLBAR_DOCKING_AUDIT.md`
+- `docs/OandOcraft_RELEASE_RUNBOOK.md`
 
 ## Phase 0 - Repo, Deployment, And Ground Rules
 
@@ -35,7 +36,7 @@ Working docs:
 - [ ] Host-only: Add Supabase production redirect URLs for `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and invite acceptance.
 - [ ] Host-only: Confirm production env vars for the O&O host.
 - [x] Add workflow, detailed checklist, and interactive project-map documentation.
-- [ ] Repo-local: Add release artifact, changelog, and release runbook checklist details to deployment docs.
+- [x] Repo-local: Add release artifact, changelog, and release runbook checklist details to deployment docs.
 
 Exit criteria:
 
@@ -140,9 +141,9 @@ Exit criteria:
 - [ ] Repo-local: Run full lint/build/test/page audit.
 - [ ] Repo-local: Add browser smoke tests for key local routes.
 - [ ] Repo-local: Add security review for RLS, auth redirects, service-role usage, and public routes.
-- [ ] Repo-local: Add rollback instructions with artifact name, location, retention, restore command/path, and rollback decision owner.
-- [ ] Repo-local: Add release checklist covering release artifact generation, checksum/version label, changelog update, runbook execution, production smoke test, rollback artifact, and post-release record.
-- [ ] Repo-local: Add changelog entry/template with summary, user-visible changes, operational steps, known issues, verification, and rollback notes.
+- [x] Repo-local: Add rollback instructions with artifact name, location, retention, restore command/path, and rollback decision owner.
+- [x] Repo-local: Add release checklist covering release artifact generation, checksum/version label, changelog update, runbook execution, production smoke test, rollback artifact, and post-release record.
+- [x] Repo-local: Add changelog entry/template with summary, user-visible changes, operational steps, known issues, verification, and rollback notes.
 - [ ] Host-only: Owner sign-off is recorded.
 - [ ] Host-only: Push final phase commit.
 

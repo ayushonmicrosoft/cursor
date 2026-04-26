@@ -219,6 +219,19 @@ npm run build
 
 Runs `tsc -b` (project-references type check) followed by `vite build`. Output is written to `dist/`.
 
+For the O&O main-site subpath build:
+
+```bash
+npm run build:oando
+npm run release:manifest
+```
+
+`build:oando` emits assets for `/OandOcraft/`. `release:manifest` writes
+`dist/OandOcraft-release-manifest.json` with per-file SHA-256 values,
+aggregate SHA-256, commit, version label, and artifact name. Use
+`docs/OandOcraft_RELEASE_RUNBOOK.md` and `CHANGELOG.md` for release,
+rollback, and sign-off records.
+
 ### Preview Production Build
 
 ```bash

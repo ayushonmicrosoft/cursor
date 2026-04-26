@@ -15,10 +15,10 @@ Status key:
 - [x] Remote repo exists for OandOcraft work.
 - [x] `/OandOcraft/` build command exists.
 - [ ] Host-only: Branch protection and required checks are configured in GitHub.
-- [ ] Repo-local: Release artifact naming, storage path, retention window, and restore owner are documented for production rollback.
-- [ ] Repo-local: Changelog process is defined, including release-note owner, source commits/PRs, and user-visible/ops sections.
-- [ ] Repo-local: Release artifact checklist covers `npm run build:oando`, generated `dist/` contents, checksum/version label, upload location, rollback artifact, and retention verification.
-- [ ] Repo-local: Release runbook checklist covers preflight checks, build, smoke test, deploy, Supabase redirect verification, rollback trigger, and owner sign-off.
+- [x] Repo-local: Release artifact naming, storage path, retention window, and restore owner are documented for production rollback.
+- [x] Repo-local: Changelog process is defined, including release-note owner, source commits/PRs, and user-visible/ops sections.
+- [x] Repo-local: Release artifact checklist covers `npm run build:oando`, generated `dist/` contents, checksum/version label, upload location, rollback artifact, and retention verification.
+- [x] Repo-local: Release runbook checklist covers preflight checks, build, smoke test, deploy, Supabase redirect verification, rollback trigger, and owner sign-off.
 
 ## 1. Main-Site Integration
 
@@ -135,8 +135,8 @@ Status key:
 - [x] Project workflow exists.
 - [x] Project checklist exists.
 - [x] Interactive project map exists.
-- [ ] Repo-local: Release checklist is promoted into the README or deployment docs.
-- [ ] Repo-local: Changelog template exists with summary, user-visible changes, operational steps, known issues, rollback artifact, and verification results.
+- [x] Repo-local: Release checklist is promoted into the README or deployment docs.
+- [x] Repo-local: Changelog template exists with summary, user-visible changes, operational steps, known issues, rollback artifact, and verification results.
 - [ ] Repo-local: Admin runbook exists.
 - [ ] Repo-local: Supabase recovery runbook exists.
 - [ ] Blocked-by-host: Production smoke-test record is added after first host deployment.
@@ -150,7 +150,7 @@ Status key:
 - [ ] Blocked-by-host: No blocking console errors exist on production core routes.
 - [ ] Blocked-by-host: Admin can recover a test office history entry in production or approved staging.
 - [ ] Blocked-by-host: One end-to-end production flow works: login, open office, draw room, add desk, assign person, export.
-- [ ] Repo-local: Rollback artifact is generated and documented before release handoff.
+- [x] Repo-local: Rollback artifact is generated and documented before release handoff.
 - [ ] Host-only: Owner sign-off is recorded.
 
 ## Current Host-Only Blockers

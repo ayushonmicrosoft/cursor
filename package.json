@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "audit:pages": "node scripts/audit-pages.cjs",
+    "release:manifest": "node scripts/create_release_manifest.cjs",
     "seed:pull": "node scripts/generate_full_seed.cjs",
     "seed:counts": "node scripts/report_public_table_counts.cjs",
     "seed:verify": "node scripts/verify_seed_payload.cjs",

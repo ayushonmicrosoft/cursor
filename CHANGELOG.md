@@ -1,28 +1,84 @@
-# Changelog
+# OandOcraft Changelog
 
-All notable changes to OandOcraft are documented here.
+Use this file for release records. Each production or staging handoff should
+copy the template below and fill in concrete evidence.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-Versioning follows [Semantic Versioning](https://semver.org/).
+## Unreleased
 
----
+### Summary
 
-## [1.0.0] — 2026-04-21
+- OandOcraft overhaul work in progress.
 
-### Added
-- Multi-floor canvas editor with 20+ element types (rooms, desks, walls, curved wall segments, shapes)
-- Employee seating assignment with atomic mutation and conflict detection
-- Team workspaces with RLS-backed sharing and role-based access control
-- Six-analyzer insights engine: utilization, proximity, onboarding readiness, moves, equipment, and trends
-- Export to PNG, PDF, JSON, and CSV
-- 50-step undo/redo powered by Zundo
-- Supabase-backed authentication and cloud sync with optimistic locking
-- CSV round-trip import/export for employee rosters
-- Presentation mode with minimap navigation
-- Alignment guides and keyboard shortcuts
-- Floor plan templates
-- Code-split lazy loading for dashboard, insights, and landing pages
-- GitHub Actions CI (build, lint, test on every push and PR)
-- Dependabot for automated weekly dependency updates
+### User-Visible Changes
 
-[1.0.0]: https://github.com/rcasto123/Floorcraft/releases/tag/v1.0.0
+- Cleaner SmartDraw-style canvas controls and sharper block visuals.
+- `/OandOcraft/` subpath build support for the O&O main site.
+- Direct named-user access and admin recovery surfaces.
+
+### Operational Steps
+
+- Run `npm run lint`.
+- Run `npm run test`.
+- Run `npm run build:oando`.
+- Run `npm run release:manifest`.
+- Run `npm run audit:pages` against a local or staging server.
+
+### Known Issues
+
+- Hosted Supabase/demo data may still contain legacy `Floorcraft` strings
+  until the hosted database is cleaned or reseeded.
+- Production host, Supabase redirect allow-list, and Edge Function `APP_URL`
+  changes require host/admin access.
+
+### Rollback
+
+- Restore the previous retained `dist/` artifact.
+- Verify the previous `OandOcraft-release-manifest.json` aggregate SHA-256.
+- Re-run production smoke tests.
+
+## Release Template
+
+### `<version-label>` - `<YYYY-MM-DD>`
+
+### Summary
+
+-
+
+### User-Visible Changes
+
+-
+
+### Operational Steps
+
+-
+
+### Verification
+
+- `npm run lint`:
+- `npm run test`:
+- `npm run build:oando`:
+- `npm run release:manifest`:
+- `npm run audit:pages`:
+
+### Artifact
+
+- Artifact name:
+- Commit:
+- Aggregate SHA-256:
+- Upload location:
+- Retention slot:
+
+### Known Issues
+
+-
+
+### Rollback
+
+- Rollback artifact:
+- Rollback owner:
+- Restore path/command:
+
+### Sign-Off
+
+- Owner:
+- Timestamp:
