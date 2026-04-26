@@ -282,7 +282,15 @@ export function ElementRenderer() {
 
         const child: ReactNode = (() => {
           const VariantRenderer = getShapeRenderer(el)
-          if (VariantRenderer) return <VariantRenderer element={el} />
+          if (VariantRenderer) {
+            return (
+              <Group rotation={el.rotation} listening={!el.locked}>
+                <Group x={-el.width / 2} y={-el.height / 2} listening={false}>
+                  <VariantRenderer element={el} />
+                </Group>
+              </Group>
+            )
+          }
 
           if (isDeskElement(el) || isWorkstationElement(el) || isPrivateOfficeElement(el))
             return <DeskRenderer element={el} />

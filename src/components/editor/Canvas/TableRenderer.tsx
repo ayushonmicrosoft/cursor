@@ -31,6 +31,9 @@ export function TableRenderer({ element }: TableRendererProps) {
   const getDepartmentColor = useEmployeeStore((s) => s.getDepartmentColor)
 
   const showLabel = !TOO_SMALL_FOR_ID(element.width, element.height) && !!element.label
+  const stroke = isSelected ? '#2563EB' : element.style.stroke
+  const strokeWidth = isSelected ? 2.5 : element.style.strokeWidth
+  const highlightW = Math.max(16, element.width * 0.72)
 
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
@@ -40,9 +43,19 @@ export function TableRenderer({ element }: TableRendererProps) {
         width={element.width}
         height={element.height}
         fill={element.style.fill}
-        stroke={isSelected ? '#3B82F6' : element.style.stroke}
-        strokeWidth={isSelected ? 2.5 : element.style.strokeWidth}
-        cornerRadius={4}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        cornerRadius={Math.min(10, element.height / 5)}
+      />
+      <Rect
+        x={-highlightW / 2}
+        y={-element.height / 2 + Math.max(4, element.height * 0.14)}
+        width={highlightW}
+        height={Math.max(3, element.height * 0.08)}
+        fill="#FFFFFF"
+        opacity={0.45}
+        cornerRadius={Math.max(2, element.height * 0.04)}
+        listening={false}
       />
 
       {/* Table-label badge, anchored top-left in its own reserved band so

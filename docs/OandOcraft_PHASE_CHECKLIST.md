@@ -63,6 +63,7 @@ Exit criteria:
 ## Phase 3 - SmartDraw-Level UI/UX Foundation
 
 - [ ] Redesign the editor shell around a clean canvas, restrained chrome, and professional spacing.
+- [x] Replace crude floor-plan blocks with cleaner SVG library previews and Konva canvas symbols for desks, rooms, tables, seating, facilities, and generic objects.
 - [ ] Add better hover states for toolbar buttons, library cards, canvas objects, rows, tabs, and panel controls.
 - [ ] Add obvious selected, focused, disabled, locked, dirty, saving, and error states.
 - [ ] Replace noisy panels with collapsible SmartDraw-style sections.
@@ -94,7 +95,7 @@ Exit criteria:
 
 ## Phase 5 - Main-Site Integration
 
-- [ ] Build with `npm run build:oando`.
+- [x] Build with `npm run build:oando`.
 - [ ] Serve `dist/` under the main site's `/OandOcraft/` path.
 - [ ] Configure the host to return the app `index.html` for nested client routes.
 - [ ] Scope app CSS so it does not leak into the main site.
