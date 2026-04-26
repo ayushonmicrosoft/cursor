@@ -14,7 +14,7 @@ import { Button } from '../ui'
  * them accept with a single click.
  *
  * Polish: full-height gradient bg matching the auth/landing pages; a
- * card with the Floorcraft wordmark, a clear "X invited you to Y"
+ * card with the OandOcraft wordmark, a clear "X invited you to Y"
  * headline, inviter attribution, a styled role pill, and primary
  * "Accept & join" + secondary "Decline" buttons. Decline surfaces a
  * muted confirmation state rather than closing the tab, so the user
@@ -191,7 +191,7 @@ export function InvitePage() {
 }
 
 /**
- * Shared chrome: gradient background + centered card + Floorcraft
+ * Shared chrome: gradient background + centered card + OandOcraft
  * wordmark at the top. Keeps the invite page visually consistent with
  * the landing page and auth pages, which this user may have just come
  * from (or be about to bounce through on the signup round-trip).
@@ -207,7 +207,7 @@ function InviteShell({ children }: { children: React.ReactNode }) {
           aria-hidden="true"
           className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-blue-500 to-indigo-600"
         />
-        <span>Floorcraft</span>
+        <span>OandOcraft</span>
       </Link>
       <div className="w-full max-w-md">{children}</div>
     </div>
@@ -226,7 +226,7 @@ function InviteErrorCard({ title, body }: { title: string; body: string }) {
           to="/"
           className="inline-flex items-center text-sm text-blue-600 hover:underline dark:text-blue-400"
         >
-          Go to Floorcraft home
+          Go to OandOcraft home
         </Link>
       </div>
     </div>

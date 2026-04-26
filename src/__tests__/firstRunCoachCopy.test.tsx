@@ -98,17 +98,17 @@ describe('FirstRunCoach copy + step behavior', () => {
     render(<FirstRunCoach />)
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(localStorage.getItem('firstRunWelcomeSeen')).toBe('1')
-    expect(screen.queryByRole('dialog', { name: /welcome to floorcraft/i })).toBeNull()
+    expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
   })
 
   it('uses dialog role with aria-labelledby pointing at the dialog title', () => {
     render(<FirstRunCoach />)
-    const dialog = screen.getByRole('dialog', { name: /welcome to floorcraft/i })
+    const dialog = screen.getByRole('dialog', { name: /welcome to oandocraft/i })
     const labelledBy = dialog.getAttribute('aria-labelledby')
     expect(labelledBy).toBeTruthy()
     if (labelledBy) {
       const heading = document.getElementById(labelledBy)
-      expect(heading?.textContent).toMatch(/welcome to floorcraft/i)
+      expect(heading?.textContent).toMatch(/welcome to oandocraft/i)
     }
   })
 

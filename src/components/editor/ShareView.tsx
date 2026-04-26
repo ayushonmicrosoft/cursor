@@ -27,14 +27,14 @@ import { FloorSwitcher } from './FloorSwitcher'
  * Two layouts:
  *
  *   - Full mode (default): a header with the office name, floor switcher,
- *     a small "Read-only · expires …" badge, and an "Open in Floorcraft"
+ *     a small "Read-only · expires …" badge, and an "Open in OandOcraft"
  *     link for authenticated viewers. Body is the live `<CanvasStage />`
  *     with `<StatusBar />`, `<Minimap />` (toggleable from the action
  *     dock), `<CanvasFinder />` (Cmd+F overlay) and `<CanvasActionDock />`.
  *
  *   - Embed mode (`?embed=1`): no header, no action dock, no minimap by
  *     default, no roster table. Just the canvas, an `EmbedStatusBar`
- *     (floor name + occupancy + a Floorcraft watermark), and a tiny
+ *     (floor name + occupancy + a OandOcraft watermark), and a tiny
  *     "open in new tab" link pinned bottom-right. The whole thing is
  *     sized to fill the iframe (`fixed inset-0`).
  *
@@ -157,11 +157,11 @@ export function ShareView() {
 /**
  * Full-mode header. Renders the office name, a "Read-only · expires …"
  * badge, and (for authenticated viewers — we don't try to detect this
- * here, the link is just always shown) a discreet "Open in Floorcraft"
+ * here, the link is just always shown) a discreet "Open in OandOcraft"
  * link that drops the embed flag if the user landed on the embed-mode
  * URL by mistake.
  *
- * Intentionally lightweight: no FloorcraftMark SVG, no avatar — the
+ * Intentionally lightweight: no OandOcraftMark SVG, no avatar — the
  * shared map should look like the map, not like a marketing surface.
  */
 function ShareHeader({
@@ -181,7 +181,7 @@ function ShareHeader({
           F
         </span>
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          Floorcraft
+          OandOcraft
         </span>
         <span aria-hidden className="text-gray-300 dark:text-gray-700">
           /
@@ -225,7 +225,7 @@ function EmbedStatusBar({ fullShareHref }: { fullShareHref: string }) {
       className="absolute bottom-0 left-0 right-0 h-7 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 flex items-center px-3 text-[11px] text-gray-500 dark:text-gray-400"
     >
       <span className="font-medium text-gray-700 dark:text-gray-200">
-        Floorcraft
+        OandOcraft
       </span>
       {activeFloor && (
         <>

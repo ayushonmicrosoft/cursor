@@ -624,7 +624,7 @@ function buildGroundFloor(): FloorBuild {
     {
       id: nanoid(),
       body: 'Click any desk or office to see its assignee card — drag from the roster to reassign.',
-      authorName: 'Floorcraft team',
+      authorName: 'OandOcraft team',
       createdAt: new Date().toISOString(),
       resolvedAt: null,
       anchor: { type: 'floor-position', floorId, x: 120, y: 150 },
@@ -632,7 +632,7 @@ function buildGroundFloor(): FloorBuild {
     {
       id: nanoid(),
       body: 'Doors snap to walls as you drag them. Try the "Door" tool in the library.',
-      authorName: 'Floorcraft team',
+      authorName: 'OandOcraft team',
       createdAt: new Date().toISOString(),
       resolvedAt: null,
       anchor: { type: 'element', elementId: bench.id },
@@ -802,7 +802,7 @@ function buildEngineeringFloor(): FloorBuild {
         {
           id: nanoid(),
           body: 'Neighborhoods group seats by team. Drag the rect to move a whole squad; the desk tints update automatically.',
-          authorName: 'Floorcraft team',
+          authorName: 'OandOcraft team',
           createdAt: new Date().toISOString(),
           resolvedAt: null,
           anchor: { type: 'floor-position', floorId, x: 260, y: 80 },
@@ -810,7 +810,7 @@ function buildEngineeringFloor(): FloorBuild {
         {
           id: nanoid(),
           body: 'The standing-desk badge here is driven by the occupant\'s "standing-desk" accommodation — swap to show the accommodation glyph.',
-          authorName: 'Floorcraft team',
+          authorName: 'OandOcraft team',
           createdAt: new Date().toISOString(),
           resolvedAt: null,
           anchor: { type: 'element', elementId: standupBench.id },
@@ -960,7 +960,7 @@ function buildLeadershipFloor(): FloorBuild {
     {
       id: nanoid(),
       body: 'Use floor tabs at the bottom to move between the three floors. Each carries its own neighborhoods and annotations.',
-      authorName: 'Floorcraft team',
+      authorName: 'OandOcraft team',
       createdAt: new Date().toISOString(),
       resolvedAt: null,
       anchor: { type: 'floor-position', floorId, x: 600, y: 420 },

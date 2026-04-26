@@ -53,7 +53,7 @@ describe('ShareView canvas + embed mode', () => {
     // Canvas is the centerpiece.
     expect(screen.getByTestId('canvas-stage')).toBeInTheDocument()
     // Full-mode header rendered.
-    expect(screen.getByText('Floorcraft')).toBeInTheDocument()
+    expect(screen.getByText('OandOcraft')).toBeInTheDocument()
     expect(screen.getByText('hq')).toBeInTheDocument()
     // Action dock + minimap mount in full mode (their stubs are present).
     expect(screen.getByTestId('canvas-action-dock')).toBeInTheDocument()

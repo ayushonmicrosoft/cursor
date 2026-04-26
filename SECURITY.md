@@ -4,12 +4,12 @@
 
 Do not report security vulnerabilities through public GitHub issues.
 
-Email security findings to the maintainer with subject line **"Security: Floorcraft"**. We will respond within 72 hours and aim to patch confirmed vulnerabilities within 14 days.
+Email security findings to the maintainer with subject line **"Security: OandOcraft"**. We will respond within 72 hours and aim to patch confirmed vulnerabilities within 14 days.
 
 ## Scope
 
 **In scope:**
-- The Floorcraft web app at [floorcraft.space](https://floorcraft.space)
+- The OandOcraft web app at [floorcraft.space](https://floorcraft.space)
 - Authentication and session handling (Supabase Auth)
 - Row-level security (RLS) policy bypasses
 - Team workspace access control and sharing permission escalation

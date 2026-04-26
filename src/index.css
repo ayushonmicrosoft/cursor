@@ -2,7 +2,7 @@
 
 /*
  * Tailwind v4 dark-mode strategy. By default v4 enables dark mode via the
- * `prefers-color-scheme` media query. OandOCraft uses a class-based opt-in
+ * `prefers-color-scheme` media query. OandOcraft uses a class-based opt-in
  * (toggled by `ThemeProvider`), so we override the `dark` variant to
  * activate when an ancestor has `class="dark"`.
  */

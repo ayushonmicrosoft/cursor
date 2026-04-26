@@ -126,7 +126,7 @@ useEffect(() => {
     <h1 className="text-lg font-semibold">
       {preview.inviterName} invited you to {preview.teamName}
     </h1>
-    <p className="text-gray-600">Accept to join this workspace on Floorcraft.</p>
+    <p className="text-gray-600">Accept to join this workspace on OandOcraft.</p>
   </>
 ) : previewLoaded ? (
   <>

@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react'
  * "How it works" — three-step explainer between the feature grid and
  * the trusted-by strip.
  *
- * The feature grid tells you *what* Floorcraft can do; this section
+ * The feature grid tells you *what* OandOcraft can do; this section
  * tells you how you'd actually use it on day one. Three steps is the
  * canonical marketing cadence (any more and the eye skips, any fewer
  * and it feels thin). The visual rhythm borrows from JSON Crack-style

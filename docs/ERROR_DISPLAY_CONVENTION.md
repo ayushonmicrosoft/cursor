@@ -1,6 +1,6 @@
 # Error Display Convention
 
-Canonical rule for surfacing errors and status in the Floorcraft UI.
+Canonical rule for surfacing errors and status in the OandOcraft UI.
 If you're adding a new error path, pick exactly one of the three mechanisms.
 
 ## The rule

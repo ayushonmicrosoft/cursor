@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn Floorcraft from a localStorage single-user app into a Supabase-backed multi-tenant product with accounts, teams, cloud-persisted offices, and per-office ACLs — shipping the v1 foundation defined in `docs/superpowers/specs/2026-04-21-accounts-and-team-offices-design.md`.
+**Goal:** Turn OandOcraft from a localStorage single-user app into a Supabase-backed multi-tenant product with accounts, teams, cloud-persisted offices, and per-office ACLs — shipping the v1 foundation defined in `docs/superpowers/specs/2026-04-21-accounts-and-team-offices-design.md`.
 
 **Architecture:** Browser talks to Supabase directly; Postgres Row-Level Security is the sole authz boundary. Zustand stores stay; what hydrates them changes from `localStorage.getItem` to a Supabase fetch. One Edge Function handles transactional email; one SECURITY DEFINER RPC handles invite acceptance.
 
@@ -1153,7 +1153,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form onSubmit={onSubmit} className="bg-white p-6 rounded-lg shadow w-full max-w-sm space-y-4">
-        <h1 className="text-lg font-semibold">Log in to Floorcraft</h1>
+        <h1 className="text-lg font-semibold">Log in to OandOcraft</h1>
         <label className="block text-sm">
           <span className="block mb-1 text-gray-600">Email</span>
           <input
@@ -1317,7 +1317,7 @@ export function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form onSubmit={onSubmit} className="bg-white p-6 rounded-lg shadow w-full max-w-sm space-y-4">
-        <h1 className="text-lg font-semibold">Create your Floorcraft account</h1>
+        <h1 className="text-lg font-semibold">Create your OandOcraft account</h1>
         <label className="block text-sm">
           <span className="block mb-1 text-gray-600">Name</span>
           <input
@@ -2086,7 +2086,7 @@ serve(async (req) => {
 
   const html = `
     <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2>You've been invited to ${teamName} on Floorcraft</h2>
+      <h2>You've been invited to ${teamName} on OandOcraft</h2>
       <p>${inviterName} invited you to join <b>${teamName}</b>.</p>
       <p>
         <a href="${inviteUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;">
@@ -2107,7 +2107,7 @@ serve(async (req) => {
     body: JSON.stringify({
       from: FROM_ADDRESS,
       to: [invite.email],
-      subject: `${inviterName} invited you to ${teamName} on Floorcraft`,
+      subject: `${inviterName} invited you to ${teamName} on OandOcraft`,
       html,
     }),
   })
@@ -2267,7 +2267,7 @@ export function InvitePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-6 rounded-lg shadow max-w-sm space-y-3 text-sm">
         <h1 className="text-lg font-semibold">Join the team</h1>
-        <p className="text-gray-600">You've been invited to a team on Floorcraft. Click below to accept.</p>
+        <p className="text-gray-600">You've been invited to a team on OandOcraft. Click below to accept.</p>
         {error && <p className="text-red-600">{error}</p>}
         <button
           onClick={accept}
@@ -4078,7 +4078,7 @@ const cta = session.status === 'authenticated'
   ? (
     <Link to={teams && teams.length > 0 ? `/t/${teams[0].slug}` : '/dashboard'}
           className="px-5 py-2.5 bg-blue-600 text-white rounded font-medium">
-      Continue to Floorcraft
+      Continue to OandOcraft
     </Link>
   )
   : (

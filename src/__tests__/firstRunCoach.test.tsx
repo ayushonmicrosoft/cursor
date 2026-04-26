@@ -35,22 +35,22 @@ describe('FirstRunCoach tour (persistence)', () => {
 
   it('mounts the welcome card when firstRunWelcomeSeen is unset', () => {
     render(<FirstRunCoach />)
-    expect(screen.getByRole('dialog', { name: /welcome to floorcraft/i })).toBeInTheDocument()
-    expect(screen.getByText(/welcome to floorcraft/i)).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: /welcome to oandocraft/i })).toBeInTheDocument()
+    expect(screen.getByText(/welcome to oandocraft/i)).toBeInTheDocument()
   })
 
   it('does NOT mount when firstRunWelcomeSeen is set to "1"', () => {
     localStorage.setItem('firstRunWelcomeSeen', '1')
     dismissDemoCard()
     render(<FirstRunCoach />)
-    expect(screen.queryByRole('dialog', { name: /welcome to floorcraft/i })).toBeNull()
+    expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
   })
 
   it('Skip tour link writes firstRunWelcomeSeen=1 and unmounts the card', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /skip tour/i }))
     expect(localStorage.getItem('firstRunWelcomeSeen')).toBe('1')
-    expect(screen.queryByRole('dialog', { name: /welcome to floorcraft/i })).toBeNull()
+    expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
   })
 
   it('X close button also dismisses', () => {
@@ -88,7 +88,7 @@ describe('FirstRunCoach demo seeder', () => {
   it('renders the "Load sample content" CTA when the office is empty', () => {
     render(<FirstRunCoach />)
     expect(
-      screen.getByRole('region', { name: /new to floorcraft/i }),
+      screen.getByRole('region', { name: /new to oandocraft/i }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /load sample content/i }),
@@ -120,7 +120,7 @@ describe('FirstRunCoach demo seeder', () => {
     })
     render(<FirstRunCoach />)
     expect(
-      screen.queryByRole('region', { name: /new to floorcraft/i }),
+      screen.queryByRole('region', { name: /new to oandocraft/i }),
     ).toBeNull()
   })
 
@@ -128,7 +128,7 @@ describe('FirstRunCoach demo seeder', () => {
     localStorage.setItem(DEMO_DISMISSED_KEY, '1')
     render(<FirstRunCoach />)
     expect(
-      screen.queryByRole('region', { name: /new to floorcraft/i }),
+      screen.queryByRole('region', { name: /new to oandocraft/i }),
     ).toBeNull()
   })
 
@@ -137,7 +137,7 @@ describe('FirstRunCoach demo seeder', () => {
     fireEvent.click(screen.getByRole('button', { name: /dismiss sample-content card/i }))
     expect(localStorage.getItem(DEMO_DISMISSED_KEY)).toBe('1')
     expect(
-      screen.queryByRole('region', { name: /new to floorcraft/i }),
+      screen.queryByRole('region', { name: /new to oandocraft/i }),
     ).toBeNull()
   })
 

@@ -107,7 +107,7 @@ const sections: Section[] = [
     body: (
       <div className="space-y-4">
         <p>
-          Floorcraft is two things under one roof: a <strong>floor-plan
+          OandOcraft is two things under one roof: a <strong>floor-plan
           editor</strong> for drawing offices, and a <strong>roster</strong> for
           tracking who works there. Every office has both, and the two views
           stay in sync — assign Jamie to Desk D-014 on the map and the roster
@@ -1061,7 +1061,7 @@ const sections: Section[] = [
       <div className="space-y-4">
         <h3 className="font-semibold text-gray-900 dark:text-gray-100">Dark mode</h3>
         <p>
-          Floorcraft has an app-wide dark mode — over a hundred components
+          OandOcraft has an app-wide dark mode — over a hundred components
           were paired so every surface, border, and focus ring has a dark
           counterpart. Open the user menu (top-right avatar) and use the
           theme toggle row to cycle <strong>Light → Dark → System</strong>.
@@ -1104,7 +1104,7 @@ const sections: Section[] = [
           <em>Pricing</em>, <em>Help</em>, <em>Sign in</em> anchors, and a
           theme toggle. The hero now includes a stats row (with{' '}
           <code>tabular-nums</code> so the numbers don't jitter) showing
-          total teams using Floorcraft, seats planned, and floors. A{' '}
+          total teams using OandOcraft, seats planned, and floors. A{' '}
           <strong>How it works</strong> section walks through{' '}
           <em>Draw → Seat → Share</em> as a three-step explainer with
           numbered circles joined by a connector line. Below that, a 2×3
@@ -1493,7 +1493,7 @@ export function HelpPage() {
       <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400">
-            Floorcraft
+            OandOcraft
           </Link>
           <nav className="flex items-center gap-3 text-sm">
             <Link to="/dashboard" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">

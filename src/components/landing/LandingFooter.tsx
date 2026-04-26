@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 /**
  * Expanded landing-page footer.
  *
- * The pre-polish footer was a single inline line ("Floorcraft ·
+ * The pre-polish footer was a single inline line ("OandOcraft ·
  * User guide & FAQ"), which reads like a hackathon project. Real SaaS
  * sites close with a small grid of link columns — Product /
  * Resources / Company — even if half the links are aspirational. The
@@ -74,7 +74,7 @@ export function LandingFooter() {
               aria-hidden="true"
               className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-[#1f3653] to-[#9d876c]"
             />
-            <span>OandOCraft</span>
+            <span>OandOcraft</span>
           </Link>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs">
             Office layout &amp; seat management for hybrid teams.
@@ -104,7 +104,7 @@ export function LandingFooter() {
 
       <div className="border-t border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-500">
-          <p className="tabular-nums">&copy; {year} OandOCraft. All rights reserved.</p>
+          <p className="tabular-nums">&copy; {year} OandOcraft. All rights reserved.</p>
           <p>Built for hybrid workplace teams.</p>
         </div>
       </div>

@@ -158,7 +158,7 @@ function drawChrome(ctx: CanvasRenderingContext2D, layout: ChromeLayout) {
   ctx.fillStyle = '#f3f4f6'
   ctx.fillRect(0, layout.topStrip.y, W, layout.topStrip.height)
 
-  // Floorcraft mark: rounded indigo rect with a white "F" centered.
+  // OandOcraft mark: rounded indigo rect with a white "F" centered.
   const markSize = 16
   const markX = CHROME_MARGINS.side
   const markY = layout.topStrip.y + (layout.topStrip.height - markSize) / 2
@@ -174,7 +174,7 @@ function drawChrome(ctx: CanvasRenderingContext2D, layout: ChromeLayout) {
   ctx.font = '12px system-ui, -apple-system, sans-serif'
   ctx.textAlign = 'left'
   ctx.fillText(
-    'Floorcraft',
+    'OandOcraft',
     markX + markSize + 8,
     layout.topStrip.y + layout.topStrip.height / 2,
   )

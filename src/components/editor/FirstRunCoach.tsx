@@ -180,7 +180,7 @@ function FirstRunDemoSeeder() {
 
       useToastStore.getState().push({
         tone: 'success',
-        title: 'Sample office loaded — welcome to Floorcraft',
+        title: 'Sample office loaded — welcome to OandOcraft',
         body: 'Three floors, 45 people, neighborhoods, and annotations are ready to explore.',
       })
 
@@ -218,7 +218,7 @@ function FirstRunDemoSeeder() {
             id="first-run-demo-title"
             className="font-semibold text-gray-900 dark:text-gray-100 text-sm"
           >
-            New to Floorcraft?
+            New to OandOcraft?
           </div>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 leading-snug">
             Load a sample office with{' '}
@@ -425,7 +425,7 @@ function FirstRunCoachTour() {
       role="dialog"
       aria-modal="false"
       // aria-labelledby points at the dialog's stable title heading so
-      // the accessible name stays "Welcome to Floorcraft" across steps.
+      // the accessible name stays "Welcome to OandOcraft" across steps.
       // The per-step heading inside the body re-announces step copy as
       // the user advances; we don't shift the dialog's name itself.
       aria-labelledby="first-run-coach-title"
@@ -443,7 +443,7 @@ function FirstRunCoachTour() {
             id="first-run-coach-title"
             className="font-semibold text-gray-900 dark:text-gray-100"
           >
-            Welcome to Floorcraft
+            Welcome to OandOcraft
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
             A quick tour of the editor — {totalSteps} steps.

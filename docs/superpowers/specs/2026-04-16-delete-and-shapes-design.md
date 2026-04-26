@@ -7,7 +7,7 @@
 
 ## Context
 
-Floorcraft currently ships straight-desk / rectangular-table / workstation / private-office as the only canvas primitives, and offers no UI affordance for deleting placed elements (users have to refresh or remove via undo-after-add). This spec closes both gaps in a single bundle because they share the same surfaces (element type system, canvas renderers, right-sidebar panel, context menu) and have overlapping tests.
+OandOcraft currently ships straight-desk / rectangular-table / workstation / private-office as the only canvas primitives, and offers no UI affordance for deleting placed elements (users have to refresh or remove via undo-after-add). This spec closes both gaps in a single bundle because they share the same surfaces (element type system, canvas renderers, right-sidebar panel, context menu) and have overlapping tests.
 
 Two later bundles are explicitly out of scope here:
 

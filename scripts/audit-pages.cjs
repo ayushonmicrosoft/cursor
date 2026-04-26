@@ -42,7 +42,7 @@ async function auditRoute(page, route) {
     title: await page.title(),
     hasPricing: /\bpricing\b/i.test(body),
     hasFloorcraft: /\bFloorcraft\b/.test(body),
-    hasOandOCraft: /OandOCraft/.test(body),
+    hasOandOcraft: /OandOcraft/.test(body),
     hasErrorText: routeErrorText.test(body),
   }
 }

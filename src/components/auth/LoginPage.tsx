@@ -16,7 +16,7 @@ import {
  * Wave 17A: login gets the same Linear/JSON-Crack idiom the rest of the
  * app moved to — gradient bg, centered card, wordmark at the top, and a
  * confident copy refresh ("Welcome back" beats the generic "Log in to
- * Floorcraft"). The form shape and supabase call are unchanged; only
+ * OandOcraft"). The form shape and supabase call are unchanged; only
  * presentation moves.
  */
 export function LoginPage() {

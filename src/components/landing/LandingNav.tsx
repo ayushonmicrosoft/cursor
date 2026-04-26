@@ -39,7 +39,7 @@ export function LandingNav() {
             aria-hidden="true"
             className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-[#1f3653] to-[#9d876c]"
           />
-          <span>OandOCraft</span>
+          <span>OandOcraft</span>
         </Link>
 
         <nav aria-label="Primary" className="hidden sm:flex items-center gap-6 text-sm">

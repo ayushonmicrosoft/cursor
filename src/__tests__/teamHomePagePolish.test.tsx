@@ -222,7 +222,7 @@ describe('TeamHomePage (Wave 14A polish)', () => {
     listOffices.mockResolvedValue([])
     renderPage()
     expect(
-      await screen.findByRole('heading', { name: /welcome to floorcraft/i, level: 2 }),
+      await screen.findByRole('heading', { name: /welcome to oandocraft/i, level: 2 }),
     ).toBeInTheDocument()
     // A real button, focusable.
     const btn = screen.getByRole('button', { name: /create office/i })
@@ -241,7 +241,7 @@ describe('TeamHomePage (Wave 14A polish)', () => {
       expect(screen.getByText(/no offices match/i)).toBeInTheDocument()
     })
     // Not the welcome card.
-    expect(screen.queryByText(/welcome to floorcraft/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/welcome to oandocraft/i)).not.toBeInTheDocument()
     // Clear button restores the grid.
     fireEvent.click(screen.getByRole('button', { name: /clear search & filters/i }))
     await waitFor(() => {

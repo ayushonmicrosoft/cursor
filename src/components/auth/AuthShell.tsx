@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 /**
  * Wave 17A shared chrome for every auth screen. The five auth pages
  * (login / signup / forgot / reset / verify) now share a centered
- * card on a soft gradient with the Floorcraft wordmark up top — the
+ * card on a soft gradient with the OandOcraft wordmark up top — the
  * same visual idiom the landing page and team home use.
  *
  * The primitives live in a single file (instead of inline helpers per
@@ -28,7 +28,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
             aria-hidden="true"
             className="inline-block h-5 w-5 rotate-45 rounded-sm bg-gradient-to-br from-blue-500 to-indigo-600"
           />
-          <span>Floorcraft</span>
+          <span>OandOcraft</span>
         </Link>
       </header>
       <main className="flex-1 flex items-start justify-center px-6 pt-10 pb-12 sm:pt-16">

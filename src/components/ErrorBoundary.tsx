@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
               Something went wrong
             </h1>
             <p className="text-gray-600">
-              Floorcraft ran into an unexpected error and couldn't finish
+              OandOcraft ran into an unexpected error and couldn't finish
               rendering this page. Your work is autosaved — reloading
               should get you back to where you were.
             </p>

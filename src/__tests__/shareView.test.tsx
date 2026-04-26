@@ -105,7 +105,7 @@ describe('ShareView', () => {
     // (so the operator sees the actual floor plan, not a placeholder).
     expect(screen.getByTestId('canvas-stage')).toBeInTheDocument()
     // Header surfaces the office slug and a "Read-only" badge.
-    expect(screen.getByText('Floorcraft')).toBeInTheDocument()
+    expect(screen.getByText('OandOcraft')).toBeInTheDocument()
     expect(screen.getByText('hq')).toBeInTheDocument()
     expect(screen.getByText(/read-only/i)).toBeInTheDocument()
   })

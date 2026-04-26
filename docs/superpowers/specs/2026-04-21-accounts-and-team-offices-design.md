@@ -6,7 +6,7 @@
 
 ## Goal
 
-Turn Floorcraft from a single-user browser tool (localStorage-only) into a multi-user SaaS where teams of office-ops people share and edit office-plan documents. Ship the foundation: accounts, cloud-persisted offices, team membership, and per-office access control. Explicitly **defer** live multi-user co-editing to a later spec.
+Turn OandOcraft from a single-user browser tool (localStorage-only) into a multi-user SaaS where teams of office-ops people share and edit office-plan documents. Ship the foundation: accounts, cloud-persisted offices, team membership, and per-office access control. Explicitly **defer** live multi-user co-editing to a later spec.
 
 ## Scope (v1)
 
@@ -254,7 +254,7 @@ Stock Supabase flow: `/login` "Forgot password" â†’ Supabase sends reset email â
 Minimal (40-line) Deno function in `supabase/functions/send-invite-email/`:
 - Validates caller is a team admin for `team_id` (via `SELECT`-in-function with service role).
 - Fetches invite row by `token`.
-- Renders a simple HTML email ("You've been invited to **{team_name}** on Floorcraft by {inviter_name}. [Accept invite]").
+- Renders a simple HTML email ("You've been invited to **{team_name}** on OandOcraft by {inviter_name}. [Accept invite]").
 - Calls Resend REST API.
 - Returns `{ ok: true }` or an error.
 

@@ -938,7 +938,7 @@ function EmptyTeamState({
         <Building2 size={28} aria-hidden="true" />
       </div>
       <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Welcome to Floorcraft
+        Welcome to OandOcraft
       </h2>
       <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
         Create your first office to start planning.

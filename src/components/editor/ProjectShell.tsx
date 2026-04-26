@@ -96,7 +96,7 @@ export function ProjectShell() {
         ? 'Map'
         : ''
     const prev = document.title
-    document.title = view ? `${view} · ${name} — Floorcraft` : `${name} — Floorcraft`
+    document.title = view ? `${view} · ${name} — OandOcraft` : `${name} — OandOcraft`
     return () => {
       document.title = prev
     }

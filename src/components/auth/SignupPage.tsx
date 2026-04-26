@@ -18,7 +18,7 @@ import {
  * after clicking "Start free" on the landing page, so the visual gap
  * was the most jarring of any auth screen. Copy refresh is meant to
  * match the landing page's confidence ("Create your workspace" lands
- * better than "Create your Floorcraft account" — the brand is already
+ * better than "Create your OandOcraft account" — the brand is already
  * on-screen via the wordmark above the card). Supabase call shape and
  * the invite-token promotion dance are untouched.
  */

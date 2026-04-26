@@ -7,7 +7,7 @@
 
 ## Context
 
-Floorcraft currently supports walls as multi-segment polylines only — click, click, double-click gives you a chain of straight segments. Real office layouts routinely include rounded reception desks, curved lobby perimeters, and radiused meeting-room walls; SmartDraw, Lucid, and AutoCAD all ship an arc tool in their wall family. Without curves, users either work around the limitation (approximating arcs with many short straight segments, which breaks at low zoom and is painful to edit) or leave Floorcraft for another tool.
+OandOcraft currently supports walls as multi-segment polylines only — click, click, double-click gives you a chain of straight segments. Real office layouts routinely include rounded reception desks, curved lobby perimeters, and radiused meeting-room walls; SmartDraw, Lucid, and AutoCAD all ship an arc tool in their wall family. Without curves, users either work around the limitation (approximating arcs with many short straight segments, which breaks at low zoom and is painful to edit) or leave OandOcraft for another tool.
 
 This bundle adds **circular-arc segments** to the existing polyline wall, inside a single unified wall tool, without changing any of today's drawing or editing muscle memory. It is the second of three bundles in the "editor polish + accounts" arc:
 

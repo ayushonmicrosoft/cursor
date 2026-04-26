@@ -3,7 +3,7 @@ import type { Employee } from '../types/employee'
 import type { CanvasSettings } from '../types/project'
 import type { Floor } from '../types/floor'
 
-export interface FloorcraftExport {
+export interface OandOcraftExport {
   version: string
   project: {
     name: string
@@ -23,7 +23,7 @@ export function exportProjectJson(
   floors: Floor[],
   fileName?: string
 ) {
-  const data: FloorcraftExport = {
+  const data: OandOcraftExport = {
     version: '1.0',
     project: { name, settings },
     elements: Object.values(elements),

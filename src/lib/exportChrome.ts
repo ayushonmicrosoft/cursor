@@ -1,7 +1,7 @@
 /**
  * Pure layout math for the "marketing-screenshot" chrome that wraps PNG and
  * PDF floor-plan exports — title block, generated-at timestamp, scale bar,
- * neighborhood legend, and the small Floorcraft watermark.
+ * neighborhood legend, and the small OandOcraft watermark.
  *
  * No DOM, no jspdf imports. The PNG exporter draws via the Canvas 2D API,
  * the PDF exporter draws via jspdf primitives — both consume the same

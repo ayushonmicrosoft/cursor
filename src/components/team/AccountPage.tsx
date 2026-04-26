@@ -169,7 +169,7 @@ export function AccountPage() {
       <section className="space-y-2 text-sm border-t pt-6">
         <h2 className="font-semibold">Sign out</h2>
         <p className="text-gray-500 dark:text-gray-400">
-          Sign out of Floorcraft on this device. Other browsers stay signed in.
+          Sign out of OandOcraft on this device. Other browsers stay signed in.
         </p>
         <button
           onClick={onSignOut}
@@ -291,7 +291,7 @@ function DataPrivacySection() {
 
       <div className="space-y-2">
         <p className="text-gray-600 dark:text-gray-300">
-          Download a copy of everything Floorcraft stores about you —
+          Download a copy of everything OandOcraft stores about you —
           profile, team memberships, invites, offices you own or can
           edit.
         </p>

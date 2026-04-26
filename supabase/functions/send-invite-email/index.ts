@@ -148,7 +148,7 @@ serve(async (req) => {
 
   const html = `
     <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto;">
-      <h2>You've been invited to ${teamName} on Floorcraft</h2>
+      <h2>You've been invited to ${teamName} on OandOcraft</h2>
       <p>${inviterName} invited you to join <b>${teamName}</b>.</p>
       <p>
         <a href="${safeInviteUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;">
@@ -172,7 +172,7 @@ serve(async (req) => {
       // Subjects are plain text in SMTP — no HTML context — but we
       // still strip CRLF to prevent header injection on a hypothetical
       // mail relay that doesn't handle it.
-      subject: `${rawInviterName.replace(/[\r\n]/g, ' ')} invited you to ${rawTeamName.replace(/[\r\n]/g, ' ')} on Floorcraft`,
+      subject: `${rawInviterName.replace(/[\r\n]/g, ' ')} invited you to ${rawTeamName.replace(/[\r\n]/g, ' ')} on OandOcraft`,
       html,
     }),
   })

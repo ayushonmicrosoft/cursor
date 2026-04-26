@@ -237,7 +237,7 @@ export function InsightsPanel() {
           <PanelEmptyState
             icon={ShieldCheck}
             title="No issues detected"
-            body="Floorcraft flags orphan seats, proximity problems, and capacity risks automatically. Your plan currently looks clean."
+            body="OandOcraft flags orphan seats, proximity problems, and capacity risks automatically. Your plan currently looks clean."
           />
         ) : (
           <div className="flex flex-col gap-2">

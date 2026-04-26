@@ -8,7 +8,7 @@
  * `?embed=1` is the iframe-embed flag (Wave 7C). `ShareView` reads it to
  * strip the header chrome down to a pure canvas + watermark — the goal is
  * a JSON-Crack-style snippet you can drop into Notion / Confluence / a
- * dashboard without it dragging the rest of the Floorcraft chrome along.
+ * dashboard without it dragging the rest of the OandOcraft chrome along.
  */
 
 /**
@@ -106,7 +106,7 @@ export function parseShareToken(searchParams: URLSearchParams): string | null {
 /**
  * Returns true when the URL's query string carries `embed=1`. ShareView
  * uses this to flip into the chrome-less layout (no header, no
- * "Open in Floorcraft" link) suitable for an iframe embed.
+ * "Open in OandOcraft" link) suitable for an iframe embed.
  */
 export function isEmbedMode(searchParams: URLSearchParams): boolean {
   return searchParams.get('embed') === '1'

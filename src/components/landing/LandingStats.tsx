@@ -83,7 +83,7 @@ export function LandingStats() {
 
   return (
     <ul
-      aria-label="Floorcraft usage"
+      aria-label="OandOcraft usage"
       className="mt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-center"
     >
       {displayStats.map((stat, i) => (

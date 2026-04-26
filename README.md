@@ -1,4 +1,4 @@
-# Floorcraft
+# OandOcraft
 
 > Interactive office floor planner and seating management application for modern teams
 
@@ -15,7 +15,7 @@
 
 ## Overview
 
-Floorcraft is a browser-based office floor planner built for IT operations teams, office managers, and workplace administrators. Users draw floor plans with walls, doors, and windows on a Konva canvas, populate the space with desks, conference rooms, phone booths, and decorative elements, then assign employees to seats — all persisted in real time to a team-scoped Supabase backend. An AI-style insights engine continuously analyzes seat utilization, team proximity, onboarding readiness, pending moves, and equipment status, surfacing actionable warnings directly in the editor sidebar.
+OandOcraft is a browser-based office floor planner built for IT operations teams, office managers, and workplace administrators. Users draw floor plans with walls, doors, and windows on a Konva canvas, populate the space with desks, conference rooms, phone booths, and decorative elements, then assign employees to seats — all persisted in real time to a team-scoped Supabase backend. An AI-style insights engine continuously analyzes seat utilization, team proximity, onboarding readiness, pending moves, and equipment status, surfacing actionable warnings directly in the editor sidebar.
 
 ---
 
@@ -159,7 +159,7 @@ The editor tree (`ProjectShell`, `MapView`, `RosterPage`) is code-split with `Re
 
 ```bash
 git clone https://github.com/rcasto123/Floorcraft.git
-cd Floorcraft
+cd OandOcraft
 npm install
 ```
 
@@ -312,7 +312,7 @@ src/
 
 ## Deployment
 
-Floorcraft deploys to **Netlify**. The `netlify.toml` sets the build command to `npm run build`, publishes `dist/`, and adds a catch-all redirect to `index.html` for client-side routing. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Netlify → Project settings → Environment variables.
+OandOcraft deploys to **Netlify**. The `netlify.toml` sets the build command to `npm run build`, publishes `dist/`, and adds a catch-all redirect to `index.html` for client-side routing. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Netlify → Project settings → Environment variables.
 
 Edge Functions are deployed to Supabase:
 
@@ -335,4 +335,4 @@ npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://floorcraft.sp
 
 ## License
 
-[MIT](LICENSE) — © Floorcraft contributors
+[MIT](LICENSE) — © OandOcraft contributors
