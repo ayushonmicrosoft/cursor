@@ -123,6 +123,38 @@ function anchorZoom(
   }
 }
 
+/**
+ * Canonicalize persisted compass heading into the [0, 360) range.
+ * Accepts unknown input so legacy/hand-edited payloads can't leak
+ * NaN/strings into rendering math.
+ */
+export function normalizeNorthRotation(value: unknown): number {
+  const numeric = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(numeric)) return 0
+  return ((numeric % 360) + 360) % 360
+}
+
+/**
+ * Compass visibility defaults to visible for legacy payloads where the
+ * field did not exist. Non-boolean values are coerced to that default.
+ */
+export function normalizeNorthArrowVisibility(value: unknown): boolean {
+  return typeof value === 'boolean' ? value : true
+}
+
+function normalizeCompassSettings(settings: CanvasSettings): CanvasSettings {
+  const next = { ...settings }
+
+  if (next.northRotation !== undefined) {
+    next.northRotation = normalizeNorthRotation(next.northRotation)
+  }
+  if (next.showNorthArrow !== undefined) {
+    next.showNorthArrow = normalizeNorthArrowVisibility(next.showNorthArrow)
+  }
+
+  return next
+}
+
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   stageX: 0,
   stageY: 0,
@@ -234,7 +266,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   setWallDrawStyle: (style) => set({ wallDrawStyle: style }),
 
   setSettings: (partial) =>
-    set((state) => ({ settings: { ...state.settings, ...partial } })),
+    set((state) => ({
+      settings: normalizeCompassSettings({ ...state.settings, ...partial }),
+    })),
 
   toggleGrid: () =>
     set((state) => ({
@@ -253,7 +287,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         // Treat absent (legacy projects) as `true` so flipping it once
         // always yields `false` rather than re-toggling between
         // undefined and true.
-        showNorthArrow: !(state.settings.showNorthArrow ?? true),
+        showNorthArrow: !normalizeNorthArrowVisibility(
+          state.settings.showNorthArrow,
+        ),
       },
     })),
 

@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
-import { useCanvasStore } from '../../../stores/canvasStore'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  normalizeNorthRotation,
+  useCanvasStore,
+} from '../../../stores/canvasStore'
 import { useUIStore } from '../../../stores/uiStore'
 import { useCan } from '../../../hooks/useCan'
 
@@ -16,11 +19,37 @@ import { useCan } from '../../../hooks/useCan'
  */
 export function NorthArrow() {
   const presentationMode = useUIStore((s) => s.presentationMode)
-  const northRotation = useCanvasStore((s) => s.settings.northRotation ?? 0)
+  const northRotationRaw = useCanvasStore((s) => s.settings.northRotation)
+  const northRotation = normalizeNorthRotation(northRotationRaw)
   const setSettings = useCanvasStore((s) => s.setSettings)
   const canEdit = useCan('editMap')
   const ref = useRef<HTMLDivElement>(null)
+  const dragPointerIdRef = useRef<number | null>(null)
   const [dragging, setDragging] = useState(false)
+
+  const stopDragging = useCallback(() => {
+    const pointerId = dragPointerIdRef.current
+    dragPointerIdRef.current = null
+    const el = ref.current
+    if (el && pointerId !== null && el.hasPointerCapture(pointerId)) {
+      try {
+        el.releasePointerCapture(pointerId)
+      } catch {
+        // Ignore release races (already released/unmounted).
+      }
+    }
+    setDragging(false)
+  }, [])
+
+  // Self-heal legacy/corrupted payload values so autosave persists the
+  // canonical [0, 360) heading after the first map render.
+  useEffect(() => {
+    if (northRotationRaw === undefined) return
+    const normalized = normalizeNorthRotation(northRotationRaw)
+    if (normalized !== northRotationRaw) {
+      setSettings({ northRotation: normalized })
+    }
+  }, [northRotationRaw, setSettings])
 
   // Drag-to-rotate. We compute the angle from the centre of the compass to
   // the cursor on every pointermove; the visible needle plus the persisted
@@ -33,6 +62,9 @@ export function NorthArrow() {
     if (!el) return
 
     const handleMove = (e: PointerEvent) => {
+      const pointerId = dragPointerIdRef.current
+      if (pointerId !== null && e.pointerId !== pointerId) return
+
       const rect = el.getBoundingClientRect()
       const cx = rect.left + rect.width / 2
       const cy = rect.top + rect.height / 2
@@ -44,34 +76,54 @@ export function NorthArrow() {
       const deg = ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360
       setSettings({ northRotation: deg })
     }
-    const handleUp = () => setDragging(false)
+    const handleUp = (e: PointerEvent) => {
+      const pointerId = dragPointerIdRef.current
+      if (pointerId !== null && e.pointerId !== pointerId) return
+      stopDragging()
+    }
+    const handleVisibilityChange = () => {
+      if (document.hidden) stopDragging()
+    }
 
     window.addEventListener('pointermove', handleMove)
     window.addEventListener('pointerup', handleUp)
     window.addEventListener('pointercancel', handleUp)
+    window.addEventListener('blur', stopDragging)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
       window.removeEventListener('pointermove', handleMove)
       window.removeEventListener('pointerup', handleUp)
       window.removeEventListener('pointercancel', handleUp)
+      window.removeEventListener('blur', stopDragging)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [dragging, setSettings])
+  }, [dragging, setSettings, stopDragging])
 
   if (presentationMode) return null
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (!canEdit) return
     e.preventDefault()
+    dragPointerIdRef.current = e.pointerId
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {
+      // Pointer capture can fail on detached nodes; dragging still works.
+    }
     setDragging(true)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!canEdit) return
+    const current = normalizeNorthRotation(
+      useCanvasStore.getState().settings.northRotation,
+    )
     if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
       e.preventDefault()
-      setSettings({ northRotation: (northRotation - 5 + 360) % 360 })
+      setSettings({ northRotation: normalizeNorthRotation(current - 5) })
     } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
       e.preventDefault()
-      setSettings({ northRotation: (northRotation + 5) % 360 })
+      setSettings({ northRotation: normalizeNorthRotation(current + 5) })
     } else if (e.key === 'Home') {
       e.preventDefault()
       setSettings({ northRotation: 0 })

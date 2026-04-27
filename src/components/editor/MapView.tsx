@@ -20,7 +20,11 @@ import { ElementHoverCard } from './Canvas/ElementHoverCard'
 import { FirstRunCoach } from './FirstRunCoach'
 import { AdminStatsToolbar } from './AdminStatsToolbar'
 import { useUIStore } from '../../stores/uiStore'
-import { useCanvasStore } from '../../stores/canvasStore'
+import {
+  normalizeNorthArrowVisibility,
+  normalizeNorthRotation,
+  useCanvasStore,
+} from '../../stores/canvasStore'
 import { useFloorStore } from '../../stores/floorStore'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
@@ -57,12 +61,15 @@ export function MapView() {
   const presentationMode = useUIStore((s) => s.presentationMode)
   const viewMode = useUIStore((s) => s.viewMode)
   const setViewMode = useUIStore((s) => s.setViewMode)
+  const setCanvasSettings = useCanvasStore((s) => s.setSettings)
+  const northRotationRaw = useCanvasStore((s) => s.settings.northRotation)
+  const showNorthArrowRaw = useCanvasStore((s) => s.settings.showNorthArrow)
   // The north-arrow compass renders by default but the user can hide
   // it via View → "Toggle compass" or the `N` hotkey when the floor
   // plan has no real-world cardinal alignment. Legacy projects (no
   // field set) keep the historical behaviour by treating undefined
   // as `true`.
-  const showNorthArrow = useCanvasStore((s) => s.settings.showNorthArrow ?? true)
+  const showNorthArrow = normalizeNorthArrowVisibility(showNorthArrowRaw)
   const activeFloorId = useFloorStore((s) => s.activeFloorId)
   const floors = useFloorStore((s) => s.floors)
   const elements = useElementsStore((s) => s.elements)
@@ -70,6 +77,24 @@ export function MapView() {
   const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<ThreeDEntryProps> | null>(null)
   const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
   const activeFloor = floors.find((f) => f.id === activeFloorId) ?? null
+
+  useEffect(() => {
+    const next: { showNorthArrow?: boolean; northRotation?: number } = {}
+
+    if (showNorthArrowRaw !== undefined && typeof showNorthArrowRaw !== 'boolean') {
+      next.showNorthArrow = normalizeNorthArrowVisibility(showNorthArrowRaw)
+    }
+    if (northRotationRaw !== undefined) {
+      const normalized = normalizeNorthRotation(northRotationRaw)
+      if (normalized !== northRotationRaw) {
+        next.northRotation = normalized
+      }
+    }
+
+    if (Object.keys(next).length > 0) {
+      setCanvasSettings(next)
+    }
+  }, [northRotationRaw, setCanvasSettings, showNorthArrowRaw])
 
   useEffect(() => {
     if (viewMode !== '2.5d' || ThreeDEntry || threeDLoadFailed) return
