@@ -86,14 +86,14 @@ Make the public website honest, visual, and product-led.
 
 ### Checklist
 
-- [ ] Audit all landing CTAs.
-- [ ] Make "See a demo" open an actual demo path or rename it.
-- [ ] Add a stronger above-the-fold product visual.
-- [ ] Replace fake-logo trust strip or mark it as illustrative.
-- [ ] Tighten hero copy.
-- [ ] Check landing in light theme.
-- [ ] Check landing in dark theme.
-- [ ] Check landing at mobile width.
+- [x] Audit all landing CTAs.
+- [x] Make "See a demo" open an actual demo path or rename it.
+- [x] Add a stronger above-the-fold product visual.
+- [x] Replace fake-logo trust strip or mark it as illustrative.
+- [x] Tighten hero copy.
+- [x] Check landing in light theme.
+- [x] Check landing in dark theme.
+- [x] Check landing at mobile width.
 
 ## Phase 2: Loading And First Impressions
 
@@ -110,14 +110,14 @@ Remove the feeling that the app is stuck or blank during navigation.
 
 ### Checklist
 
-- [ ] Create auth loading skeleton.
-- [ ] Create dashboard loading skeleton.
-- [ ] Create roster loading skeleton.
-- [ ] Create editor loading skeleton.
-- [ ] Add slow-load recovery copy.
-- [ ] Test direct dashboard load.
-- [ ] Test direct map load.
-- [ ] Test reload from map.
+- [x] Create auth loading skeleton.
+- [x] Create dashboard loading skeleton.
+- [x] Create roster loading skeleton.
+- [x] Create editor loading skeleton.
+- [x] Add slow-load recovery copy.
+- [x] Test direct dashboard load.
+- [x] Test direct map load.
+- [x] Test reload from map.
 
 ## Phase 3: Dashboard And Sample Office
 
@@ -138,13 +138,13 @@ Make the empty team dashboard a strong onboarding moment.
 
 ### Checklist
 
-- [ ] Redesign empty dashboard hierarchy.
-- [ ] Add sample-office preview metadata.
-- [ ] Make "Try sample office" visually clear.
-- [ ] Confirm sample office landing page is intentional.
-- [ ] Add success message after sample creation.
-- [ ] Check empty dashboard on desktop.
-- [ ] Check empty dashboard on mobile.
+- [x] Redesign empty dashboard hierarchy.
+- [x] Add sample-office preview metadata.
+- [x] Make "Try sample office" visually clear.
+- [x] Confirm sample office landing page is intentional.
+- [x] Add success message after sample creation.
+- [x] Check empty dashboard on desktop.
+- [x] Check empty dashboard on mobile.
 
 ## Phase 4: Editor First-Load UX
 
@@ -164,15 +164,15 @@ Make the first editor screen calm, legible, and canvas-focused.
 
 ### Checklist
 
-- [ ] Define default panel states.
-- [ ] Collapse admin HUD on first load.
-- [ ] Collapse nonessential library sections.
-- [ ] Reduce welcome tour prominence.
-- [ ] Move notifications away from primary canvas focus.
-- [ ] Hide empty properties panel where appropriate.
-- [ ] Check first editor viewport at 1280px.
-- [ ] Check first editor viewport at 1440px.
-- [ ] Check first editor viewport on tablet/mobile.
+- [x] Define default panel states.
+- [x] Collapse admin HUD on first load.
+- [x] Collapse nonessential library sections.
+- [x] Reduce welcome tour prominence.
+- [x] Move notifications away from primary canvas focus.
+- [x] Hide empty properties panel where appropriate.
+- [x] Check first editor viewport at 1280px.
+- [x] Check first editor viewport at 1440px.
+- [x] Check first editor viewport on tablet/mobile.
 
 ## Phase 5: Blocks And Floor-Plan Visual Quality
 
@@ -260,14 +260,14 @@ Make navigation and editor controls understandable.
 
 ### Checklist
 
-- [ ] Group top-bar controls by intent.
-- [ ] Redesign primary view navigation.
-- [ ] Move role preview out of the main control cluster.
-- [ ] Make 2D/2.5D a clear segmented control.
-- [ ] Add missing tooltips.
-- [ ] Check top bar at 1280px.
-- [ ] Check top bar at 1440px.
-- [ ] Check top bar on mobile/tablet.
+- [x] Group top-bar controls by intent.
+- [x] Redesign primary view navigation.
+- [x] Move role preview out of the main control cluster.
+- [x] Make 2D/2.5D a clear segmented control.
+- [x] Add missing tooltips.
+- [x] Check top bar at 1280px.
+- [x] Check top bar at 1440px.
+- [x] Check top bar on mobile/tablet.
 
 ## Phase 8: Roster UX
 
@@ -319,14 +319,14 @@ Make the sidebar contextual instead of permanently noisy.
 
 ### Checklist
 
-- [ ] Redesign empty properties state.
-- [ ] Define when sidebar should open automatically.
-- [ ] Improve selected-object property grouping.
-- [ ] Reduce tab visual weight.
-- [ ] Check sidebar with no selection.
-- [ ] Check sidebar with desk selected.
-- [ ] Check sidebar with room selected.
-- [ ] Check sidebar with wall/door/window selected.
+- [x] Redesign empty properties state.
+- [x] Define when sidebar should open automatically.
+- [x] Improve selected-object property grouping.
+- [x] Reduce tab visual weight.
+- [x] Check sidebar with no selection.
+- [x] Check sidebar with desk selected.
+- [x] Check sidebar with room selected.
+- [x] Check sidebar with wall/door/window selected.
 
 ## Phase 10: Visual System
 
@@ -348,16 +348,16 @@ Make the whole product feel cohesive.
 
 ### Checklist
 
-- [ ] Inventory button variants.
-- [ ] Inventory panel styles.
-- [ ] Inventory card styles.
-- [ ] Standardize spacing scale.
-- [ ] Standardize icon size.
-- [ ] Standardize hover/active/pressed states.
-- [ ] Audit color contrast.
-- [ ] Audit text overflow.
-- [ ] Check light theme.
-- [ ] Check dark theme.
+- [x] Inventory button variants.
+- [x] Inventory panel styles.
+- [x] Inventory card styles.
+- [x] Standardize spacing scale.
+- [x] Standardize icon size.
+- [x] Standardize hover/active/pressed states.
+- [x] Audit color contrast.
+- [x] Audit text overflow.
+- [x] Check light theme.
+- [x] Check dark theme.
 
 ## Phase 11: Responsive UX
 
@@ -740,11 +740,11 @@ Make non-happy paths feel designed.
 - [ ] Move admin/testing controls away from normal flow.
 - [ ] Make floor tabs clearer.
 - [ ] Make office switcher easier to understand.
-- [ ] Add missing tooltips.
+- [x] Add missing tooltips.
 - [ ] Improve save status placement.
 - [ ] Improve notification placement.
-- [ ] Check top bar at 1280px.
-- [ ] Check top bar at 1440px.
+- [x] Check top bar at 1280px.
+- [x] Check top bar at 1440px.
 
 ### Map Editor Layout
 
@@ -822,7 +822,7 @@ Make non-happy paths feel designed.
 - [ ] Improve room properties layout.
 - [ ] Improve wall properties layout.
 - [ ] Improve door/window properties layout.
-- [ ] Reduce tab visual weight.
+- [x] Reduce tab visual weight.
 - [ ] Improve People tab hierarchy.
 - [ ] Improve Reports tab hierarchy.
 - [ ] Improve Insights tab hierarchy.

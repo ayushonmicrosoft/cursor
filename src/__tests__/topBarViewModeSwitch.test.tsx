@@ -92,7 +92,7 @@ describe('TopBar view mode switch', () => {
   it('applies a workspace preset from the Toolbars menu and persists it', () => {
     renderTopBar()
 
-    fireEvent.click(screen.getByRole('button', { name: /toolbars/i }))
+    fireEvent.click(screen.getByRole('button', { name: /workspace controls/i }))
     fireEvent.click(screen.getByRole('button', { name: 'Admin' }))
 
     const state = useUIStore.getState()
