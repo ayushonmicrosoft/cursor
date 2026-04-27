@@ -21,6 +21,9 @@ interface TableRendererProps {
 // highlight are enough wayfinding on their own. Same threshold DeskRenderer
 // uses for its id badge.
 const TOO_SMALL_FOR_ID = (w: number, h: number) => w < 48 || h < 28
+const SHARP_CORNER = 1
+const LABEL_FONT_SIZE = 9
+const SEAT_LABEL_FONT_SIZE = 8
 
 export function TableRenderer({ element }: TableRendererProps) {
   const selectedIds = useUIStore((s) => s.selectedIds)
@@ -31,6 +34,8 @@ export function TableRenderer({ element }: TableRendererProps) {
   const getDepartmentColor = useEmployeeStore((s) => s.getDepartmentColor)
 
   const showLabel = !TOO_SMALL_FOR_ID(element.width, element.height) && !!element.label
+  const labelWidth = Math.max(20, element.width - 8)
+  const tableLabel = truncateToWidth(element.label ?? '', labelWidth, LABEL_FONT_SIZE)
   const stroke = isSelected ? '#2563EB' : element.style.stroke
   const strokeWidth = isSelected ? 2.5 : element.style.strokeWidth
   const highlightW = Math.max(16, element.width * 0.72)
@@ -45,7 +50,7 @@ export function TableRenderer({ element }: TableRendererProps) {
         fill={element.style.fill}
         stroke={stroke}
         strokeWidth={strokeWidth}
-        cornerRadius={Math.min(3, element.height / 7)}
+        cornerRadius={SHARP_CORNER}
       />
       <Rect
         x={-highlightW / 2}
@@ -63,12 +68,12 @@ export function TableRenderer({ element }: TableRendererProps) {
           (the old `y={-6}` collided with seats on conference tables). */}
       {showLabel && (
         <Text
-          text={truncateToWidth(element.label, Math.max(20, element.width - 8), 9)}
+          text={tableLabel}
           x={-element.width / 2 + 4}
           y={-element.height / 2 + 3}
-          width={Math.max(20, element.width - 8)}
+          width={labelWidth}
           align="left"
-          fontSize={9}
+          fontSize={LABEL_FONT_SIZE}
           fontStyle="bold"
           fill="#6B7280"
           listening={false}
@@ -85,7 +90,7 @@ export function TableRenderer({ element }: TableRendererProps) {
         // neighbors on tightly-packed tables.
         const PILL_W = 44
         const PILL_H = 13
-        const displayName = truncateToWidth(firstName, PILL_W - 6, 8)
+        const displayName = truncateToWidth(firstName, PILL_W - 8, SEAT_LABEL_FONT_SIZE)
 
         return (
           <Group key={seat.id} x={seat.offsetX} y={seat.offsetY}>
@@ -115,10 +120,12 @@ export function TableRenderer({ element }: TableRendererProps) {
                 <Text
                   text={displayName}
                   x={-PILL_W / 2}
-                  y={12 + (PILL_H - 8) / 2 - 1}
+                  y={12}
                   width={PILL_W}
+                  height={PILL_H}
                   align="center"
-                  fontSize={8}
+                  verticalAlign="middle"
+                  fontSize={SEAT_LABEL_FONT_SIZE}
                   fontStyle="bold"
                   fill="#1F2937"
                 />

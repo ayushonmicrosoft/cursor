@@ -6,6 +6,9 @@ interface Props {
   element: SofaElement
 }
 
+const SHARP_CORNER = 1
+const SELECTED_STROKE = '#2563EB'
+
 /**
  * Sofa renderer — a rounded main body with two inset armrest bars. The
  * armrests are proportional (clamped so very narrow sofas still read as
@@ -21,8 +24,16 @@ export function SofaRenderer({ element }: Props) {
   // Armrest width is ~10% of body width, clamped to a 6–24px range so it
   // stays visible when shrunk and doesn't eat the sofa when enlarged.
   const armW = Math.max(6, Math.min(24, w * 0.1))
-  const stroke = isSelected ? '#3B82F6' : element.style.stroke
+  const stroke = isSelected ? SELECTED_STROKE : element.style.stroke
   const strokeWidth = isSelected ? 2.5 : element.style.strokeWidth
+  const detailStrokeWidth = Math.max(1, strokeWidth * 0.7)
+  const armrestInsetY = Math.max(1, h * 0.06)
+  const innerPadX = armW + 2
+  const innerPadY = Math.max(2, h * 0.14)
+  const innerCushionW = Math.max(8, w - innerPadX * 2)
+  const backrestH = Math.max(5, h * 0.3)
+  const seamW = Math.max(10, w * 0.32)
+  const seamH = Math.max(2, h * 0.08)
 
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
@@ -35,29 +46,55 @@ export function SofaRenderer({ element }: Props) {
         fill={element.style.fill}
         stroke={stroke}
         strokeWidth={strokeWidth}
-        cornerRadius={Math.min(3, h / 8)}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
       />
       {/* Left armrest */}
       <Rect
         x={-w / 2}
-        y={-h / 2}
+        y={-h / 2 + armrestInsetY}
         width={armW}
-        height={h}
+        height={Math.max(4, h - armrestInsetY * 2)}
         fill={element.style.stroke}
+        stroke={stroke}
+        strokeWidth={detailStrokeWidth}
         opacity={element.style.opacity * 0.35}
-        cornerRadius={[2, 0, 0, 2]}
+        cornerRadius={SHARP_CORNER}
         listening={false}
       />
       {/* Right armrest */}
       <Rect
         x={w / 2 - armW}
-        y={-h / 2}
+        y={-h / 2 + armrestInsetY}
         width={armW}
-        height={h}
+        height={Math.max(4, h - armrestInsetY * 2)}
         fill={element.style.stroke}
+        stroke={stroke}
+        strokeWidth={detailStrokeWidth}
         opacity={element.style.opacity * 0.35}
-        cornerRadius={[0, 2, 2, 0]}
+        cornerRadius={SHARP_CORNER}
+        listening={false}
+      />
+      <Rect
+        x={-innerCushionW / 2}
+        y={-h / 2 + innerPadY}
+        width={innerCushionW}
+        height={backrestH}
+        fill="#FFFFFF"
+        stroke={stroke}
+        strokeWidth={detailStrokeWidth}
+        opacity={element.style.opacity * 0.36}
+        cornerRadius={SHARP_CORNER}
+        listening={false}
+      />
+      <Rect
+        x={-seamW / 2}
+        y={h / 2 - seamH - Math.max(2, h * 0.14)}
+        width={seamW}
+        height={seamH}
+        fill={stroke}
+        opacity={element.style.opacity * 0.22}
+        cornerRadius={SHARP_CORNER}
         listening={false}
       />
     </Group>

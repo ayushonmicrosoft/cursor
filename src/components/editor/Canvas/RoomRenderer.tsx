@@ -3,8 +3,12 @@ import type { ConferenceRoomElement, PhoneBoothElement, CommonAreaElement } from
 import { isConferenceRoomElement, isCommonAreaElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
 import { RoomBookingBadge } from './RoomBookingBadge'
+import { truncateToWidth } from '../../../lib/textTruncate'
 
 type RoomElement = ConferenceRoomElement | PhoneBoothElement | CommonAreaElement
+const SHARP_CORNER = 1
+const ROOM_NAME_FONT_SIZE = 13
+const ROOM_META_FONT_SIZE = 10
 
 interface RoomRendererProps {
   element: RoomElement
@@ -36,6 +40,9 @@ function ConferenceRoomRenderer({ element, isSelected }: ConferenceRoomRendererP
   const stroke = isSelected ? '#2563EB' : '#D97706'
   const innerW = Math.max(48, element.width * 0.52)
   const innerH = Math.max(24, element.height * 0.28)
+  const roomNameWidth = Math.max(24, element.width - 8)
+  const roomNameText = truncateToWidth(element.roomName, roomNameWidth, ROOM_NAME_FONT_SIZE)
+  const capacityText = truncateToWidth(`${element.capacity} seats`, roomNameWidth, ROOM_META_FONT_SIZE)
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
       <Rect
@@ -46,7 +53,7 @@ function ConferenceRoomRenderer({ element, isSelected }: ConferenceRoomRendererP
         fill="#FFF7ED"
         stroke={stroke}
         strokeWidth={isSelected ? 2.5 : 1.5}
-        cornerRadius={3}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
       />
       <Rect
@@ -57,19 +64,19 @@ function ConferenceRoomRenderer({ element, isSelected }: ConferenceRoomRendererP
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
-        cornerRadius={Math.min(4, innerH / 4)}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity * 0.82}
         listening={false}
       />
 
       {/* Room name */}
       <Text
-        text={element.roomName}
+        text={roomNameText}
         x={-element.width / 2 + 4}
         y={-element.height / 2 + 8}
-        width={element.width - 8}
+        width={roomNameWidth}
         align="center"
-        fontSize={13}
+        fontSize={ROOM_NAME_FONT_SIZE}
         fontStyle="bold"
         fill="#92400E"
         listening={false}
@@ -77,12 +84,12 @@ function ConferenceRoomRenderer({ element, isSelected }: ConferenceRoomRendererP
 
       {/* Capacity */}
       <Text
-        text={`${element.capacity} seats`}
+        text={capacityText}
         x={-element.width / 2 + 4}
         y={element.height / 2 - 20}
-        width={element.width - 8}
+        width={roomNameWidth}
         align="center"
-        fontSize={10}
+        fontSize={ROOM_META_FONT_SIZE}
         fill="#B45309"
         listening={false}
       />
@@ -112,7 +119,7 @@ function PhoneBoothRenderer({ element, isSelected }: PhoneBoothRendererProps) {
         fill="#F0FDF4"
         stroke={stroke}
         strokeWidth={isSelected ? 2.5 : 1.5}
-        cornerRadius={3}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
       />
       <Rect
@@ -123,7 +130,7 @@ function PhoneBoothRenderer({ element, isSelected }: PhoneBoothRendererProps) {
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
-        cornerRadius={Math.min(3, element.width * 0.08)}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity * 0.85}
         listening={false}
       />
@@ -163,6 +170,8 @@ interface CommonAreaRendererProps {
 
 function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
   const stroke = isSelected ? '#2563EB' : '#15803D'
+  const areaNameWidth = Math.max(24, element.width - 8)
+  const areaNameText = truncateToWidth(element.areaName, areaNameWidth, ROOM_NAME_FONT_SIZE)
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
       <Rect
@@ -173,7 +182,7 @@ function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
         fill="#ECFDF5"
         stroke={stroke}
         strokeWidth={isSelected ? 2.5 : 1.5}
-        cornerRadius={3}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
       />
       <Rect
@@ -184,7 +193,7 @@ function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
-        cornerRadius={Math.min(3, element.height * 0.06)}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity * 0.78}
         listening={false}
       />
@@ -200,12 +209,12 @@ function CommonAreaRenderer({ element, isSelected }: CommonAreaRendererProps) {
       />
 
       <Text
-        text={element.areaName}
+        text={areaNameText}
         x={-element.width / 2 + 4}
         y={-element.height / 2 + 10}
-        width={element.width - 8}
+        width={areaNameWidth}
         align="center"
-        fontSize={13}
+        fontSize={ROOM_NAME_FONT_SIZE}
         fontStyle="bold"
         fill="#166534"
         listening={false}

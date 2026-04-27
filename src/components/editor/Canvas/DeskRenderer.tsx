@@ -15,6 +15,7 @@ import {
   accommodationAnchorFor,
   type AccommodationBadgeAnchor,
 } from './SeatLabel'
+import { truncateToWidth } from '../../../lib/textTruncate'
 
 /** Visual palette for the drop-target outline painted while the user is
  *  dragging an employee chip over the canvas. Green = open desk, amber =
@@ -23,6 +24,8 @@ import {
 const DROP_OPEN_STROKE = '#10B981'   // emerald-500
 const DROP_BUSY_STROKE = '#F59E0B'   // amber-500
 const DROP_HOVER_STROKE = '#2563EB'  // blue-600
+const SELECTED_STROKE = '#2563EB'
+const ID_FONT_SIZE = 9
 
 /**
  * Minimum shape needed to render a seat badge — we deliberately don't
@@ -127,6 +130,7 @@ function AccommodationBadge({
  *  sub-renderer reads the same source of truth and the policy lives in one
  *  place ("decommissioned = 40% opacity; reserved = orange outline"). */
 const RESERVED_STROKE = '#F59E0B' // amber-500
+const SHARP_CORNER = 1
 function seatStatusVisuals(el: DeskElement | WorkstationElement | PrivateOfficeElement) {
   const status = deriveSeatStatus(el)
   return {
@@ -261,7 +265,7 @@ function DropTargetOutline({
       stroke={stroke}
       strokeWidth={isHovered ? 2.5 : 1.5}
       dash={[6, 3]}
-      cornerRadius={2}
+      cornerRadius={SHARP_CORNER}
       listening={false}
     />
   )
@@ -290,7 +294,7 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
   const fillColor = isHotDesk ? '#FEF9C3' : '#FEF3C7'
   const { opacityMul, overrideStroke } = seatStatusVisuals(element)
   const borderColor = isSelected
-    ? '#3B82F6'
+    ? SELECTED_STROKE
     : (overrideStroke || departmentColor || '#9CA3AF')
   const borderDash = employee ? undefined : [4, 4]
 
@@ -309,6 +313,8 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
   // information, just the on-canvas duplication.
   const TOO_SMALL_FOR_ID = element.width < 48 || element.height < 28
   const showIdBadge = showDeskIds && !TOO_SMALL_FOR_ID && seatLabelStyle !== 'card'
+  const deskIdBadgeWidth = Math.max(20, element.width / 2 - 4)
+  const deskIdText = truncateToWidth(element.deskId, deskIdBadgeWidth, ID_FONT_SIZE)
   const isCard = seatLabelStyle === 'card'
   const contentTop = isCard
     ? -element.height / 2
@@ -331,7 +337,7 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
         fill={fillColor}
         stroke={borderColor}
         strokeWidth={isSelected ? 2.5 : overrideStroke ? 2.5 : 1.5}
-        cornerRadius={2}
+        cornerRadius={SHARP_CORNER}
         dash={borderDash}
         opacity={element.style.opacity * opacityMul}
       />
@@ -345,12 +351,12 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
           turns it on. */}
       {showIdBadge && (
         <Text
-          text={element.deskId}
+          text={deskIdText}
           x={-element.width / 2 + 4}
           y={-element.height / 2 + 3}
-          width={Math.max(20, element.width / 2 - 4)}
+          width={deskIdBadgeWidth}
           align="left"
-          fontSize={9}
+          fontSize={ID_FONT_SIZE}
           fontStyle="bold"
           fill="#6B7280"
           listening={false}
@@ -414,10 +420,13 @@ interface WorkstationRendererProps {
 
 function WorkstationRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds }: WorkstationRendererProps) {
   const slotWidth = element.width / element.positions
+  const slotTopReserve = showDeskIds ? 14 : 4
+  const slotBottomReserve = 6
   const { opacityMul, overrideStroke } = seatStatusVisuals(element)
   const borderColor = isSelected
-    ? '#3B82F6'
+    ? SELECTED_STROKE
     : (overrideStroke || element.style.stroke)
+  const deskIdText = truncateToWidth(element.deskId, Math.max(20, element.width - 8), ID_FONT_SIZE)
 
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
@@ -429,19 +438,19 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
         fill={element.style.fill}
         stroke={borderColor}
         strokeWidth={isSelected ? 2.5 : overrideStroke ? 2.5 : element.style.strokeWidth}
-        cornerRadius={2}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity * opacityMul}
       />
 
       {/* Desk ID (Wave 16: opt-in via View → "Show desk IDs"). */}
       {showDeskIds && (
         <Text
-          text={element.deskId}
+          text={deskIdText}
           x={-element.width / 2 + 4}
           y={-element.height / 2 + 3}
           width={element.width - 8}
           align="left"
-          fontSize={9}
+          fontSize={ID_FONT_SIZE}
           fill="#9CA3AF"
           listening={false}
         />
@@ -450,10 +459,11 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
       {/* Divider lines between positions */}
       {Array.from({ length: element.positions - 1 }, (_, i) => {
         const lineX = -element.width / 2 + slotWidth * (i + 1)
+        const crispLineX = Math.round(lineX) + 0.5
         return (
           <Line
             key={`divider-${i}`}
-            points={[lineX, -element.height / 2 + 14, lineX, element.height / 2 - 4]}
+            points={[crispLineX, -element.height / 2 + slotTopReserve, crispLineX, element.height / 2 - slotBottomReserve]}
             stroke="#D1D5DB"
             strokeWidth={1}
             listening={false}
@@ -500,6 +510,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
         const employeeId = element.assignedEmployeeIds[i] || null
         const employee = employeeId ? employees[employeeId] : null
         const slotX = -element.width / 2 + slotWidth * i
+        const slotLabelWidth = Math.max(0, slotWidth - 4)
         const deptColor = employee?.department ? getDepartmentColor(employee.department) : null
         const showDeptRail = deptColor && seatLabelStyle !== 'banner' && seatLabelStyle !== 'card'
         // Reserve 14px at the top for the deskId text (only when it's
@@ -507,16 +518,15 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
         // the deskId is hidden — the Wave 16 default — the label gets
         // the reclaimed top band, which means the avatar chip and the
         // pill name actually fit at workstation slot heights.
-        const topReserve = showDeskIds ? 14 : 4
-        const labelTop = -element.height / 2 + topReserve
-        const labelH = element.height - topReserve - 6
+        const labelTop = -element.height / 2 + slotTopReserve
+        const labelH = Math.max(8, element.height - slotTopReserve - slotBottomReserve)
         return (
           <Group key={`slot-${i}`}>
             {showDeptRail && (
               <Rect
                 x={slotX + 2}
                 y={element.height / 2 - 5}
-                width={slotWidth - 4}
+                width={slotLabelWidth}
                 height={2}
                 fill={deptColor}
                 cornerRadius={1}
@@ -538,7 +548,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
               departmentColor={deptColor}
               x={slotX + 2}
               y={labelTop}
-              width={slotWidth - 4}
+              width={slotLabelWidth}
               height={labelH}
               containerWidth={slotWidth}
               underlyingFill="#FFFFFF"
@@ -586,7 +596,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
             stroke={stroke}
             strokeWidth={isHoveredSlot ? 2.5 : 1.5}
             dash={[6, 3]}
-            cornerRadius={2}
+            cornerRadius={SHARP_CORNER}
             listening={false}
           />
         )
@@ -611,11 +621,12 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
   const assignedEmployees = element.assignedEmployeeIds
     .map((id) => employees[id])
     .filter(Boolean)
-  const borderColor = isSelected ? '#3B82F6' : element.style.stroke
+  const borderColor = isSelected ? SELECTED_STROKE : element.style.stroke
   const firstDeptColor = assignedEmployees[0]?.department
     ? getDepartmentColor(assignedEmployees[0].department)
     : null
   const { opacityMul, overrideStroke } = seatStatusVisuals(element)
+  const deskIdText = truncateToWidth(element.deskId, Math.max(20, element.width - 8), ID_FONT_SIZE)
 
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
@@ -627,23 +638,23 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
         fill="#EFF6FF"
         stroke={
           isSelected
-            ? '#3B82F6'
+            ? SELECTED_STROKE
             : (overrideStroke || firstDeptColor || borderColor)
         }
         strokeWidth={isSelected ? 3 : 2}
-        cornerRadius={3}
+        cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity * opacityMul}
       />
 
       {/* Desk ID (Wave 16: opt-in via View → "Show desk IDs"). */}
       {showDeskIds && (
         <Text
-          text={element.deskId}
+          text={deskIdText}
           x={-element.width / 2 + 4}
           y={-element.height / 2 + 4}
           width={element.width - 8}
           align="left"
-          fontSize={9}
+          fontSize={ID_FONT_SIZE}
           fill="#9CA3AF"
           listening={false}
         />
