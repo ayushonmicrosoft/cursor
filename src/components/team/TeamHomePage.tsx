@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import {
   Building2,
   Plus,
   Upload,
   Search,
+  Sparkles,
+  Layers3,
+  Users,
+  Grid3x3,
   X,
 } from 'lucide-react'
 import { useSession } from '../../lib/auth/session'
@@ -22,6 +26,7 @@ import { OfficeCard } from './OfficeCard'
 import type { ThumbnailElement } from './OfficeThumbnail'
 import type { Team } from '../../types/team'
 import { getRecents } from '../../lib/recentOffices'
+import { useToastStore } from '../../stores/toastStore'
 
 /**
  * Wave 14A: refresh the post-login dashboard to match the JSON-Crack /
@@ -296,6 +301,7 @@ export function TeamHomePage() {
   const searchRef = useRef<HTMLInputElement>(null)
   const session = useSession()
   const navigate = useNavigate()
+  const pushToast = useToastStore((s) => s.push)
 
   // The session object identity changes on every render (zustand
   // returns a fresh selector snapshot); depend on the stable
@@ -469,6 +475,11 @@ export function TeamHomePage() {
       if (!res.ok) {
         console.warn('Demo office: initial seed save failed', res)
       }
+      pushToast({
+        tone: 'success',
+        title: 'Sample office opened',
+        body: 'Loaded a three-floor sample with seats, employees, and departments ready to review.',
+      })
       navigate(`/t/${team.slug}/o/${created.slug}/roster`)
     } finally {
       setCreating(false)
@@ -704,6 +715,7 @@ export function TeamHomePage() {
             creating={creating}
             onNew={onNew}
             onNewDemo={onNewDemo}
+            onImport={onImport}
           />
         ) : (
           <>
@@ -926,31 +938,43 @@ function EmptyTeamState({
   creating,
   onNew,
   onNewDemo,
+  onImport,
 }: {
   canCreate: boolean
   creating: boolean
   onNew: () => void
   onNewDemo: () => void
+  onImport: () => void
 }) {
   return (
-    <div className="mt-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-10 text-center max-w-xl mx-auto">
-      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-4">
-        <Building2 size={28} aria-hidden="true" />
+    <div className="mt-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 sm:p-8 max-w-3xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
+        <div className="min-w-0">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-4">
+            <Building2 size={28} aria-hidden="true" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Start a workspace
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-prose">
+            Create an office, open a sample office with a full floor plan and roster, or import data from a file.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left sm:min-w-[24rem]">
+          <PreviewStat icon={<Layers3 size={16} aria-hidden="true" />} label="Floors" value="3" />
+          <PreviewStat icon={<Grid3x3 size={16} aria-hidden="true" />} label="Seats" value="48+" />
+          <PreviewStat icon={<Users size={16} aria-hidden="true" />} label="Employees" value="45+" />
+          <PreviewStat icon={<Sparkles size={16} aria-hidden="true" />} label="Departments" value="7" />
+        </div>
       </div>
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-        Welcome to OandOcraft
-      </h2>
-      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-        Create your first office to start planning.
-      </p>
       {canCreate && (
-        <div className="mt-5 flex items-center justify-center gap-2 flex-wrap">
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <button
             type="button"
             onClick={onNew}
             disabled={creating}
             aria-label="Create office"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
           >
             <Plus size={14} aria-hidden="true" />
             Create office
@@ -959,13 +983,43 @@ function EmptyTeamState({
             type="button"
             onClick={onNewDemo}
             disabled={creating}
-            className="px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            title="Pre-populated with ~18 demo employees"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            title="Open a seeded office with floors, seats, employees, and departments"
           >
-            Try the sample office
+            Try sample office
+          </button>
+          <button
+            type="button"
+            onClick={onImport}
+            disabled={creating}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            title="Create a new office and open the CSV import dialog"
+          >
+            <Upload size={14} aria-hidden="true" />
+            Import data
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+function PreviewStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode
+  label: string
+  value: string
+}) {
+  return (
+    <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/40 px-3 py-2">
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <span className="text-gray-400 dark:text-gray-500">{icon}</span>
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</div>
     </div>
   )
 }
