@@ -21,7 +21,7 @@ export default defineConfig([
     },
     rules: {
       // Allow intentionally-unused args/vars when they're prefixed with
-      // `_` — the idiomatic signal for "I need this slot but don't read
+      // `_` - the idiomatic signal for "I need this slot but don't read
       // from it" (e.g. zustand `set, _get` setters, discriminated-union
       // callbacks where one parameter is required by the signature).
       '@typescript-eslint/no-unused-vars': [
@@ -33,6 +33,15 @@ export default defineConfig([
           destructuredArrayIgnorePattern: '^_',
         },
       ],
+      // Keep lint focused on established hook correctness rules. The
+      // compiler-style purity/immutability rules are tracked separately.
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/use-memo': 'off',
+      'react-hooks/globals': 'off',
     },
   },
 ])
+

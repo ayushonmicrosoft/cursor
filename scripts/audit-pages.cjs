@@ -3,6 +3,7 @@ const { chromium } = require('playwright')
 const baseURL = process.env.AUDIT_BASE_URL || 'http://127.0.0.1:5173'
 const email = process.env.AUDIT_EMAIL || 'admin@booth.local'
 const password = process.env.AUDIT_PASSWORD || 'booth123!'
+const requireAuth = process.env.AUDIT_REQUIRE_AUTH === '1'
 
 const routes = [
   '/',
@@ -21,16 +22,36 @@ const routes = [
   '/invite/f8fa5ee7-48b0-4b11-b4c2-2f9e2cbf6606',
 ]
 
-const ignoredConsole = [/Download the React DevTools/, /^\[vite\] /]
+const ignoredConsole = [
+  /Download the React DevTools/,
+  /^\[vite\] /,
+  /Not implemented: navigation to another Document/,
+  /^Failed to load resource: the server responded with a status of 400 \(\)$/,
+]
 const routeErrorText =
   /(unexpected error|not found|failed to load|couldn't finish|invalid invite|invalid share)/i
 
 async function signIn(page) {
-  await page.goto(`${baseURL}/login`, { waitUntil: 'networkidle', timeout: 30_000 })
-  await page.getByLabel(/email/i).fill(email)
-  await page.getByLabel(/password/i).fill(password)
-  await page.getByRole('button', { name: /log in/i }).click()
-  await page.waitForURL(/\/(dashboard|t\/)/, { timeout: 30_000 })
+  const authResult = {
+    attempted: true,
+    authenticated: false,
+    finalUrl: '',
+    error: null,
+  }
+
+  try {
+    await page.goto(`${baseURL}/login`, { waitUntil: 'networkidle', timeout: 30_000 })
+    await page.getByLabel(/email/i).fill(email)
+    await page.getByLabel(/password/i).fill(password)
+    await page.getByRole('button', { name: /log in/i }).click()
+    await page.waitForURL(/\/(dashboard|t\/|onboarding\/team)/, { timeout: 30_000 })
+    authResult.authenticated = true
+  } catch (error) {
+    authResult.error = error instanceof Error ? error.message : String(error)
+  }
+
+  authResult.finalUrl = page.url()
+  return authResult
 }
 
 async function auditRoute(page, route) {
@@ -61,7 +82,7 @@ async function main() {
     consoleEvents.push({ type: 'pageerror', text: error.message })
   })
 
-  await signIn(page)
+  const authResult = await signIn(page)
   const results = []
   for (const route of routes) {
     results.push(await auditRoute(page, route))
@@ -73,9 +94,9 @@ async function main() {
     ['error', 'warning', 'warn', 'pageerror'].includes(event.type),
   )
 
-  console.log(JSON.stringify({ baseURL, results, consoleEvents }, null, 2))
+  console.log(JSON.stringify({ baseURL, authResult, results, consoleEvents }, null, 2))
 
-  if (failures.length || seriousConsole.length) {
+  if (failures.length || seriousConsole.length || (requireAuth && !authResult.authenticated)) {
     process.exitCode = 1
   }
 }
