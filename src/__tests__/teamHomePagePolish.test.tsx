@@ -218,17 +218,19 @@ describe('TeamHomePage (Wave 14A polish)', () => {
     })
   })
 
-  it('renders the welcome empty state when the team has zero offices', async () => {
+  it('renders the onboarding empty state when the team has zero offices', async () => {
     listOffices.mockResolvedValue([])
     renderPage()
     expect(
-      await screen.findByRole('heading', { name: /welcome to oandocraft/i, level: 2 }),
+      await screen.findByRole('heading', { name: /start a workspace/i, level: 2 }),
     ).toBeInTheDocument()
     // A real button, focusable.
     const btn = screen.getByRole('button', { name: /create office/i })
     expect(btn).toBeInTheDocument()
     btn.focus()
     expect(btn).toHaveFocus()
+    expect(screen.getByRole('button', { name: /try sample office/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /import data/i })).toBeInTheDocument()
   })
 
   it('renders a distinct "no matches" empty state when search returns nothing', async () => {
