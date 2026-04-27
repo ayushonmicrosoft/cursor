@@ -1,6 +1,11 @@
 import { create } from 'zustand'
 import type { ImportIssue } from '../lib/employeeCsv'
 import type { AlignmentGuide } from '../lib/geometry'
+import {
+  recordSelectionFailure,
+  recordToolbarLayoutAnomaly,
+} from '../lib/interactionTelemetry'
+import { useElementsStore } from './elementsStore'
 
 export interface CSVImportSummary {
   importedCount: number
@@ -24,7 +29,14 @@ export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, Dockabl
   'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
 }
 
+export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, boolean> = {
+  'canvas-actions': true,
+  'align-distribute': true,
+  'admin-stats': true,
+}
+
 const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts'
+const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
 
 function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLayout> {
   if (typeof window === 'undefined') {
@@ -35,9 +47,9 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
     if (!raw) return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
     const parsed = JSON.parse(raw) as Partial<Record<DockableToolbarId, Partial<DockableToolbarLayout>>>
     return {
-      'canvas-actions': sanitizeToolbarLayout('canvas-actions', parsed['canvas-actions']),
-      'align-distribute': sanitizeToolbarLayout('align-distribute', parsed['align-distribute']),
-      'admin-stats': sanitizeToolbarLayout('admin-stats', parsed['admin-stats']),
+      'canvas-actions': sanitizeToolbarLayout('canvas-actions', 'storage-read', parsed['canvas-actions']),
+      'align-distribute': sanitizeToolbarLayout('align-distribute', 'storage-read', parsed['align-distribute']),
+      'admin-stats': sanitizeToolbarLayout('admin-stats', 'storage-read', parsed['admin-stats']),
     }
   } catch {
     return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
@@ -46,9 +58,35 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
 
 function sanitizeToolbarLayout(
   id: DockableToolbarId,
+  source: string,
   layout: Partial<DockableToolbarLayout> | undefined,
 ): DockableToolbarLayout {
   const fallback = DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS[id]
+  const hasInvalidMode = Boolean(layout?.mode) && layout?.mode !== 'docked' && layout?.mode !== 'floating'
+  const hasInvalidX = Boolean(layout?.position) && !Number.isFinite(layout?.position?.x)
+  const hasInvalidY = Boolean(layout?.position) && !Number.isFinite(layout?.position?.y)
+  const hasExtremeCoordinates =
+    Number.isFinite(layout?.position?.x) &&
+    Number.isFinite(layout?.position?.y) &&
+    (Math.abs(Number(layout?.position?.x)) > 10000 || Math.abs(Number(layout?.position?.y)) > 10000)
+
+  if (hasInvalidMode || hasInvalidX || hasInvalidY || hasExtremeCoordinates) {
+    recordToolbarLayoutAnomaly({
+      source,
+      toolbarId: id,
+      reason: hasExtremeCoordinates ? 'position-out-of-bounds' : 'invalid-layout-data',
+      details: {
+        mode: layout?.mode ?? null,
+        x: layout?.position?.x ?? null,
+        y: layout?.position?.y ?? null,
+      },
+    })
+    return {
+      mode: layout?.mode === 'floating' && !hasInvalidMode ? 'floating' : fallback.mode,
+      position: { ...fallback.position },
+    }
+  }
+
   const x = Number.isFinite(layout?.position?.x) ? Number(layout?.position?.x) : fallback.position.x
   const y = Number.isFinite(layout?.position?.y) ? Number(layout?.position?.y) : fallback.position.y
   return {
@@ -65,6 +103,58 @@ function persistToolbarLayouts(layouts: Record<DockableToolbarId, DockableToolba
     // Storage can fail in private mode / quota pressure. The current
     // session still works; only persistence is skipped.
   }
+}
+
+function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
+  if (typeof window === 'undefined') {
+    return { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+  }
+  try {
+    const raw = window.localStorage.getItem(TOOLBAR_VISIBILITY_STORAGE_KEY)
+    if (!raw) return { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+    const parsed = JSON.parse(raw) as Partial<Record<DockableToolbarId, unknown>>
+    return {
+      'canvas-actions':
+        typeof parsed['canvas-actions'] === 'boolean'
+          ? parsed['canvas-actions']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['canvas-actions'],
+      'align-distribute':
+        typeof parsed['align-distribute'] === 'boolean'
+          ? parsed['align-distribute']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['align-distribute'],
+      'admin-stats':
+        typeof parsed['admin-stats'] === 'boolean'
+          ? parsed['admin-stats']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['admin-stats'],
+    }
+  } catch {
+    return { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+  }
+}
+
+function persistToolbarVisibility(visibility: Record<DockableToolbarId, boolean>) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(TOOLBAR_VISIBILITY_STORAGE_KEY, JSON.stringify(visibility))
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
+function collectMissingSelectionIds(ids: string[]): string[] {
+  if (ids.length === 0) return []
+  const elements = useElementsStore.getState().elements
+  return ids.filter((id) => !elements[id])
+}
+
+function reportSelectionFailure(source: string, ids: string[]) {
+  const missingIds = collectMissingSelectionIds(ids)
+  if (missingIds.length === 0) return
+  recordSelectionFailure({
+    source,
+    attemptedIds: [...ids],
+    missingIds,
+  })
 }
 
 interface UIState {
@@ -146,6 +236,7 @@ interface UIState {
   movePlannerActive: boolean
   employeeDirectoryOpen: boolean
   dockableToolbarLayouts: Record<DockableToolbarId, DockableToolbarLayout>
+  dockableToolbarVisibility: Record<DockableToolbarId, boolean>
 
   // Actions
   setSelectedIds: (ids: string[]) => void
@@ -177,6 +268,9 @@ interface UIState {
   setDockableToolbarMode: (id: DockableToolbarId, mode: DockableToolbarLayout['mode']) => void
   setDockableToolbarPosition: (id: DockableToolbarId, position: DockableToolbarLayout['position']) => void
   resetDockableToolbarLayout: (id: DockableToolbarId) => void
+  setDockableToolbarVisible: (id: DockableToolbarId, visible: boolean) => void
+  toggleDockableToolbarVisible: (id: DockableToolbarId) => void
+  resetDockableWorkspace: () => void
   /** Bump `drawingCancelTick` to ask any active drawing session to cancel. */
   requestCancelDrawing: () => void
   /** Increment `modalOpenCount`. Call from drawer/dialog mount effect. */
@@ -195,6 +289,7 @@ type UIStore = ReturnType<typeof createUIStore>
 
 function createUIStore() {
   const initialToolbarLayouts = readStoredToolbarLayouts()
+  const initialToolbarVisibility = readStoredToolbarVisibility()
   return create<UIState>((set) => ({
   selectedIds: [],
   hoveredId: null,
@@ -220,6 +315,7 @@ function createUIStore() {
   movePlannerActive: false,
   employeeDirectoryOpen: false,
   dockableToolbarLayouts: initialToolbarLayouts,
+  dockableToolbarVisibility: initialToolbarVisibility,
   drawingCancelTick: 0,
   modalOpenCount: 0,
   assignmentQueue: [],
@@ -229,16 +325,25 @@ function createUIStore() {
   setDragAlignmentGuides: (guides) => set({ dragAlignmentGuides: guides }),
   clearDragAlignmentGuides: () => set({ dragAlignmentGuides: [] }),
 
-  setSelectedIds: (ids) => set({ selectedIds: ids }),
-  addToSelection: (id) => set((s) => ({ selectedIds: [...s.selectedIds, id] })),
+  setSelectedIds: (ids) => {
+    reportSelectionFailure('setSelectedIds', ids)
+    set({ selectedIds: ids })
+  },
+  addToSelection: (id) => {
+    reportSelectionFailure('addToSelection', [id])
+    set((s) => ({ selectedIds: [...s.selectedIds, id] }))
+  },
   removeFromSelection: (id) =>
     set((s) => ({ selectedIds: s.selectedIds.filter((i) => i !== id) })),
   toggleSelection: (id) =>
-    set((s) =>
-      s.selectedIds.includes(id)
+    set((s) => {
+      if (!s.selectedIds.includes(id)) {
+        reportSelectionFailure('toggleSelection', [id])
+      }
+      return s.selectedIds.includes(id)
         ? { selectedIds: s.selectedIds.filter((i) => i !== id) }
         : { selectedIds: [...s.selectedIds, id] }
-    ),
+    }),
   clearSelection: () => set({ selectedIds: [] }),
   setHoveredId: (id) => set({ hoveredId: id }),
   setRightSidebarOpen: (open) => set({ rightSidebarOpen: open }),
@@ -272,9 +377,14 @@ function createUIStore() {
     }),
   setDockableToolbarPosition: (id, position) =>
     set((s) => {
+      const sanitized = sanitizeToolbarLayout(
+        id,
+        'state-write',
+        { mode: s.dockableToolbarLayouts[id].mode, position },
+      )
       const next = {
         ...s.dockableToolbarLayouts,
-        [id]: { ...s.dockableToolbarLayouts[id], position },
+        [id]: sanitized,
       }
       persistToolbarLayouts(next)
       return { dockableToolbarLayouts: next }
@@ -287,6 +397,35 @@ function createUIStore() {
       }
       persistToolbarLayouts(next)
       return { dockableToolbarLayouts: next }
+    }),
+  setDockableToolbarVisible: (id, visible) =>
+    set((s) => {
+      const next = {
+        ...s.dockableToolbarVisibility,
+        [id]: visible,
+      }
+      persistToolbarVisibility(next)
+      return { dockableToolbarVisibility: next }
+    }),
+  toggleDockableToolbarVisible: (id) =>
+    set((s) => {
+      const next = {
+        ...s.dockableToolbarVisibility,
+        [id]: !s.dockableToolbarVisibility[id],
+      }
+      persistToolbarVisibility(next)
+      return { dockableToolbarVisibility: next }
+    }),
+  resetDockableWorkspace: () =>
+    set(() => {
+      const layouts = { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+      const visibility = { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+      persistToolbarLayouts(layouts)
+      persistToolbarVisibility(visibility)
+      return {
+        dockableToolbarLayouts: layouts,
+        dockableToolbarVisibility: visibility,
+      }
     }),
   requestCancelDrawing: () =>
     set((s) => ({ drawingCancelTick: s.drawingCancelTick + 1 })),

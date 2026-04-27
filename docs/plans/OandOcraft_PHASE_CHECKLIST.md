@@ -3,31 +3,35 @@
 Last updated: 2026-04-27
 Checklist role: execution tracker only (the roadmap lives in `OandOcraft_OVERHAUL_MASTER_PLAN.md`).
 
+Execution status snapshot:
+- Current engine path: Option 2 (Hybrid Konva + Three.js).
+- Active delivery window: Phase 0, Phase 1, and Phase 2.
+
 ## Engine decision checkpoint (must be explicit)
 
 - [ ] Choose one engine path for this cycle:
   - [ ] Option 1: Konva Continuity
-  - [ ] Option 2: Hybrid Konva + Three.js
+  - [x] Option 2: Hybrid Konva + Three.js
   - [ ] Option 3: tldraw Replatform
-- [ ] Record decision owner and date in commit notes.
+- [x] Record decision owner and date in commit notes.
 
 ## Phase 0 - Baseline
 
-- [ ] Capture reproducible bugs for selection, overflow, compass.
-- [ ] Record baseline screenshots and behavior notes.
+- [x] Capture reproducible bugs for selection, overflow, compass.
+- [x] Record baseline screenshots and behavior notes.
 
 ## Phase 1 - P0 interaction stabilization
 
-- [ ] Fix non-selectable item paths.
-- [ ] Remove top bar horizontal overflow/scroll.
-- [ ] Add explicit toolbar visibility and dock/float/reset labels.
-- [ ] Add/refresh interaction smoke tests.
+- [x] Fix non-selectable item paths.
+- [x] Remove top bar horizontal overflow/scroll.
+- [x] Add explicit toolbar visibility and dock/float/reset labels.
+- [x] Add/refresh interaction smoke tests.
 
 ## Phase 2 - Admin command surface
 
-- [ ] Enable all toolbars and arrangement controls for admin.
-- [ ] Add top-toolbar `Reset workspace` (layout + zoom/pan reset).
-- [ ] Deliver dockable admin HUD with real-time stats and quick actions.
+- [x] Enable all toolbars and arrangement controls for admin.
+- [x] Add top-toolbar `Reset workspace` (layout + zoom/pan reset).
+- [x] Deliver dockable admin HUD with real-time stats and quick actions.
 
 ## Phase 3 - Toolbar/workspace architecture
 

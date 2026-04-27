@@ -205,6 +205,14 @@ export function ElementRenderer() {
         }
         return
       }
+      // Reliability fallback: if the operator is stuck in pan mode and
+      // clicks an element, promote that click to selection and switch
+      // back to select so subsequent edits work without hunting for tools.
+      if (activeTool === 'pan') {
+        setSelectedIds([id])
+        useCanvasStore.getState().setActiveTool('select')
+        return
+      }
       if (activeTool !== 'select') return
       if ('shiftKey' in e.evt && e.evt.shiftKey) {
         toggleSelection(id)

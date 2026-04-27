@@ -1,19 +1,23 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { DockableToolbar } from '../components/editor/DockableToolbar'
 import {
   DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
+  DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY,
   useUIStore,
   type DockableToolbarId,
 } from '../stores/uiStore'
 
 const STORAGE_KEY = 'oandocraft.toolbar-layouts'
+const VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
 
 function resetToolbarState() {
   useUIStore.setState({
     dockableToolbarLayouts: { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS },
+    dockableToolbarVisibility: { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY },
   })
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(VISIBILITY_STORAGE_KEY)
 }
 
 function renderToolbar(id: DockableToolbarId = 'canvas-actions') {
@@ -72,5 +76,14 @@ describe('DockableToolbar', () => {
     expect(useUIStore.getState().dockableToolbarLayouts['canvas-actions']).toEqual(
       DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS['canvas-actions'],
     )
+  })
+
+  it('hides the toolbar when visibility is toggled off', () => {
+    const { container } = renderToolbar()
+    expect(container.querySelector('[data-toolbar-id="canvas-actions"]')).toBeTruthy()
+    act(() => {
+      useUIStore.getState().setDockableToolbarVisible('canvas-actions', false)
+    })
+    expect(container.querySelector('[data-toolbar-id="canvas-actions"]')).toBeNull()
   })
 })

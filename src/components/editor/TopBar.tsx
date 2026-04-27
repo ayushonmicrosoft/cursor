@@ -1,6 +1,6 @@
 import { useProjectStore } from '../../stores/projectStore'
 import { useCanvasStore } from '../../stores/canvasStore'
-import { useUIStore } from '../../stores/uiStore'
+import { useUIStore, type DockableToolbarId } from '../../stores/uiStore'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useEmployeeStore } from '../../stores/employeeStore'
 import { useFloorStore } from '../../stores/floorStore'
@@ -11,7 +11,7 @@ import {
   Maximize2, Minimize2,
   Cloud, CloudOff, UploadCloud, X as XIcon,
   Ruler, Grid3x3, Compass, Printer, Image as ImageIcon,
-  ChevronDown, Eye, Check, Share2, Download, Hash,
+  ChevronDown, Eye, Check, Share2, Download, Hash, SlidersHorizontal, RotateCcw,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -30,6 +30,16 @@ import { ScaleSettingsPopover } from './ScaleSettingsPopover'
 import { ViewAsMenu } from './ViewAsMenu'
 import { PlanHealthPill } from './PlanHealthPill'
 
+const TOOLBAR_MENU_ITEMS: Array<{
+  id: DockableToolbarId
+  label: string
+  adminOnly?: boolean
+}> = [
+  { id: 'canvas-actions', label: 'Canvas controls' },
+  { id: 'align-distribute', label: 'Arrange toolbar' },
+  { id: 'admin-stats', label: 'Admin operations', adminOnly: true },
+]
+
 export function TopBar() {
   const project = useProjectStore((s) => s.currentProject)
   const saveState = useProjectStore((s) => s.saveState)
@@ -39,7 +49,7 @@ export function TopBar() {
   // Any legacy `/project/:slug/*` URL redirects to /dashboard before
   // hitting this component.
   const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
-  const { stageScale, zoomIn, zoomOut, resetZoom, settings, setSettings, toggleGrid, toggleDimensions, toggleNorthArrow, toggleDeskIds } = useCanvasStore(useShallow((s) => ({
+  const { stageScale, zoomIn, zoomOut, resetZoom, settings, setSettings, toggleGrid, toggleDimensions, toggleNorthArrow, toggleDeskIds, setActiveTool } = useCanvasStore(useShallow((s) => ({
     stageScale: s.stageScale,
     zoomIn: s.zoomIn,
     zoomOut: s.zoomOut,
@@ -50,6 +60,7 @@ export function TopBar() {
     toggleDimensions: s.toggleDimensions,
     toggleNorthArrow: s.toggleNorthArrow,
     toggleDeskIds: s.toggleDeskIds,
+    setActiveTool: s.setActiveTool,
   })))
   const {
     setShareModalOpen,
@@ -60,6 +71,15 @@ export function TopBar() {
     setViewMode,
     selectedIds,
     clearSelection,
+    setRightSidebarOpen,
+    setRightSidebarTab,
+    setMinimapVisible,
+    dockableToolbarLayouts,
+    dockableToolbarVisibility,
+    setDockableToolbarMode,
+    setDockableToolbarVisible,
+    resetDockableToolbarLayout,
+    resetDockableWorkspace,
   } = useUIStore(useShallow((s) => ({
     setShareModalOpen: s.setShareModalOpen,
     setExportDialogOpen: s.setExportDialogOpen,
@@ -69,6 +89,15 @@ export function TopBar() {
     setViewMode: s.setViewMode,
     selectedIds: s.selectedIds,
     clearSelection: s.clearSelection,
+    setRightSidebarOpen: s.setRightSidebarOpen,
+    setRightSidebarTab: s.setRightSidebarTab,
+    setMinimapVisible: s.setMinimapVisible,
+    dockableToolbarLayouts: s.dockableToolbarLayouts,
+    dockableToolbarVisibility: s.dockableToolbarVisibility,
+    setDockableToolbarMode: s.setDockableToolbarMode,
+    setDockableToolbarVisible: s.setDockableToolbarVisible,
+    resetDockableToolbarLayout: s.resetDockableToolbarLayout,
+    resetDockableWorkspace: s.resetDockableWorkspace,
   })))
   // Drive both temporal-wrapped stores on every undo/redo so a single
   // click rewinds the most recent canvas change regardless of which
@@ -82,6 +111,8 @@ export function TopBar() {
     useNeighborhoodStore.temporal.getState().redo()
   }
   const { canUndo, canRedo } = useTemporalState()
+  const canEditMap = useCan('editMap')
+  const canManageWorkspace = useCan('manageWorkspace')
   const canViewAudit = useCan('viewAuditLog')
   const canViewReports = useCan('viewReports')
 
@@ -91,16 +122,22 @@ export function TopBar() {
   // own click-outside / escape handling.
   const [viewMenuOpen, setViewMenuOpen] = useState(false)
   const viewMenuRef = useRef<HTMLDivElement>(null)
+  const [toolbarMenuOpen, setToolbarMenuOpen] = useState(false)
+  const toolbarMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function onPointer(e: MouseEvent) {
       if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) {
         setViewMenuOpen(false)
       }
+      if (toolbarMenuRef.current && !toolbarMenuRef.current.contains(e.target as Node)) {
+        setToolbarMenuOpen(false)
+      }
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setViewMenuOpen(false)
+        setToolbarMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', onPointer)
@@ -110,6 +147,20 @@ export function TopBar() {
       document.removeEventListener('keydown', onKey)
     }
   }, [])
+
+  const handleResetWorkspace = () => {
+    resetZoom()
+    setActiveTool('select')
+    setPresentationMode(false)
+    setViewMode('2d')
+    setRightSidebarOpen(true)
+    setRightSidebarTab('properties')
+    setMinimapVisible(true)
+    clearSelection()
+    resetDockableWorkspace()
+    setViewMenuOpen(false)
+    setToolbarMenuOpen(false)
+  }
 
   // Tick a state every 10s so the "Saved Xs ago" label stays fresh. We
   // intentionally use a counter (not a date) so React compares primitives
@@ -273,7 +324,7 @@ export function TopBar() {
 
   return (
     <div
-      className="h-14 min-w-0 overflow-x-auto bg-gradient-to-r from-white via-[#faf6f1] to-white border-b border-gray-200 dark:from-gray-950 dark:via-[#0f1e32] dark:to-gray-950 dark:border-gray-800 flex items-center px-4 gap-3 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
+      className="h-14 w-full min-w-0 overflow-hidden bg-gradient-to-r from-white via-[#faf6f1] to-white border-b border-gray-200 dark:from-gray-950 dark:via-[#0f1e32] dark:to-gray-950 dark:border-gray-800 flex items-center px-3 gap-2 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
       data-fixed-toolbar="top-bar"
       data-fixed-toolbar-reason="Global app navigation and save state must remain outside the canvas dock host."
     >
@@ -500,6 +551,83 @@ export function TopBar() {
           into a menu. */}
       <ScaleSettingsPopover />
 
+      {canEditMap && (
+        <div className="relative" ref={toolbarMenuRef}>
+          <button
+            onClick={() => setToolbarMenuOpen((o) => !o)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 rounded"
+            aria-haspopup="menu"
+            aria-expanded={toolbarMenuOpen}
+          >
+            <SlidersHorizontal size={14} aria-hidden="true" />
+            Toolbars
+            <ChevronDown size={14} aria-hidden="true" />
+          </button>
+          {toolbarMenuOpen && (
+            <div
+              role="menu"
+              className="absolute left-0 mt-1 w-80 rounded border border-gray-200 bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40 z-30"
+            >
+              {TOOLBAR_MENU_ITEMS.filter((item) => !item.adminOnly || canManageWorkspace).map((item) => {
+                const visible = dockableToolbarVisibility[item.id] ?? true
+                const mode = dockableToolbarLayouts[item.id].mode
+                return (
+                  <div key={item.id} className="rounded border border-gray-200 dark:border-gray-700 px-2 py-2 mb-2 last:mb-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-600 dark:text-gray-300">
+                          {item.label}
+                        </p>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                          {visible ? (mode === 'floating' ? 'Visible · floating' : 'Visible · docked') : 'Hidden'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setDockableToolbarVisible(item.id, !visible)}
+                        className={`rounded px-2 py-1 text-[11px] font-medium ${
+                          visible
+                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/40'
+                        }`}
+                      >
+                        {visible ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
+                    <div className="mt-2 flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={!visible}
+                        onClick={() =>
+                          setDockableToolbarMode(item.id, mode === 'docked' ? 'floating' : 'docked')
+                        }
+                        className="rounded px-2 py-1 text-[11px] text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                      >
+                        {mode === 'docked' ? 'Undock' : 'Dock'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resetDockableToolbarLayout(item.id)}
+                        className="rounded px-2 py-1 text-[11px] text-gray-700 bg-gray-100 hover:bg-gray-200 dark:text-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+              <button
+                type="button"
+                onClick={() => resetDockableWorkspace()}
+                className="mt-2 w-full rounded border border-gray-200 dark:border-gray-700 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              >
+                Reset all toolbars
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
         <button
           type="button"
@@ -528,6 +656,18 @@ export function TopBar() {
           2.5D
         </button>
       </div>
+
+      {canManageWorkspace && (
+        <button
+          type="button"
+          onClick={handleResetWorkspace}
+          className="hidden lg:inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+          title="Reset workspace layout, viewport, and tool state"
+        >
+          <RotateCcw size={13} aria-hidden="true" />
+          Reset workspace
+        </button>
+      )}
 
       <div className="flex-1" />
 
@@ -598,11 +738,11 @@ export function TopBar() {
           a navigation action, not part of identity. Guarded on both
           params so the hotkeys are inert outside the editor routes. */}
       {teamSlug && officeSlug && (
-        <nav aria-label="Project views" className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
+        <nav aria-label="Project views" className="min-w-0 flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
           <NavLink
             to={`/t/${teamSlug}/o/${officeSlug}/map`}
             className={({ isActive }) =>
-              `px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
+              `px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
                 isActive
                   ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
                   : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
@@ -614,7 +754,7 @@ export function TopBar() {
           <NavLink
             to={`/t/${teamSlug}/o/${officeSlug}/roster`}
             className={({ isActive }) =>
-              `px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
+              `px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
                 isActive
                   ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
                   : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
@@ -627,7 +767,7 @@ export function TopBar() {
             <NavLink
               to={`/t/${teamSlug}/o/${officeSlug}/audit`}
               className={({ isActive }) =>
-                `px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
+                `hidden lg:inline-flex px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
                   isActive
                     ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
                     : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
@@ -641,7 +781,7 @@ export function TopBar() {
             <NavLink
               to={`/t/${teamSlug}/o/${officeSlug}/reports`}
               className={({ isActive }) =>
-                `px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
+                `hidden xl:inline-flex px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
                   isActive
                     ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
                     : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
@@ -655,7 +795,7 @@ export function TopBar() {
             <NavLink
               to={`/t/${teamSlug}/o/${officeSlug}/org-chart`}
               className={({ isActive }) =>
-                `px-3 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
+                `hidden 2xl:inline-flex px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
                   isActive
                     ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
                     : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
@@ -679,7 +819,9 @@ export function TopBar() {
           don't see it at all. */}
       <ViewAsMenu />
 
-      <PlanHealthPill />
+      <div className="hidden xl:block">
+        <PlanHealthPill />
+      </div>
 
       {/* Account block — Wave 15D gives the avatar visual weight by
           parking it inside its own bordered cluster. The left hairline

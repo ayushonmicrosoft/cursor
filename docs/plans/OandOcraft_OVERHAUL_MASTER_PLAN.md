@@ -4,6 +4,12 @@ Last updated: 2026-04-27
 Primary target: `https://oando.co.in/OandOcraft/`
 Planning mode: single source of truth
 
+## Current execution status
+
+- Engine track in execution: **Option 2 (Hybrid Konva + Three.js)**.
+- Active implementation window: **Phase 0, Phase 1, Phase 2**.
+- Baseline/telemetry artifact: `docs/plans/2026-04-27-phase-0-interaction-baseline.md`.
+
 ## 1. Non-negotiable outcomes
 
 This overhaul is complete only when all of these are true:

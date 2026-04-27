@@ -3,6 +3,7 @@
 This folder contains runbooks, integration guidance, workflow docs, and project map artifacts.
 
 - `OandOcraft_MAIN_SITE_INTEGRATION.md`
+- `OandOcraft_AUDIT_REPORT_2026-04-27.md`
 - `OandOcraft_WORKFLOW.md`
 - `OandOcraft_PROJECT_MAP.html`
 - `OandOcraft_ADMIN_RUNBOOK.md`
@@ -10,4 +11,3 @@ This folder contains runbooks, integration guidance, workflow docs, and project 
 - `OandOcraft_SECURITY_REVIEW.md`
 - `OandOcraft_RELEASE_RUNBOOK.md`
 - `ERROR_DISPLAY_CONVENTION.md`
-

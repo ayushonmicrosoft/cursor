@@ -36,6 +36,7 @@ export function DockableToolbar({
   children,
 }: DockableToolbarProps) {
   const layout = useUIStore((s) => s.dockableToolbarLayouts[id])
+  const visible = useUIStore((s) => s.dockableToolbarVisibility[id] ?? true)
   const setMode = useUIStore((s) => s.setDockableToolbarMode)
   const setPosition = useUIStore((s) => s.setDockableToolbarPosition)
   const resetLayout = useUIStore((s) => s.resetDockableToolbarLayout)
@@ -136,6 +137,8 @@ export function DockableToolbar({
           className: '',
           style: { left: layout.position.x, top: layout.position.y } as CSSProperties,
         }
+
+  if (!visible) return null
 
   return (
     <div
