@@ -51,7 +51,25 @@ export function TopBar() {
     toggleNorthArrow: s.toggleNorthArrow,
     toggleDeskIds: s.toggleDeskIds,
   })))
-  const { setShareModalOpen, setExportDialogOpen, setPresentationMode, presentationMode, selectedIds, clearSelection } = useUIStore(useShallow((s) => ({ setShareModalOpen: s.setShareModalOpen, setExportDialogOpen: s.setExportDialogOpen, setPresentationMode: s.setPresentationMode, presentationMode: s.presentationMode, selectedIds: s.selectedIds, clearSelection: s.clearSelection })))
+  const {
+    setShareModalOpen,
+    setExportDialogOpen,
+    setPresentationMode,
+    presentationMode,
+    viewMode,
+    setViewMode,
+    selectedIds,
+    clearSelection,
+  } = useUIStore(useShallow((s) => ({
+    setShareModalOpen: s.setShareModalOpen,
+    setExportDialogOpen: s.setExportDialogOpen,
+    setPresentationMode: s.setPresentationMode,
+    presentationMode: s.presentationMode,
+    viewMode: s.viewMode,
+    setViewMode: s.setViewMode,
+    selectedIds: s.selectedIds,
+    clearSelection: s.clearSelection,
+  })))
   // Drive both temporal-wrapped stores on every undo/redo so a single
   // click rewinds the most recent canvas change regardless of which
   // store owns it (elements vs. neighborhoods).
@@ -481,6 +499,35 @@ export function TopBar() {
           label on the canvas, so keeping it visible avoids round-trips
           into a menu. */}
       <ScaleSettingsPopover />
+
+      <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
+        <button
+          type="button"
+          onClick={() => setViewMode('2d')}
+          className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors ${
+            viewMode === '2d'
+              ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
+              : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+          }`}
+          aria-label="Switch to 2D view"
+          aria-pressed={viewMode === '2d'}
+        >
+          2D
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('2.5d')}
+          className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors ${
+            viewMode === '2.5d'
+              ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
+              : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+          }`}
+          aria-label="Switch to 2.5D view"
+          aria-pressed={viewMode === '2.5d'}
+        >
+          2.5D
+        </button>
+      </div>
 
       <div className="flex-1" />
 

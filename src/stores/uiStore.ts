@@ -89,6 +89,7 @@ interface UIState {
 
   // Presentation
   presentationMode: boolean
+  viewMode: '2d' | '2.5d'
 
   // Minimap
   minimapVisible: boolean
@@ -163,6 +164,7 @@ interface UIState {
   setCsvImportOpen: (open: boolean) => void
   setCsvImportSummary: (summary: CSVImportSummary | null) => void
   setPresentationMode: (mode: boolean) => void
+  setViewMode: (mode: UIState['viewMode']) => void
   setMinimapVisible: (v: boolean) => void
   toggleMinimap: () => void
   setContextMenu: (menu: UIState['contextMenu']) => void
@@ -208,6 +210,7 @@ function createUIStore() {
   csvImportOpen: false,
   csvImportSummary: null,
   presentationMode: false,
+  viewMode: '2d',
   minimapVisible: true,
   contextMenu: null,
   editingLabelId: null,
@@ -248,6 +251,7 @@ function createUIStore() {
   setCsvImportOpen: (open) => set({ csvImportOpen: open }),
   setCsvImportSummary: (summary) => set({ csvImportSummary: summary }),
   setPresentationMode: (mode) => set({ presentationMode: mode }),
+  setViewMode: (mode) => set({ viewMode: mode }),
   setMinimapVisible: (v) => set({ minimapVisible: v }),
   toggleMinimap: () => set((s) => ({ minimapVisible: !s.minimapVisible })),
   setContextMenu: (menu) => set({ contextMenu: menu }),

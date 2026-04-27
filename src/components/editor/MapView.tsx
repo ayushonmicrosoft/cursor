@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FloorSwitcher } from './FloorSwitcher'
 import { ToolSelector } from './LeftSidebar/ToolSelector'
@@ -46,6 +46,7 @@ import { focusOnElement } from '../../lib/canvasFocus'
 export function MapView() {
   const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen)
   const presentationMode = useUIStore((s) => s.presentationMode)
+  const viewMode = useUIStore((s) => s.viewMode)
   // The north-arrow compass renders by default but the user can hide
   // it via View → "Toggle compass" or the `N` hotkey when the floor
   // plan has no real-world cardinal alignment. Legacy projects (no
@@ -53,6 +54,34 @@ export function MapView() {
   // as `true`.
   const showNorthArrow = useCanvasStore((s) => s.settings.showNorthArrow ?? true)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [ThreeDEntry, setThreeDEntry] = useState<ComponentType | null>(null)
+  const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
+
+  useEffect(() => {
+    if (viewMode !== '2.5d' || ThreeDEntry || threeDLoadFailed) return
+    let active = true
+    ;(async () => {
+      try {
+        const mod = await import(
+          /* @vite-ignore */ '../../engine/threeD/MapView3DEntry'
+        )
+        const entry =
+          (mod as { default?: ComponentType; MapView3DEntry?: ComponentType }).default ??
+          (mod as { MapView3DEntry?: ComponentType }).MapView3DEntry
+        if (active && entry) {
+          setThreeDEntry(() => entry)
+          setThreeDLoadFailed(false)
+        } else if (active) {
+          setThreeDLoadFailed(true)
+        }
+      } catch {
+        if (active) setThreeDLoadFailed(true)
+      }
+    })()
+    return () => {
+      active = false
+    }
+  }, [ThreeDEntry, threeDLoadFailed, viewMode])
 
   useEffect(() => {
     const floorId = searchParams.get('floor')
@@ -189,16 +218,40 @@ export function MapView() {
           className="flex-1 min-w-0 relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.95),_rgba(244,239,232,0.9)_40%,_rgba(226,232,240,0.82)_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(20,31,50,0.98),_rgba(11,22,40,0.96)_45%,_rgba(3,7,18,0.98)_100%)]"
           data-canvas-toolbar-host
         >
-          <CanvasStage />
-          <StatusBar />
-          <Minimap />
-          <AlignDistributeToolbar />
-          <ElementHoverCard />
-          <CanvasActionDock />
-          <AdminStatsToolbar />
-          <CanvasScaleBar />
-          {showNorthArrow && <NorthArrow />}
-          <FirstRunCoach />
+          {viewMode === '2.5d' ? (
+            <div
+              className="absolute inset-0 z-10 flex items-center justify-center p-6 text-center bg-white/85 dark:bg-gray-950/85"
+              data-testid="mapview-25d-panel"
+            >
+              {ThreeDEntry ? (
+                <ThreeDEntry />
+              ) : (
+                <div className="max-w-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 p-5 shadow-sm">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    2.5D preview is starting
+                  </p>
+                  <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+                    {threeDLoadFailed
+                      ? '3D engine module is unavailable right now. Staying in safe fallback mode.'
+                      : 'Waiting for the 2.5D engine module to load. 2D editing stays available.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <CanvasStage />
+              <StatusBar />
+              <Minimap />
+              <AlignDistributeToolbar />
+              <ElementHoverCard />
+              <CanvasActionDock />
+              <AdminStatsToolbar />
+              <CanvasScaleBar />
+              {showNorthArrow && <NorthArrow />}
+              <FirstRunCoach />
+            </>
+          )}
           {/* Closed-state pull-tab to expand the right sidebar.
               Replaces the toggle that used to live in the TopBar so
               the control belongs to the panel it controls. Only
