@@ -33,6 +33,7 @@ import type { Floor } from '../../types/floor'
 interface ThreeDEntryProps {
   floor: Floor | null
   elements: Record<string, CanvasElement>
+  onRequestFallback2D?: () => void
 }
 
 /**
@@ -55,6 +56,7 @@ export function MapView() {
   const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen)
   const presentationMode = useUIStore((s) => s.presentationMode)
   const viewMode = useUIStore((s) => s.viewMode)
+  const setViewMode = useUIStore((s) => s.setViewMode)
   // The north-arrow compass renders by default but the user can hide
   // it via View → "Toggle compass" or the `N` hotkey when the floor
   // plan has no real-world cardinal alignment. Legacy projects (no
@@ -236,7 +238,11 @@ export function MapView() {
               data-testid="mapview-25d-panel"
             >
               {ThreeDEntry ? (
-                <ThreeDEntry floor={activeFloor} elements={elements} />
+                <ThreeDEntry
+                  floor={activeFloor}
+                  elements={elements}
+                  onRequestFallback2D={() => setViewMode('2d')}
+                />
               ) : (
                 <div className="max-w-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 p-5 shadow-sm">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -247,6 +253,15 @@ export function MapView() {
                       ? '3D engine module is unavailable right now. Staying in safe fallback mode.'
                       : 'Waiting for the 2.5D engine module to load. 2D editing stays available.'}
                   </p>
+                  {threeDLoadFailed && (
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('2d')}
+                      className="mt-3 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                    >
+                      Return to 2D editor
+                    </button>
+                  )}
                 </div>
               )}
             </div>

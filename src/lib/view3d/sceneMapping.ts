@@ -32,6 +32,19 @@ export interface View3DMappingOptions {
   roomHeight?: number
   furnitureHeight?: number
   minThickness?: number
+  minRadius?: number
+  maxRadius?: number
+  maxInstances?: number
+}
+
+export type View3DCameraPresetId = 'overview' | 'top-down' | 'walkthrough'
+
+export interface View3DCameraPreset {
+  id: View3DCameraPresetId
+  label: string
+  description: string
+  position: [number, number, number]
+  target: [number, number, number]
 }
 
 const ROOM_TYPES = new Set<CanvasElement['type']>([
@@ -65,22 +78,28 @@ const DEFAULTS: Required<View3DMappingOptions> = {
   roomHeight: 10,
   furnitureHeight: 36,
   minThickness: 2,
+  minRadius: 100,
+  maxRadius: 6000,
+  maxInstances: 2500,
 }
 
 function toRadians(deg: number): number {
   return (deg * Math.PI) / 180
 }
 
-function createBounds(instances: View3DBoxInstance[]): View3DCameraBounds {
+function createBounds(
+  instances: View3DBoxInstance[],
+  options: Required<Pick<View3DMappingOptions, 'minRadius' | 'maxRadius'>>,
+): View3DCameraBounds {
   if (instances.length === 0) {
     return {
-      minX: -100,
-      maxX: 100,
-      minZ: -100,
-      maxZ: 100,
+      minX: -options.minRadius,
+      maxX: options.minRadius,
+      minZ: -options.minRadius,
+      maxZ: options.minRadius,
       centerX: 0,
       centerZ: 0,
-      radius: 100,
+      radius: options.minRadius,
     }
   }
 
@@ -102,7 +121,8 @@ function createBounds(instances: View3DBoxInstance[]): View3DCameraBounds {
 
   const centerX = (minX + maxX) / 2
   const centerZ = (minZ + maxZ) / 2
-  const radius = Math.max(maxX - minX, maxZ - minZ) / 2
+  const unclampedRadius = Math.max(maxX - minX, maxZ - minZ) / 2
+  const radius = Math.min(options.maxRadius, Math.max(unclampedRadius, options.minRadius))
 
   return {
     minX,
@@ -111,23 +131,37 @@ function createBounds(instances: View3DBoxInstance[]): View3DCameraBounds {
     maxZ,
     centerX,
     centerZ,
-    radius: Math.max(radius, 50),
+    radius,
   }
 }
 
-function mapWallElement(el: WallElement, options: Required<View3DMappingOptions>): View3DBoxInstance[] {
+function mapWallElement(
+  el: WallElement,
+  options: Required<View3DMappingOptions>,
+  maxCount = Number.POSITIVE_INFINITY,
+): View3DBoxInstance[] {
   if (el.points.length < 4) {
     return []
   }
 
   const items: View3DBoxInstance[] = []
-  const thickness = Math.max(el.thickness || 0, options.minThickness)
+  const thickness = Number.isFinite(el.thickness)
+    ? Math.max(el.thickness || 0, options.minThickness)
+    : options.minThickness
 
   for (let i = 0; i <= el.points.length - 4; i += 2) {
+    if (items.length >= maxCount) {
+      break
+    }
     const x1 = el.points[i]
     const z1 = el.points[i + 1]
     const x2 = el.points[i + 2]
     const z2 = el.points[i + 3]
+
+    if (![x1, z1, x2, z2].every((value) => Number.isFinite(value))) {
+      continue
+    }
+
     const dx = x2 - x1
     const dz = z2 - z1
     const length = Math.hypot(dx, dz)
@@ -156,6 +190,10 @@ function mapRectLikeElement(
   color: string,
   minThickness: number,
 ): View3DBoxInstance | null {
+  if (![el.x, el.y, el.width, el.height, el.rotation].every((value) => Number.isFinite(value))) {
+    return null
+  }
+
   const width = Math.max(el.width, minThickness)
   const depth = Math.max(el.height, minThickness)
 
@@ -173,6 +211,35 @@ function mapRectLikeElement(
   }
 }
 
+export function getView3DCameraPresets(bounds: View3DCameraBounds): View3DCameraPreset[] {
+  const radius = Math.max(bounds.radius, 100)
+  const centerY = 0
+
+  return [
+    {
+      id: 'overview',
+      label: 'Overview',
+      description: 'Balanced isometric review angle',
+      position: [bounds.centerX + radius * 1.8, Math.max(radius * 0.95, 180), bounds.centerZ + radius * 1.8],
+      target: [bounds.centerX, centerY, bounds.centerZ],
+    },
+    {
+      id: 'top-down',
+      label: 'Top Down',
+      description: 'Orthographic-like plan review angle',
+      position: [bounds.centerX + 0.01, Math.max(radius * 3, 260), bounds.centerZ + 0.01],
+      target: [bounds.centerX, centerY, bounds.centerZ],
+    },
+    {
+      id: 'walkthrough',
+      label: 'Walkthrough',
+      description: 'Eye-level circulation and sightline review',
+      position: [bounds.centerX + radius * 1.35, Math.max(radius * 0.35, 72), bounds.centerZ - radius * 1.35],
+      target: [bounds.centerX, Math.max(radius * 0.1, 16), bounds.centerZ],
+    },
+  ]
+}
+
 export function mapFloorToView3DScene(
   floor: Floor | null | undefined,
   elementsOverride?: Record<string, CanvasElement>,
@@ -187,8 +254,14 @@ export function mapFloorToView3DScene(
   const instances: View3DBoxInstance[] = []
 
   for (const el of Object.values(sourceElements)) {
+    if (instances.length >= options.maxInstances) {
+      break
+    }
+
     if (el.type === 'wall' && 'points' in el && 'thickness' in el) {
-      instances.push(...mapWallElement(el as WallElement, options))
+      const remaining = Math.max(options.maxInstances - instances.length, 0)
+      if (remaining === 0) break
+      instances.push(...mapWallElement(el as WallElement, options, remaining))
       continue
     }
 
@@ -218,6 +291,9 @@ export function mapFloorToView3DScene(
 
   return {
     instances,
-    bounds: createBounds(instances),
+    bounds: createBounds(instances, {
+      minRadius: options.minRadius,
+      maxRadius: options.maxRadius,
+    }),
   }
 }

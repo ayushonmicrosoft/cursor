@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Floor } from '../../types/floor'
 import type { CanvasElement } from '../../types/elements'
-import { mapFloorToView3DScene } from './sceneMapping'
+import { getView3DCameraPresets, mapFloorToView3DScene } from './sceneMapping'
 
 function baseElement(id: string, type: CanvasElement['type']): CanvasElement {
   return {
@@ -120,5 +120,69 @@ describe('mapFloorToView3DScene', () => {
 
     const overrideResult = mapFloorToView3DScene(floor, { [desk.id]: desk })
     expect(overrideResult.instances).toHaveLength(1)
+  })
+
+  it('caps mapped instances for perf on large floors', () => {
+    const floor: Floor = {
+      id: 'f-perf',
+      name: 'Perf Floor',
+      order: 0,
+      elements: {},
+    }
+
+    for (let i = 0; i < 12; i += 1) {
+      floor.elements[`desk-${i}`] = {
+        ...baseElement(`desk-${i}`, 'desk'),
+        x: i * 20,
+        y: i * 10,
+        deskId: `D-${i}`,
+        assignedEmployeeId: null,
+        capacity: 1 as const,
+      }
+    }
+
+    const result = mapFloorToView3DScene(floor, undefined, { maxInstances: 5 })
+    expect(result.instances).toHaveLength(5)
+  })
+
+  it('clamps very large bounds to max radius defaults', () => {
+    const giantRoom = {
+      ...baseElement('room-giant', 'conference-room'),
+      x: 0,
+      y: 0,
+      width: 22000,
+      height: 8000,
+      roomName: 'Giant',
+      capacity: 99,
+    }
+
+    const floor: Floor = {
+      id: 'f-giant',
+      name: 'Giant Floor',
+      order: 0,
+      elements: {
+        [giantRoom.id]: giantRoom,
+      },
+    }
+
+    const result = mapFloorToView3DScene(floor)
+    expect(result.bounds.radius).toBe(6000)
+  })
+
+  it('returns review camera presets anchored to scene bounds', () => {
+    const floor: Floor = {
+      id: 'f-preset',
+      name: 'Preset Floor',
+      order: 0,
+      elements: {},
+    }
+
+    const scene = mapFloorToView3DScene(floor)
+    const presets = getView3DCameraPresets(scene.bounds)
+
+    expect(presets).toHaveLength(3)
+    expect(presets.map((preset) => preset.id)).toEqual(['overview', 'top-down', 'walkthrough'])
+    expect(presets[1].position[1]).toBeGreaterThan(presets[0].position[1])
+    expect(presets[2].target[1]).toBeGreaterThan(0)
   })
 })
