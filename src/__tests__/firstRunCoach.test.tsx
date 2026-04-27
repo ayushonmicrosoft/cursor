@@ -26,7 +26,7 @@ function dismissDemoCard() {
 describe('FirstRunCoach tour (persistence)', () => {
   beforeEach(() => {
     localStorage.clear()
-    useUIStore.setState({ commandPaletteOpen: false })
+    useUIStore.setState({ commandPaletteOpen: false, firstRunCoachOpen: false })
     // Pre-dismiss the demo seeder so the tour tests don't have to reason
     // about two overlapping cards. The seeder is independently covered
     // below.
@@ -44,6 +44,19 @@ describe('FirstRunCoach tour (persistence)', () => {
     dismissDemoCard()
     render(<FirstRunCoach />)
     expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
+  })
+
+  it('can be reopened explicitly even after it was previously dismissed', () => {
+    localStorage.setItem('firstRunWelcomeSeen', '1')
+    render(<FirstRunCoach forceTourOpen />)
+    expect(screen.getByRole('dialog', { name: /welcome to oandocraft/i })).toBeInTheDocument()
+  })
+
+  it('calls onTourClosed when dismissed', () => {
+    const onTourClosed = vi.fn()
+    render(<FirstRunCoach onTourClosed={onTourClosed} />)
+    fireEvent.click(screen.getByRole('button', { name: /skip tour/i }))
+    expect(onTourClosed).toHaveBeenCalledTimes(1)
   })
 
   it('Skip tour link writes firstRunWelcomeSeen=1 and unmounts the card', () => {

@@ -80,11 +80,19 @@ interface CoachStep {
  * a freshly-created empty office, and vice versa. That way the two
  * affordances don't get tangled by a single blanket "seen" flag.
  */
-export function FirstRunCoach() {
+interface FirstRunCoachProps {
+  forceTourOpen?: boolean
+  onTourClosed?: () => void
+}
+
+export function FirstRunCoach({
+  forceTourOpen = false,
+  onTourClosed,
+}: FirstRunCoachProps = {}) {
   return (
     <>
       <FirstRunDemoSeeder />
-      <FirstRunCoachTour />
+      <FirstRunCoachTour forceOpen={forceTourOpen} onDismissed={onTourClosed} />
     </>
   )
 }
@@ -263,19 +271,29 @@ function FirstRunDemoSeeder() {
  * main moves (pan, tools, command palette, shortcut sheet, MAP/ROSTER
  * tabs) in a compact step-by-step popover. Persists "seen" via
  * localStorage under `firstRunWelcomeSeen` so it never re-pops once
- * dismissed; an Escape dismiss is ALSO honored as a session-level
- * suppression so a remount inside the same tab can't bring it back even
- * before the storage write lands.
+ * dismissed.
  *
  * Wave 12C: replaced the milestone checklist with a tour-style coach
  * referencing the new editor surfaces shipped by waves 8-11 (drag-pan,
  * Cmd+K command palette, Cmd+F finder, ? cheat sheet, M/R tab jumps).
  */
-function FirstRunCoachTour() {
-  const [dismissed, setDismissed] = useState<boolean>(() => readInitialSeen())
+function FirstRunCoachTour({
+  forceOpen,
+  onDismissed,
+}: {
+  forceOpen: boolean
+  onDismissed?: () => void
+}) {
+  const [dismissed, setDismissed] = useState<boolean>(() => !forceOpen && readInitialSeen())
   const [stepIdx, setStepIdx] = useState(0)
   const cardRef = useRef<HTMLDivElement | null>(null)
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (!forceOpen) return
+    setDismissed(false)
+    setStepIdx(0)
+  }, [forceOpen])
 
   const steps: CoachStep[] = useMemo(
     () => [
@@ -345,7 +363,8 @@ function FirstRunCoachTour() {
   const handleDismiss = useCallback(() => {
     writeSeen()
     setDismissed(true)
-  }, [])
+    onDismissed?.()
+  }, [onDismissed])
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
@@ -359,23 +378,12 @@ function FirstRunCoachTour() {
     setStepIdx((i) => Math.max(0, i - 1))
   }, [])
 
-  // Auto-focus the primary action when the coach opens, and re-focus it
-  // when the step changes so keyboard users can mash Enter to walk
-  // through. The microtask defer matches the FileMenu pattern: focusing
-  // synchronously inside an effect can race with React's commit phase
-  // when the popover mounts inside an animated parent.
   useEffect(() => {
     if (dismissed) return
     const id = window.setTimeout(() => primaryBtnRef.current?.focus(), 0)
     return () => window.clearTimeout(id)
   }, [dismissed, stepIdx])
 
-  // Esc dismisses. Also implements a tiny focus-trap inside the popover:
-  // Tab cycles within the dialog so keyboard users don't fall back into
-  // the canvas behind it. The handler runs in capture phase so the
-  // global editor shortcuts hook (which also listens for Escape) doesn't
-  // race us — we want Esc here to dismiss the coach, not clear the
-  // canvas selection underneath.
   useEffect(() => {
     if (dismissed) return
     const handler = (e: KeyboardEvent) => {
@@ -405,7 +413,7 @@ function FirstRunCoachTour() {
     }
     window.addEventListener('keydown', handler, { capture: true })
     return () => {
-      window.removeEventListener('keydown', handler, { capture: true } as EventListenerOptions)
+      window.removeEventListener('keydown', handler, { capture: true })
     }
   }, [dismissed, handleDismiss])
 
@@ -430,6 +438,12 @@ function FirstRunCoachTour() {
       // the user advances; we don't shift the dialog's name itself.
       aria-labelledby="first-run-coach-title"
       className="absolute bottom-12 right-4 w-[360px] bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-5 z-40"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          handleDismiss()
+        }
+      }}
     >
       <div className="flex items-start gap-3">
         <div

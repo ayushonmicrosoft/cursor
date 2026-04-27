@@ -36,6 +36,7 @@ function closeOverlay() {
 describe('KeyboardShortcutsOverlay', () => {
   beforeEach(() => {
     closeOverlay()
+    useUIStore.setState({ commandPaletteOpen: false, firstRunCoachOpen: false })
     setPlatform('Linux x86_64')
   })
 
@@ -160,5 +161,21 @@ describe('KeyboardShortcutsOverlay', () => {
     // Exactly one row matches the literal action "Undo"; the count
     // text is "1 shortcut".
     expect(screen.getByText(/1 shortcut(?!s)/i)).toBeInTheDocument()
+  })
+
+  it('quick action opens the command palette and closes the overlay', () => {
+    render(<KeyboardShortcutsOverlay />)
+    openOverlay()
+    fireEvent.click(screen.getByTestId('shortcuts-open-palette'))
+    expect(useUIStore.getState().commandPaletteOpen).toBe(true)
+    expect(useUIStore.getState().shortcutsOverlayOpen).toBe(false)
+  })
+
+  it('quick action flags the first-run tour to replay', () => {
+    render(<KeyboardShortcutsOverlay />)
+    openOverlay()
+    fireEvent.click(screen.getByTestId('shortcuts-replay-tour'))
+    expect(useUIStore.getState().firstRunCoachOpen).toBe(true)
+    expect(useUIStore.getState().shortcutsOverlayOpen).toBe(false)
   })
 })

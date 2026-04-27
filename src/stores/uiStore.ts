@@ -286,6 +286,7 @@ interface UIState {
   templatePickerOpen: boolean
   shortcutsOverlayOpen: boolean
   commandPaletteOpen: boolean
+  firstRunCoachOpen: boolean
   csvImportOpen: boolean
   csvImportSummary: CSVImportSummary | null
 
@@ -365,6 +366,7 @@ interface UIState {
   setTemplatePickerOpen: (open: boolean) => void
   setShortcutsOverlayOpen: (open: boolean) => void
   setCommandPaletteOpen: (open: boolean) => void
+  setFirstRunCoachOpen: (open: boolean) => void
   setCsvImportOpen: (open: boolean) => void
   setCsvImportSummary: (summary: CSVImportSummary | null) => void
   setPresentationMode: (mode: boolean) => void
@@ -417,6 +419,7 @@ function createUIStore() {
   templatePickerOpen: false,
   shortcutsOverlayOpen: false,
   commandPaletteOpen: false,
+  firstRunCoachOpen: false,
   csvImportOpen: false,
   csvImportSummary: null,
   presentationMode: false,
@@ -469,6 +472,7 @@ function createUIStore() {
   setTemplatePickerOpen: (open) => set({ templatePickerOpen: open }),
   setShortcutsOverlayOpen: (open) => set({ shortcutsOverlayOpen: open }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+  setFirstRunCoachOpen: (open) => set({ firstRunCoachOpen: open }),
   setCsvImportOpen: (open) => set({ csvImportOpen: open }),
   setCsvImportSummary: (summary) => set({ csvImportSummary: summary }),
   setPresentationMode: (mode) => set({ presentationMode: mode }),

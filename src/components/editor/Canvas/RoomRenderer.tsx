@@ -64,6 +64,7 @@ function ConferenceRoomRenderer({ element, isSelected, labelDensity }: Conferenc
         fill={CANVAS_COLORS.conferenceFill}
         stroke={stroke}
         strokeWidth={interactionStrokeWidth(isSelected)}
+        strokeScaleEnabled={false}
         cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
         shadowColor="#0F172A"
@@ -80,6 +81,7 @@ function ConferenceRoomRenderer({ element, isSelected, labelDensity }: Conferenc
           fill="#FFFFFF"
           stroke={stroke}
           strokeWidth={1}
+          strokeScaleEnabled={false}
           cornerRadius={SHARP_CORNER}
           opacity={element.style.opacity * 0.82}
           listening={false}
@@ -142,6 +144,7 @@ function PhoneBoothRenderer({ element, isSelected, labelDensity }: PhoneBoothRen
         fill={CANVAS_COLORS.roomFill}
         stroke={stroke}
         strokeWidth={interactionStrokeWidth(isSelected)}
+        strokeScaleEnabled={false}
         cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
         shadowColor="#0F172A"
@@ -157,6 +160,7 @@ function PhoneBoothRenderer({ element, isSelected, labelDensity }: PhoneBoothRen
         fill="#FFFFFF"
         stroke={stroke}
         strokeWidth={1}
+        strokeScaleEnabled={false}
         cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity * 0.85}
         listening={false}

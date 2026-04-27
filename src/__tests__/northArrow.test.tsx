@@ -39,12 +39,12 @@ describe('NorthArrow', () => {
     expect(screen.getByTestId('north-arrow')).toBeInTheDocument()
   })
 
-  it('anchors away from the admin HUD zone', () => {
+  it('anchors below the right-panel pull tab', () => {
     render(<NorthArrow />)
     const arrow = screen.getByTestId('north-arrow')
-    expect(arrow).toHaveAttribute('data-compass-anchor', 'top-right')
+    expect(arrow).toHaveAttribute('data-compass-anchor', 'top-right-offset')
     expect(arrow.className).toContain('right-4')
-    expect(arrow.className).not.toContain('left-4')
+    expect(arrow.className).toContain('top-14')
   })
 
   it('keeps the north label readable outside the rotating needle', () => {
@@ -60,7 +60,7 @@ describe('NorthArrow', () => {
 
   it('Right/Up arrow rotates clockwise by 5°', () => {
     render(<NorthArrow />)
-    const arrow = screen.getByTestId('north-arrow')
+    const arrow = screen.getByRole('slider')
     fireEvent.keyDown(arrow, { key: 'ArrowRight' })
     expect(useCanvasStore.getState().settings.northRotation).toBe(5)
     fireEvent.keyDown(arrow, { key: 'ArrowUp' })
@@ -69,7 +69,7 @@ describe('NorthArrow', () => {
 
   it('Left/Down arrow rotates counterclockwise by 5° and wraps below zero', () => {
     render(<NorthArrow />)
-    const arrow = screen.getByTestId('north-arrow')
+    const arrow = screen.getByRole('slider')
     fireEvent.keyDown(arrow, { key: 'ArrowLeft' })
     // 0 - 5 wraps to 355
     expect(useCanvasStore.getState().settings.northRotation).toBe(355)
@@ -82,7 +82,7 @@ describe('NorthArrow', () => {
       settings: { ...useCanvasStore.getState().settings, northRotation: 137 },
     })
     render(<NorthArrow />)
-    fireEvent.keyDown(screen.getByTestId('north-arrow'), { key: 'Home' })
+    fireEvent.keyDown(screen.getByRole('slider'), { key: 'Home' })
     expect(useCanvasStore.getState().settings.northRotation).toBe(0)
   })
 
@@ -91,9 +91,25 @@ describe('NorthArrow', () => {
       settings: { ...useCanvasStore.getState().settings, northRotation: 42 },
     })
     render(<NorthArrow />)
-    const arrow = screen.getByTestId('north-arrow')
+    const arrow = screen.getByRole('slider')
     expect(arrow.getAttribute('aria-valuenow')).toBe('42')
     expect(arrow.getAttribute('role')).toBe('slider')
+  })
+
+  it('offers direct compass buttons for pointer users', () => {
+    render(<NorthArrow />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate compass clockwise' }))
+    expect(useCanvasStore.getState().settings.northRotation).toBe(15)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate compass counterclockwise' }))
+    expect(useCanvasStore.getState().settings.northRotation).toBe(0)
+
+    useCanvasStore.setState({
+      settings: { ...useCanvasStore.getState().settings, northRotation: 137 },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Reset compass north' }))
+    expect(useCanvasStore.getState().settings.northRotation).toBe(0)
   })
 
   it('is read-only when useCan(editMap) is false (no slider semantics, no key edits)', () => {
@@ -104,8 +120,7 @@ describe('NorthArrow', () => {
     render(<NorthArrow />)
     const arrow = screen.getByTestId('north-arrow')
     // No `slider` role so screen readers don't promise interactivity.
-    expect(arrow.getAttribute('role')).toBeNull()
-    expect(arrow.getAttribute('aria-valuenow')).toBeNull()
+    expect(screen.queryByRole('slider')).toBeNull()
     // Arrow keys are no-ops.
     act(() => {
       fireEvent.keyDown(arrow, { key: 'ArrowRight' })
@@ -136,7 +151,7 @@ describe('NorthArrow', () => {
 
     unmount()
     render(<NorthArrow />)
-    expect(screen.getByTestId('north-arrow').getAttribute('aria-valuenow')).toBe('5')
+    expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('5')
   })
 
   it('preserves heading while visibility toggles and floors change', () => {

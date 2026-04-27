@@ -390,6 +390,7 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
         fill={fillColor}
         stroke={borderColor}
         strokeWidth={interactionStrokeWidth(isSelected, isWarning)}
+        strokeScaleEnabled={false}
         cornerRadius={SHARP_CORNER}
         dash={borderDash}
         opacity={element.style.opacity * opacityMul}
@@ -533,6 +534,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
         fill={fillColor}
         stroke={borderColor}
         strokeWidth={interactionStrokeWidth(isSelected, isWarning)}
+        strokeScaleEnabled={false}
         cornerRadius={SHARP_CORNER}
         dash={seatDashForStatus(status, hasAssignment)}
         opacity={element.style.opacity * opacityMul}
@@ -566,6 +568,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
             points={[crispLineX, -element.height / 2 + slotTopReserve, crispLineX, element.height / 2 - slotBottomReserve]}
             stroke="#D1D5DB"
             strokeWidth={1}
+            strokeScaleEnabled={false}
             listening={false}
           />
         )
@@ -754,6 +757,7 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
               : seatStrokeForStatus(status, firstDeptColor || borderColor)
         }
         strokeWidth={interactionStrokeWidth(isSelected, isWarning)}
+        strokeScaleEnabled={false}
         cornerRadius={SHARP_CORNER}
         dash={seatDashForStatus(status, assignedEmployees.length > 0)}
         opacity={element.style.opacity * opacityMul}

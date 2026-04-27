@@ -113,6 +113,14 @@ export function NorthArrow() {
     setDragging(true)
   }
 
+  const rotateBy = (delta: number) => {
+    if (!canEdit) return
+    const current = normalizeNorthRotation(
+      useCanvasStore.getState().settings.northRotation,
+    )
+    setSettings({ northRotation: normalizeNorthRotation(current + delta) })
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!canEdit) return
     const current = normalizeNorthRotation(
@@ -134,22 +142,26 @@ export function NorthArrow() {
     <div
       ref={ref}
       data-testid="north-arrow"
-      data-compass-anchor="top-right"
-      className={`absolute top-4 right-4 z-20 w-14 rounded border border-gray-300 bg-white/95 shadow-md backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+      data-compass-anchor="top-right-offset"
+      className={`absolute top-14 right-4 z-20 w-20 rounded border border-gray-300 bg-white/95 shadow-md backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
       onPointerDown={handlePointerDown}
-      onKeyDown={handleKeyDown}
-      aria-label={`North arrow rotated ${Math.round(northRotation)} degrees.${canEdit ? ' Drag or use arrow keys to rotate.' : ''}`}
-      role={canEdit ? 'slider' : undefined}
-      aria-valuenow={canEdit ? Math.round(northRotation) : undefined}
-      aria-valuemin={canEdit ? 0 : undefined}
-      aria-valuemax={canEdit ? 360 : undefined}
-      tabIndex={canEdit ? 0 : -1}
+      aria-label={`Compass controls. North arrow rotated ${Math.round(northRotation)} degrees.${canEdit ? ' Drag, use buttons, or use arrow keys to rotate.' : ''}`}
+      role="group"
     >
       <div className="flex items-center justify-between border-b border-gray-200 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-600 dark:border-gray-800 dark:text-gray-300">
         <span>N</span>
         <span className="tabular-nums">{Math.round(northRotation)}°</span>
       </div>
-      <div className="flex h-10 items-center justify-center">
+      <div
+        className="flex h-10 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        onKeyDown={handleKeyDown}
+        aria-label={`North arrow rotated ${Math.round(northRotation)} degrees`}
+        role={canEdit ? 'slider' : undefined}
+        aria-valuenow={canEdit ? Math.round(northRotation) : undefined}
+        aria-valuemin={canEdit ? 0 : undefined}
+        aria-valuemax={canEdit ? 360 : undefined}
+        tabIndex={canEdit ? 0 : -1}
+      >
         <svg
           width="30"
           height="30"
@@ -163,6 +175,40 @@ export function NorthArrow() {
           <circle cx="16" cy="16" r="2.25" className="fill-white stroke-gray-600 dark:fill-gray-900 dark:stroke-gray-300" />
         </svg>
       </div>
+      {canEdit && (
+        <div className="grid grid-cols-3 border-t border-gray-200 dark:border-gray-800">
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => rotateBy(-15)}
+            className="h-7 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label="Rotate compass counterclockwise"
+            title="Rotate counterclockwise"
+          >
+            -15
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setSettings({ northRotation: 0 })}
+            className="h-7 border-x border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label="Reset compass north"
+            title="Reset north"
+          >
+            0
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => rotateBy(15)}
+            className="h-7 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800"
+            aria-label="Rotate compass clockwise"
+            title="Rotate clockwise"
+          >
+            +15
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -10,10 +10,10 @@ export const CANVAS_COLORS = {
   lockedFill: '#E2E8F0',
   warning: '#F59E0B',
   warningSoft: '#FFFBEB',
-  assignedBorder: '#64748B',
-  unassignedBorder: '#94A3B8',
+  assignedBorder: '#3B82F6',
+  unassignedBorder: '#64748B',
   unassignedFill: '#F8FAFC',
-  assignedFill: '#FFFFFF',
+  assignedFill: '#EAF2FF',
   hotDeskFill: '#ECFEFF',
   hotDeskStroke: '#0891B2',
   decommissionedFill: '#F1F5F9',
@@ -34,8 +34,8 @@ export function labelDensityForScale(
   forceDetailed = false,
 ): CanvasLabelDensity {
   if (forceDetailed) return 'full'
-  if (stageScale < 0.55) return 'hidden'
-  if (stageScale < 0.85) return 'compact'
+  if (stageScale < 0.28) return 'hidden'
+  if (stageScale < 0.82) return 'compact'
   return 'full'
 }
 
@@ -67,4 +67,3 @@ export function interactionStrokeWidth(isSelected: boolean, isWarning = false) {
   if (isWarning) return 2.25
   return 1.4
 }
-

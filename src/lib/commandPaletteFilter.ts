@@ -50,13 +50,13 @@ export function filterCommandItems(
  * filter so the renderer and any test helper agree on the vocabulary.
  */
 export const SECTION_LABELS: Record<CommandSection, string> = {
-  navigate: 'Navigation',
-  people: 'People',
-  floors: 'Floors',
-  elements: 'Elements',
-  view: 'View',
-  tools: 'Tools',
-  actions: 'Actions',
+  navigate: 'Go To',
+  people: 'Find People',
+  floors: 'Jump Floors',
+  elements: 'Find Elements',
+  view: 'Adjust View',
+  tools: 'Switch Tools',
+  actions: 'Run Actions',
 }
 
 /** Render order for sections — matches the product spec. */

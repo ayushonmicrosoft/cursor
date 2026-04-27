@@ -325,7 +325,8 @@ describe('SeatLabel — per-style unit coverage', () => {
   })
 
   it('maps canvas zoom to label density thresholds', () => {
-    expect(labelDensityForScale(0.5)).toBe('hidden')
+    expect(labelDensityForScale(0.2)).toBe('hidden')
+    expect(labelDensityForScale(0.5)).toBe('compact')
     expect(labelDensityForScale(0.75)).toBe('compact')
     expect(labelDensityForScale(1)).toBe('full')
     expect(labelDensityForScale(0.5, true)).toBe('full')

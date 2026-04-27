@@ -35,7 +35,6 @@ import { UserMenu } from '../team/UserMenu'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'
 import { ViewAsMenu } from './ViewAsMenu'
 import { PlanHealthPill } from './PlanHealthPill'
-import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 
 const TOOLBAR_MENU_ITEMS: Array<{
   id: DockableToolbarId
@@ -350,14 +349,12 @@ export function TopBar() {
 
   return (
     <div
-      className="h-14 w-full min-w-0 flex-shrink-0 overflow-x-auto overflow-y-hidden bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800"
+      className="h-14 w-full min-w-0 flex-shrink-0 overflow-hidden bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800"
       data-fixed-toolbar="top-bar"
       data-fixed-toolbar-reason="Global app navigation and save state must remain outside the canvas dock host."
     >
       <div
-        className="flex h-full min-w-max flex-nowrap items-center gap-2 px-3 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
-        style={{ minWidth: `${MIN_EDITOR_LAYOUT_WIDTH_PX}px` }}
-        data-editor-min-width={MIN_EDITOR_LAYOUT_WIDTH_PX}
+        className="flex h-full w-full min-w-0 flex-nowrap items-center gap-1.5 px-2 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)] sm:gap-2 sm:px-3"
         data-testid="topbar-layout-row"
       >
       {/* ───── Identity cluster ─────
@@ -383,7 +380,7 @@ export function TopBar() {
             }
           >
             <MapIcon size={16} aria-hidden="true" />
-            <span className="truncate">Map</span>
+            <span className="hidden lg:inline truncate">Map</span>
           </NavLink>
           <NavLink
             to={`/t/${teamSlug}/o/${officeSlug}/roster`}
@@ -397,7 +394,7 @@ export function TopBar() {
             }
           >
             <Users size={16} aria-hidden="true" />
-            <span className="truncate">Roster</span>
+            <span className="hidden lg:inline truncate">Roster</span>
           </NavLink>
           {canViewAudit && (
             <NavLink

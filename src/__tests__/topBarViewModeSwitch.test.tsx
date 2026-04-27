@@ -93,14 +93,14 @@ describe('TopBar view mode switch', () => {
     expect(planButton).toHaveClass('bg-white')
   })
 
-  it('keeps topbar controls in a single horizontal rail on narrow widths', () => {
+  it('keeps topbar controls inside the viewport rail on narrow widths', () => {
     renderTopBar()
 
     const toolbar = document.querySelector('[data-fixed-toolbar="top-bar"]')
     const layoutRow = screen.getByTestId('topbar-layout-row')
-    expect(toolbar).toHaveClass('overflow-x-auto')
+    expect(toolbar).toHaveClass('overflow-hidden')
     expect(layoutRow).toHaveClass('flex-nowrap')
-    expect(layoutRow).toHaveAttribute('data-editor-min-width', '1180')
+    expect(layoutRow).not.toHaveAttribute('data-editor-min-width')
   })
 
   it('applies a workspace preset from the Toolbars menu and persists it', () => {

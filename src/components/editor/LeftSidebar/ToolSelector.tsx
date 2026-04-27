@@ -179,7 +179,13 @@ export function ToolSelector() {
                     ? 'border-[#e3d8cb] bg-gradient-to-r from-[#f7f1ea] to-white text-[#1f3653] dark:border-[#294161] dark:bg-gradient-to-r dark:from-[#12233a] dark:to-[#0b1628] dark:text-[#d6c2a6] font-medium shadow-sm'
                     : 'border-transparent text-gray-700 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-900/60 hover:border-gray-200 dark:hover:border-gray-800'
                 }`}
-                title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}
+                title={
+                  isRich
+                    ? undefined
+                    : tool.shortcut
+                      ? `${tool.label} (${tool.shortcut})`
+                      : tool.label
+                }
                 aria-describedby={isRich ? tooltipId : undefined}
               >
                 {tool.icon}

@@ -75,6 +75,7 @@ const ACTION_SHORTCUT: Record<string, string> = {
   'view-zoom-out': '-',
   'view-zoom-reset': '0',
   'action-presentation': 'P',
+  'action-shortcuts': '?',
   'action-export': 'Cmd+E',
   'action-export-png': 'Cmd+Shift+E',
 }

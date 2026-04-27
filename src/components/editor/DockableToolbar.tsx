@@ -1,4 +1,4 @@
-import { GripVertical, Pin, Undo2 } from 'lucide-react'
+import { GripVertical, Pin, Undo2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import {
   DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
@@ -40,6 +40,7 @@ export function DockableToolbar({
   const setMode = useUIStore((s) => s.setDockableToolbarMode)
   const setPosition = useUIStore((s) => s.setDockableToolbarPosition)
   const resetLayout = useUIStore((s) => s.resetDockableToolbarLayout)
+  const setVisible = useUIStore((s) => s.setDockableToolbarVisible)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const pointerUpListenerRef = useRef<(e: PointerEvent) => void>(() => {})
 
@@ -201,6 +202,15 @@ export function DockableToolbar({
           className="inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:bg-gray-800"
         >
           <Pin size={14} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setVisible(id, false)}
+          aria-label={`Hide ${title}`}
+          title={`Hide ${title}`}
+          className="inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:bg-gray-800"
+        >
+          <X size={14} aria-hidden="true" />
         </button>
       </div>
       {children}

@@ -1404,21 +1404,18 @@ function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
  */
 function SectionHeading({
   id,
-  icon,
   label,
   onCopy,
 }: {
   id: string
-  icon: string
   label: string
   onCopy: (id: string) => void
 }) {
   return (
     <h2
       id={`heading-${id}`}
-      className="group text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2 scroll-mt-20"
+      className="group scroll-mt-20 border-b border-gray-200 pb-2 text-xl font-semibold text-gray-950 dark:border-gray-800 dark:text-gray-100"
     >
-      <span aria-hidden>{icon}</span>
       <a
         href={`#${id}`}
         className="hover:underline"
@@ -1436,7 +1433,7 @@ function SectionHeading({
         type="button"
         onClick={() => onCopy(id)}
         aria-label={`Copy link to ${label}`}
-        className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 text-base font-normal transition-opacity"
+        className="ml-2 align-middle text-sm font-normal text-gray-400 opacity-0 transition-opacity hover:text-blue-600 focus:opacity-100 group-hover:opacity-100 dark:text-gray-500 dark:hover:text-blue-400"
       >
         #
       </button>
@@ -1581,9 +1578,9 @@ export function HelpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-800/50">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <header className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <Link to="/" className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400">
             OandOcraft
           </Link>
@@ -1601,7 +1598,7 @@ export function HelpPage() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 md:gap-10">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 py-8 md:grid-cols-[230px_minmax(0,1fr)] md:gap-10">
         {/*
           Mobile (< md): the TOC collapses into a <details> block at
           the top of the page so the reader doesn't have to scroll past
@@ -1637,13 +1634,12 @@ export function HelpPage() {
                     <a
                       key={s.id}
                       href={`#${s.id}`}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
+                      className={`block rounded px-2 py-1.5 transition-colors ${
                         activeId === s.id
-                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium'
-                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          ? 'bg-gray-100 font-medium text-gray-950 dark:bg-gray-800 dark:text-gray-100'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-gray-100'
                       }`}
                     >
-                      <span aria-hidden>{s.icon}</span>
                       {s.label}
                     </a>
                   ))}
@@ -1666,16 +1662,16 @@ export function HelpPage() {
         </details>
 
         {/* Desktop sticky sidebar TOC */}
-        <aside className="hidden md:block md:sticky md:top-6 md:self-start">
+        <aside className="hidden md:sticky md:top-5 md:block md:max-h-[calc(100vh-40px)] md:self-start md:overflow-auto">
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search help…"
             aria-label="Search help"
-            className="w-full mb-3 px-2.5 py-1.5 text-sm rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+            className="mb-3 w-full rounded border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:placeholder:text-gray-500"
           />
-          <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-between">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             <span>On this page</span>
             <span
               role="status"
@@ -1689,13 +1685,6 @@ export function HelpPage() {
                 : ''}
             </span>
           </div>
-          <div className="text-xs text-gray-400 dark:text-gray-500 mb-3">
-            Press{' '}
-            <kbd className="px-1 py-0.5 rounded border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300">
-              ⌘K
-            </kbd>{' '}
-            to search
-          </div>
           <nav
             role="navigation"
             aria-label="Table of contents"
@@ -1706,21 +1695,17 @@ export function HelpPage() {
                 <p className="px-2 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   {group.label}
                 </p>
-                <p className="px-2 mt-0.5 mb-1 text-[11px] text-gray-400 dark:text-gray-500">
-                  {group.description}
-                </p>
-                <div className="space-y-0.5">
+                <div className="mt-1 space-y-0.5">
                   {group.sections.map((s) => (
                     <a
                       key={s.id}
                       href={`#${s.id}`}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
+                      className={`block rounded px-2 py-1.5 transition-colors ${
                         activeId === s.id
-                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium'
-                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          ? 'bg-gray-100 font-medium text-gray-950 dark:bg-gray-800 dark:text-gray-100'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-gray-100'
                       }`}
                     >
-                      <span aria-hidden>{s.icon}</span>
                       {s.label}
                     </a>
                   ))}
@@ -1743,50 +1728,49 @@ export function HelpPage() {
         </aside>
 
         <main className="min-w-0">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">User guide</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl">
-            Everything you need to design an office, populate a roster, and
-            keep both in sync. Use the sidebar to jump around, or scroll top
-            to bottom.
-          </p>
+          <div className="mb-7 border-b border-gray-200 pb-5 dark:border-gray-800">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Product guide
+            </p>
+            <h1 className="text-3xl font-semibold tracking-tight text-gray-950 dark:text-gray-100">User guide</h1>
+            <p className="mt-2 max-w-3xl text-base leading-7 text-gray-600 dark:text-gray-300">
+              Practical reference for setup, map editing, roster work, reporting, sharing, and access.
+            </p>
+          </div>
 
-          <div className="mb-6 grid gap-3 sm:grid-cols-2">
-            <section className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Learn first
-              </p>
-              <h2 className="mt-1 text-base font-semibold text-gray-900 dark:text-gray-100">
-                Scan the guide quickly
-              </h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                Start with Getting started, then jump by topic from the grouped sidebar.
-              </p>
-              <a href="#getting-started" className="mt-3 inline-flex text-sm text-blue-600 hover:underline dark:text-blue-400">
-                Open the three-minute tour
-              </a>
-            </section>
-            <section className="rounded-lg border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-900/60 dark:bg-blue-950/25">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
-                Try in product
-              </p>
-              <h2 className="mt-1 text-base font-semibold text-gray-900 dark:text-gray-100">
-                Use the app while you read
-              </h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                Keep the guide open in one tab and the product in another for side-by-side learning.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-sm">
+          <div className="mb-8 rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-900/40">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Start with
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2 text-sm">
+                  <a href="#getting-started" className="rounded border border-gray-200 bg-white px-2.5 py-1 text-gray-700 hover:border-gray-300 hover:text-gray-950 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">
+                    Getting started
+                  </a>
+                  <a href="#map-editor" className="rounded border border-gray-200 bg-white px-2.5 py-1 text-gray-700 hover:border-gray-300 hover:text-gray-950 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">
+                    Map editor
+                  </a>
+                  <a href="#roster" className="rounded border border-gray-200 bg-white px-2.5 py-1 text-gray-700 hover:border-gray-300 hover:text-gray-950 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">
+                    Roster
+                  </a>
+                  <a href="#sharing" className="rounded border border-gray-200 bg-white px-2.5 py-1 text-gray-700 hover:border-gray-300 hover:text-gray-950 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200">
+                    Sharing
+                  </a>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 text-sm">
                 {isLoggedIn ? (
                   <>
                     <Link
                       to="/dashboard"
-                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                      className="rounded bg-gray-900 px-3 py-1.5 font-medium text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-950 dark:hover:bg-white"
                     >
                       Open dashboard
                     </Link>
                     <Link
                       to="/account"
-                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                      className="rounded border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-900"
                     >
                       Open account
                     </Link>
@@ -1795,20 +1779,20 @@ export function HelpPage() {
                   <>
                     <Link
                       to="/signup"
-                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                      className="rounded bg-gray-900 px-3 py-1.5 font-medium text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-950 dark:hover:bg-white"
                     >
                       Create account
                     </Link>
                     <Link
                       to="/login"
-                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                      className="rounded border border-gray-300 bg-white px-3 py-1.5 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-900"
                     >
                       Sign in
                     </Link>
                   </>
                 )}
               </div>
-            </section>
+            </div>
           </div>
 
           {/* aria-live confirmation for "copied!" — visible chip too */}
@@ -1839,12 +1823,11 @@ export function HelpPage() {
                 ref={(el) => {
                   sectionRefs.current[s.id] = el
                 }}
-                className="mb-14 scroll-mt-20"
+                className="mb-12 scroll-mt-20"
                 aria-labelledby={`heading-${s.id}`}
               >
                 <SectionHeading
                   id={s.id}
-                  icon={s.icon}
                   label={s.label}
                   onCopy={handleCopyAnchor}
                 />
@@ -1859,7 +1842,7 @@ export function HelpPage() {
                     </Link>
                   </div>
                 ) : null}
-                <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-200 leading-relaxed">
+                <div className="prose prose-sm max-w-none leading-relaxed text-gray-700 prose-headings:font-semibold prose-headings:text-gray-950 prose-a:text-blue-700 prose-strong:text-gray-950 dark:text-gray-200 dark:prose-headings:text-gray-100 dark:prose-a:text-blue-300 dark:prose-strong:text-gray-100">
                   {s.body}
                 </div>
               </section>

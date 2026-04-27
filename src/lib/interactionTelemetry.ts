@@ -22,7 +22,11 @@ function writeEvent(name: InteractionIssueEventName, payload: Record<string, unk
     eventBuffer.splice(0, eventBuffer.length - EVENT_BUFFER_LIMIT)
   }
 
-  if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+  if (
+    import.meta.env.MODE !== 'test' &&
+    typeof console !== 'undefined' &&
+    typeof console.warn === 'function'
+  ) {
     console.warn('[interaction-telemetry]', event)
   }
 }

@@ -105,6 +105,8 @@ beforeEach(() => {
     modalOpenCount: 0,
     presentationMode: false,
     exportDialogOpen: false,
+    shortcutsOverlayOpen: false,
+    firstRunCoachOpen: false,
     selectedIds: [],
   } as any)
   useElementsStore.setState({ elements: {} })
@@ -410,5 +412,31 @@ describe('CommandPalette', () => {
     act(() => useUIStore.getState().setCommandPaletteOpen(true))
     const chip = screen.getByTestId('command-palette-scope-chip')
     expect(chip.getAttribute('data-scope')).toBe('office')
+  })
+
+  it('discovery actions can open shortcuts and flag replay tour', () => {
+    renderPalette()
+    act(() => useUIStore.getState().setCommandPaletteOpen(true))
+
+    const shortcutsRow = screen.getByTestId(
+      'command-palette-item-action-shortcuts',
+    )
+    expect(
+      screen.getByTestId('command-palette-item-action-shortcuts-shortcut'),
+    ).toBeTruthy()
+
+    act(() => {
+      fireEvent.click(shortcutsRow)
+    })
+    expect(useUIStore.getState().shortcutsOverlayOpen).toBe(true)
+
+    act(() => useUIStore.getState().setShortcutsOverlayOpen(false))
+    act(() => useUIStore.getState().setCommandPaletteOpen(true))
+    act(() => {
+      fireEvent.click(
+        screen.getByTestId('command-palette-item-action-replay-tour'),
+      )
+    })
+    expect(useUIStore.getState().firstRunCoachOpen).toBe(true)
   })
 })

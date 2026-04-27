@@ -304,7 +304,7 @@ export function buildCommandItems(input: BuildCommandItemsInput): CommandItem[] 
     })
   }
 
-  // --- Actions (presentation + export) -------------------------------------
+  // --- Actions (presentation, discovery, export) ---------------------------
   out.push({
     id: 'action-presentation',
     section: 'actions',
@@ -314,6 +314,27 @@ export function buildCommandItems(input: BuildCommandItemsInput): CommandItem[] 
     subtitle: 'Action',
     run: () => {
       useUIStore.getState().setPresentationMode(!presentationMode)
+      close()
+    },
+  })
+  out.push({
+    id: 'action-shortcuts',
+    section: 'actions',
+    label: 'Show keyboard shortcuts',
+    subtitle: 'Discovery',
+    run: () => {
+      useUIStore.getState().setShortcutsOverlayOpen(true)
+      close()
+    },
+  })
+  out.push({
+    id: 'action-replay-tour',
+    section: 'actions',
+    label: 'Replay first-run tour',
+    subtitle: 'Discovery',
+    run: () => {
+      if (basePath) navigate(`${basePath}/map`)
+      useUIStore.getState().setFirstRunCoachOpen(true)
       close()
     },
   })

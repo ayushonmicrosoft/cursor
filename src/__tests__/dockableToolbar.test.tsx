@@ -91,6 +91,13 @@ describe('DockableToolbar', () => {
     expect(container.querySelector('[data-toolbar-id="canvas-actions"]')).toBeNull()
   })
 
+  it('has an in-toolbar hide button', () => {
+    const { container } = renderToolbar()
+    fireEvent.click(screen.getByRole('button', { name: 'Hide Canvas controls' }))
+    expect(container.querySelector('[data-toolbar-id="canvas-actions"]')).toBeNull()
+    expect(useUIStore.getState().dockableToolbarVisibility['canvas-actions']).toBe(false)
+  })
+
   it('applies workspace presets and persists preset state', () => {
     act(() => {
       useUIStore.getState().applyWorkspacePreset('review')

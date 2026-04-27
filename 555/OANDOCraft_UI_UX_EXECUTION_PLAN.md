@@ -17,8 +17,8 @@ The target is a product experience that feels clear, polished, credible, and eas
 
 ## Current Completion Snapshot
 
-- Complete: phases 1-13, 15, 16, 18, and 19.
-- Still open: phases 14, 17, and 20.
+- Complete: phases 1-13 and 15-19.
+- Still open: phases 14 and 20.
 - Phase checkboxes below remain the source of truth for item-level status.
 
 ## Current UI/UX Problems
@@ -548,14 +548,14 @@ Make the app learnable without overwhelming the user.
 
 ### Checklist
 
-- [ ] Inventory all tooltips.
-- [ ] Inventory all shortcut hints.
-- [ ] Review keyboard shortcuts overlay.
-- [ ] Review command palette groupings.
-- [ ] Review welcome tour steps.
-- [ ] Remove duplicate guidance.
-- [ ] Verify icon-only buttons have accessible names.
-- [ ] Verify first-run guidance does not block core work.
+- [x] Inventory all tooltips.
+- [x] Inventory all shortcut hints.
+- [x] Review keyboard shortcuts overlay.
+- [x] Review command palette groupings.
+- [x] Review welcome tour steps.
+- [x] Remove duplicate guidance.
+- [x] Verify icon-only buttons have accessible names.
+- [x] Verify first-run guidance does not block core work.
 
 ## Phase 18: Accessibility UX
 

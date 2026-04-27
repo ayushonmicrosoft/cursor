@@ -87,20 +87,17 @@ const shortcutGroups: ShortcutGroup[] = [
     ],
   },
   {
-    title: 'Command & search',
+    title: 'Discovery',
     rows: [
       { keys: 'Cmd+K', action: 'Command palette' },
       { keys: '/', action: 'Command palette' },
+      { keys: '?', action: 'Show keyboard shortcuts' },
       { keys: 'Cmd+F', action: 'Find on canvas' },
-      { keys: '?', action: 'Show this overlay' },
     ],
   },
   {
     title: 'General',
-    rows: [
-      { keys: 'Escape', action: 'Deselect / cancel / exit mode' },
-      { keys: '?', action: 'Show keyboard shortcuts' },
-    ],
+    rows: [{ keys: 'Escape', action: 'Deselect / cancel / exit mode' }],
   },
 ]
 
@@ -212,6 +209,8 @@ export function KeyboardShortcutsOverlay() {
 function OverlayContent({ setOpen }: { setOpen: (open: boolean) => void }) {
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const setCommandPaletteOpen = useUIStore((s) => s.setCommandPaletteOpen)
+  const setFirstRunCoachOpen = useUIStore((s) => s.setFirstRunCoachOpen)
   // Detected per render. Cheap (a single regex on a short string),
   // and computing it on every render means tests that mock
   // `navigator.platform` after mount still see the swap on the next
@@ -258,6 +257,16 @@ function OverlayContent({ setOpen }: { setOpen: (open: boolean) => void }) {
     () => filteredGroups.reduce((sum, g) => sum + g.rows.length, 0),
     [filteredGroups],
   )
+
+  const handleOpenPalette = () => {
+    setOpen(false)
+    setCommandPaletteOpen(true)
+  }
+
+  const handleReplayTour = () => {
+    setOpen(false)
+    setFirstRunCoachOpen(true)
+  }
 
   return (
     <div
@@ -309,6 +318,25 @@ function OverlayContent({ setOpen }: { setOpen: (open: boolean) => void }) {
           {' '}
           <span>Single-letter tool keys only fire when no input is focused.</span>
         </p>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenPalette}
+            className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+            data-testid="shortcuts-open-palette"
+          >
+            Open command palette
+          </button>
+          <button
+            type="button"
+            onClick={handleReplayTour}
+            className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+            data-testid="shortcuts-replay-tour"
+          >
+            Replay quick tour
+          </button>
+        </div>
 
         {filteredGroups.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
