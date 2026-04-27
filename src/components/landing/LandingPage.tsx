@@ -61,7 +61,7 @@ export function LandingPage() {
           to="/help"
           className="px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800/50 text-lg text-center"
         >
-          See a demo
+          Read the guide
         </Link>
       </div>
     )
@@ -94,12 +94,36 @@ export function LandingPage() {
             value prop for someone debating whether to click Start
             free. */}
         <p className="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
-          Draft a floor plan in minutes, seat your whole team by the afternoon, and share a
-          living map with every stakeholder who needs it.
+          Draft a floor plan in minutes, seat your team, and share a live map with the
+          people who need it.
         </p>
         {primaryCta}
 
         <LandingStats />
+
+        <div className="mt-10 sm:mt-12 max-w-3xl mx-auto rounded-2xl border border-gray-200 bg-white/80 px-5 py-4 text-left shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-950/70">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7f6a52] dark:text-[#c8b69f]">
+                Live product preview
+              </p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                A real office layout, not a mock logo wall.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-medium text-gray-600 dark:text-gray-300">
+              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
+                Sample office
+              </span>
+              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
+                Multi-floor plan
+              </span>
+              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
+                Seats and rooms
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* Enlarged hero illustration inside a simulated browser
             chrome. The indigo glow sits behind the frame to lift it
@@ -117,11 +141,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Feature grid — expanded from 3 to 6 tiles (2x3 on desktop).
-          Three originals kept verbatim so we don't regress the
-          existing copy review; three new tiles cover the multi-floor,
-          presence, and presentation capabilities that landed after
-          the first-wave polish. */}
+      {/* Feature grid keeps the landing focused on product behavior. */}
       <section
         aria-labelledby="features-heading"
         className="max-w-5xl mx-auto px-6 pb-20 sm:pb-24"
@@ -168,28 +188,18 @@ export function LandingPage() {
 
       <HowItWorks />
 
-      {/* Social-proof row — kept but tightened. Wider letter-spacing
-          and a little more vertical breathing room makes the names
-          feel like a logo strip rather than a tag dump. */}
-      <section
-        aria-labelledby="trusted-heading"
-        className="max-w-4xl mx-auto px-6 pb-20"
-      >
-        <h2
-          id="trusted-heading"
-          className="text-center text-xs uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-6"
-        >
-          Trusted by teams at
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
-          {['Acme', 'Nimbus', 'Orbit', 'Lattice', 'Fielder'].map((name) => (
-            <div
-              key={name}
-              className="grayscale h-10 flex items-center justify-center rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 font-semibold text-sm tracking-[0.15em] uppercase transition-colors"
-            >
-              {name}
-            </div>
-          ))}
+      <section aria-labelledby="trusted-heading" className="max-w-4xl mx-auto px-6 pb-20">
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-5 py-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-950/50 dark:text-gray-400">
+          <h2
+            id="trusted-heading"
+            className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400"
+          >
+            Proof, not logos
+          </h2>
+          <p className="mt-2">
+            The landing page now shows product preview and workflow detail instead of implying
+            customers we have not named here.
+          </p>
         </div>
       </section>
 
