@@ -85,8 +85,10 @@ describe('PropertiesPanel — per-type render coverage', () => {
   it('nothing-selected: renders the shared empty state', () => {
     renderPanel()
     expect(screen.getByTestId('panel-empty-state')).toBeInTheDocument()
-    expect(screen.getByText(/Nothing selected/i)).toBeInTheDocument()
-    expect(screen.getByText(/Click any element/i)).toBeInTheDocument()
+    expect(screen.getByText(/Select Something To Inspect/i)).toBeInTheDocument()
+    expect(screen.getByText(/Click a seat, room, wall, or shape/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'People' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reports' })).toBeInTheDocument()
   })
 
   it('wall: renders Wall details section + stroke-only Appearance', () => {

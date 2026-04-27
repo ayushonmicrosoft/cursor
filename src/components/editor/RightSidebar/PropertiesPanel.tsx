@@ -177,6 +177,8 @@ const WALL_TYPE_LABELS: Record<WallType, string> = {
 const LABEL_CLASS = 'text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block'
 const INPUT_CLASS =
   'w-full text-sm border border-gray-200 dark:border-gray-800 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 disabled:bg-gray-50 disabled:text-gray-500 bg-white dark:bg-gray-900'
+const EMPTY_ACTION_BUTTON_CLASS =
+  'inline-flex items-center justify-center rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
 
 const LENGTH_UNIT_ALIASES: Record<string, LengthUnit> = {
   px: 'px',
@@ -943,6 +945,7 @@ function AssigneeRow({
 
 export function PropertiesPanel() {
   const selectedIds = useUIStore((s) => s.selectedIds)
+  const setRightSidebarTab = useUIStore((s) => s.setRightSidebarTab)
   const elements = useElementsStore((s) => s.elements)
   const updateElement = useElementsStore((s) => s.updateElement)
   // Display-layer read — the assigned-employee name preview in the Desk
@@ -979,14 +982,33 @@ export function PropertiesPanel() {
     return (
       <PanelEmptyState
         icon={MousePointer2}
-        title="Nothing selected"
+        title="Select Something To Inspect"
         body={
           <>
-            Click any element on the canvas to edit its properties.
+            Click a seat, room, wall, or shape on the canvas to inspect and edit details.
             <br />
-            Shift-drag on the canvas to inspect a group.
+            Shift-drag to select multiple elements for bulk edits.
           </>
         }
+        action={
+          <>
+            <button
+              type="button"
+              onClick={() => setRightSidebarTab('people')}
+              className={EMPTY_ACTION_BUTTON_CLASS}
+            >
+              People
+            </button>
+            <button
+              type="button"
+              onClick={() => setRightSidebarTab('reports')}
+              className={EMPTY_ACTION_BUTTON_CLASS}
+            >
+              Reports
+            </button>
+          </>
+        }
+        showSidebarMinimize
       />
     )
   }
