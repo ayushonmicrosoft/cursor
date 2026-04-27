@@ -94,9 +94,63 @@ describe('mapFloorToView3DScene', () => {
 
     expect(roomMesh?.kind).toBe('room')
     expect(roomMesh?.position).toEqual([300, 5, 200])
+    expect(roomMesh?.materialProfile).toBe('room-zone')
     expect(roomMesh?.rotationY).toBeCloseTo(Math.PI / 12)
     expect(deskMesh?.kind).toBe('furniture')
-    expect(deskMesh?.size).toEqual([40, 36, 24])
+    expect(deskMesh?.materialProfile).toBe('work-surface')
+    expect(deskMesh?.size).toEqual([40, 18, 24])
+  })
+
+  it('uses review-mode proportions and materials for distinct object families', () => {
+    const glassWall = {
+      ...baseElement('wall-glass', 'wall'),
+      points: [0, 0, 100, 0],
+      bulges: [],
+      thickness: 6,
+      connectedWallIds: [],
+      wallType: 'glass',
+    }
+    const hotDesk = {
+      ...baseElement('hot-desk-1', 'hot-desk'),
+      x: 30,
+      y: 40,
+      width: 42,
+      height: 24,
+      deskId: 'H-1',
+      assignedEmployeeId: null,
+      capacity: 1 as const,
+    } as CanvasElement
+    const divider = {
+      ...baseElement('divider-1', 'divider'),
+      x: 80,
+      y: 40,
+      width: 80,
+      height: 4,
+    } as CanvasElement
+
+    const floor: Floor = {
+      id: 'f-review',
+      name: 'Review Floor',
+      order: 0,
+      elements: {
+        [glassWall.id]: glassWall,
+        [hotDesk.id]: hotDesk,
+        [divider.id]: divider,
+      },
+    }
+
+    const result = mapFloorToView3DScene(floor)
+    const glassWallMesh = result.instances.find((item) => item.id === 'wall-glass:seg:0')
+    const hotDeskMesh = result.instances.find((item) => item.id === 'hot-desk-1')
+    const dividerMesh = result.instances.find((item) => item.id === 'divider-1')
+
+    expect(glassWallMesh?.materialProfile).toBe('glass-wall')
+    expect(glassWallMesh?.size[1]).toBeLessThan(120)
+    expect(hotDeskMesh?.materialProfile).toBe('hot-desk')
+    expect(hotDeskMesh?.size[1]).toBe(18)
+    expect(dividerMesh?.materialProfile).toBe('divider')
+    expect(dividerMesh?.size[1]).toBe(48)
+    expect(dividerMesh?.size[2]).toBeGreaterThanOrEqual(4)
   })
 
   it('uses element overrides and default bounds when empty', () => {

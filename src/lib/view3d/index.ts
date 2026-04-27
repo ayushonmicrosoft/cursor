@@ -4,4 +4,5 @@ export type {
   View3DSceneData,
   View3DCameraBounds,
   View3DMappingOptions,
+  View3DMaterialProfile,
 } from './sceneMapping'

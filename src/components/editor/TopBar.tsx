@@ -753,37 +753,39 @@ export function TopBar() {
       )}
 
       <div
-        className="flex flex-none items-center rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
+        className="flex flex-none items-center rounded-md border border-gray-200 bg-gray-50 p-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.65)] dark:border-gray-800 dark:bg-gray-900"
         role="group"
         aria-label="Canvas view mode"
       >
         <button
           type="button"
           onClick={() => setViewMode('2d')}
-          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+          className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
             viewMode === '2d'
-              ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+              ? 'bg-white text-gray-950 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'
               : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
           }`}
           aria-label="Switch to 2D view"
           aria-pressed={viewMode === '2d'}
           title="Switch to 2D view"
         >
+          <MapIcon size={14} aria-hidden="true" />
           2D
         </button>
         <button
           type="button"
           onClick={() => setViewMode('2.5d')}
-          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+          className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
             viewMode === '2.5d'
-              ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+              ? 'bg-slate-900 text-white shadow-sm ring-1 ring-slate-700 dark:bg-white dark:text-gray-950 dark:ring-gray-300'
               : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
           }`}
           aria-label="Switch to 2.5D view"
           aria-pressed={viewMode === '2.5d'}
           title="Switch to 2.5D view"
         >
-          2.5D
+          <Maximize2 size={14} aria-hidden="true" />
+          <span>2.5D</span>
         </button>
       </div>
 
