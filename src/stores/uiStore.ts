@@ -23,6 +23,8 @@ export interface DockableToolbarLayout {
   position: { x: number; y: number }
 }
 
+export type WorkspacePresetId = 'design' | 'admin' | 'review'
+
 export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, DockableToolbarLayout> = {
   'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
   'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
@@ -35,16 +37,99 @@ export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, bool
   'admin-stats': true,
 }
 
+export const WORKSPACE_PRESET_CONFIGS: Record<
+  WorkspacePresetId,
+  {
+    label: string
+    description: string
+    layouts: Record<DockableToolbarId, DockableToolbarLayout>
+    visibility: Record<DockableToolbarId, boolean>
+  }
+> = {
+  design: {
+    label: 'Design',
+    description: 'Layout tools up front for daily plan editing.',
+    layouts: {
+      'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
+      'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
+      'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
+    },
+    visibility: {
+      'canvas-actions': true,
+      'align-distribute': true,
+      'admin-stats': false,
+    },
+  },
+  admin: {
+    label: 'Admin',
+    description: 'Keep reporting tools visible for operational checks.',
+    layouts: {
+      'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
+      'align-distribute': { mode: 'floating', position: { x: 232, y: 132 } },
+      'admin-stats': { mode: 'floating', position: { x: 24, y: 24 } },
+    },
+    visibility: {
+      'canvas-actions': true,
+      'align-distribute': true,
+      'admin-stats': true,
+    },
+  },
+  review: {
+    label: 'Review',
+    description: 'A quiet canvas with only core controls visible.',
+    layouts: {
+      'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
+      'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
+      'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
+    },
+    visibility: {
+      'canvas-actions': true,
+      'align-distribute': false,
+      'admin-stats': false,
+    },
+  },
+}
+
 const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts'
 const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
+const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset'
+
+function cloneToolbarLayouts(
+  layouts: Record<DockableToolbarId, DockableToolbarLayout>,
+): Record<DockableToolbarId, DockableToolbarLayout> {
+  return {
+    'canvas-actions': {
+      mode: layouts['canvas-actions'].mode,
+      position: { ...layouts['canvas-actions'].position },
+    },
+    'align-distribute': {
+      mode: layouts['align-distribute'].mode,
+      position: { ...layouts['align-distribute'].position },
+    },
+    'admin-stats': {
+      mode: layouts['admin-stats'].mode,
+      position: { ...layouts['admin-stats'].position },
+    },
+  }
+}
+
+function cloneToolbarVisibility(
+  visibility: Record<DockableToolbarId, boolean>,
+): Record<DockableToolbarId, boolean> {
+  return {
+    'canvas-actions': visibility['canvas-actions'],
+    'align-distribute': visibility['align-distribute'],
+    'admin-stats': visibility['admin-stats'],
+  }
+}
 
 function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLayout> {
   if (typeof window === 'undefined') {
-    return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+    return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
   }
   try {
     const raw = window.localStorage.getItem(TOOLBAR_LAYOUTS_STORAGE_KEY)
-    if (!raw) return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+    if (!raw) return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
     const parsed = JSON.parse(raw) as Partial<Record<DockableToolbarId, Partial<DockableToolbarLayout>>>
     return {
       'canvas-actions': sanitizeToolbarLayout('canvas-actions', 'storage-read', parsed['canvas-actions']),
@@ -52,7 +137,7 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
       'admin-stats': sanitizeToolbarLayout('admin-stats', 'storage-read', parsed['admin-stats']),
     }
   } catch {
-    return { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
+    return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
   }
 }
 
@@ -107,11 +192,11 @@ function persistToolbarLayouts(layouts: Record<DockableToolbarId, DockableToolba
 
 function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
   if (typeof window === 'undefined') {
-    return { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+    return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
   }
   try {
     const raw = window.localStorage.getItem(TOOLBAR_VISIBILITY_STORAGE_KEY)
-    if (!raw) return { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+    if (!raw) return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
     const parsed = JSON.parse(raw) as Partial<Record<DockableToolbarId, unknown>>
     return {
       'canvas-actions':
@@ -128,7 +213,7 @@ function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
           : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['admin-stats'],
     }
   } catch {
-    return { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+    return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
   }
 }
 
@@ -136,6 +221,33 @@ function persistToolbarVisibility(visibility: Record<DockableToolbarId, boolean>
   if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(TOOLBAR_VISIBILITY_STORAGE_KEY, JSON.stringify(visibility))
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
+function isWorkspacePresetId(value: unknown): value is WorkspacePresetId {
+  return value === 'design' || value === 'admin' || value === 'review'
+}
+
+function readStoredWorkspacePreset(): WorkspacePresetId | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(WORKSPACE_PRESET_STORAGE_KEY)
+    return isWorkspacePresetId(raw) ? raw : null
+  } catch {
+    return null
+  }
+}
+
+function persistWorkspacePreset(preset: WorkspacePresetId | null) {
+  if (typeof window === 'undefined') return
+  try {
+    if (!preset) {
+      window.localStorage.removeItem(WORKSPACE_PRESET_STORAGE_KEY)
+      return
+    }
+    window.localStorage.setItem(WORKSPACE_PRESET_STORAGE_KEY, preset)
   } catch {
     // Best-effort persistence only.
   }
@@ -237,6 +349,7 @@ interface UIState {
   employeeDirectoryOpen: boolean
   dockableToolbarLayouts: Record<DockableToolbarId, DockableToolbarLayout>
   dockableToolbarVisibility: Record<DockableToolbarId, boolean>
+  activeWorkspacePreset: WorkspacePresetId | null
 
   // Actions
   setSelectedIds: (ids: string[]) => void
@@ -270,6 +383,7 @@ interface UIState {
   resetDockableToolbarLayout: (id: DockableToolbarId) => void
   setDockableToolbarVisible: (id: DockableToolbarId, visible: boolean) => void
   toggleDockableToolbarVisible: (id: DockableToolbarId) => void
+  applyWorkspacePreset: (preset: WorkspacePresetId) => void
   resetDockableWorkspace: () => void
   /** Bump `drawingCancelTick` to ask any active drawing session to cancel. */
   requestCancelDrawing: () => void
@@ -290,6 +404,7 @@ type UIStore = ReturnType<typeof createUIStore>
 function createUIStore() {
   const initialToolbarLayouts = readStoredToolbarLayouts()
   const initialToolbarVisibility = readStoredToolbarVisibility()
+  const initialWorkspacePreset = readStoredWorkspacePreset()
   return create<UIState>((set) => ({
   selectedIds: [],
   hoveredId: null,
@@ -316,6 +431,7 @@ function createUIStore() {
   employeeDirectoryOpen: false,
   dockableToolbarLayouts: initialToolbarLayouts,
   dockableToolbarVisibility: initialToolbarVisibility,
+  activeWorkspacePreset: initialWorkspacePreset,
   drawingCancelTick: 0,
   modalOpenCount: 0,
   assignmentQueue: [],
@@ -373,7 +489,11 @@ function createUIStore() {
         [id]: { ...s.dockableToolbarLayouts[id], mode },
       }
       persistToolbarLayouts(next)
-      return { dockableToolbarLayouts: next }
+      persistWorkspacePreset(null)
+      return {
+        dockableToolbarLayouts: next,
+        activeWorkspacePreset: null,
+      }
     }),
   setDockableToolbarPosition: (id, position) =>
     set((s) => {
@@ -387,7 +507,11 @@ function createUIStore() {
         [id]: sanitized,
       }
       persistToolbarLayouts(next)
-      return { dockableToolbarLayouts: next }
+      persistWorkspacePreset(null)
+      return {
+        dockableToolbarLayouts: next,
+        activeWorkspacePreset: null,
+      }
     }),
   resetDockableToolbarLayout: (id) =>
     set((s) => {
@@ -396,7 +520,11 @@ function createUIStore() {
         [id]: DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS[id],
       }
       persistToolbarLayouts(next)
-      return { dockableToolbarLayouts: next }
+      persistWorkspacePreset(null)
+      return {
+        dockableToolbarLayouts: next,
+        activeWorkspacePreset: null,
+      }
     }),
   setDockableToolbarVisible: (id, visible) =>
     set((s) => {
@@ -405,7 +533,11 @@ function createUIStore() {
         [id]: visible,
       }
       persistToolbarVisibility(next)
-      return { dockableToolbarVisibility: next }
+      persistWorkspacePreset(null)
+      return {
+        dockableToolbarVisibility: next,
+        activeWorkspacePreset: null,
+      }
     }),
   toggleDockableToolbarVisible: (id) =>
     set((s) => {
@@ -414,17 +546,37 @@ function createUIStore() {
         [id]: !s.dockableToolbarVisibility[id],
       }
       persistToolbarVisibility(next)
-      return { dockableToolbarVisibility: next }
+      persistWorkspacePreset(null)
+      return {
+        dockableToolbarVisibility: next,
+        activeWorkspacePreset: null,
+      }
     }),
-  resetDockableWorkspace: () =>
+  applyWorkspacePreset: (preset) =>
     set(() => {
-      const layouts = { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS }
-      const visibility = { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY }
+      const config = WORKSPACE_PRESET_CONFIGS[preset]
+      const layouts = cloneToolbarLayouts(config.layouts)
+      const visibility = cloneToolbarVisibility(config.visibility)
       persistToolbarLayouts(layouts)
       persistToolbarVisibility(visibility)
+      persistWorkspacePreset(preset)
       return {
         dockableToolbarLayouts: layouts,
         dockableToolbarVisibility: visibility,
+        activeWorkspacePreset: preset,
+      }
+    }),
+  resetDockableWorkspace: () =>
+    set(() => {
+      const layouts = cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
+      const visibility = cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
+      persistToolbarLayouts(layouts)
+      persistToolbarVisibility(visibility)
+      persistWorkspacePreset(null)
+      return {
+        dockableToolbarLayouts: layouts,
+        dockableToolbarVisibility: visibility,
+        activeWorkspacePreset: null,
       }
     }),
   requestCancelDrawing: () =>

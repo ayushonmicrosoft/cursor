@@ -1,6 +1,11 @@
 import { useProjectStore } from '../../stores/projectStore'
 import { useCanvasStore } from '../../stores/canvasStore'
-import { useUIStore, type DockableToolbarId } from '../../stores/uiStore'
+import {
+  WORKSPACE_PRESET_CONFIGS,
+  useUIStore,
+  type DockableToolbarId,
+  type WorkspacePresetId,
+} from '../../stores/uiStore'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useEmployeeStore } from '../../stores/employeeStore'
 import { useFloorStore } from '../../stores/floorStore'
@@ -40,6 +45,8 @@ const TOOLBAR_MENU_ITEMS: Array<{
   { id: 'admin-stats', label: 'Admin operations', adminOnly: true },
 ]
 
+const WORKSPACE_PRESET_IDS: WorkspacePresetId[] = ['design', 'admin', 'review']
+
 export function TopBar() {
   const project = useProjectStore((s) => s.currentProject)
   const saveState = useProjectStore((s) => s.saveState)
@@ -76,8 +83,10 @@ export function TopBar() {
     setMinimapVisible,
     dockableToolbarLayouts,
     dockableToolbarVisibility,
+    activeWorkspacePreset,
     setDockableToolbarMode,
     setDockableToolbarVisible,
+    applyWorkspacePreset,
     resetDockableToolbarLayout,
     resetDockableWorkspace,
   } = useUIStore(useShallow((s) => ({
@@ -94,8 +103,10 @@ export function TopBar() {
     setMinimapVisible: s.setMinimapVisible,
     dockableToolbarLayouts: s.dockableToolbarLayouts,
     dockableToolbarVisibility: s.dockableToolbarVisibility,
+    activeWorkspacePreset: s.activeWorkspacePreset,
     setDockableToolbarMode: s.setDockableToolbarMode,
     setDockableToolbarVisible: s.setDockableToolbarVisible,
+    applyWorkspacePreset: s.applyWorkspacePreset,
     resetDockableToolbarLayout: s.resetDockableToolbarLayout,
     resetDockableWorkspace: s.resetDockableWorkspace,
   })))
@@ -568,6 +579,38 @@ export function TopBar() {
               role="menu"
               className="absolute left-0 mt-1 w-80 rounded border border-gray-200 bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40 z-30"
             >
+              <div className="rounded border border-gray-200 dark:border-gray-700 px-2 py-2 mb-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-600 dark:text-gray-300">
+                  Workspace presets
+                </p>
+                <div className="mt-2 grid grid-cols-3 gap-1">
+                  {WORKSPACE_PRESET_IDS.map((presetId) => {
+                    const preset = WORKSPACE_PRESET_CONFIGS[presetId]
+                    const active = activeWorkspacePreset === presetId
+                    return (
+                      <button
+                        key={presetId}
+                        type="button"
+                        title={preset.description}
+                        onClick={() => applyWorkspacePreset(presetId)}
+                        aria-pressed={active}
+                        className={`rounded px-2 py-1 text-[11px] font-medium ${
+                          active
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                  {activeWorkspacePreset
+                    ? `${WORKSPACE_PRESET_CONFIGS[activeWorkspacePreset].label} preset active`
+                    : 'Custom layout active'}
+                </p>
+              </div>
               {TOOLBAR_MENU_ITEMS.filter((item) => !item.adminOnly || canManageWorkspace).map((item) => {
                 const visible = dockableToolbarVisibility[item.id] ?? true
                 const mode = dockableToolbarLayouts[item.id].mode

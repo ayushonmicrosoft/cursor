@@ -4,20 +4,24 @@ import { DockableToolbar } from '../components/editor/DockableToolbar'
 import {
   DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
   DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY,
+  WORKSPACE_PRESET_CONFIGS,
   useUIStore,
   type DockableToolbarId,
 } from '../stores/uiStore'
 
 const STORAGE_KEY = 'oandocraft.toolbar-layouts'
 const VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
+const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset'
 
 function resetToolbarState() {
   useUIStore.setState({
     dockableToolbarLayouts: { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS },
     dockableToolbarVisibility: { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY },
+    activeWorkspacePreset: null,
   })
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(VISIBILITY_STORAGE_KEY)
+  localStorage.removeItem(WORKSPACE_PRESET_STORAGE_KEY)
 }
 
 function renderToolbar(id: DockableToolbarId = 'canvas-actions') {
@@ -85,5 +89,31 @@ describe('DockableToolbar', () => {
       useUIStore.getState().setDockableToolbarVisible('canvas-actions', false)
     })
     expect(container.querySelector('[data-toolbar-id="canvas-actions"]')).toBeNull()
+  })
+
+  it('applies workspace presets and persists preset state', () => {
+    act(() => {
+      useUIStore.getState().applyWorkspacePreset('review')
+    })
+
+    expect(useUIStore.getState().activeWorkspacePreset).toBe('review')
+    expect(useUIStore.getState().dockableToolbarLayouts).toEqual(WORKSPACE_PRESET_CONFIGS.review.layouts)
+    expect(useUIStore.getState().dockableToolbarVisibility).toEqual(WORKSPACE_PRESET_CONFIGS.review.visibility)
+    expect(localStorage.getItem(WORKSPACE_PRESET_STORAGE_KEY)).toBe('review')
+  })
+
+  it('clears active preset when toolbar configuration is manually changed', () => {
+    act(() => {
+      useUIStore.getState().applyWorkspacePreset('design')
+    })
+    expect(useUIStore.getState().activeWorkspacePreset).toBe('design')
+    expect(localStorage.getItem(WORKSPACE_PRESET_STORAGE_KEY)).toBe('design')
+
+    act(() => {
+      useUIStore.getState().setDockableToolbarMode('canvas-actions', 'floating')
+    })
+
+    expect(useUIStore.getState().activeWorkspacePreset).toBeNull()
+    expect(localStorage.getItem(WORKSPACE_PRESET_STORAGE_KEY)).toBeNull()
   })
 })

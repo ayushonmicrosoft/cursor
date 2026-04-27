@@ -8,7 +8,16 @@ import { useFloorStore } from '../stores/floorStore'
 import { useElementsStore } from '../stores/elementsStore'
 import { useEmployeeStore } from '../stores/employeeStore'
 import { useCanvasStore } from '../stores/canvasStore'
-import { useUIStore } from '../stores/uiStore'
+import {
+  DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
+  DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY,
+  WORKSPACE_PRESET_CONFIGS,
+  useUIStore,
+} from '../stores/uiStore'
+
+const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts'
+const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
+const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset'
 
 function renderTopBar() {
   return render(
@@ -21,6 +30,9 @@ function renderTopBar() {
 }
 
 beforeEach(() => {
+  localStorage.removeItem(TOOLBAR_LAYOUTS_STORAGE_KEY)
+  localStorage.removeItem(TOOLBAR_VISIBILITY_STORAGE_KEY)
+  localStorage.removeItem(WORKSPACE_PRESET_STORAGE_KEY)
   useProjectStore.setState({
     currentProject: {
       id: 'p1',
@@ -52,7 +64,12 @@ beforeEach(() => {
       showGrid: true, showDimensions: false,
     },
   } as any)
-  useUIStore.setState({ viewMode: '2d' })
+  useUIStore.setState({
+    viewMode: '2d',
+    dockableToolbarLayouts: { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS },
+    dockableToolbarVisibility: { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY },
+    activeWorkspacePreset: null,
+  })
 })
 
 describe('TopBar view mode switch', () => {
@@ -70,5 +87,24 @@ describe('TopBar view mode switch', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /switch to 2d view/i }))
     expect(useUIStore.getState().viewMode).toBe('2d')
+  })
+
+  it('applies a workspace preset from the Toolbars menu and persists it', () => {
+    renderTopBar()
+
+    fireEvent.click(screen.getByRole('button', { name: /toolbars/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Admin' }))
+
+    const state = useUIStore.getState()
+    expect(state.activeWorkspacePreset).toBe('admin')
+    expect(state.dockableToolbarLayouts).toEqual(WORKSPACE_PRESET_CONFIGS.admin.layouts)
+    expect(state.dockableToolbarVisibility).toEqual(WORKSPACE_PRESET_CONFIGS.admin.visibility)
+    expect(localStorage.getItem(WORKSPACE_PRESET_STORAGE_KEY)).toBe('admin')
+    expect(JSON.parse(localStorage.getItem(TOOLBAR_LAYOUTS_STORAGE_KEY) ?? '{}')).toEqual(
+      WORKSPACE_PRESET_CONFIGS.admin.layouts,
+    )
+    expect(JSON.parse(localStorage.getItem(TOOLBAR_VISIBILITY_STORAGE_KEY) ?? '{}')).toEqual(
+      WORKSPACE_PRESET_CONFIGS.admin.visibility,
+    )
   })
 })
