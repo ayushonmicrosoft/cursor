@@ -30,7 +30,6 @@ git branch --show-current
 docs/plans/OandOcraft_PHASE_CHECKLIST.md
 docs/plans/OandOcraft_OVERHAUL_MASTER_PLAN.md
 docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md
-docs/plans/OandOcraft_BLOCK_LIBRARY_SOURCES.md
 ```
 
 3. Pick one phase or one small cross-phase slice.

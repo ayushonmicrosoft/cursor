@@ -1,192 +1,250 @@
-﻿# OandOcraft Overhaul Master Plan (Single Source of Truth)
+﻿# OandOcraft Overhaul Master Plan
 
 Last updated: 2026-04-27
-Owner mode: single-agent execution
 Primary target: `https://oando.co.in/OandOcraft/`
+Planning mode: single source of truth
 
-## Why there were many plans
+## 1. Non-negotiable outcomes
 
-The repo accumulated multiple planning docs because requests were delivered incrementally (UI polish, security, seeding, integration, admin ops) and each thread produced a standalone plan. That made traceability worse.
+This overhaul is complete only when all of these are true:
 
-From now on:
-- This file is the only authoritative overhaul plan.
-- `docs/plans/OandOcraft_PHASE_CHECKLIST.md` remains the execution checklist.
-- Other plan docs are supporting references, not independent roadmaps.
+1. No top-bar horizontal overflow/scroll in supported breakpoints.
+2. Selection is reliable for click, tap, shift-select, marquee, and drag workflows.
+3. Admin can access all canvas tooling, arrangement controls, and a top-level reset.
+4. Exact measurement entry exists for walls and shapes (width/height/length/angle).
+5. Compass works reliably across reload, floor switch, and interaction states.
+6. 2.5D mode exists and can be toggled without impacting 2D editing stability.
+7. Visual quality is SmartDraw-grade: sharp, professional, consistent.
 
-## Executive goals
+## 2. Scope boundaries
 
-1. Remove interaction friction: no broken selection, no accidental scrolling chrome, no hidden controls.
-2. Give admin full operational authority: all canvas toolbars, arrangement tools, and reset controls.
-3. Raise editor quality to SmartDraw/Tldraw-class usability while preserving your current data model.
-4. Add precise numeric drafting and measurement entry everywhere it is expected.
-5. Deliver reliable compass behavior and ship a 2.5D visualization mode.
+In scope:
+- Editor UX/UI overhaul.
+- Toolbar architecture, admin command surface, precision drafting UX.
+- Compass and minimap correctness.
+- 2.5D view mode.
 
-## Current pain points (P0)
+Out of scope for this cycle:
+- Full backend schema rewrite.
+- Multi-tenant enterprise workflows beyond current single-workspace model.
+- Breaking payload compatibility.
 
-1. Top toolbar overflows and scrolls horizontally.
-2. Admin role does not feel "all-powerful" in canvas operations.
-3. Toolbar docking/toggling is not discoverable enough.
-4. Measurement entry is not obvious/complete for all workflows.
-5. Compass interaction is unreliable.
-6. 2.5D mode is absent.
+## 3. Engine options (exactly 3)
 
-## Architecture direction
+### Engine Option 1 - Konva Continuity (2D overhaul on existing engine)
 
-- Keep React + Zustand + Konva as the base for 2D editing (lowest regression risk).
-- Improve panel/workspace behavior with stronger dock model and explicit toolbar controls.
-- Add 2.5D as a separate render mode (do not replace 2D editor engine).
-- Preserve Supabase schema and office payload compatibility.
+What this means:
+- Keep `react-konva` as the authoritative 2D editing engine.
+- Rework interaction logic, paneling, toolbar discoverability, and shape quality.
 
-## Delivery plan (phased)
+Dependencies:
+- `dockview-react` (recommended for professional docking behavior)
+- `@floating-ui/react` (recommended for stable floating controls)
 
-### Phase 1 - P0 Interaction Stabilization (Week 1)
+Pros:
+- Lowest risk to current production behavior.
+- Fastest way to fix P0 problems.
+- No payload migration required.
 
-Scope:
-- Fix non-selectable item flows in canvas event pipeline.
-- Remove top-bar horizontal scrolling behavior and enforce responsive overflow menus.
-- Ensure all critical controls have visible labels and keyboard discoverability.
+Cons:
+- Some premium UX behavior must be custom-built.
 
-Tasks:
-1. Selection reliability
-   - Verify click/tap/multi-select/marquee handlers across tools.
-   - Remove overlay pointer-event interference.
-2. Top bar overflow
-   - Replace free horizontal scroll with deterministic breakpoints + "More" menu.
-3. Discoverability
-   - Add explicit `Toolbars` button and visible `Dock`, `Float`, `Reset` actions.
+Timeline:
+- 6-8 weeks.
 
-Acceptance criteria:
-- Items are selectable in all supported editor states.
-- No horizontal scrolling on top bar at supported breakpoints.
-- Toolbar controls are visible without relying on icon-only literacy.
+Risk:
+- Low to medium.
 
-### Phase 2 - Admin Command Surface (Week 2)
+### Engine Option 2 - Hybrid: Konva for edit + Three.js for 2.5D
 
-Scope:
-- Make admin the highest-authority operator for canvas operations.
-- Enable all toolbars (including arrangement/alignment/distribution) for admin.
-- Add top-toolbar global reset for workspace layout and canvas view.
+What this means:
+- Keep Konva for 2D editing.
+- Add a separate 2.5D renderer for presentation/review.
 
-Tasks:
-1. Role capabilities
-   - Admin can access all canvas toolbars and arrangement controls.
-2. Global reset
-   - Add `Reset workspace` in top bar:
-     - reset floating/docked toolbar layout,
-     - reset zoom/pan,
-     - optionally clear transient overlays.
-3. Admin HUD
-   - Keep real-time metrics in a dockable admin panel with quick actions.
+Dependencies:
+- `three`
+- optional `@react-three/fiber`
 
-Acceptance criteria:
-- Admin can enable/use every editing toolbar.
-- One-click reset restores known-good workspace layout.
-- Admin HUD shows live operational stats and recovery shortcuts.
+Pros:
+- Delivers 2.5D without destabilizing core editing.
+- Clean separation between editing and visualization concerns.
 
-### Phase 3 - SmartDraw/Tldraw Quality Pass (Week 3-4)
+Cons:
+- Two render pipelines to maintain.
+- Requires geometry mapping between 2D model and 2.5D scene.
 
-Scope:
-- Upgrade visual language and tool ergonomics to professional drafting quality.
+Timeline:
+- 8-10 weeks.
 
-Tasks:
-1. Visual system
-   - Define sharp-corner token set and stroke hierarchy.
-   - Improve contrast, label legibility, and hover/selection states.
-2. Tooling
-   - Introduce drawing presets inspired by SmartDraw/Tldraw patterns.
-   - Improve quick actions and contextual affordances.
-3. Color system
-   - Add a structured palette (neutral drafting + semantic highlights) and style presets.
+Risk:
+- Medium.
 
-Acceptance criteria:
-- Consistent premium look across top bar, sidebars, canvas controls, and properties.
-- Faster first-use workflows with lower action count for core editing tasks.
+### Engine Option 3 - tldraw Replatform for core 2D interaction
 
-### Phase 4 - Measurement & Numeric Precision (Week 4-5)
+What this means:
+- Replace Konva interaction/editing layer with tldraw.
+- Build adapters for existing element model, permissions, and persistence.
 
-Scope:
-- Add explicit measurement entry and precision controls wherever geometry is edited.
+Dependencies:
+- `tldraw`
+- adapter/migration layer for current office payloads
 
-Tasks:
-1. Numeric entry
-   - Width/height/length/angle inputs for relevant shapes and walls.
-   - Unit-aware input parsing and validation.
-2. Dimension tooling
-   - Add quick "enter exact value" interactions during draw/edit.
-   - Improve scale calibration discoverability.
-3. UX polish
-   - Keep numeric edits in one predictable place (properties + inline affordance).
+Pros:
+- Strong editor ergonomics out of the box.
+- Modern collaborative-style interaction primitives.
 
-Acceptance criteria:
-- Users can enter exact measurements without workaround dragging.
-- Dimension labels and calibration are clear and reliable.
+Cons:
+- Highest migration risk.
+- Broad regression surface across existing map semantics.
+- Larger rewrite before visible user gains.
 
-### Phase 5 - Compass Reliability (Week 5)
+Timeline:
+- 12-16 weeks + stabilization.
 
-Scope:
-- Rebuild compass interactions so orientation always reflects project state.
+Risk:
+- High.
 
-Tasks:
-1. State coherence
-   - Ensure north angle and visibility toggles are consistent across reloads/floor switches.
-2. Interaction
-   - Add robust drag/rotate handling and snap-to-angle options.
-3. Regression tests
-   - Add tests for compass render, interaction, and persistence.
+## 4. Decision matrix
 
-Acceptance criteria:
-- Compass responds consistently and persists expected orientation.
-- No known regressions in pan/zoom or minimap interactions.
+| Criterion | Option 1 | Option 2 | Option 3 |
+|---|---:|---:|---:|
+| Speed to fix current pain | 5 | 4 | 2 |
+| Regression risk | 4 | 3 | 1 |
+| 2.5D capability | 2 | 5 | 4 |
+| Long-term flexibility | 3 | 4 | 5 |
+| Implementation effort | 4 | 3 | 1 |
 
-### Phase 6 - 2.5D Mode (Week 6-8)
+Scoring scale: 1 (worst) to 5 (best)
 
-Scope:
-- Deliver a dedicated 2.5D visualization mode for presentation/review.
+## 5. Recommended path
 
-Tasks:
-1. Rendering strategy
-   - Implement separate 2.5D view layer (Three.js preview recommended) using existing floor data.
-2. Geometry mapping
-   - Convert walls/rooms/furniture to extruded preview meshes.
-3. Controls
-   - Add mode toggle, camera orbit presets, and lightweight material themes.
-4. Performance + fallback
-   - Keep 2D editor as source of truth; 2.5D degrades gracefully on low-performance devices.
+Recommended now:
+1. Start with **Option 1** for immediate stabilization and premium UX uplift.
+2. Add **Option 2** in the next stage for 2.5D mode.
+3. Keep **Option 3** as a deferred strategic branch, not the current delivery path.
 
-Acceptance criteria:
-- Users can toggle 2D <-> 2.5D without data loss.
-- 2.5D is useful for communication and executive review, not just a visual gimmick.
+This gives fastest recovery and lowest operational risk.
 
-## Dependencies and additions
+## 6. Full phase plan
 
-Planned dependencies (subject to implementation decision review):
-- `dockview-react` for stronger workspace docking model.
-- `@floating-ui/react` for precise floating controls and collision handling.
-- `three` for 2.5D render mode.
+### Phase 0 - Baseline and instrumentation (Week 0)
 
-No schema-breaking backend dependency required for phases 1-5.
+Deliverables:
+- Capture current issues with reproducible steps (selection, overflow, compass).
+- Add telemetry hooks for selection failures and toolbar state errors.
 
-## Risk controls
+Acceptance:
+- Known issue list and baseline metrics recorded.
 
-1. Keep each phase behind feature flags where interaction plumbing changes deeply.
-2. Add Playwright smoke flows for selection, toolbar reset, measurement entry, compass, and admin operations.
-3. Ship in small increments with rollback checkpoints.
+### Phase 1 - P0 interaction stabilization (Week 1)
 
-## Success metrics
+Deliverables:
+- Fix non-selectable-item event path.
+- Remove top-bar overflow scroll behavior.
+- Add explicit toolbar toggle and visible dock/float/reset labels.
 
-1. Selection failure rate: 0 reproducible failures in smoke suite.
-2. Top bar overflow: 0 horizontal-scroll occurrences at target breakpoints.
-3. Admin productivity: all required canvas actions reachable in <=2 clicks.
-4. Measurement workflows: exact numeric entry available for all core geometry.
-5. Compass reliability: stable orientation + interaction across sessions.
-6. 2.5D adoption: used in review/export workflows without blocking 2D editing.
+Acceptance:
+- 0 reproducible selection failures in smoke tests.
+- 0 top-bar horizontal scroll in target breakpoints.
 
-## Immediate next execution order
+### Phase 2 - Admin command surface (Week 2)
 
-1. Phase 1 (P0 stabilization).
-2. Phase 2 (admin command surface + reset).
-3. Phase 4 (measurement precision).
-4. Phase 5 (compass).
-5. Phase 3 (premium visual/system polish).
-6. Phase 6 (2.5D mode).
+Deliverables:
+- Admin access to all canvas toolbars and arrangement controls.
+- Top-level `Reset workspace` (layout reset + zoom/pan reset).
+- Dockable admin HUD with real-time stats and quick recovery actions.
 
+Acceptance:
+- Admin can complete full layout operations without hidden controls.
+
+### Phase 3 - Toolbar/workspace architecture (Week 3)
+
+Deliverables:
+- Consistent docking model across all toolbars.
+- Saved workspace presets (Design, Admin, Review).
+
+Acceptance:
+- Toolbar behavior is predictable and recoverable.
+
+### Phase 4 - Precision drafting and measurement entry (Week 4)
+
+Deliverables:
+- Numeric fields for width/height/length/angle.
+- Inline exact-value entry during draw/edit.
+- Unit-safe parsing and validation.
+
+Acceptance:
+- Operators can produce exact geometry without drag approximation.
+
+### Phase 5 - Visual/shape overhaul (Week 5)
+
+Deliverables:
+- SmartDraw-grade visual system (sharp corners, coherent stroke hierarchy).
+- Manufacturer-referenced block families in one normalized symbol style.
+
+Acceptance:
+- Mixed-layout canvas looks professional and consistent.
+
+### Phase 6 - Compass and navigation correctness (Week 6)
+
+Deliverables:
+- Compass state persistence and reliable interaction behavior.
+- Minimap/compass interaction regression coverage.
+
+Acceptance:
+- Compass is stable across route/floor/session transitions.
+
+### Phase 7 - 2.5D mode (Week 7-8, Option 2 track)
+
+Deliverables:
+- 2D <-> 2.5D toggle.
+- Extruded geometry for walls/rooms/furniture.
+- Camera presets for review mode.
+
+Acceptance:
+- 2.5D is usable for review without breaking 2D edit flow.
+
+### Phase 8 - Hardening and release (Week 9)
+
+Deliverables:
+- Full regression pass.
+- Performance checks on representative large plans.
+- Release and rollback checklist complete.
+
+Acceptance:
+- Release gate passed with no P0/P1 issues open.
+
+## 7. Integrated block-library strategy
+
+Priority order:
+1. MillerKnoll
+2. Steelcase
+3. BIMobject for gaps only
+
+Core family sequence:
+1. Workstations and benching
+2. Private offices and executive desks
+3. Meeting and boardroom tables
+4. Phone booths and focus pods
+5. Lounge and reception families
+6. Storage/credenzas/lockers/printer bays
+
+Conversion rules:
+- Use manufacturer assets as dimensional references, not raw pasted imports.
+- Normalize into one SVG/Konva top-view symbol language.
+- Preserve realistic proportions for circulation and density planning.
+- Optimize legibility at common planner zoom ranges.
+
+## 8. Technical validation gates
+
+Required checks before phase close:
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- Visual QA pass for edited routes/components
+
+## 9. Change-control rule
+
+- No new standalone planning docs for this overhaul.
+- All roadmap changes must be made in this file.
+- `docs/plans/OandOcraft_PHASE_CHECKLIST.md` is only a task board, not a second plan.
