@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { humanizeAuthError } from '../../lib/auth/humanizeAuthError'
 import { Button, Input } from '../ui'
 import {
   AuthShell,
@@ -11,14 +10,14 @@ import {
   AuthErrorBanner,
   AuthLinks,
 } from './AuthShell'
+import { describeAuthError } from './authErrorCopy'
+import {
+  clearRememberedAuthNext,
+  rememberAuthNext,
+  resolveAuthNext,
+  withAuthNext,
+} from './authRedirect'
 
-/**
- * Wave 17A: login gets the same Linear/JSON-Crack idiom the rest of the
- * app moved to — gradient bg, centered card, wordmark at the top, and a
- * confident copy refresh ("Welcome back" beats the generic "Log in to
- * OandOcraft"). The form shape and supabase call are unchanged; only
- * presentation moves.
- */
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,45 +25,52 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false)
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const next = params.get('next') ?? '/dashboard'
+  const next = resolveAuthNext(params.get('next'))
   const emailRef = useRef<HTMLInputElement>(null)
 
-  // Autofocus email on mount — this is the page's only primary action,
-  // so planting the caret here saves a tab for the common path.
+  const subtitle =
+    next === '/dashboard'
+      ? 'Sign in to open your workspace dashboard.'
+      : 'Sign in to continue where you left off.'
+
   useEffect(() => {
     emailRef.current?.focus()
   }, [])
+
+  useEffect(() => {
+    rememberAuthNext(next)
+  }, [next])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError(null)
-    // signInWithPassword rejects (rather than returning `{ error }`) when
-    // the network request itself fails, so we catch here as well as
-    // handling the server-side `{ error }` return — otherwise a raw
-    // `TypeError: Failed to fetch` leaks into the form.
-    let error: unknown = null
+
+    let submitError: unknown = null
     try {
       const res = await supabase.auth.signInWithPassword({ email, password })
-      error = res.error
-    } catch (e) {
-      error = e
+      submitError = res.error
+    } catch (error) {
+      submitError = error
     }
+
     setBusy(false)
-    if (error) {
-      setError(humanizeAuthError(error))
+    if (submitError) {
+      setError(describeAuthError(submitError))
       return
     }
+
+    clearRememberedAuthNext()
     navigate(next, { replace: true })
   }
 
   return (
     <AuthShell>
-      <AuthHeading title="Welcome back" subtitle="Sign in to your workspace." />
+      <AuthHeading title="Welcome back" subtitle={subtitle} />
 
       {error && <AuthErrorBanner id="login-form-error" message={error} />}
 
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <form onSubmit={onSubmit} className="space-y-4" noValidate aria-busy={busy}>
         <AuthFieldLabel htmlFor="login-email" label="Email">
           <Input
             id="login-email"
@@ -72,6 +78,7 @@ export function LoginPage() {
             type="email"
             autoComplete="email"
             required
+            disabled={busy}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             invalid={!!error}
@@ -85,6 +92,7 @@ export function LoginPage() {
             type="password"
             autoComplete="current-password"
             required
+            disabled={busy}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             invalid={!!error}
@@ -107,13 +115,13 @@ export function LoginPage() {
             ) : undefined
           }
         >
-          {busy ? 'Signing in…' : 'Log in'}
+          {busy ? 'Signing in...' : 'Log in'}
         </Button>
       </form>
 
       <AuthLinks>
         <Link
-          to="/forgot"
+          to={withAuthNext('/forgot', next)}
           className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
         >
           Forgot password?
@@ -121,7 +129,7 @@ export function LoginPage() {
         <span className="text-gray-400 dark:text-gray-600">
           Need an account?{' '}
           <Link
-            to="/signup"
+            to={withAuthNext('/signup', next)}
             className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             Sign up

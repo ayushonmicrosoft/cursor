@@ -35,6 +35,7 @@ import { UserMenu } from '../team/UserMenu'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'
 import { ViewAsMenu } from './ViewAsMenu'
 import { PlanHealthPill } from './PlanHealthPill'
+import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 
 const TOOLBAR_MENU_ITEMS: Array<{
   id: DockableToolbarId
@@ -349,10 +350,16 @@ export function TopBar() {
 
   return (
     <div
-      className="h-14 w-full min-w-0 overflow-hidden bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 flex items-center px-3 gap-2 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
+      className="h-14 w-full min-w-0 flex-shrink-0 overflow-x-auto overflow-y-hidden bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800"
       data-fixed-toolbar="top-bar"
       data-fixed-toolbar-reason="Global app navigation and save state must remain outside the canvas dock host."
     >
+      <div
+        className="flex h-full min-w-max flex-nowrap items-center gap-2 px-3 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
+        style={{ minWidth: `${MIN_EDITOR_LAYOUT_WIDTH_PX}px` }}
+        data-editor-min-width={MIN_EDITOR_LAYOUT_WIDTH_PX}
+        data-testid="topbar-layout-row"
+      >
       {/* ───── Identity cluster ─────
           Who am I, what file, is it saved, can I undo? These answer the
           "where am I" and "am I safe" mental-model questions that precede
@@ -890,6 +897,7 @@ export function TopBar() {
           "barely visible" before this pass. */}
       <div className="ml-1 pl-3 border-l border-gray-200 dark:border-gray-800 flex items-center">
         <UserMenu />
+      </div>
       </div>
     </div>
   )

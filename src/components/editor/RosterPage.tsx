@@ -5,15 +5,14 @@ import {
   AlertCircle,
   ArrowUpDown,
   Check,
-  CircleSlash,
   Clipboard,
   Clock,
-  Coffee,
   Download,
   Keyboard,
   LayoutGrid,
   List,
   Mail,
+  MapPin,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -465,26 +464,14 @@ export function RosterPage() {
   // "Total" (or any active chip again) clears the relevant axis.
   const stats = useMemo(() => {
     let active = 0
-    let onLeave = 0
     let unassigned = 0
-    let equipmentPending = 0
-    let endingSoon = 0
-    let departingSoon = 0
     // Per-weekday headcount for the mini capacity chart under the stats
     // chips. Stored as an object keyed by the same Mon-Fri labels the
     // drawer persists to, so no mapping gymnastics needed elsewhere.
     const perDay: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 }
     for (const e of allEmployees) {
       if (e.status === 'active') active++
-      if (e.status === 'on-leave') onLeave++
       if (!e.seatId) unassigned++
-      if (e.equipmentStatus === 'pending') equipmentPending++
-      // "Ending soon" shares its definition with the `ending-soon` preset
-      // so clicking the chip and picking the preset land on the same set.
-      if (withinDays(e.endDate, 30, 'future')) endingSoon++
-      // "Departing soon" mirrors the `departing-soon` preset so the chip and
-      // preset picker always resolve the same set of people.
-      if (withinDays(e.departureDate, 30, 'future')) departingSoon++
       for (const d of e.officeDays) {
         if (d in perDay) perDay[d] += 1
       }
@@ -494,11 +481,7 @@ export function RosterPage() {
     return {
       total: allEmployees.length,
       active,
-      onLeave,
       unassigned,
-      equipmentPending,
-      endingSoon,
-      departingSoon,
       inToday,
       perDay,
       peak,
@@ -999,7 +982,7 @@ export function RosterPage() {
           className="px-5 py-2 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0"
           data-testid="pii-redaction-banner"
         >
-          Viewing in redacted mode — personal details hidden.
+          Redacted view: names, emails, and office-day details are hidden for this role.
         </div>
       )}
 
@@ -1009,6 +992,8 @@ export function RosterPage() {
           rows" rather than "filters first, then what you're filtering". */}
       <StatsBar
         stats={stats}
+        filteredCount={sorted.length}
+        occupancyPct={rosterStats.occupancyPct}
         todayLabel={todayLabel}
         isWorkday={isWorkday}
         active={{ statusFilter, seatFilter, dayFilter, equipFilter, presetFilter }}
@@ -1031,7 +1016,7 @@ export function RosterPage() {
           menu persists its list to localStorage and re-applies by
           rewriting the URL search, which the filter bar is already
           URL-synced against. */}
-      <div className="flex items-center gap-2 px-5 pt-3 flex-shrink-0">
+      <div className="flex items-center gap-2 px-5 pt-2 flex-shrink-0">
         <RosterFilterPresetsMenu
           currentSearch={searchParams.toString()}
           hasAnyFilter={hasAnyFilter}
@@ -1361,15 +1346,6 @@ export function RosterPage() {
         `aria-live="polite"` so screen readers announce when filters
         change the visible count.
       */}
-      <RosterSummaryChip
-        shown={sorted.length}
-        total={rosterStats.total}
-        unassigned={rosterStats.unassigned}
-        occupancyPct={rosterStats.occupancyPct}
-        scopedToFloor={Boolean(floorFilter)}
-        scopedFloorName={floorFilter ? floorMap[floorFilter] ?? null : null}
-      />
-
       {/*
         Bulk-action toolbar. Sticks to the top of the scrolling region
         when rows are selected, with a backdrop blur + soft shadow so
@@ -1473,7 +1449,7 @@ export function RosterPage() {
 
       {/* Table OR card grid, based on `view` URL param */}
       {viewMode === 'cards' ? (
-        <div className="flex-1 overflow-auto p-5 bg-gray-50/50 dark:bg-gray-800/50" data-testid="roster-cards">
+        <div className="flex-1 overflow-auto p-3 sm:p-5 bg-gray-50/50 dark:bg-gray-800/50" data-testid="roster-cards">
           {/*
             Card view can't hang sort/select-all off <thead> the way the
             table does, so it gets a small toolbar. The sort <select>
@@ -1481,7 +1457,7 @@ export function RosterPage() {
             toggle mirrors the table's "select all visible" semantics so
             the two views stay behaviorally equivalent.
           */}
-          <div className="flex items-center gap-3 mb-3 text-xs">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 text-xs">
             {canEdit && (
               <>
                 <label className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300 cursor-pointer select-none">
@@ -1535,7 +1511,7 @@ export function RosterPage() {
               />
             </div>
           ) : (
-            <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
+            <div className="grid gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]">
               {sorted.map((emp) => (
                 <PersonCard
                   key={emp.id}
@@ -1564,7 +1540,7 @@ export function RosterPage() {
         </div>
       ) : (
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[860px] text-sm">
           <thead className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-10">
             <tr>
               {canEdit && (
@@ -1641,7 +1617,7 @@ export function RosterPage() {
                 className={`group transition-colors border-b border-gray-100 dark:border-gray-800 ${rowBg}`}
               >
                 {canEdit && (
-                  <td className={`px-4 py-3 align-middle ${leftStripe}`}>
+                  <td className={`px-4 py-2.5 align-middle ${leftStripe}`}>
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -1650,7 +1626,7 @@ export function RosterPage() {
                     />
                   </td>
                 )}
-                <td className={`px-4 py-3 align-middle font-medium text-gray-800 dark:text-gray-100 ${canEdit ? '' : leftStripe}`}>
+                <td className={`px-4 py-2.5 align-middle font-medium text-gray-800 dark:text-gray-100 ${canEdit ? '' : leftStripe}`}>
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Avatar
                       employee={emp}
@@ -1709,7 +1685,7 @@ export function RosterPage() {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 align-middle text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 align-middle text-gray-600 dark:text-gray-300">
                   <InlineEditCell>
                     {canEdit ? (
                       <InlineText
@@ -1742,7 +1718,7 @@ export function RosterPage() {
                     )}
                   </InlineEditCell>
                 </td>
-                <td className="px-4 py-3 align-middle text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 align-middle text-gray-600 dark:text-gray-300">
                   <InlineEditCell>
                     <InlineText
                       value={emp.title ?? ''}
@@ -1752,10 +1728,10 @@ export function RosterPage() {
                     />
                   </InlineEditCell>
                 </td>
-                <td className="px-4 py-3 align-middle">
+                <td className="px-4 py-2.5 align-middle">
                   <OfficeDays days={emp.officeDays} todayLabel={todayLabel} />
                 </td>
-                <td className="px-4 py-3 align-middle text-gray-600 dark:text-gray-300">
+                <td className="px-4 py-2.5 align-middle text-gray-600 dark:text-gray-300">
                   <SeatCell
                     floorName={emp.floorId ? floorMap[emp.floorId] ?? null : null}
                     seatLabel={
@@ -1764,7 +1740,7 @@ export function RosterPage() {
                     onJump={emp.seatId && emp.floorId ? () => jumpToSeat(emp) : null}
                   />
                 </td>
-                <td className="px-4 py-3 align-middle">
+                <td className="px-4 py-2.5 align-middle">
                   <div className="flex items-center gap-1.5">
                     {canEdit ? (
                       // The select keeps its inline-edit behaviour; the
@@ -1792,7 +1768,7 @@ export function RosterPage() {
                     <DepartingSoonBadge departureDate={emp.departureDate} />
                   </div>
                 </td>
-                <td className="px-4 py-3 align-middle relative">
+                <td className="px-4 py-2.5 align-middle relative">
                   {/*
                     For viewers, the row-action menu still has value because
                     of the read-only "Copy email" / "Send invite" entries,
@@ -1800,19 +1776,38 @@ export function RosterPage() {
                     has an email. With no email and no editor permissions
                     the menu would be empty — hide the trigger entirely.
                   */}
-                  {(canEdit || Boolean(emp.email?.trim())) && (
+                  {(canEdit || Boolean(emp.email?.trim()) || Boolean(emp.seatId && emp.floorId)) && (
                     <>
-                      <button
-                        onClick={() => setOpenMenuId((cur) => (cur === emp.id ? null : emp.id))}
-                        className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-                        aria-label="Row actions"
-                      >
-                        <MoreHorizontal size={14} />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        {emp.seatId && emp.floorId && (
+                          <button
+                            type="button"
+                            onClick={() => jumpToSeat(emp)}
+                            className="inline-flex items-center gap-1 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-1 text-[11px] font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+                            aria-label={`Show ${emp.name} on map`}
+                            title="Show on map"
+                          >
+                            <MapPin size={11} />
+                            <span className="hidden xl:inline">Map</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setOpenMenuId((cur) => (cur === emp.id ? null : emp.id))}
+                          className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+                          aria-label="Row actions"
+                        >
+                          <MoreHorizontal size={14} />
+                        </button>
+                      </div>
                       {openMenuId === emp.id && (
                         <RowActionMenu
                           employee={emp}
                           canEdit={canEdit}
+                          canShowOnMap={Boolean(emp.seatId && emp.floorId)}
+                          onShowOnMap={() => {
+                            jumpToSeat(emp)
+                            setOpenMenuId(null)
+                          }}
                           onEdit={() => {
                             setDrawerId(emp.id)
                             setOpenMenuId(null)
@@ -1862,11 +1857,6 @@ export function RosterPage() {
         </datalist>
       </div>
       )}
-
-      {/* Footer */}
-      <div className="px-5 py-2 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
-        {sorted.length} of {allEmployees.length} people shown
-      </div>
 
       {drawerId && (
         // `key` forces a fresh mount per employee so the drawer's
@@ -2166,6 +2156,8 @@ function ActiveFilterPills({
  */
 function StatsBar({
   stats,
+  filteredCount,
+  occupancyPct,
   todayLabel,
   isWorkday,
   active,
@@ -2175,13 +2167,11 @@ function StatsBar({
   stats: {
     total: number
     active: number
-    onLeave: number
     unassigned: number
-    equipmentPending: number
-    endingSoon: number
-    departingSoon: number
     inToday: number
   }
+  filteredCount: number
+  occupancyPct: number
   todayLabel: string
   isWorkday: boolean
   active: {
@@ -2194,12 +2184,12 @@ function StatsBar({
   onSetFilter: (key: string, value: string) => void
   onClearChipAxes: () => void
 }) {
-  const chip = (
+  const actionChip = (
     label: string,
     value: number,
     isActive: boolean,
     onClick: () => void,
-    tone: 'gray' | 'green' | 'amber' | 'red' | 'blue' = 'gray',
+    tone: 'gray' | 'green' | 'red' | 'blue' = 'gray',
     hint?: string,
     Icon?: ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>,
   ) => {
@@ -2210,7 +2200,6 @@ function StatsBar({
     const toneClasses = {
       gray: isActive ? 'bg-gray-800 text-white border-gray-800' : 'bg-gray-50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800',
       green: isActive ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-gray-50 dark:bg-gray-800/50 text-emerald-700 border-gray-200 dark:border-gray-800 hover:bg-emerald-50',
-      amber: isActive ? 'bg-amber-600 text-white border-amber-600' : 'bg-gray-50 dark:bg-gray-800/50 text-amber-700 dark:text-amber-300 border-gray-200 dark:border-gray-800 hover:bg-amber-50',
       red: isActive ? 'bg-red-600 text-white border-red-600' : 'bg-gray-50 dark:bg-gray-800/50 text-red-700 dark:text-red-300 border-gray-200 dark:border-gray-800 hover:bg-red-50 dark:hover:bg-red-950/40',
       blue: isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-50 dark:bg-gray-800/50 text-blue-700 dark:text-blue-300 border-gray-200 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-950/40',
     }[tone]
@@ -2233,6 +2222,19 @@ function StatsBar({
     )
   }
 
+  const metricChip = (
+    label: string,
+    value: string | number,
+  ) => (
+    <div
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-xs text-gray-600 dark:text-gray-300"
+      aria-label={`${label}: ${value}`}
+    >
+      <span className="font-semibold tabular-nums text-gray-800 dark:text-gray-100">{value}</span>
+      <span>{label}</span>
+    </div>
+  )
+
   const noChipFilter =
     !active.statusFilter &&
     !active.seatFilter &&
@@ -2242,8 +2244,8 @@ function StatsBar({
 
   return (
     <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50 flex-shrink-0 overflow-x-auto whitespace-nowrap">
-      {chip('Total', stats.total, noChipFilter, onClearChipAxes, 'gray', 'All people (clears chip filters; leaves search/dept/floor alone)', Users)}
-      {chip(
+      {actionChip('Total', stats.total, noChipFilter, onClearChipAxes, 'gray', 'All people (clears chip filters; leaves search/dept/floor alone)', Users)}
+      {actionChip(
         'Active',
         stats.active,
         active.statusFilter === 'active',
@@ -2252,78 +2254,17 @@ function StatsBar({
         undefined,
         Users,
       )}
-      {chip(
-        'On leave',
-        stats.onLeave,
-        active.statusFilter === 'on-leave',
-        () => onSetFilter('status', active.statusFilter === 'on-leave' ? '' : 'on-leave'),
-        'amber',
-        undefined,
-        Coffee,
-      )}
-      {chip(
+      {actionChip(
         'Unassigned',
         stats.unassigned,
         active.seatFilter === 'unassigned',
         () => onSetFilter('seat', active.seatFilter === 'unassigned' ? '' : 'unassigned'),
         'red',
         'People without a seat',
-        CircleSlash,
       )}
-      {/*
-        Render the equipment-pending chip only when someone actually needs
-        provisioning — zero-count chips clutter the bar and risk reading
-        like false alarms ("0 Pending equipment — is that a bug?").
-      */}
-      {stats.equipmentPending > 0 &&
-        chip(
-          'Pending equipment',
-          stats.equipmentPending,
-          active.equipFilter === 'pending',
-          () =>
-            onSetFilter('equip', active.equipFilter === 'pending' ? '' : 'pending'),
-          'amber',
-          'People whose equipment is marked pending',
-        )}
-      {/*
-        "Ending soon" — people whose contract ends in the next 30 days.
-        Hidden at zero count so the bar stays calm. Clicking toggles the
-        `ending-soon` preset (same definition as the preset picker), giving
-        office ops a one-click termination-day view.
-      */}
-      {stats.endingSoon > 0 &&
-        chip(
-          'Ending soon',
-          stats.endingSoon,
-          active.presetFilter === 'ending-soon',
-          () =>
-            onSetFilter(
-              'preset',
-              active.presetFilter === 'ending-soon' ? '' : 'ending-soon',
-            ),
-          'amber',
-          'Contracts ending in the next 30 days',
-        )}
-      {/*
-        "Departing soon" — people with a scheduled departure date in the
-        next 30 days. Hidden at zero count to keep the bar calm. Clicking
-        toggles the `departing-soon` preset (same predicate as the preset
-        picker).
-      */}
-      {stats.departingSoon > 0 &&
-        chip(
-          'Departing soon',
-          stats.departingSoon,
-          active.presetFilter === 'departing-soon',
-          () =>
-            onSetFilter(
-              'preset',
-              active.presetFilter === 'departing-soon' ? '' : 'departing-soon',
-            ),
-          'amber',
-          'Scheduled departures in the next 30 days',
-        )}
-      {isWorkday && chip(
+      {metricChip('Occupancy', `${occupancyPct}%`)}
+      {metricChip('Filtered', filteredCount)}
+      {isWorkday && actionChip(
         `In ${todayLabel}`,
         stats.inToday,
         active.dayFilter === todayLabel,
@@ -2788,6 +2729,8 @@ function PersonCard({
 
 function RowActionMenu({
   employee,
+  canShowOnMap,
+  onShowOnMap,
   onEdit,
   onUnassign,
   onDelete,
@@ -2796,6 +2739,8 @@ function RowActionMenu({
   canEdit,
 }: {
   employee: Employee
+  canShowOnMap: boolean
+  onShowOnMap: () => void
   onEdit: () => void
   onUnassign: () => void
   onDelete: () => void
@@ -2854,6 +2799,15 @@ function RowActionMenu({
         tabIndex={-1}
       />
       <div className="absolute right-2 top-full mt-1 z-40 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md shadow-lg py-1">
+        <button
+          onClick={onShowOnMap}
+          disabled={!canShowOnMap}
+          className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          title={canShowOnMap ? 'Show this person on the map' : 'Assign a seat to enable map handoff'}
+        >
+          <MapPin size={12} /> Show on map
+        </button>
+        <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
         {canEdit && (
           <button
             onClick={onEdit}
@@ -3190,68 +3144,6 @@ function QuickFilterPills({
           </button>
         )
       })}
-    </div>
-  )
-}
-
-/**
- * Small read-only summary line above the table. Uses `aria-live="polite"`
- * so screen readers announce when the visible count changes (e.g. after
- * applying a quick-filter). The display is intentionally minimalist —
- * one row of dot-separated counts, no border, so it reads as metadata
- * rather than a control.
- */
-function RosterSummaryChip({
-  shown,
-  total,
-  unassigned,
-  occupancyPct,
-  scopedToFloor,
-  scopedFloorName,
-}: {
-  shown: number
-  total: number
-  unassigned: number
-  occupancyPct: number
-  scopedToFloor: boolean
-  scopedFloorName: string | null
-}) {
-  // No employees at all means the chip would read "Showing 0 of 0" which
-  // adds noise to the empty state — skip rendering in that case.
-  if (total === 0) return null
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      data-testid="roster-summary-chip"
-      className="px-5 pt-2 pb-0 flex-shrink-0 text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-2 flex-wrap"
-    >
-      <span>
-        Showing{' '}
-        <span className="tabular-nums font-semibold text-gray-700 dark:text-gray-200">
-          {shown.toLocaleString()}
-        </span>
-        {' '}of{' '}
-        <span className="tabular-nums font-semibold text-gray-700 dark:text-gray-200">
-          {total.toLocaleString()}
-        </span>
-        {' '}{total === 1 ? 'employee' : 'employees'}
-        {scopedToFloor && scopedFloorName ? ` on ${scopedFloorName}` : ''}
-      </span>
-      <span aria-hidden className="text-gray-300 dark:text-gray-700">·</span>
-      <span>
-        <span className="tabular-nums font-semibold text-gray-700 dark:text-gray-200">
-          {unassigned.toLocaleString()}
-        </span>{' '}
-        unassigned
-      </span>
-      <span aria-hidden className="text-gray-300 dark:text-gray-700">·</span>
-      <span>
-        <span className="tabular-nums font-semibold text-gray-700 dark:text-gray-200">
-          {occupancyPct}%
-        </span>{' '}
-        occupancy
-      </span>
     </div>
   )
 }

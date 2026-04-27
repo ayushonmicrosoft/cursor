@@ -1,9 +1,8 @@
-import { useState, type FormEvent } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { CheckCircle2, Loader2 } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { ResendVerificationButton } from '../team/ResendVerificationButton'
-import { humanizeAuthError } from '../../lib/auth/humanizeAuthError'
 import { Button, Input } from '../ui'
 import {
   AuthShell,
@@ -12,35 +11,33 @@ import {
   AuthErrorBanner,
   AuthLinks,
 } from './AuthShell'
+import { describeAuthError } from './authErrorCopy'
+import { rememberAuthNext, resolveAuthNext, withAuthNext } from './authRedirect'
 
-/**
- * Wave 17A: the signup page is the first surface a new user touches
- * after clicking "Start free" on the landing page, so the visual gap
- * was the most jarring of any auth screen. Copy refresh is meant to
- * match the landing page's confidence ("Create your workspace" lands
- * better than "Create your OandOcraft account" — the brand is already
- * on-screen via the wordmark above the card). Supabase call shape and
- * the invite-token promotion dance are untouched.
- */
+function PasswordHintRow({
+  satisfied,
+  children,
+}: {
+  satisfied: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <li
+      className={
+        satisfied
+          ? 'text-green-700 dark:text-green-400'
+          : 'text-gray-500 dark:text-gray-400'
+      }
+    >
+      {children}
+    </li>
+  )
+}
+
 export function SignupPage() {
   const [params] = useSearchParams()
-  // Invite tokens used to arrive as `?invite=<token>`, which put a
-  // bearer credential into the browser history and referrer. InvitePage
-  // now stashes the token in sessionStorage before redirecting here, so
-  // the URL stays clean. We still honor the legacy query string in case
-  // an older copy of a link is in someone's inbox — promote it into
-  // sessionStorage and drop it from the URL.
+  const next = resolveAuthNext(params.get('next'))
   const legacyInvite = params.get('invite')
-  if (legacyInvite) {
-    sessionStorage.setItem('pending_invite_token', legacyInvite)
-    const cleanUrl = new URL(window.location.href)
-    cleanUrl.searchParams.delete('invite')
-    window.history.replaceState(
-      window.history.state,
-      '',
-      cleanUrl.pathname + cleanUrl.search + cleanUrl.hash,
-    )
-  }
   const presetEmail = params.get('email') ?? ''
 
   const [name, setName] = useState('')
@@ -50,32 +47,61 @@ export function SignupPage() {
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
 
+  useEffect(() => {
+    rememberAuthNext(next)
+  }, [next])
+
+  useEffect(() => {
+    if (!legacyInvite) return
+    sessionStorage.setItem('pending_invite_token', legacyInvite)
+    const cleanUrl = new URL(window.location.href)
+    cleanUrl.searchParams.delete('invite')
+    window.history.replaceState(
+      window.history.state,
+      '',
+      cleanUrl.pathname + cleanUrl.search + cleanUrl.hash,
+    )
+  }, [legacyInvite])
+
+  const hasMinLength = password.length >= 8
+  const hasLetterAndNumber = /[a-z]/i.test(password) && /\d/.test(password)
+
+  const nextStepLabel = useMemo(() => {
+    if (next === '/dashboard') return 'your workspace dashboard'
+    return 'the page you asked for'
+  }, [next])
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!hasMinLength) {
+      setError('Use at least 8 characters for your password.')
+      return
+    }
+
     setBusy(true)
     setError(null)
-    // Invite token is already in sessionStorage at this point (see
-    // the top-of-render promotion above). `/auth/verify` will consume
-    // it after email confirmation.
 
-    // Wrap in try/catch: `signUp` rejects on raw network failure rather
-    // than returning `{ error }`, and the default exception is
-    // `TypeError: Failed to fetch` — not a message we want pasted into
-    // a user-facing form. humanizeAuthError rewrites that case.
-    let error: unknown = null
+    let submitError: unknown = null
     try {
+      const verifyUrl = new URL('/auth/verify', window.location.origin)
+      if (next !== '/dashboard') verifyUrl.searchParams.set('next', next)
+
       const res = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name } },
+        options: {
+          data: { name },
+          emailRedirectTo: verifyUrl.toString(),
+        },
       })
-      error = res.error
-    } catch (e) {
-      error = e
+      submitError = res.error
+    } catch (error) {
+      submitError = error
     }
+
     setBusy(false)
-    if (error) {
-      setError(humanizeAuthError(error))
+    if (submitError) {
+      setError(describeAuthError(submitError))
       return
     }
     setDone(true)
@@ -92,18 +118,31 @@ export function SignupPage() {
             <CheckCircle2 size={24} />
           </span>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-            Check your inbox
+            Confirm your email
           </h1>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             We sent a verification link to{' '}
             <span className="font-medium text-gray-700 dark:text-gray-200">{email}</span>.
-            Click it to finish setting up your account.
           </p>
+          <ol className="mt-5 w-full space-y-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-300">
+            <li>1. Open the email and click Verify account.</li>
+            <li>2. We will continue to {nextStepLabel}.</li>
+            <li>3. If you still need a team, setup starts right after verification.</li>
+          </ol>
           <div className="mt-6 w-full border-t border-gray-100 pt-5 dark:border-gray-800">
             <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">
-              Didn't get the email? Check your spam folder or resend:
+              No email yet? Check spam or resend:
             </p>
             <ResendVerificationButton email={email} />
+          </div>
+          <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+            Want to use a different account?{' '}
+            <Link
+              to={withAuthNext('/login', next)}
+              className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Back to sign in
+            </Link>
           </div>
         </div>
       </AuthShell>
@@ -113,18 +152,19 @@ export function SignupPage() {
   return (
     <AuthShell>
       <AuthHeading
-        title="Create your workspace"
-        subtitle="Start planning your office in minutes. Free for small teams."
+        title="Create your workspace account"
+        subtitle="Set up your profile now. Team setup comes next."
       />
 
       {error && <AuthErrorBanner id="signup-form-error" message={error} />}
 
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <form onSubmit={onSubmit} className="space-y-4" noValidate aria-busy={busy}>
         <FieldLabel htmlFor="signup-name" label="Name">
           <Input
             id="signup-name"
             autoComplete="name"
             required
+            disabled={busy}
             value={name}
             onChange={(e) => setName(e.target.value)}
             invalid={!!error}
@@ -138,6 +178,7 @@ export function SignupPage() {
             type="email"
             autoComplete="email"
             required
+            disabled={busy}
             readOnly={!!presetEmail}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -159,6 +200,7 @@ export function SignupPage() {
             autoComplete="new-password"
             required
             minLength={8}
+            disabled={busy}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             invalid={!!error}
@@ -166,12 +208,18 @@ export function SignupPage() {
               error ? 'signup-form-error signup-password-hint' : 'signup-password-hint'
             }
           />
-          <p
+          <ul
             id="signup-password-hint"
-            className="text-xs text-gray-500 dark:text-gray-400"
+            className="space-y-0.5 text-xs"
+            aria-live="polite"
           >
-            8+ characters.
-          </p>
+            <PasswordHintRow satisfied={hasMinLength}>
+              At least 8 characters.
+            </PasswordHintRow>
+            <PasswordHintRow satisfied={hasLetterAndNumber}>
+              Include letters and numbers for a stronger password.
+            </PasswordHintRow>
+          </ul>
         </div>
 
         <Button
@@ -189,7 +237,7 @@ export function SignupPage() {
             ) : undefined
           }
         >
-          {busy ? 'Creating account…' : 'Create account'}
+          {busy ? 'Creating account...' : 'Create account'}
         </Button>
 
         <p className="text-center text-xs leading-relaxed text-gray-500 dark:text-gray-400">
@@ -210,7 +258,7 @@ export function SignupPage() {
         <span className="text-gray-400 dark:text-gray-600">
           Already have an account?{' '}
           <Link
-            to="/login"
+            to={withAuthNext('/login', next)}
             className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             Sign in

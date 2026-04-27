@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useSession } from '../../lib/auth/session'
 import { HelpSearchPalette } from './HelpSearchPalette'
 import { HELP_SECTIONS } from './helpSections'
 
@@ -25,6 +26,13 @@ interface Section {
   // match prose without traversing the rendered React tree.
   searchText: string
   body: React.ReactNode
+}
+
+interface SectionGroup {
+  id: string
+  label: string
+  description: string
+  ids: string[]
 }
 
 // Anchor link to another section by id. Used inside the "What's new"
@@ -1324,6 +1332,59 @@ const sections: Section[] = [
   },
 ]
 
+const SECTION_GROUPS: SectionGroup[] = [
+  {
+    id: 'start',
+    label: 'Start here',
+    description: 'Orientation, setup, and first-run workflows.',
+    ids: ['whats-new', 'getting-started', 'teams-offices', 'team-home'],
+  },
+  {
+    id: 'build',
+    label: 'Build and plan',
+    description: 'Editor, roster, seating, reporting, and imports.',
+    ids: [
+      'map-editor',
+      'annotations',
+      'presentation',
+      'roster',
+      'seating',
+      'reports',
+      'csv-import',
+      'command-palette',
+      'notifications',
+    ],
+  },
+  {
+    id: 'admin',
+    label: 'Admin and access',
+    description: 'Account, audit trails, and sharing controls.',
+    ids: ['account', 'audit-log', 'sharing'],
+  },
+  {
+    id: 'reference',
+    label: 'Reference',
+    description: 'Keyboard help, accessibility, and FAQ.',
+    ids: ['shortcuts', 'a11y-darkmode', 'faq'],
+  },
+]
+
+const PRODUCT_SURFACE_LINKS: Record<string, { to: string; label: string }> = {
+  'getting-started': { to: '/dashboard', label: 'Open dashboard' },
+  'teams-offices': { to: '/dashboard', label: 'Open team home' },
+  'team-home': { to: '/dashboard', label: 'Open team home' },
+  'map-editor': { to: '/dashboard', label: 'Open map workspace' },
+  roster: { to: '/dashboard', label: 'Open roster workspace' },
+  seating: { to: '/dashboard', label: 'Open seating workflows' },
+  reports: { to: '/dashboard', label: 'Open reports workspace' },
+  'csv-import': { to: '/dashboard', label: 'Open import workflow' },
+  'command-palette': { to: '/dashboard', label: 'Open command palette in app' },
+  notifications: { to: '/dashboard', label: 'Open product notifications' },
+  account: { to: '/account', label: 'Open account settings' },
+  'audit-log': { to: '/dashboard', label: 'Open audit log' },
+  sharing: { to: '/dashboard', label: 'Open sharing tools' },
+}
+
 function FaqItem({ q, children }: { q: string; children: React.ReactNode }) {
   return (
     <details className="group border-l-2 border-gray-200 dark:border-gray-800 pl-4 py-1 hover:border-blue-400">
@@ -1384,6 +1445,8 @@ function SectionHeading({
 }
 
 export function HelpPage() {
+  const session = useSession()
+  const isLoggedIn = session.status === 'authenticated'
   const [activeId, setActiveId] = useState(sections[0].id)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
   const [paletteOpen, setPaletteOpen] = useState(false)
@@ -1401,6 +1464,30 @@ export function HelpPage() {
       return haystack.includes(trimmedQuery)
     })
   }, [trimmedQuery])
+
+  const groupedSections = useMemo(() => {
+    const byId = new Map(filteredSections.map((s) => [s.id, s]))
+    const assigned = new Set<string>()
+    const grouped = SECTION_GROUPS.map((group) => {
+      const groupItems = group.ids
+        .map((id) => byId.get(id))
+        .filter((item): item is Section => Boolean(item))
+      for (const item of groupItems) assigned.add(item.id)
+      return { ...group, sections: groupItems }
+    }).filter((group) => group.sections.length > 0)
+
+    const ungrouped = filteredSections.filter((s) => !assigned.has(s.id))
+    if (ungrouped.length > 0) {
+      grouped.push({
+        id: 'more',
+        label: 'More topics',
+        description: 'Additional guide topics.',
+        ids: [],
+        sections: ungrouped,
+      })
+    }
+    return grouped
+  }, [filteredSections])
 
   const matchCount = filteredSections.length
   const isFiltered = trimmedQuery.length > 0
@@ -1539,21 +1626,28 @@ export function HelpPage() {
             <nav
               role="navigation"
               aria-label="Table of contents"
-              className="space-y-0.5"
+              className="space-y-3"
             >
-              {filteredSections.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
-                    activeId === s.id
-                      ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium'
-                      : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <span aria-hidden>{s.icon}</span>
-                  {s.label}
-                </a>
+              {groupedSections.map((group) => (
+                <div key={group.id} className="space-y-1">
+                  <p className="px-2 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    {group.label}
+                  </p>
+                  {group.sections.map((s) => (
+                    <a
+                      key={s.id}
+                      href={`#${s.id}`}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
+                        activeId === s.id
+                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium'
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <span aria-hidden>{s.icon}</span>
+                      {s.label}
+                    </a>
+                  ))}
+                </div>
               ))}
               {filteredSections.length === 0 && (
                 <div className="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
@@ -1605,21 +1699,33 @@ export function HelpPage() {
           <nav
             role="navigation"
             aria-label="Table of contents"
-            className="space-y-0.5 text-sm"
+            className="space-y-4 text-sm"
           >
-            {filteredSections.map((s) => (
-              <a
-                key={s.id}
-                href={`#${s.id}`}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
-                  activeId === s.id
-                    ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
-              >
-                <span aria-hidden>{s.icon}</span>
-                {s.label}
-              </a>
+            {groupedSections.map((group) => (
+              <div key={group.id}>
+                <p className="px-2 text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  {group.label}
+                </p>
+                <p className="px-2 mt-0.5 mb-1 text-[11px] text-gray-400 dark:text-gray-500">
+                  {group.description}
+                </p>
+                <div className="space-y-0.5">
+                  {group.sections.map((s) => (
+                    <a
+                      key={s.id}
+                      href={`#${s.id}`}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
+                        activeId === s.id
+                          ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium'
+                          : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <span aria-hidden>{s.icon}</span>
+                      {s.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
             ))}
             {filteredSections.length === 0 && (
               <div className="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
@@ -1643,6 +1749,67 @@ export function HelpPage() {
             keep both in sync. Use the sidebar to jump around, or scroll top
             to bottom.
           </p>
+
+          <div className="mb-6 grid gap-3 sm:grid-cols-2">
+            <section className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/50">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Learn first
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-gray-900 dark:text-gray-100">
+                Scan the guide quickly
+              </h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                Start with Getting started, then jump by topic from the grouped sidebar.
+              </p>
+              <a href="#getting-started" className="mt-3 inline-flex text-sm text-blue-600 hover:underline dark:text-blue-400">
+                Open the three-minute tour
+              </a>
+            </section>
+            <section className="rounded-lg border border-blue-200 bg-blue-50/70 p-4 dark:border-blue-900/60 dark:bg-blue-950/25">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
+                Try in product
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-gray-900 dark:text-gray-100">
+                Use the app while you read
+              </h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                Keep the guide open in one tab and the product in another for side-by-side learning.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-sm">
+                {isLoggedIn ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                    >
+                      Open dashboard
+                    </Link>
+                    <Link
+                      to="/account"
+                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                    >
+                      Open account
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/signup"
+                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                    >
+                      Create account
+                    </Link>
+                    <Link
+                      to="/login"
+                      className="rounded border border-blue-200 bg-white px-2.5 py-1 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/40"
+                    >
+                      Sign in
+                    </Link>
+                  </>
+                )}
+              </div>
+            </section>
+          </div>
 
           {/* aria-live confirmation for "copied!" — visible chip too */}
           <div
@@ -1681,6 +1848,17 @@ export function HelpPage() {
                   label={s.label}
                   onCopy={handleCopyAnchor}
                 />
+                {isLoggedIn && PRODUCT_SURFACE_LINKS[s.id] ? (
+                  <div className="mb-3">
+                    <Link
+                      to={PRODUCT_SURFACE_LINKS[s.id].to}
+                      className="inline-flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-300 dark:hover:bg-blue-950/50"
+                    >
+                      Open in product:
+                      <span>{PRODUCT_SURFACE_LINKS[s.id].label}</span>
+                    </Link>
+                  </div>
+                ) : null}
                 <div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-200 leading-relaxed">
                   {s.body}
                 </div>

@@ -124,22 +124,18 @@ describe('RosterPage — quick-filter pills', () => {
     expect(pill.getAttribute('aria-pressed')).toBe('true')
   })
 
-  it('summary chip shows total/shown/unassigned/occupancy counts', () => {
+  it('stats bar shows total/active/unassigned/occupancy/filtered counts', () => {
     renderAtRoute('/t/acme/o/hq/roster')
-    const chip = screen.getByTestId('roster-summary-chip')
-    // 3 employees, all visible by default; 2 unassigned (Alice + Bob),
-    // and 0 desks → 0% occupancy.
-    expect(chip.textContent).toMatch(/Showing\s*3\s*of\s*3/)
-    expect(chip.textContent).toMatch(/2\s*unassigned/)
-    expect(chip.textContent).toMatch(/0%\s*occupancy/)
-    // aria-live so screen readers announce changes.
-    expect(chip.getAttribute('aria-live')).toBe('polite')
+    expect(screen.getByRole('button', { name: /3\s+Total/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /2\s+Active/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /2\s+Unassigned/i })).toBeTruthy()
+    expect(screen.getByLabelText(/Occupancy: 0%/i)).toBeTruthy()
+    expect(screen.getByLabelText(/Filtered: 3/i)).toBeTruthy()
   })
 
-  it('summary chip updates "shown" when a filter narrows the visible set', () => {
+  it('stats bar updates filtered count when a filter narrows the visible set', () => {
     renderAtRoute('/t/acme/o/hq/roster?status=on-leave')
-    const chip = screen.getByTestId('roster-summary-chip')
-    expect(chip.textContent).toMatch(/Showing\s*1\s*of\s*3/)
+    expect(screen.getByLabelText(/Filtered: 1/i)).toBeTruthy()
   })
 })
 

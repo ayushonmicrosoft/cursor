@@ -22,6 +22,6 @@ describe('AuthVerifyPage', () => {
     expect(
       screen.getByRole('heading', { name: /verifying your email/i }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/this only takes a second/i)).toBeInTheDocument()
+    expect(screen.getByText(/finalizing your account/i)).toBeInTheDocument()
   })
 })

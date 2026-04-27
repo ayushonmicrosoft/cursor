@@ -82,11 +82,25 @@ describe('TopBar view mode switch', () => {
   it('updates the ui store when toggling mode', () => {
     renderTopBar()
 
-    fireEvent.click(screen.getByRole('button', { name: /switch to 2.5d view/i }))
+    const reviewButton = screen.getByRole('button', { name: /switch to 2.5d view/i })
+    fireEvent.click(reviewButton)
     expect(useUIStore.getState().viewMode).toBe('2.5d')
+    expect(reviewButton).toHaveClass('bg-slate-900')
 
-    fireEvent.click(screen.getByRole('button', { name: /switch to 2d view/i }))
+    const planButton = screen.getByRole('button', { name: /switch to 2d view/i })
+    fireEvent.click(planButton)
     expect(useUIStore.getState().viewMode).toBe('2d')
+    expect(planButton).toHaveClass('bg-white')
+  })
+
+  it('keeps topbar controls in a single horizontal rail on narrow widths', () => {
+    renderTopBar()
+
+    const toolbar = document.querySelector('[data-fixed-toolbar="top-bar"]')
+    const layoutRow = screen.getByTestId('topbar-layout-row')
+    expect(toolbar).toHaveClass('overflow-x-auto')
+    expect(layoutRow).toHaveClass('flex-nowrap')
+    expect(layoutRow).toHaveAttribute('data-editor-min-width', '1180')
   })
 
   it('applies a workspace preset from the Toolbars menu and persists it', () => {

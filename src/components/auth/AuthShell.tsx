@@ -97,3 +97,39 @@ export function AuthErrorBanner({ id, message }: { id: string; message: string }
 export function AuthLinks({ children }: { children: ReactNode }) {
   return <div className="mt-6 flex items-center justify-between text-xs">{children}</div>
 }
+
+function SkeletonBar({ className }: { className: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`animate-pulse rounded bg-gray-200/90 dark:bg-gray-700/80 ${className}`}
+    />
+  )
+}
+
+export function AuthFormSkeleton({
+  title,
+  subtitle,
+  fieldCount = 2,
+}: {
+  title: string
+  subtitle: string
+  fieldCount?: 1 | 2 | 3
+}) {
+  return (
+    <AuthShell>
+      <div role="status" aria-live="polite" className="space-y-5">
+        <AuthHeading title={title} subtitle={subtitle} />
+        <div className="space-y-4">
+          {Array.from({ length: fieldCount }, (_, index) => (
+            <div key={index} className="space-y-2">
+              <SkeletonBar className="h-3 w-24" />
+              <SkeletonBar className="h-9 w-full rounded-md" />
+            </div>
+          ))}
+          <SkeletonBar className="h-10 w-full rounded-md" />
+        </div>
+      </div>
+    </AuthShell>
+  )
+}

@@ -39,7 +39,7 @@ describe('AuthResetPage', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: /update password/i }))
     await screen.findByRole('alert')
-    expect(screen.getByRole('alert')).toHaveTextContent(/don't match/i)
+    expect(screen.getByRole('alert')).toHaveTextContent(/do not match/i)
     expect(updateUserMock).not.toHaveBeenCalled()
   })
 

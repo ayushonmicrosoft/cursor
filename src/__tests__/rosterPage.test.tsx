@@ -118,17 +118,16 @@ describe('RosterPage', () => {
     // Alice is active, Bob is on-leave (set in beforeEach). Both are
     // seat-unassigned, so the "Unassigned" chip should count 2.
     renderAtRoute('/t/acme/o/hq/roster')
-    // `On leave` chip shows the number 1 alongside its label.
-    const onLeaveChip = screen.getByRole('button', { name: /1\s+On leave/i })
-    expect(onLeaveChip).toBeTruthy()
-    // Unassigned chip counts both seed employees.
-    const unassignedChip = screen.getByRole('button', { name: /2\s+Unassigned/i })
-    expect(unassignedChip).toBeTruthy()
+    expect(screen.getByRole('button', { name: /2\s+Total/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /1\s+Active/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /2\s+Unassigned/i })).toBeTruthy()
+    expect(screen.getByLabelText(/Occupancy: 0%/i)).toBeTruthy()
+    expect(screen.getByLabelText(/Filtered: 2/i)).toBeTruthy()
   })
 
   it('clicking the On-leave stats chip narrows to status=on-leave', () => {
     renderAtRoute('/t/acme/o/hq/roster')
-    const onLeaveChip = screen.getByRole('button', { name: /1\s+On leave/i })
+    const onLeaveChip = screen.getByTestId('quick-filter-on-leave')
     act(() => { fireEvent.click(onLeaveChip) })
     // After the click the status chip should be toggled on and Alice
     // should disappear from the list.
@@ -313,7 +312,7 @@ describe('RosterPage', () => {
       }))
     })
     renderAtRoute('/t/acme/o/hq/roster')
-    const chip = screen.getByRole('button', { name: /1\s+Pending equipment/i })
+    const chip = screen.getByTestId('quick-filter-missing-equipment')
     act(() => { fireEvent.click(chip) })
     // Alice is pending → visible; Bob is not-needed → hidden.
     expect(screen.getByText('Alice')).toBeTruthy()

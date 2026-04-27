@@ -12,28 +12,6 @@ import {
   AuthErrorBanner,
 } from '../auth/AuthShell'
 
-/**
- * Wave 18A: bring the team-onboarding screen up to the auth-shell idiom
- * the rest of the post-signup funnel uses.
- *
- * A first-time user lands here right after verifying their email — it's
- * the third surface they ever see, sandwiched between the verification
- * page and their first dashboard. Pre-18A this was raw HTML on a flat
- * gray background with a plain `<h1 class="text-lg">` — visually
- * disconnected from the auth pages it follows. Reusing `AuthShell`
- * (Floorcraft wordmark + diamond mark + centered card on the same
- * gradient) closes that gap so the funnel reads as one product.
- *
- * The form shape is unchanged: a single team-name field plus a primary
- * action. We swap raw `<input>` / `<button>` for the UI-kit `Input` and
- * `Button` so focus rings, dark-mode pairing, and disabled states match
- * everywhere else. The submit button takes a `Loader2` left-icon while
- * busy — `motion-reduce:animate-none` honors the OS reduced-motion
- * preference without us reading the media query at runtime.
- *
- * Copy refresh: "Offices live inside a team. You can invite teammates
- * after." (matter-of-fact, drops the redundant "Offices you create").
- */
 export function TeamOnboardingPage() {
   const session = useSession()
   const [name, setName] = useState('')
@@ -59,26 +37,37 @@ export function TeamOnboardingPage() {
 
   return (
     <AuthShell>
+      <div className="mb-5 inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
+        Workspace setup • Step 1 of 2
+      </div>
+
       <AuthHeading
-        title="Create your first team"
-        subtitle="Offices live inside a team. You can invite teammates after."
+        title="Name your workspace"
+        subtitle="Your first team becomes the home for offices, members, and settings."
       />
 
       {error && <AuthErrorBanner id="onboarding-form-error" message={error} />}
 
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
-        <AuthFieldLabel htmlFor="onboarding-team-name" label="Team name">
+      <form onSubmit={onSubmit} className="space-y-4" noValidate aria-busy={busy}>
+        <AuthFieldLabel htmlFor="onboarding-team-name" label="Workspace name">
           <Input
             id="onboarding-team-name"
             required
             autoFocus
+            disabled={busy}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Acme Inc"
+            placeholder="Acme HQ"
             invalid={!!error}
-            aria-describedby={error ? 'onboarding-form-error' : undefined}
+            aria-describedby={error ? 'onboarding-form-error onboarding-hint' : 'onboarding-hint'}
           />
         </AuthFieldLabel>
+
+        <ul id="onboarding-hint" className="space-y-0.5 text-xs text-gray-500 dark:text-gray-400">
+          <li>This name appears in team switchers and invites.</li>
+          <li>You can rename it later from Team settings.</li>
+          <li>Next up: invite people or create your first office.</li>
+        </ul>
 
         <Button
           type="submit"
@@ -95,7 +84,7 @@ export function TeamOnboardingPage() {
             ) : undefined
           }
         >
-          {busy ? 'Creating…' : 'Create team'}
+          {busy ? 'Creating workspace...' : 'Create workspace'}
         </Button>
       </form>
 
@@ -105,7 +94,7 @@ export function TeamOnboardingPage() {
           to="/dashboard"
           className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
         >
-          Skip to dashboard
+          Skip setup and open dashboard
         </Link>
       </p>
     </AuthShell>
