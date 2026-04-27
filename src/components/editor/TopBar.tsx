@@ -16,7 +16,8 @@ import {
   Maximize2, Minimize2,
   Cloud, CloudOff, UploadCloud, X as XIcon,
   Ruler, Grid3x3, Compass, Printer, Image as ImageIcon,
-  ChevronDown, Eye, Check, Share2, Download, Hash, SlidersHorizontal, RotateCcw,
+  Eye, Check, Share2, Download, Hash, SlidersHorizontal, RotateCcw,
+  Map as MapIcon, Users, ClipboardList, BarChart3,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -46,6 +47,19 @@ const TOOLBAR_MENU_ITEMS: Array<{
 ]
 
 const WORKSPACE_PRESET_IDS: WorkspacePresetId[] = ['design', 'admin', 'review']
+
+const primaryViewLinkClass =
+  'inline-flex h-8 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+
+const secondaryMenuButtonClass =
+  'inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
+
+const secondaryMenuItemClass =
+  'flex min-w-0 items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:text-gray-200 dark:hover:bg-gray-800/50 dark:focus:bg-gray-800/50'
+
+const dividerClass = 'h-6 w-px flex-none bg-gray-200 dark:bg-gray-700'
+const iconActionButtonClass =
+  'inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
 
 export function TopBar() {
   const project = useProjectStore((s) => s.currentProject)
@@ -335,7 +349,7 @@ export function TopBar() {
 
   return (
     <div
-      className="h-14 w-full min-w-0 overflow-hidden bg-gradient-to-r from-white via-[#faf6f1] to-white border-b border-gray-200 dark:from-gray-950 dark:via-[#0f1e32] dark:to-gray-950 dark:border-gray-800 flex items-center px-3 gap-2 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
+      className="h-14 w-full min-w-0 overflow-hidden bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800 flex items-center px-3 gap-2 flex-shrink-0 shadow-[inset_0_-1px_0_rgba(210,220,231,0.65)]"
       data-fixed-toolbar="top-bar"
       data-fixed-toolbar-reason="Global app navigation and save state must remain outside the canvas dock host."
     >
@@ -344,6 +358,74 @@ export function TopBar() {
           "where am I" and "am I safe" mental-model questions that precede
           any action, so they sit at the far left. */}
       <TeamSwitcher currentSlug={teamSlug} />
+
+      {teamSlug && officeSlug && (
+        <nav
+          aria-label="Primary office views"
+          className="flex min-w-0 flex-none items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
+        >
+          <NavLink
+            to={`/t/${teamSlug}/o/${officeSlug}/map`}
+            title="Map"
+            className={({ isActive }) =>
+              `${primaryViewLinkClass} ${
+                isActive
+                  ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+                  : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+              }`
+            }
+          >
+            <MapIcon size={16} aria-hidden="true" />
+            <span className="truncate">Map</span>
+          </NavLink>
+          <NavLink
+            to={`/t/${teamSlug}/o/${officeSlug}/roster`}
+            title="Roster"
+            className={({ isActive }) =>
+              `${primaryViewLinkClass} ${
+                isActive
+                  ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+                  : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+              }`
+            }
+          >
+            <Users size={16} aria-hidden="true" />
+            <span className="truncate">Roster</span>
+          </NavLink>
+          {canViewAudit && (
+            <NavLink
+              to={`/t/${teamSlug}/o/${officeSlug}/audit`}
+              title="Audit"
+              className={({ isActive }) =>
+                `${primaryViewLinkClass} ${
+                  isActive
+                    ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+                    : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+                }`
+              }
+            >
+              <ClipboardList size={16} aria-hidden="true" />
+              <span className="hidden sm:inline truncate">Audit</span>
+            </NavLink>
+          )}
+          {canViewReports && (
+            <NavLink
+              to={`/t/${teamSlug}/o/${officeSlug}/reports`}
+              title="Reports"
+              className={({ isActive }) =>
+                `${primaryViewLinkClass} ${
+                  isActive
+                    ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+                    : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+                }`
+              }
+            >
+              <BarChart3 size={16} aria-hidden="true" />
+              <span className="hidden sm:inline truncate">Reports</span>
+            </NavLink>
+          )}
+        </nav>
+      )}
 
       {/* Wave 15D: the editable project-name button moved out of this
           row into the FloorSwitcher strip below, where the office
@@ -360,7 +442,7 @@ export function TopBar() {
       {/* Hairline divider between the identity cluster and the
           save/undo cluster — JSON-Crack idiom that helps the eye
           group otherwise unrelated chips. */}
-      <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+      <div className={dividerClass} />
 
       <SaveIndicator saveState={saveState} lastSavedAt={lastSavedAt} />
 
@@ -368,7 +450,7 @@ export function TopBar() {
         <button
           onClick={() => undo()}
           disabled={!canUndo}
-          className={`p-1.5 rounded text-gray-600 dark:text-gray-300 dark:text-gray-400 ${canUndo ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-40 cursor-not-allowed'}`}
+          className={iconActionButtonClass}
           title={canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo'}
           aria-label="Undo"
         >
@@ -377,7 +459,7 @@ export function TopBar() {
         <button
           onClick={() => redo()}
           disabled={!canRedo}
-          className={`p-1.5 rounded text-gray-600 dark:text-gray-300 dark:text-gray-400 ${canRedo ? 'hover:bg-gray-100 dark:hover:bg-gray-800' : 'opacity-40 cursor-not-allowed'}`}
+          className={iconActionButtonClass}
           title={canRedo ? 'Redo (Ctrl+Shift+Z)' : 'Nothing to redo'}
           aria-label="Redo"
         >
@@ -385,30 +467,24 @@ export function TopBar() {
         </button>
       </div>
 
-      <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+      <div className={dividerClass} />
 
-      {/* ───── Viewport cluster ─────
-          Everything that changes how the canvas LOOKS without changing its
-          content — zoom level, grid, dimension labels, scale+units. The
-          zoom/grid/dimensions toggles collapsed into the View dropdown so
-          the TopBar no longer reads as a row of twenty identical icons;
-          the scale popover and numeric grid-size stepper stay inline
-          because they hold persistent values the user wants to see. */}
+      {/* Viewport controls are secondary to page navigation. */}
       <div className="relative" ref={viewMenuRef}>
         <button
           onClick={() => setViewMenuOpen((o) => !o)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 rounded"
+          className={secondaryMenuButtonClass}
           aria-haspopup="menu"
           aria-expanded={viewMenuOpen}
+          title="View options"
+          aria-label="View options"
         >
-          <Eye size={14} aria-hidden="true" />
-          View
-          <ChevronDown size={14} aria-hidden="true" />
+          <Eye size={16} aria-hidden="true" />
         </button>
         {viewMenuOpen && (
           <div
             role="menu"
-            className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded shadow dark:bg-gray-900 dark:border-gray-700 dark:shadow-black/40 z-30 py-1"
+            className="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow dark:bg-gray-900 dark:border-gray-700 dark:shadow-black/40 z-30 py-1"
           >
             <button
               role="menuitem"
@@ -416,7 +492,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 zoomIn()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
             >
               <ZoomIn size={14} aria-hidden="true" />
               Zoom in
@@ -428,7 +504,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 zoomOut()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
             >
               <ZoomOut size={14} aria-hidden="true" />
               Zoom out
@@ -440,7 +516,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 resetZoom()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
             >
               <span className="inline-block w-[14px] text-center text-xs font-mono">
                 {Math.round(stageScale * 100)}
@@ -455,7 +531,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 toggleGrid()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
               aria-pressed={settings.showGrid}
             >
               {settings.showGrid ? (
@@ -473,7 +549,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 toggleDimensions()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
               aria-pressed={settings.showDimensions}
             >
               {settings.showDimensions ? (
@@ -491,7 +567,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 toggleNorthArrow()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
               aria-pressed={settings.showNorthArrow ?? true}
             >
               {(settings.showNorthArrow ?? true) ? (
@@ -514,7 +590,7 @@ export function TopBar() {
                 setViewMenuOpen(false)
                 toggleDeskIds()
               }}
-              className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/50"
+              className={secondaryMenuItemClass}
               aria-pressed={settings.showDeskIds ?? false}
             >
               {(settings.showDeskIds ?? false) ? (
@@ -536,43 +612,48 @@ export function TopBar() {
               value={settings.seatLabelStyle ?? 'pill'}
               onChange={(next) => setSettings({ seatLabelStyle: next })}
             />
+            <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+            <div className="px-3 py-2">
+              <label
+                htmlFor="topbar-grid-size"
+                className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+              >
+                Grid size
+              </label>
+              <input
+                id="topbar-grid-size"
+                type="number"
+                min={4}
+                max={200}
+                step={2}
+                value={settings.gridSize}
+                onChange={(e) => setSettings({ gridSize: Number(e.target.value) })}
+                className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+                title="Grid size"
+                aria-label="Grid size"
+              />
+            </div>
+            <div className="px-3 pb-2">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                Scale
+              </div>
+              <ScaleSettingsPopover />
+            </div>
           </div>
         )}
       </div>
-
-      {/* Grid-size stepper stays inline: it holds a persistent numeric
-          value the user wants to see at a glance (12px vs 48px changes
-          visibly on the canvas), so burying it in a dropdown would hide
-          state. */}
-      <input
-        type="number"
-        min={4}
-        max={200}
-        step={2}
-        value={settings.gridSize}
-        onChange={(e) => setSettings({ gridSize: Number(e.target.value) })}
-        className="w-[60px] text-xs bg-white text-gray-900 border border-gray-200 rounded px-1 py-1 focus:outline-none focus:border-blue-400 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
-        title="Grid size"
-        aria-label="Grid size"
-      />
-
-      {/* Scale + unit picker. Same rationale as the grid-size stepper —
-          the active scale (1:100, feet vs meters) drives every dimension
-          label on the canvas, so keeping it visible avoids round-trips
-          into a menu. */}
-      <ScaleSettingsPopover />
 
       {canEditMap && (
         <div className="relative" ref={toolbarMenuRef}>
           <button
             onClick={() => setToolbarMenuOpen((o) => !o)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 rounded"
+            className={secondaryMenuButtonClass}
             aria-haspopup="menu"
             aria-expanded={toolbarMenuOpen}
+            title="Workspace controls"
+            aria-label="Workspace controls"
           >
-            <SlidersHorizontal size={14} aria-hidden="true" />
-            Toolbars
-            <ChevronDown size={14} aria-hidden="true" />
+            <SlidersHorizontal size={16} aria-hidden="true" />
           </button>
           {toolbarMenuOpen && (
             <div
@@ -671,30 +752,36 @@ export function TopBar() {
         </div>
       )}
 
-      <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
+      <div
+        className="flex flex-none items-center rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
+        role="group"
+        aria-label="Canvas view mode"
+      >
         <button
           type="button"
           onClick={() => setViewMode('2d')}
-          className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors ${
+          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
             viewMode === '2d'
-              ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-              : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+              ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+              : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
           }`}
           aria-label="Switch to 2D view"
           aria-pressed={viewMode === '2d'}
+          title="Switch to 2D view"
         >
           2D
         </button>
         <button
           type="button"
           onClick={() => setViewMode('2.5d')}
-          className={`px-2.5 py-1 text-xs font-semibold rounded transition-colors ${
+          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
             viewMode === '2.5d'
-              ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-              : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+              ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+              : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
           }`}
           aria-label="Switch to 2.5D view"
           aria-pressed={viewMode === '2.5d'}
+          title="Switch to 2.5D view"
         >
           2.5D
         </button>
@@ -704,11 +791,11 @@ export function TopBar() {
         <button
           type="button"
           onClick={handleResetWorkspace}
-          className="hidden lg:inline-flex items-center gap-1.5 rounded border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+          className={`${secondaryMenuButtonClass} hidden lg:inline-flex`}
           title="Reset workspace layout, viewport, and tool state"
+          aria-label="Reset workspace layout, viewport, and tool state"
         >
-          <RotateCcw size={13} aria-hidden="true" />
-          Reset workspace
+          <RotateCcw size={16} aria-hidden="true" />
         </button>
       )}
 
@@ -744,10 +831,10 @@ export function TopBar() {
       */}
       <button
         onClick={() => setPresentationMode(!presentationMode)}
-        className={`p-1.5 rounded flex items-center gap-1 ${
+        className={`${iconActionButtonClass} ${
           presentationMode
             ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200'
-            : 'hover:bg-gray-100 text-gray-600 dark:text-gray-400 dark:hover:bg-gray-800'
+            : ''
         }`}
         title={
           presentationMode
@@ -774,82 +861,6 @@ export function TopBar() {
         keeps the TopBar focused on document-level concerns and makes
         the collapse control visually adjacent to what it controls.
       */}
-
-      {/* MAP / ROSTER view toggle. React Router owns the active state so
-          we don't need UI-store bookkeeping. Moved to the action cluster
-          alongside Share/Export because jumping between Map and Roster is
-          a navigation action, not part of identity. Guarded on both
-          params so the hotkeys are inert outside the editor routes. */}
-      {teamSlug && officeSlug && (
-        <nav aria-label="Project views" className="min-w-0 flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5">
-          <NavLink
-            to={`/t/${teamSlug}/o/${officeSlug}/map`}
-            className={({ isActive }) =>
-              `px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
-                isActive
-                  ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-                  : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
-              }`
-            }
-          >
-            Map
-          </NavLink>
-          <NavLink
-            to={`/t/${teamSlug}/o/${officeSlug}/roster`}
-            className={({ isActive }) =>
-              `px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
-                isActive
-                  ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-                  : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
-              }`
-            }
-          >
-            Roster
-          </NavLink>
-          {canViewAudit && (
-            <NavLink
-              to={`/t/${teamSlug}/o/${officeSlug}/audit`}
-              className={({ isActive }) =>
-                `hidden lg:inline-flex px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
-                  isActive
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-                    : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
-                }`
-              }
-            >
-              Audit
-            </NavLink>
-          )}
-          {canViewReports && (
-            <NavLink
-              to={`/t/${teamSlug}/o/${officeSlug}/reports`}
-              className={({ isActive }) =>
-                `hidden xl:inline-flex px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
-                  isActive
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-                    : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
-                }`
-              }
-            >
-              Reports
-            </NavLink>
-          )}
-          {canViewReports && (
-            <NavLink
-              to={`/t/${teamSlug}/o/${officeSlug}/org-chart`}
-              className={({ isActive }) =>
-                `hidden 2xl:inline-flex px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded transition-colors ${
-                  isActive
-                    ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-                    : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
-                }`
-              }
-            >
-              Org Chart
-            </NavLink>
-          )}
-        </nav>
-      )}
 
       {/* Wave 15D: the standalone Help link was removed — it duplicated
           the User-guide row already inside UserMenu. The standalone
