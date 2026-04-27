@@ -7,7 +7,8 @@ Planning mode: single source of truth
 ## Current execution status
 
 - Engine track in execution: **Option 2 (Hybrid Konva + Three.js)**.
-- Active implementation window: **Phase 5 completion + Phase 8 hardening prep**.
+- Active implementation window: **Phase 5 readability QA + Phase 8 release runbook checks**.
+- UI/UX plan reconciliation: **Phases 1-4, 7, 9, and 10 are complete** in `OANDOCraft_UI_UX_EXECUTION_PLAN.md`; remaining UI/UX phases stay open.
 - Phase 3 status: **Complete** (dockable toolbar model, presets, persistence/reset).
 - Phase 4 status: **Complete** (exact numeric edit inputs with unit-aware parsing + validation).
 - Phase 5 status: **In progress** (visual token/symbol updates implemented; readability QA still open).

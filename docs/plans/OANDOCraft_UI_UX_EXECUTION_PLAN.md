@@ -15,6 +15,12 @@ The target is a product experience that feels clear, polished, credible, and eas
 - The roster and map work together as one workflow.
 - Every first-run screen has an obvious next action.
 
+## Current Completion Snapshot
+
+- Complete: phases 1-4, 7, 9, and 10.
+- Still open: phases 5, 6, 8, and 11-20.
+- Phase checkboxes below remain the source of truth for item-level status.
+
 ## Current UI/UX Problems
 
 1. The product says "See a demo" but sends users to help content instead of a real demo.

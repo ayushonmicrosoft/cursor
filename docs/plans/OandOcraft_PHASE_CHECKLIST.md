@@ -5,7 +5,8 @@ Checklist role: execution tracker only (the roadmap lives in `OandOcraft_OVERHAU
 
 Execution status snapshot:
 - Current engine path: Option 2 (Hybrid Konva + Three.js).
-- Active delivery window: Phase 5 completion and Phase 8 preparation.
+- Active delivery window: Phase 5 readability QA and Phase 8 release runbook checks.
+- UI/UX plan reconciliation: Phases 1-4, 7, 9, and 10 are complete in `OANDOCraft_UI_UX_EXECUTION_PLAN.md`.
 
 ## Engine decision checkpoint (must be explicit)
 
@@ -68,6 +69,17 @@ Execution status snapshot:
 - [x] Run `npm run test`.
 - [x] Run `npm run build`.
 - [ ] Complete release + rollback runbook checks.
+
+## UI/UX phase reconciliation
+
+- [x] Phase 1 - Landing Page And Demo Entry.
+- [x] Phase 2 - Loading And First Impressions.
+- [x] Phase 3 - Dashboard And Sample Office.
+- [x] Phase 4 - Editor First-Load UX.
+- [x] Phase 7 - Top Bar And Navigation.
+- [x] Phase 9 - Right Sidebar And Properties.
+- [x] Phase 10 - Visual System.
+- [ ] Keep phases 5, 6, 8, and 11-20 open until their remaining checklist items are complete.
 
 ## Archive policy
 
