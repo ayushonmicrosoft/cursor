@@ -99,7 +99,7 @@ Status key:
 - [ ] Local reset is verified to load people, seats, assignments, and floor-plan objects.
 - [ ] RLS tests cover admin override behavior.
 - [ ] RLS tests cover viewer denial behavior.
-- [ ] Service-role usage is documented and server-only.
+- [x] Service-role usage is documented and server-only.
 
 ## 7. Access And Security
 
@@ -108,10 +108,10 @@ Status key:
 - [x] Admins can recover history and force-save.
 - [x] Access changes are audited.
 - [ ] Repo-local: Invite resend, revoke, accept, and expiry events are fully audited in code/tests where possible.
-- [ ] Public token policy is reviewed and documented.
+- [x] Public token policy is reviewed and documented.
 - [ ] Blocked-by-host: CSP is finalized for production domains and verified against the live host.
 - [ ] Host-only: Security headers are configured on the main host.
-- [ ] Lost-admin-access recovery is documented.
+- [x] Lost-admin-access recovery is documented.
 
 ## 8. Testing And Quality Gates
 
@@ -137,8 +137,8 @@ Status key:
 - [x] Interactive project map exists.
 - [x] Repo-local: Release checklist is promoted into the README or deployment docs.
 - [x] Repo-local: Changelog template exists with summary, user-visible changes, operational steps, known issues, rollback artifact, and verification results.
-- [ ] Repo-local: Admin runbook exists.
-- [ ] Repo-local: Supabase recovery runbook exists.
+- [x] Repo-local: Admin runbook exists.
+- [x] Repo-local: Supabase recovery runbook exists.
 - [ ] Blocked-by-host: Production smoke-test record is added after first host deployment.
 
 ## 10. Launch Gate
@@ -146,7 +146,7 @@ Status key:
 - [ ] Repo-local: Production build is generated from clean `main`.
 - [ ] Host-only: Production host serves `/OandOcraft/`.
 - [ ] Host-only: Supabase Auth redirects work in production.
-- [ ] Demo and production accounts are clearly separated.
+- [x] Demo and production accounts are clearly separated in operational docs.
 - [ ] Blocked-by-host: No blocking console errors exist on production core routes.
 - [ ] Blocked-by-host: Admin can recover a test office history entry in production or approved staging.
 - [ ] Blocked-by-host: One end-to-end production flow works: login, open office, draw room, add desk, assign person, export.

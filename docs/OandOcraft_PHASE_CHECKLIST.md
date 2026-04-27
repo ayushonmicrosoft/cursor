@@ -22,6 +22,9 @@ Working docs:
 - `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
 - `docs/OandOcraft_TOOLBAR_DOCKING_AUDIT.md`
 - `docs/OandOcraft_RELEASE_RUNBOOK.md`
+- `docs/OandOcraft_ADMIN_RUNBOOK.md`
+- `docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`
+- `docs/OandOcraft_SECURITY_REVIEW.md`
 
 ## Phase 0 - Repo, Deployment, And Ground Rules
 
@@ -140,7 +143,7 @@ Exit criteria:
 
 - [ ] Repo-local: Run full lint/build/test/page audit.
 - [ ] Repo-local: Add browser smoke tests for key local routes.
-- [ ] Repo-local: Add security review for RLS, auth redirects, service-role usage, and public routes.
+- [x] Repo-local: Add security review for RLS, auth redirects, service-role usage, and public routes.
 - [x] Repo-local: Add rollback instructions with artifact name, location, retention, restore command/path, and rollback decision owner.
 - [x] Repo-local: Add release checklist covering release artifact generation, checksum/version label, changelog update, runbook execution, production smoke test, rollback artifact, and post-release record.
 - [x] Repo-local: Add changelog entry/template with summary, user-visible changes, operational steps, known issues, verification, and rollback notes.

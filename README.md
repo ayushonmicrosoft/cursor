@@ -230,7 +230,10 @@ npm run release:manifest
 `dist/OandOcraft-release-manifest.json` with per-file SHA-256 values,
 aggregate SHA-256, commit, version label, and artifact name. Use
 `docs/OandOcraft_RELEASE_RUNBOOK.md` and `CHANGELOG.md` for release,
-rollback, and sign-off records.
+rollback, and sign-off records. Admin and recovery operations are documented in
+`docs/OandOcraft_ADMIN_RUNBOOK.md`,
+`docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`, and
+`docs/OandOcraft_SECURITY_REVIEW.md`.
 
 ### Preview Production Build
 
@@ -324,6 +327,11 @@ src/
 | `lint` | `eslint .` | Run ESLint across all source files |
 | `test` | `vitest run` | Run the full test suite once |
 | `test:watch` | `vitest` | Run tests in interactive watch mode |
+| `build:oando` | `tsc -b && vite build --base=/OandOcraft/` | Build the main-site subpath bundle |
+| `audit:pages` | `node scripts/audit-pages.cjs` | Smoke-audit built routes for console issues and legacy naming |
+| `release:manifest` | `node scripts/create_release_manifest.cjs` | Write release artifact metadata and SHA-256 checksums |
+| `seed:counts` | `node scripts/report_public_table_counts.cjs` | Report public table counts for a Postgres URL |
+| `seed:verify` | `node scripts/verify_seed_payload.cjs` | Verify the seed SQL includes actual floor-plan payloads |
 
 ---
 
@@ -337,6 +345,13 @@ Edge Functions are deployed to Supabase:
 npx supabase functions deploy send-invite-email
 npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://oando.co.in/OandOcraft
 ```
+
+Operational docs:
+
+- [Admin runbook](docs/OandOcraft_ADMIN_RUNBOOK.md)
+- [Supabase recovery runbook](docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md)
+- [Security review](docs/OandOcraft_SECURITY_REVIEW.md)
+- [Release runbook](docs/OandOcraft_RELEASE_RUNBOOK.md)
 
 ---
 
