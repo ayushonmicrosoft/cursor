@@ -121,10 +121,18 @@ describe('Toaster', () => {
     expect(useToastStore.getState().items).toHaveLength(0)
   })
 
-  it('exposes a labelled aria-live region', () => {
+  it('exposes a labelled notifications region', () => {
     render(<Toaster />)
     const region = screen.getByRole('region', { name: /notifications/i })
-    expect(region).toHaveAttribute('aria-live', 'polite')
+    expect(region).toBeInTheDocument()
+  })
+
+  it('announces error toasts as assertive alerts', () => {
+    render(<Toaster />)
+    pushToast({ tone: 'error', title: 'Sync failed' })
+    const toast = screen.getByTestId('toast')
+    expect(toast).toHaveAttribute('role', 'alert')
+    expect(toast).toHaveAttribute('aria-live', 'assertive')
   })
 
   it('skips the translate transform when prefers-reduced-motion is set', () => {

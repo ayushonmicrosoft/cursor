@@ -104,6 +104,12 @@ export class ErrorBoundary extends Component<Props, State> {
                   Reload page
                 </button>
                 <a
+                  href="/dashboard"
+                  className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Back to dashboard
+                </a>
+                <a
                   href="/"
                   className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                 >

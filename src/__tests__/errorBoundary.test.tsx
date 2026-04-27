@@ -36,6 +36,7 @@ describe('ErrorBoundary', () => {
       screen.getByRole('heading', { level: 1, name: /something went wrong/i }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /reload page/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to dashboard/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /back to home/i })).toBeInTheDocument()
     expect(screen.getByRole('alert')).toBeInTheDocument()
   })

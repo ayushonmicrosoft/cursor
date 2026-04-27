@@ -3036,7 +3036,7 @@ function RosterEmptyState({
   const isFilterMiss = filtered && hasAnyEmployees
   const Icon = isFilterMiss ? SearchX : Users
   return (
-    <div className="flex flex-col items-center gap-2 text-center py-12">
+    <div role="status" aria-live="polite" className="flex flex-col items-center gap-2 text-center py-12">
       <div className="flex items-center justify-center w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800/60 text-gray-400 dark:text-gray-500 mb-1">
         <Icon size={28} aria-hidden="true" />
       </div>

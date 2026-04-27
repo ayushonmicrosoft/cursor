@@ -74,9 +74,8 @@ describe('ShareView canvas + embed mode', () => {
     // Watermark / footer.
     const status = screen.getByTestId('share-view-embed-status')
     expect(status).toBeInTheDocument()
-    // The header chrome ("Read-only · expires…") is hidden so the iframe
-    // body is purely the visualization.
-    expect(screen.queryByText(/read-only/i)).toBeNull()
+    // Share header is hidden in embed mode.
+    expect(screen.queryByText('hq')).toBeNull()
     // ActionDock not mounted in embed mode.
     expect(screen.queryByTestId('canvas-action-dock')).toBeNull()
   })
@@ -106,7 +105,8 @@ describe('ShareView canvas + embed mode', () => {
 
   it('still renders the invalid-token error in embed mode', () => {
     mount('/share/hq?t=bogus&embed=1')
-    expect(screen.getByText(/link expired or invalid/i)).toBeInTheDocument()
+    expect(screen.getByText(/this link is not valid/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reload link/i })).toBeInTheDocument()
     // Canvas should NOT mount when the token is invalid.
     expect(screen.queryByTestId('canvas-stage')).toBeNull()
   })

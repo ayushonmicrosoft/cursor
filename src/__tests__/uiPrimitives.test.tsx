@@ -69,4 +69,70 @@ describe('Modal', () => {
     fireEvent.mouseDown(backdrop2, { target: backdrop2, currentTarget: backdrop2 })
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  it('traps focus and restores invoking focus when closed', () => {
+    const onClose = vi.fn()
+    const { rerender } = render(
+      <>
+        <button type="button">Open modal</button>
+        <Modal open={false} onClose={onClose} title="Focus trap">
+          <ModalBody>
+            <button type="button">Primary action</button>
+          </ModalBody>
+          <ModalFooter>
+            <button type="button">Cancel</button>
+          </ModalFooter>
+        </Modal>
+      </>,
+    )
+
+    const launcher = screen.getByRole('button', { name: /open modal/i })
+    launcher.focus()
+    expect(launcher).toHaveFocus()
+
+    rerender(
+      <>
+        <button type="button">Open modal</button>
+        <Modal open onClose={onClose} title="Focus trap">
+          <ModalBody>
+            <button type="button">Primary action</button>
+          </ModalBody>
+          <ModalFooter>
+            <button type="button">Cancel</button>
+          </ModalFooter>
+        </Modal>
+      </>,
+    )
+
+    const dialog = screen.getByRole('dialog', { name: /focus trap/i })
+    const focusables = dialog.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    )
+    const first = focusables[0]
+    const last = focusables[focusables.length - 1]
+
+    expect(first).toHaveFocus()
+
+    last.focus()
+    fireEvent.keyDown(window, { key: 'Tab' })
+    expect(first).toHaveFocus()
+
+    first.focus()
+    fireEvent.keyDown(window, { key: 'Tab', shiftKey: true })
+    expect(last).toHaveFocus()
+
+    rerender(
+      <>
+        <button type="button">Open modal</button>
+        <Modal open={false} onClose={onClose} title="Focus trap">
+          <ModalBody>
+            <button type="button">Primary action</button>
+          </ModalBody>
+        </Modal>
+      </>,
+    )
+
+    expect(screen.queryByRole('dialog', { name: /focus trap/i })).toBeNull()
+    expect(launcher).toHaveFocus()
+  })
 })

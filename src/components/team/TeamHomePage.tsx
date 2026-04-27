@@ -947,7 +947,11 @@ function EmptyTeamState({
   onImport: () => void
 }) {
   return (
-    <div className="mt-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 sm:p-8 max-w-3xl mx-auto">
+    <div
+      role="status"
+      aria-live="polite"
+      className="mt-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 sm:p-8 max-w-3xl mx-auto"
+    >
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6">
         <div className="min-w-0">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-4">

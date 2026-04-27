@@ -116,7 +116,11 @@ export function AuditLogPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400"
+        >
           Loading audit events...
         </div>
       ) : events.length === 0 ? (
@@ -166,7 +170,11 @@ function AuditShell({ children }: { children: React.ReactNode }) {
 
 function EmptyState({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-10 text-center dark:border-gray-800 dark:bg-gray-900">
+    <div
+      role="status"
+      aria-live="polite"
+      className="rounded-lg border border-gray-200 bg-white p-10 text-center dark:border-gray-800 dark:bg-gray-900"
+    >
       <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
       <p className="mx-auto mt-1 max-w-md text-sm text-gray-500 dark:text-gray-400">{body}</p>
     </div>

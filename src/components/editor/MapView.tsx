@@ -72,6 +72,8 @@ export function MapView() {
   const setRightSidebarTab = useUIStore((s) => s.setRightSidebarTab)
   const setDockableToolbarVisible = useUIStore((s) => s.setDockableToolbarVisible)
   const activeWorkspacePreset = useUIStore((s) => s.activeWorkspacePreset)
+  const firstRunCoachOpen = useUIStore((s) => s.firstRunCoachOpen)
+  const setFirstRunCoachOpen = useUIStore((s) => s.setFirstRunCoachOpen)
   const presentationMode = useUIStore((s) => s.presentationMode)
   const viewMode = useUIStore((s) => s.viewMode)
   const setViewMode = useUIStore((s) => s.setViewMode)
@@ -97,7 +99,8 @@ export function MapView() {
   const activeFloor = floors.find((f) => f.id === activeFloorId) ?? null
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
   const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
-  const showFirstRunCoach = selectedIds.length === 0 && !rightSidebarOpen
+  const showFirstRunCoach =
+    firstRunCoachOpen || (selectedIds.length === 0 && !rightSidebarOpen)
 
   useEffect(() => {
     if (selectedIds.length === 0 && rightSidebarTab === 'properties') {
@@ -353,7 +356,11 @@ export function MapView() {
                   onRequestFallback2D={() => setViewMode('2d')}
                 />
               ) : (
-                <div className="max-w-lg rounded-md border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                <div
+                  role={threeDLoadFailed ? 'alert' : 'status'}
+                  aria-live={threeDLoadFailed ? 'assertive' : 'polite'}
+                  className="max-w-lg rounded-md border border-gray-200 bg-white p-5 text-left shadow-lg dark:border-gray-700 dark:bg-gray-900"
+                >
                   <div className="flex items-start gap-4">
                     <div
                       className="mt-0.5 grid h-12 w-12 flex-none grid-cols-2 gap-1 rounded-md bg-slate-100 p-2 dark:bg-gray-800"
@@ -389,7 +396,7 @@ export function MapView() {
                         onClick={() => setThreeDLoadFailed(false)}
                         className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
                       >
-                        Try again
+                        Retry 2.5D
                       </button>
                     </div>
                   )}
@@ -407,7 +414,12 @@ export function MapView() {
               <AdminStatsToolbar />
               <CanvasScaleBar />
               {showNorthArrow && <NorthArrow />}
-              {showFirstRunCoach && <FirstRunCoach />}
+              {showFirstRunCoach && (
+                <FirstRunCoach
+                  forceTourOpen={firstRunCoachOpen}
+                  onTourClosed={() => setFirstRunCoachOpen(false)}
+                />
+              )}
             </>
           )}
           {/* Closed-state pull-tab to expand the right sidebar.

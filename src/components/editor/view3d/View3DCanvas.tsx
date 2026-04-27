@@ -339,7 +339,11 @@ export function View3DCanvas({
       )}
       {!renderInitError && !hasSceneObjects && (
         <div className="absolute inset-x-4 bottom-4 z-20 flex justify-center">
-          <div className="max-w-md rounded-md border border-slate-200 bg-white/92 px-4 py-3 text-center shadow-sm backdrop-blur-sm">
+          <div
+            role="status"
+            aria-live="polite"
+            className="max-w-md rounded-md border border-slate-200 bg-white/92 px-4 py-3 text-center shadow-sm backdrop-blur-sm"
+          >
             <p className="text-sm font-semibold text-slate-900">Nothing to review in 2.5D yet</p>
             <p className="mt-1 text-xs text-slate-600">
               Add walls, rooms, desks, or furniture in 2D, then switch back here for a spatial review.
@@ -349,7 +353,11 @@ export function View3DCanvas({
       )}
       {renderInitError && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/88 p-5 text-center">
-          <div className="max-w-md rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="max-w-md rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+          >
             <p className="text-sm font-semibold text-slate-900">2.5D renderer unavailable</p>
             <p className="mt-2 text-xs text-slate-600">{renderInitError}</p>
             {onRequestFallback2D && (
@@ -358,7 +366,7 @@ export function View3DCanvas({
                 onClick={onRequestFallback2D}
                 className="mt-3 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700"
               >
-                Back to 2D editor
+                Return to 2D editor
               </button>
             )}
           </div>

@@ -68,7 +68,6 @@ export function Toaster() {
   return (
     <div
       role="region"
-      aria-live="polite"
       aria-label="Notifications"
       className="pointer-events-none fixed bottom-4 right-4 z-50 flex max-w-sm flex-col gap-2"
       onMouseEnter={() => setPaused(true)}
@@ -105,6 +104,8 @@ function ToastRow({ item, paused, reduced, onDismiss, onPauseStart, onPauseEnd }
   const { tone, title, body, action } = item
   const visual = toneVisual[tone]
   const Icon = visual.icon
+  const announcementRole = tone === 'error' ? 'alert' : 'status'
+  const announcementLive = tone === 'error' ? 'assertive' : 'polite'
 
   // `entered` flips true immediately after mount so the Tailwind
   // transition picks up the transform/opacity change. `exiting` plays
@@ -217,7 +218,9 @@ function ToastRow({ item, paused, reduced, onDismiss, onPauseStart, onPauseEnd }
 
   return (
     <div
-      role="status"
+      role={announcementRole}
+      aria-live={announcementLive}
+      aria-atomic="true"
       data-testid="toast"
       data-tone={tone}
       data-reduced-motion={reduced ? 'true' : 'false'}

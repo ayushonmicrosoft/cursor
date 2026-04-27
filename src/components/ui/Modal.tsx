@@ -22,6 +22,22 @@ const SIZE_CLASS: Record<Size, string> = {
   lg: 'max-w-2xl',
 }
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',')
+
+function getFocusableElements(root: HTMLElement): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((el) => {
+    const style = window.getComputedStyle(el)
+    return style.display !== 'none' && style.visibility !== 'hidden'
+  })
+}
+
 export function Modal({
   open,
   onClose,
@@ -32,28 +48,69 @@ export function Modal({
   children,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement | null>(null)
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
   const fallbackTitleId = useId()
   const resolvedLabelledBy = ariaLabelledByProp ?? (title ? fallbackTitleId : undefined)
 
-  // Escape listener — only installed while the modal is open so we don't
-  // swallow keys from other layers when closed.
+  // Escape + Tab loop listener — only installed while the modal is open
+  // so we don't swallow keys from other layers when closed.
   useEffect(() => {
     if (!open) return
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         onClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+
+      const panel = panelRef.current
+      if (!panel) return
+      const focusable = getFocusableElements(panel)
+      if (focusable.length === 0) {
+        e.preventDefault()
+        panel.focus()
+        return
+      }
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const active = document.activeElement instanceof HTMLElement ? document.activeElement : null
+
+      if (!active || !panel.contains(active) || active === panel) {
+        e.preventDefault()
+        ;(e.shiftKey ? last : first).focus()
+        return
+      }
+      if (!e.shiftKey && active === last) {
+        e.preventDefault()
+        first.focus()
+        return
+      }
+      if (e.shiftKey && active === first) {
+        e.preventDefault()
+        last.focus()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  // Autofocus the panel on open so screen readers land inside the dialog
-  // and the Escape handler hears keypresses even when nothing else was
-  // focused beforehand.
+  // On open: remember current focus and move it into the dialog. On close:
+  // restore focus to the invoking control when it still exists.
   useEffect(() => {
     if (!open) return
-    panelRef.current?.focus()
+    previouslyFocusedRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+
+    const panel = panelRef.current
+    if (!panel) return
+    const focusable = getFocusableElements(panel)
+    ;(focusable[0] ?? panel).focus()
+
+    return () => {
+      const previous = previouslyFocusedRef.current
+      previouslyFocusedRef.current = null
+      if (previous && previous.isConnected) previous.focus()
+    }
   }, [open])
 
   if (!open) return null

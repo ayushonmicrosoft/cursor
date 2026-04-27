@@ -117,5 +117,6 @@ describe('ReportsPage', () => {
     mount()
     expect(screen.getByText(/nothing to report yet/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /go to roster/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to map/i })).toBeInTheDocument()
   })
 })

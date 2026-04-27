@@ -1,5 +1,13 @@
-import { useEffect, useMemo } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  AlertTriangle,
+  Clock3,
+  ExternalLink,
+  Link2Off,
+  RotateCcw,
+  ShieldCheck,
+} from 'lucide-react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   buildShareUrl,
   isEmbedMode,
@@ -17,68 +25,43 @@ import { CanvasFinder } from './CanvasFinder'
 import { CanvasActionDock } from './Canvas/CanvasActionDock'
 import { FloorSwitcher } from './FloorSwitcher'
 
+type ShareValidity = 'valid' | 'missing' | 'not-found' | 'revoked' | 'expired'
+
 /**
- * Public route `/share/:officeSlug?t=<token>` (Wave 7C). Validates the
- * share token via the client `shareLinksStore`; on success flips the
- * viewer's effective role to `shareViewer` (which grants only `viewMap`
- * and denies `viewPII` so every mutating surface and every PII cell stays
- * hidden) and renders the actual canvas-rendered floor plan.
+ * Public route `/share/:officeSlug?t=<token>`.
  *
- * Two layouts:
- *
- *   - Full mode (default): a header with the office name, floor switcher,
- *     a small "Read-only · expires …" badge, and an "Open in OandOcraft"
- *     link for authenticated viewers. Body is the live `<CanvasStage />`
- *     with `<StatusBar />`, `<Minimap />` (toggleable from the action
- *     dock), `<CanvasFinder />` (Cmd+F overlay) and `<CanvasActionDock />`.
- *
- *   - Embed mode (`?embed=1`): no header, no action dock, no minimap by
- *     default, no roster table. Just the canvas, an `EmbedStatusBar`
- *     (floor name + occupancy + a OandOcraft watermark), and a tiny
- *     "open in new tab" link pinned bottom-right. The whole thing is
- *     sized to fill the iframe (`fixed inset-0`).
- *
- * Edit-only chrome (toolbar, sidebars, undo/redo, properties panel,
- * ProjectShell-level modals) is structurally not mounted on this route —
- * we do not rely solely on `useCan` returning false. The CanvasStage
- * itself does gate its drag / transform / draw handlers on `useCan`
- * checks, so a `shareViewer` that lands here cannot mutate anything even
- * if a layer slipped through.
+ * This page is intentionally read-only. A valid token installs the
+ * synthetic `shareViewer` role so every downstream `useCan` gate denies
+ * writes and PII.
  */
 export function ShareView() {
   const { officeSlug } = useParams<{ officeSlug: string }>()
   const [searchParams] = useSearchParams()
   const token = parseShareToken(searchParams)
   const isEmbed = isEmbedMode(searchParams)
+  const [nowMs, setNowMs] = useState<number>(() => Date.now())
 
-  // Subscribe to `links` so the component re-renders when store contents
-  // change (e.g. a concurrent revoke); the derivation below reads the
-  // current snapshot via `isTokenValid`.
+  // Subscribe so concurrent revoke/expiry changes re-render this route.
   const links = useShareLinksStore((s) => s.links)
-  const isTokenValid = useShareLinksStore((s) => s.isTokenValid)
 
-  // Lookup the matching link record so the header can show an expiry
-  // timestamp. Cheap (the map is in the dozens at most) and re-runs only
-  // when `links` or `token` change.
   const matchedLink = useMemo(() => {
     if (!token) return null
-    return Object.values(links).find((l) => l.token === token) ?? null
+    return Object.values(links).find((link) => link.token === token) ?? null
   }, [links, token])
 
-  // Derive validity directly from the token + store instead of routing it
-  // through `useState` + an effect. That keeps the render pure and avoids
-  // the `set-state-in-effect` lint (per the codebase precedent in
-  // `AnnotationPopover`: compute on render, re-subscribe to inputs via the
-  // `links` selector so store updates re-run the derivation).
-  const validity: 'valid' | 'invalid' = useMemo(() => {
-    if (!token) return 'invalid'
-    return isTokenValid(token) ? 'valid' : 'invalid'
-  }, [token, isTokenValid])
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 15_000)
+    return () => clearInterval(id)
+  }, [])
 
-  // Install the `shareViewer` role on successful validation — every
-  // `useCan(...)` gate downstream then denies writes and PII. We also
-  // clear any lingering impersonation so an editor who follows their own
-  // share link still sees the redacted read-only shell.
+  const validity: ShareValidity = useMemo(() => {
+    if (!token) return 'missing'
+    if (!matchedLink) return 'not-found'
+    if (matchedLink.revokedAt) return 'revoked'
+    if (new Date(matchedLink.expiresAt).getTime() <= nowMs) return 'expired'
+    return 'valid'
+  }, [token, matchedLink, nowMs])
+
   useEffect(() => {
     if (validity !== 'valid') return
     const prev = useProjectStore.getState().currentOfficeRole
@@ -87,20 +70,13 @@ export function ShareView() {
       impersonatedRole: null,
     })
     return () => {
-      // Only restore the previous role if nobody else has overwritten it
-      // in the meantime (e.g. a concurrent ProjectShell load).
       if (useProjectStore.getState().currentOfficeRole === 'shareViewer') {
         useProjectStore.setState({ currentOfficeRole: prev })
       }
     }
   }, [validity])
 
-  // Embed mode defaults the minimap to off — iframes are usually narrow
-  // and the floating overview eats real estate that's better spent on
-  // the canvas. The user can re-enable from the (full-mode) action dock,
-  // but in embed mode we hide the dock too. We restore the previous
-  // visibility on unmount so navigating away from the share view doesn't
-  // leave the operator's editor with the minimap hidden.
+  // Embeds default the minimap off for a cleaner iframe footprint.
   useEffect(() => {
     if (validity !== 'valid' || !isEmbed) return
     const prev = useUIStore.getState().minimapVisible
@@ -110,12 +86,8 @@ export function ShareView() {
     }
   }, [validity, isEmbed])
 
-  if (validity === 'invalid') {
-    return (
-      <div className="p-6 text-sm" role="alert">
-        Link expired or invalid
-      </div>
-    )
+  if (validity !== 'valid') {
+    return <InvalidShareState validity={validity} isEmbed={isEmbed} />
   }
 
   const fullShareHref = buildShareUrl({
@@ -126,24 +98,29 @@ export function ShareView() {
   if (isEmbed) {
     return (
       <div
-        className="fixed inset-0 w-screen h-screen bg-gray-100 dark:bg-gray-800 overflow-hidden"
+        className="fixed inset-0 h-dvh w-screen overflow-hidden bg-gray-100 dark:bg-gray-900"
         data-testid="share-view-embed"
       >
         <CanvasStage />
         <CanvasFinder />
-        <EmbedStatusBar fullShareHref={fullShareHref} />
+        <EmbedStatusBar
+          fullShareHref={fullShareHref}
+          expiresAt={matchedLink?.expiresAt ?? null}
+          nowMs={nowMs}
+        />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-800/50">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-gray-50 dark:bg-gray-900/60">
       <ShareHeader
         officeName={officeSlug ?? ''}
         expiresAt={matchedLink?.expiresAt ?? null}
+        nowMs={nowMs}
       />
       <FloorSwitcher />
-      <div className="flex-1 relative bg-gray-100 dark:bg-gray-800 overflow-hidden">
+      <div className="relative flex-1 overflow-hidden bg-gray-100 dark:bg-gray-800">
         <CanvasStage />
         <StatusBar />
         <Minimap />
@@ -154,29 +131,21 @@ export function ShareView() {
   )
 }
 
-/**
- * Full-mode header. Renders the office name, a "Read-only · expires …"
- * badge, and (for authenticated viewers — we don't try to detect this
- * here, the link is just always shown) a discreet "Open in OandOcraft"
- * link that drops the embed flag if the user landed on the embed-mode
- * URL by mistake.
- *
- * Intentionally lightweight: no OandOcraftMark SVG, no avatar — the
- * shared map should look like the map, not like a marketing surface.
- */
 function ShareHeader({
   officeName,
   expiresAt,
+  nowMs,
 }: {
   officeName: string
   expiresAt: string | null
+  nowMs: number
 }) {
   return (
-    <header className="flex items-center gap-4 px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
-      <div className="flex items-center gap-2">
+    <header className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-3 py-2.5 dark:border-gray-800 dark:bg-gray-950 sm:px-6">
+      <div className="flex min-w-0 items-center gap-2">
         <span
           aria-hidden
-          className="inline-flex items-center justify-center w-6 h-6 rounded bg-indigo-600 text-white text-xs font-bold"
+          className="inline-flex h-6 w-6 items-center justify-center rounded bg-indigo-600 text-xs font-bold text-white"
         >
           F
         </span>
@@ -186,31 +155,35 @@ function ShareHeader({
         <span aria-hidden className="text-gray-300 dark:text-gray-700">
           /
         </span>
-        <span className="text-sm text-gray-600 dark:text-gray-300">
+        <span className="truncate text-sm text-gray-600 dark:text-gray-300">
           {officeName}
         </span>
       </div>
-      <span className="ml-auto text-[11px] text-gray-500 dark:text-gray-400">
-        Read-only
+      <div className="ml-auto flex items-center gap-2">
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+          <ShieldCheck size={12} aria-hidden="true" />
+          Read-only
+        </span>
         {expiresAt && (
-          <>
-            {' · '}
-            expires {formatRelativeFuture(expiresAt)}
-          </>
+          <span className="inline-flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+            <Clock3 size={12} aria-hidden="true" />
+            Expires {formatRelativeFuture(expiresAt, nowMs)}
+          </span>
         )}
-      </span>
+      </div>
     </header>
   )
 }
 
-/**
- * Embed-mode footer: a slim watermark bar pinned to the bottom of the
- * iframe so the host page knows where the visualization comes from. The
- * "open in new tab" affordance jumps the visitor to the full share URL
- * (without the embed flag) — useful when an iframe ends up too small to
- * be useful and the operator wants the full chrome.
- */
-function EmbedStatusBar({ fullShareHref }: { fullShareHref: string }) {
+function EmbedStatusBar({
+  fullShareHref,
+  expiresAt,
+  nowMs,
+}: {
+  fullShareHref: string
+  expiresAt: string | null
+  nowMs: number
+}) {
   const elements = useElementsStore((s) => s.elements)
   const floors = useFloorStore((s) => s.floors)
   const activeFloorId = useFloorStore((s) => s.activeFloorId)
@@ -222,43 +195,44 @@ function EmbedStatusBar({ fullShareHref }: { fullShareHref: string }) {
       role="status"
       aria-label="Embed status"
       data-testid="share-view-embed-status"
-      className="absolute bottom-0 left-0 right-0 h-7 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 flex items-center px-3 text-[11px] text-gray-500 dark:text-gray-400"
+      className="absolute bottom-0 left-0 right-0 flex h-8 items-center border-t border-gray-200 bg-white/95 px-3 text-[11px] text-gray-500 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 dark:text-gray-400"
     >
       <span className="font-medium text-gray-700 dark:text-gray-200">
         OandOcraft
       </span>
+      <span className="mx-2 text-gray-300 dark:text-gray-700">|</span>
+      <span className="font-medium">Read-only</span>
       {activeFloor && (
         <>
-          <span className="mx-2 text-gray-300 dark:text-gray-700">·</span>
+          <span className="mx-2 text-gray-300 dark:text-gray-700">|</span>
           <span>{activeFloor.name}</span>
         </>
       )}
-      <span className="mx-2 text-gray-300 dark:text-gray-700">·</span>
+      <span className="mx-2 text-gray-300 dark:text-gray-700">|</span>
       <span className="tabular-nums">
         {elementCount} element{elementCount === 1 ? '' : 's'}
       </span>
+      {expiresAt && (
+        <>
+          <span className="mx-2 text-gray-300 dark:text-gray-700">|</span>
+          <span>Expires {formatRelativeFuture(expiresAt, nowMs)}</span>
+        </>
+      )}
       <a
         href={fullShareHref}
         target="_blank"
         rel="noopener noreferrer"
-        className="ml-auto text-[10px] text-blue-600 dark:text-blue-300 hover:underline"
+        className="ml-auto inline-flex items-center gap-1 text-[10px] text-blue-600 hover:underline dark:text-blue-300"
       >
-        Open full view ↗
+        Open full view
+        <ExternalLink size={11} aria-hidden="true" />
       </a>
     </div>
   )
 }
 
-/**
- * Compact future-tense relative formatter for the expiry badge — same
- * idiom as `ShareLinkDialog`'s `formatDuration` but expressed as
- * "in 23h" / "in 2d". Returns "soon" if the timestamp has already
- * passed (we still rendered the header because validity uses a fresh
- * `Date.now()` check; the badge can lag by a few seconds without the
- * whole view tearing down).
- */
-function formatRelativeFuture(iso: string): string {
-  const ms = new Date(iso).getTime() - Date.now()
+function formatRelativeFuture(iso: string, nowMs: number): string {
+  const ms = new Date(iso).getTime() - nowMs
   if (ms <= 0) return 'soon'
   const s = Math.floor(ms / 1000)
   if (s < 60) return `in ${s}s`
@@ -268,4 +242,96 @@ function formatRelativeFuture(iso: string): string {
   if (h < 48) return `in ${h}h`
   const d = Math.floor(h / 24)
   return `in ${d}d`
+}
+
+function InvalidShareState({
+  validity,
+  isEmbed,
+}: {
+  validity: Exclude<ShareValidity, 'valid'>
+  isEmbed: boolean
+}) {
+  const content = (() => {
+    if (validity === 'missing') {
+      return {
+        title: 'Missing link token',
+        body: 'This URL is missing its share token. Use the full link from the office owner.',
+      }
+    }
+    if (validity === 'expired') {
+      return {
+        title: 'This link has expired',
+        body: 'Ask the office owner for a fresh read-only share link.',
+      }
+    }
+    if (validity === 'revoked') {
+      return {
+        title: 'This link has been revoked',
+        body: 'The owner has removed access for this public link.',
+      }
+    }
+    return {
+      title: 'This link is not valid',
+      body: 'Check for a typo or request a fresh share URL from the owner.',
+    }
+  })()
+
+  return (
+    <div
+      className={
+        isEmbed
+          ? 'flex h-dvh w-screen items-center justify-center bg-gray-100 p-4 dark:bg-gray-900'
+          : 'flex h-screen w-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900/60'
+      }
+      role="alert"
+      aria-live="assertive"
+    >
+      <div className="w-full max-w-lg rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-950">
+        <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          {validity === 'expired'
+            ? <Clock3 size={16} aria-hidden="true" />
+            : validity === 'revoked'
+              ? <Link2Off size={16} aria-hidden="true" />
+              : <AlertTriangle size={16} aria-hidden="true" />}
+        </div>
+        <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">{content.title}</h1>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{content.body}</p>
+        {!isEmbed ? (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus-visible:ring-offset-gray-900"
+            >
+              <RotateCcw size={14} aria-hidden="true" />
+              Reload link
+            </button>
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
+            >
+              Back to dashboard
+            </Link>
+            <Link
+              to="/"
+              className="inline-flex items-center rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              Back to home
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:focus-visible:ring-offset-gray-900"
+            >
+              <RotateCcw size={14} aria-hidden="true" />
+              Reload link
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }

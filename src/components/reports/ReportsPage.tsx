@@ -391,10 +391,16 @@ function EmptyState({
 }) {
   const rosterHref =
     teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/roster` : null
+  const mapHref =
+    teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/map` : null
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
       <div className="mx-auto max-w-6xl px-6 py-10">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-10 text-center">
+      <div
+        role="status"
+        aria-live="polite"
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-10 text-center"
+      >
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 mb-4">
           <Users size={22} aria-hidden="true" />
         </div>
@@ -405,14 +411,26 @@ function EmptyState({
           Import your roster and lay out a floor to unlock occupancy,
           utilisation and churn metrics.
         </p>
-        {rosterHref ? (
-          <Link
-            to={rosterHref}
-            className="inline-flex items-center gap-1.5 mt-4 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-          >
-            Go to roster
-          </Link>
-        ) : null}
+        {(rosterHref || mapHref) && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            {rosterHref ? (
+              <Link
+                to={rosterHref}
+                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              >
+                Go to roster
+              </Link>
+            ) : null}
+            {mapHref ? (
+              <Link
+                to={mapHref}
+                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              >
+                Back to map
+              </Link>
+            ) : null}
+          </div>
+        )}
       </div>
       </div>
     </div>

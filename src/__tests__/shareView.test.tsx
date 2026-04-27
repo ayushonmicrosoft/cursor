@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { ShareView } from '../components/editor/ShareView'
@@ -85,15 +85,32 @@ beforeEach(() => {
   useProjectStore.setState({ currentOfficeRole: null, impersonatedRole: null })
 })
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
 describe('ShareView', () => {
-  it('renders "Link expired or invalid" when the token is missing', () => {
+  it('renders a missing-token state when the token is missing', () => {
     mount('/share/hq')
-    expect(screen.getByText(/link expired or invalid/i)).toBeInTheDocument()
+    expect(screen.getByText(/missing link token/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reload link/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /back to dashboard/i })).toBeInTheDocument()
   })
 
-  it('renders "Link expired or invalid" when the token is unknown', () => {
+  it('renders an invalid-link state when the token is unknown', () => {
     mount('/share/hq?t=not-in-store')
-    expect(screen.getByText(/link expired or invalid/i)).toBeInTheDocument()
+    expect(screen.getByText(/this link is not valid/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reload link/i })).toBeInTheDocument()
+  })
+
+  it('renders an expired-link state when the token has timed out', () => {
+    vi.useFakeTimers()
+    const start = new Date('2026-01-01T00:00:00Z')
+    vi.setSystemTime(start)
+    const { link } = useShareLinksStore.getState().create('office-1', 30)
+    vi.setSystemTime(new Date(start.getTime() + 45_000))
+    mount(`/share/hq?t=${link.token}`)
+    expect(screen.getByText(/this link has expired/i)).toBeInTheDocument()
   })
 
   it('renders the canvas-rendered floor plan for a valid token', () => {

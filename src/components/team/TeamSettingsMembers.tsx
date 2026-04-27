@@ -656,7 +656,7 @@ export function TeamSettingsMembers({
               ))}
             </ul>
           ) : (
-            <div className="p-8 text-center">
+            <div role="status" aria-live="polite" className="p-8 text-center">
               <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
                 <UserPlus size={18} aria-hidden="true" />
               </div>
@@ -706,7 +706,7 @@ export function TeamSettingsMembers({
               ))}
               </ul>
             ) : (
-              <div className="p-8 text-center">
+              <div role="status" aria-live="polite" className="p-8 text-center">
                 <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                   <Mail size={18} aria-hidden="true" />
                 </div>

@@ -17,8 +17,8 @@ The target is a product experience that feels clear, polished, credible, and eas
 
 ## Current Completion Snapshot
 
-- Complete: phases 1-13, 15, and 16.
-- Still open: phases 14 and 17-20.
+- Complete: phases 1-13, 15, 16, 18, and 19.
+- Still open: phases 14, 17, and 20.
 - Phase checkboxes below remain the source of truth for item-level status.
 
 ## Current UI/UX Problems
@@ -464,14 +464,14 @@ Make shared views feel polished, intentional, and clearly read-only.
 
 ### Checklist
 
-- [ ] Review share modal first impression.
-- [ ] Review copy-link success feedback.
-- [ ] Review read-only public share page.
-- [ ] Review invalid link state.
-- [ ] Review expired link state.
-- [ ] Review embed mode.
-- [ ] Check external viewer on mobile.
-- [ ] Confirm edit controls are not visually suggested in read-only views.
+- [x] Review share modal first impression.
+- [x] Review copy-link success feedback.
+- [x] Review read-only public share page.
+- [x] Review invalid link state.
+- [x] Review expired link state.
+- [x] Review embed mode.
+- [x] Check external viewer on mobile.
+- [x] Confirm edit controls are not visually suggested in read-only views.
 
 ## Phase 15: Reports, Audit, Reservations, And Secondary Pages
 
@@ -575,17 +575,17 @@ Make the interface usable with keyboard, screen reader semantics, and visible fo
 
 ### Checklist
 
-- [ ] Keyboard-test landing.
-- [ ] Keyboard-test auth.
-- [ ] Keyboard-test dashboard.
-- [ ] Keyboard-test roster.
-- [ ] Keyboard-test editor top bar.
-- [ ] Keyboard-test modals.
-- [ ] Keyboard-test share page.
-- [ ] Check visible focus states.
-- [ ] Check icon accessible names.
-- [ ] Check color contrast.
-- [ ] Check status/toast announcements.
+- [x] Keyboard-test landing.
+- [x] Keyboard-test auth.
+- [x] Keyboard-test dashboard.
+- [x] Keyboard-test roster.
+- [x] Keyboard-test editor top bar.
+- [x] Keyboard-test modals.
+- [x] Keyboard-test share page.
+- [x] Check visible focus states.
+- [x] Check icon accessible names.
+- [x] Check color contrast.
+- [x] Check status/toast announcements.
 
 ## Phase 19: Error, Empty, And Recovery States
 
@@ -608,16 +608,16 @@ Make non-happy paths feel designed.
 
 ### Checklist
 
-- [ ] Empty dashboard state.
-- [ ] Empty roster filter state.
-- [ ] Empty reports state.
-- [ ] Empty audit state.
-- [ ] Empty settings/member state.
-- [ ] Invalid share state.
-- [ ] Route error state.
-- [ ] Editor error state.
-- [ ] 2.5D unavailable state.
-- [ ] Recovery action wording.
+- [x] Empty dashboard state.
+- [x] Empty roster filter state.
+- [x] Empty reports state.
+- [x] Empty audit state.
+- [x] Empty settings/member state.
+- [x] Invalid share state.
+- [x] Route error state.
+- [x] Editor error state.
+- [x] 2.5D unavailable state.
+- [x] Recovery action wording.
 
 ## Phase 20: QA Checklist
 
