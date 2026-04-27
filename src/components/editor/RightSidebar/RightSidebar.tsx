@@ -26,11 +26,11 @@ export function RightSidebar() {
     return critical + warning
   }, [insights])
 
-  const tabs: { id: TabId; label: string; icon: ReactNode }[] = [
-    { id: 'properties', label: 'Properties', icon: <Settings size={14} aria-hidden="true" /> },
-    { id: 'people', label: 'People', icon: <Users size={14} aria-hidden="true" /> },
-    { id: 'reports', label: 'Reports', icon: <BarChart3 size={14} aria-hidden="true" /> },
-    { id: 'insights', label: 'Insights', icon: <AlertTriangle size={14} aria-hidden="true" /> },
+  const tabs: { id: TabId; label: string; icon: ReactNode; secondary?: boolean }[] = [
+    { id: 'properties', label: 'Properties', icon: <Settings size={13} aria-hidden="true" /> },
+    { id: 'people', label: 'People', icon: <Users size={13} aria-hidden="true" />, secondary: true },
+    { id: 'reports', label: 'Reports', icon: <BarChart3 size={13} aria-hidden="true" />, secondary: true },
+    { id: 'insights', label: 'Insights', icon: <AlertTriangle size={13} aria-hidden="true" />, secondary: true },
   ]
 
   // Stable id prefix so each tab <-> panel pair can reference each other
@@ -68,7 +68,7 @@ export function RightSidebar() {
 
   return (
     <div className="flex flex-col h-full min-w-0">
-      <div className="flex items-stretch border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/50 backdrop-blur-sm">
+      <div className="flex items-stretch border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/90 backdrop-blur-sm">
         {/* Collapse handle lives at the leftmost slot of the tablist
             row so it reads as part of the side panel, not part of the
             top ribbon. The four content tabs follow to the right. */}
@@ -76,11 +76,19 @@ export function RightSidebar() {
         <div
           role="tablist"
           aria-label="Right sidebar"
-          className="flex flex-1 gap-1 px-1 py-1"
+          className="flex flex-1 gap-0.5 px-1 py-1"
           onKeyDown={onKeyDown}
         >
         {tabs.map((t) => {
           const selected = tab === t.id
+          const baseButtonClass =
+            'relative flex flex-1 items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset'
+          const selectedClass = t.secondary
+            ? 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-200'
+            : 'border-gray-300 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
+          const idleClass = t.secondary
+            ? 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/60'
+            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900/60'
           return (
             <button
               key={t.id}
@@ -94,16 +102,12 @@ export function RightSidebar() {
               aria-controls={panelId(t.id)}
               tabIndex={selected ? 0 : -1}
               onClick={() => setTab(t.id)}
-              className={`flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-colors relative flex items-center justify-center gap-1.5 ${
-                selected
-                  ? 'bg-[#f4efe8] text-[#1f3653] dark:bg-[#16263d] dark:text-[#d6c2a6] shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-900/60'
-              }`}
+              className={`${baseButtonClass} ${selected ? selectedClass : idleClass}`}
             >
               {t.icon}
-              <span>{t.label}</span>
+              <span className="truncate">{t.label}</span>
               {t.id === 'insights' && badgeCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-bold text-white bg-red-500 rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
                   {badgeCount}
                 </span>
               )}
@@ -116,7 +120,7 @@ export function RightSidebar() {
         role="tabpanel"
         id={panelId(tab)}
         aria-labelledby={tabId(tab)}
-        className="flex-1 overflow-y-auto p-3"
+        className="flex-1 overflow-y-auto p-2.5"
       >
         {tab === 'properties' && <PropertiesPanel />}
         {tab === 'people' && <PeoplePanel />}

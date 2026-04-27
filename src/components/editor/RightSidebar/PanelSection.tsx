@@ -76,21 +76,25 @@ export function PanelSection({
     .join(' ')
 
   const content = card ? (
-    <div className="rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900/40 p-3">
+    <div className="rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50 p-3">
       {children}
     </div>
   ) : (
     children
   )
 
+  const sectionClass = card
+    ? `flex flex-col gap-2 ${className ?? ''}`
+    : `flex flex-col gap-2 rounded-md border border-gray-200/80 bg-white/80 p-3 dark:border-gray-800 dark:bg-gray-950/40 ${className ?? ''}`
+
   return (
     <section
       aria-label={ariaLabel ?? title}
-      className={`flex flex-col gap-2 ${className ?? ''}`}
+      className={sectionClass}
     >
       <div className={headerClass}>
         <div className="flex flex-col min-w-0">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             {title}
           </h3>
           {subtitle && (

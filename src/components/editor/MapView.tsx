@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType } from 'react'
+import { useEffect, useRef, useState, type ComponentType } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { FloorSwitcher } from './FloorSwitcher'
 import { ToolSelector } from './LeftSidebar/ToolSelector'
@@ -58,6 +58,12 @@ interface ThreeDEntryProps {
  */
 export function MapView() {
   const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen)
+  const selectedIds = useUIStore((s) => s.selectedIds)
+  const rightSidebarTab = useUIStore((s) => s.rightSidebarTab)
+  const setRightSidebarOpen = useUIStore((s) => s.setRightSidebarOpen)
+  const setRightSidebarTab = useUIStore((s) => s.setRightSidebarTab)
+  const setDockableToolbarVisible = useUIStore((s) => s.setDockableToolbarVisible)
+  const activeWorkspacePreset = useUIStore((s) => s.activeWorkspacePreset)
   const presentationMode = useUIStore((s) => s.presentationMode)
   const viewMode = useUIStore((s) => s.viewMode)
   const setViewMode = useUIStore((s) => s.setViewMode)
@@ -76,7 +82,41 @@ export function MapView() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<ThreeDEntryProps> | null>(null)
   const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
+  const previousSelectionCountRef = useRef(selectedIds.length)
   const activeFloor = floors.find((f) => f.id === activeFloorId) ?? null
+  const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
+  const showFirstRunCoach = selectedIds.length === 0 && !rightSidebarOpen
+
+  useEffect(() => {
+    if (selectedIds.length === 0 && rightSidebarTab === 'properties') {
+      setRightSidebarOpen(false)
+    }
+
+    if (activeWorkspacePreset !== 'admin') {
+      try {
+        if (localStorage.getItem('oandocraft.toolbar-visibility') === null) {
+          setDockableToolbarVisible('admin-stats', false)
+        }
+      } catch {
+        setDockableToolbarVisible('admin-stats', false)
+      }
+    }
+    // First-load calm state only. Selection changes are handled below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const previousSelectionCount = previousSelectionCountRef.current
+    previousSelectionCountRef.current = selectedIds.length
+
+    if (previousSelectionCount === 0 && selectedIds.length > 0) {
+      if (rightSidebarTab === 'properties') {
+        setRightSidebarOpen(true)
+      } else if (!rightSidebarOpen) {
+        setRightSidebarTab('properties')
+      }
+    }
+  }, [rightSidebarOpen, rightSidebarTab, selectedIds.length, setRightSidebarOpen, setRightSidebarTab])
 
   useEffect(() => {
     const next: { showNorthArrow?: boolean; northRotation?: number } = {}
@@ -242,11 +282,11 @@ export function MapView() {
           library owned its own `overflow-y-auto` inside a `min-h-0`
           column, which clipped tiles when its siblings took more space.
         */}
-        <div className="w-[260px] flex-shrink-0 bg-gradient-to-b from-white to-[#f8f3ed] dark:from-gray-950 dark:to-[#0f1e32] border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-y-auto">
+        <div className="w-[260px] flex-shrink-0 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-y-auto">
           <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
             <ToolSelector />
           </CollapsibleSection>
-          <CollapsibleSection title="Layers" defaultOpen storageKey="layers">
+          <CollapsibleSection title="Layers" defaultOpen={false} storageKey="layers">
             <LayerVisibilityPanel />
           </CollapsibleSection>
           <CollapsibleSection title="Library" defaultOpen storageKey="library">
@@ -301,7 +341,7 @@ export function MapView() {
               <AdminStatsToolbar />
               <CanvasScaleBar />
               {showNorthArrow && <NorthArrow />}
-              <FirstRunCoach />
+              {showFirstRunCoach && <FirstRunCoach />}
             </>
           )}
           {/* Closed-state pull-tab to expand the right sidebar.
@@ -311,7 +351,11 @@ export function MapView() {
           {!rightSidebarOpen && <SidebarToggle variant="floating" />}
         </div>
         {rightSidebarOpen && (
-          <div className="w-[320px] flex-shrink-0 bg-gradient-to-b from-white to-[#f8f3ed] dark:from-gray-950 dark:to-[#0f1e32] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
+          <div
+            className={`flex-shrink-0 bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 overflow-y-auto transition-[width] duration-200 ${
+              emptyPropertiesState ? 'w-[272px]' : 'w-[320px]'
+            }`}
+          >
             <RightSidebar />
           </div>
         )}

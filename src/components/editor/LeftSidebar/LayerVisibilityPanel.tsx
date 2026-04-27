@@ -62,7 +62,10 @@ export function LayerVisibilityPanel() {
   }, [elements, neighborhoodCount])
 
   return (
-    <div className="p-3" aria-label="Layer visibility">
+    <div className="px-3 py-2" aria-label="Layer visibility">
+      <div className="mb-2 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+        Toggle canvas groups without changing individual element visibility.
+      </div>
       <div className="flex flex-col gap-0.5">
         {LAYER_CATEGORIES.map((cat) => {
           const isOn = visible[cat]
@@ -70,19 +73,19 @@ export function LayerVisibilityPanel() {
           return (
             <label
               key={cat}
-              className="flex items-center gap-2 px-2 py-1.5 rounded text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+              className="flex items-center gap-2 rounded px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/70 cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={isOn}
                 onChange={() => toggle(cat)}
                 aria-label={`Toggle ${CATEGORY_LABELS[cat]}`}
-                className="rounded"
+                className="h-3.5 w-3.5 rounded focus-visible:ring-2 focus-visible:ring-blue-500"
               />
               <span className={isOn ? '' : 'text-gray-400 dark:text-gray-500'}>
                 {CATEGORY_LABELS[cat]}
               </span>
-              <span className="ml-auto text-[11px] text-gray-400 dark:text-gray-500 font-mono">
+              <span className="ml-auto rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-gray-400 dark:bg-gray-900 dark:text-gray-500">
                 {count}
               </span>
             </label>
