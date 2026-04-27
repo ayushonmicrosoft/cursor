@@ -64,9 +64,9 @@ Execution status snapshot:
 
 ## Phase 8 - Hardening and release
 
-- [ ] Run `npm run lint`.
-- [ ] Run `npm run test`.
-- [ ] Run `npm run build`.
+- [x] Run `npm run lint`.
+- [x] Run `npm run test`.
+- [x] Run `npm run build`.
 - [ ] Complete release + rollback runbook checks.
 
 ## Archive policy

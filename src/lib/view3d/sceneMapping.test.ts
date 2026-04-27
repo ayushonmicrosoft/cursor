@@ -76,7 +76,7 @@ describe('mapFloorToView3DScene', () => {
       deskId: 'D-1',
       assignedEmployeeId: null,
       capacity: 1 as const,
-    }
+    } as CanvasElement
 
     const floor: Floor = {
       id: 'f1',
@@ -116,7 +116,7 @@ describe('mapFloorToView3DScene', () => {
       deskId: 'D-2',
       assignedEmployeeId: null,
       capacity: 1 as const,
-    }
+    } as CanvasElement
 
     const overrideResult = mapFloorToView3DScene(floor, { [desk.id]: desk })
     expect(overrideResult.instances).toHaveLength(1)
@@ -138,7 +138,7 @@ describe('mapFloorToView3DScene', () => {
         deskId: `D-${i}`,
         assignedEmployeeId: null,
         capacity: 1 as const,
-      }
+      } as CanvasElement
     }
 
     const result = mapFloorToView3DScene(floor, undefined, { maxInstances: 5 })
