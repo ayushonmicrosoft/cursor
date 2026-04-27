@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import {
   History,
   Armchair,
@@ -35,6 +35,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useUIStore } from '../../../stores/uiStore'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useEmployeeStore } from '../../../stores/employeeStore'
+import { useCanvasStore } from '../../../stores/canvasStore'
 import { useVisibleEmployees } from '../../../hooks/useVisibleEmployees'
 import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { NeighborhoodPropertiesPanel } from './NeighborhoodPropertiesPanel'
@@ -84,6 +85,7 @@ import type {
   FreeTextElement,
   WallType,
 } from '../../../types/elements'
+import type { LengthUnit } from '../../../lib/units'
 import { SEAT_STATUS_OVERRIDES, type SeatStatus } from '../../../types/seatAssignment'
 
 /**
@@ -175,6 +177,245 @@ const WALL_TYPE_LABELS: Record<WallType, string> = {
 const LABEL_CLASS = 'text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block'
 const INPUT_CLASS =
   'w-full text-sm border border-gray-200 dark:border-gray-800 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 disabled:bg-gray-50 disabled:text-gray-500 bg-white dark:bg-gray-900'
+
+const LENGTH_UNIT_ALIASES: Record<string, LengthUnit> = {
+  px: 'px',
+  pixel: 'px',
+  pixels: 'px',
+  in: 'in',
+  inch: 'in',
+  inches: 'in',
+  ft: 'ft',
+  foot: 'ft',
+  feet: 'ft',
+  cm: 'cm',
+  centimeter: 'cm',
+  centimeters: 'cm',
+  m: 'm',
+  meter: 'm',
+  meters: 'm',
+}
+
+const REAL_UNIT_IN_METERS: Record<Exclude<LengthUnit, 'px'>, number> = {
+  in: 0.0254,
+  ft: 0.3048,
+  cm: 0.01,
+  m: 1,
+}
+
+const DEGREE_UNIT_ALIASES = new Set(['deg', 'degree', 'degrees', '°'])
+
+type ParseResult =
+  | { kind: 'empty' }
+  | { kind: 'invalid'; message: string }
+  | { kind: 'valid'; value: number }
+
+function formatExactNumber(value: number): string {
+  const normalized = Object.is(value, -0) ? 0 : value
+  return `${normalized}`
+}
+
+function parseNumericToken(raw: string): { value: number; unit: string | null } | null {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+  const match = trimmed.match(/^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:\s*([a-zA-Z°]+))?$/)
+  if (!match) return null
+  const value = Number(match[1])
+  if (!Number.isFinite(value)) return null
+  return {
+    value,
+    unit: match[2]?.toLowerCase() ?? null,
+  }
+}
+
+function normalizeLengthUnit(unit: string | null): LengthUnit | null {
+  if (!unit) return null
+  return LENGTH_UNIT_ALIASES[unit] ?? null
+}
+
+function convertRealUnit(value: number, from: Exclude<LengthUnit, 'px'>, to: Exclude<LengthUnit, 'px'>) {
+  const inMeters = value * REAL_UNIT_IN_METERS[from]
+  return inMeters / REAL_UNIT_IN_METERS[to]
+}
+
+function parseLengthInput(
+  raw: string,
+  opts: {
+    scale: number
+    scaleUnit: LengthUnit
+    min?: number
+    max?: number
+  },
+): ParseResult {
+  const token = parseNumericToken(raw)
+  if (!token) return raw.trim() ? { kind: 'invalid', message: 'Enter a number.' } : { kind: 'empty' }
+
+  const parsedUnit = normalizeLengthUnit(token.unit)
+  if (token.unit && !parsedUnit) {
+    return { kind: 'invalid', message: 'Unsupported unit suffix.' }
+  }
+
+  let canvasValue = token.value
+  if (parsedUnit && parsedUnit !== 'px') {
+    if (opts.scaleUnit === 'px') {
+      return { kind: 'invalid', message: 'Calibrate scale before using real units.' }
+    }
+    if (!Number.isFinite(opts.scale) || opts.scale <= 0) {
+      return { kind: 'invalid', message: 'Scale must be greater than zero.' }
+    }
+    const inScaleUnit = convertRealUnit(
+      token.value,
+      parsedUnit,
+      opts.scaleUnit as Exclude<LengthUnit, 'px'>,
+    )
+    canvasValue = inScaleUnit / opts.scale
+  }
+
+  if (!Number.isFinite(canvasValue)) return { kind: 'invalid', message: 'Enter a finite number.' }
+  if (opts.min !== undefined && canvasValue < opts.min) {
+    return { kind: 'invalid', message: `Must be at least ${formatExactNumber(opts.min)}.` }
+  }
+  if (opts.max !== undefined && canvasValue > opts.max) {
+    return { kind: 'invalid', message: `Must be at most ${formatExactNumber(opts.max)}.` }
+  }
+  return { kind: 'valid', value: canvasValue }
+}
+
+function parseRotationInput(raw: string): ParseResult {
+  const token = parseNumericToken(raw)
+  if (!token) return raw.trim() ? { kind: 'invalid', message: 'Enter a number.' } : { kind: 'empty' }
+  if (token.unit && !DEGREE_UNIT_ALIASES.has(token.unit)) {
+    return { kind: 'invalid', message: 'Use degrees only (deg or °).' }
+  }
+  const normalized = ((token.value % 360) + 360) % 360
+  return { kind: 'valid', value: normalized }
+}
+
+function computeWallPathLength(points: number[]): number {
+  if (points.length < 4) return 0
+  let total = 0
+  for (let i = 0; i + 3 < points.length; i += 2) {
+    total += Math.hypot(points[i + 2] - points[i], points[i + 3] - points[i + 1])
+  }
+  return total
+}
+
+function scaleWallPointsToLength(points: number[], targetLength: number): number[] | null {
+  if (points.length < 4 || targetLength <= 0) return null
+  const currentLength = computeWallPathLength(points)
+  if (!Number.isFinite(currentLength) || currentLength <= 0) return null
+  const ratio = targetLength / currentLength
+  const x0 = points[0]
+  const y0 = points[1]
+  const next = points.slice()
+  for (let i = 2; i + 1 < next.length; i += 2) {
+    next[i] = x0 + (points[i] - x0) * ratio
+    next[i + 1] = y0 + (points[i + 1] - y0) * ratio
+  }
+  return next
+}
+
+function areClose(a: number, b: number) {
+  return Math.abs(a - b) < 1e-6
+}
+
+function ExactNumericInput({
+  value,
+  parse,
+  onValidValue,
+  disabled,
+  placeholder,
+  className,
+  inputMode,
+  min,
+  max,
+  step,
+  ariaLabel,
+  testId,
+}: {
+  value: string
+  parse: (raw: string) => ParseResult
+  onValidValue: (value: number) => void
+  disabled?: boolean
+  placeholder?: string
+  className?: string
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
+  min?: number
+  max?: number
+  step?: number | 'any'
+  ariaLabel?: string
+  testId?: string
+}) {
+  const id = useId()
+  const [draft, setDraft] = useState(value)
+  const [error, setError] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+
+  useEffect(() => {
+    if (isEditing) return
+    setDraft(value)
+    setError(null)
+  }, [isEditing, value])
+
+  const commit = () => {
+    const parsed = parse(draft)
+    if (parsed.kind === 'valid') {
+      onValidValue(parsed.value)
+      setDraft(formatExactNumber(parsed.value))
+      setError(null)
+      return
+    }
+    setDraft(value)
+    setError(null)
+  }
+
+  return (
+    <div>
+      <input
+        id={id}
+        type="text"
+        inputMode={inputMode}
+        className={`${className ?? INPUT_CLASS} ${error ? 'border-red-300 dark:border-red-700' : ''}`}
+        value={draft}
+        placeholder={placeholder}
+        disabled={disabled}
+        min={min}
+        max={max}
+        step={step}
+        aria-label={ariaLabel}
+        data-testid={testId}
+        onFocus={() => setIsEditing(true)}
+        onChange={(e) => {
+          const raw = e.target.value
+          setDraft(raw)
+          const parsed = parse(raw)
+          if (parsed.kind === 'valid') {
+            onValidValue(parsed.value)
+            setError(null)
+            return
+          }
+          setError(parsed.kind === 'invalid' ? parsed.message : null)
+        }}
+        onBlur={() => {
+          setIsEditing(false)
+          commit()
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            ;(e.currentTarget as HTMLInputElement).blur()
+          } else if (e.key === 'Escape') {
+            e.preventDefault()
+            setDraft(value)
+            setError(null)
+            ;(e.currentTarget as HTMLInputElement).blur()
+          }
+        }}
+      />
+      {error && <div className="text-xs text-red-600 dark:text-red-400 mt-0.5">{error}</div>}
+    </div>
+  )
+}
 
 /**
  * Section helper — thin wrapper around the shared `PanelSection` primitive
@@ -715,6 +956,8 @@ export function PropertiesPanel() {
   // call and violate rules-of-hooks on re-render.
   const canViewPII = useCan('viewPII')
   const canEditRoster = useCan('editRoster')
+  const scale = useCanvasStore((s) => s.settings.scale)
+  const scaleUnit = useCanvasStore((s) => s.settings.scaleUnit)
   const inputDisabled = !canEdit
   // Locally owned drawer target — the panel unmounts on selection change
   // (key'd by element id higher up), which cleans this up automatically.
@@ -767,23 +1010,33 @@ export function PropertiesPanel() {
     const sharedDisabled = inputDisabled || someLocked
 
     /**
-     * Return the shared rounded value when every selected element matches,
-     * or empty string when they diverge. We pair an empty value with a
-     * placeholder of "—" on the input — type="number" inputs reject the
-     * literal "—" string, so the placeholder is the only way to render
-     * the mixed-value sentinel for users.
+     * Return the shared value when every selected element matches, or an
+     * empty string when they diverge. Empty values render with the "—"
+     * placeholder to show mixed values.
      */
     const sharedNumber = (pick: (e: CanvasElement) => number): string => {
       if (selectedEls.length === 0) return ''
-      const v = Math.round(pick(selectedEls[0]))
-      const all = selectedEls.every((e) => Math.round(pick(e)) === v)
-      return all ? String(v) : ''
+      const v = pick(selectedEls[0])
+      const all = selectedEls.every((e) => areClose(pick(e), v))
+      return all ? formatExactNumber(v) : ''
     }
     const broadcastNumber = (key: 'x' | 'y' | 'width' | 'height' | 'rotation', raw: string) => {
       const n = Number(raw)
       if (!Number.isFinite(n)) return
       for (const id of selectedIds) updateElement(id, { [key]: n })
     }
+    const parseCanvasLength = (raw: string, min?: number, max?: number) =>
+      parseLengthInput(raw, { scale, scaleUnit, min, max })
+    const broadcastLength = (key: 'width' | 'height', value: number) => {
+      for (const id of selectedIds) updateElement(id, { [key]: value })
+    }
+    const broadcastRotation = (value: number) => {
+      for (const id of selectedIds) updateElement(id, { rotation: value })
+    }
+    const sharedWallLength =
+      allWalls && selectedEls.length > 0
+        ? sharedNumber((e) => computeWallPathLength((e as WallElement).points))
+        : ''
 
     const alignBtn = (label: string, onClick: () => void, Icon: typeof AlignHorizontalJustifyStart) => (
       <button
@@ -851,38 +1104,42 @@ export function PropertiesPanel() {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className={LABEL_CLASS}>Width</label>
-                <input
-                  type="number"
+                <ExactNumericInput
                   className={`${INPUT_CLASS} tabular-nums`}
                   value={sharedNumber((e) => e.width)}
                   placeholder="—"
                   disabled={sharedDisabled}
-                  onChange={(e) => broadcastNumber('width', e.target.value)}
+                  parse={(raw) => parseCanvasLength(raw)}
+                  onValidValue={(value) => broadcastLength('width', value)}
+                  inputMode="decimal"
+                  testId="properties-multi-width"
                 />
               </div>
               <div>
                 <label className={LABEL_CLASS}>Height</label>
-                <input
-                  type="number"
+                <ExactNumericInput
                   className={`${INPUT_CLASS} tabular-nums`}
                   value={sharedNumber((e) => e.height)}
                   placeholder="—"
                   disabled={sharedDisabled}
-                  onChange={(e) => broadcastNumber('height', e.target.value)}
+                  parse={(raw) => parseCanvasLength(raw)}
+                  onValidValue={(value) => broadcastLength('height', value)}
+                  inputMode="decimal"
+                  testId="properties-multi-height"
                 />
               </div>
             </div>
             <div>
               <label className={LABEL_CLASS}>Rotation</label>
-              <input
-                type="number"
+              <ExactNumericInput
                 className={`${INPUT_CLASS} tabular-nums`}
                 value={sharedNumber((e) => e.rotation)}
                 placeholder="—"
                 disabled={sharedDisabled}
-                min={0}
-                max={359}
-                onChange={(e) => broadcastNumber('rotation', e.target.value)}
+                parse={parseRotationInput}
+                onValidValue={broadcastRotation}
+                inputMode="decimal"
+                testId="properties-multi-rotation"
               />
             </div>
           </Section>
@@ -933,19 +1190,40 @@ export function PropertiesPanel() {
         {allWalls && firstWall && (
           <Section title="Wall details" subtitle="Same fields as single-select">
             <div>
-              <label className={LABEL_CLASS}>Thickness</label>
-              <input
-                type="number"
-                min={2}
-                max={20}
-                step={1}
+              <label className={LABEL_CLASS}>Length</label>
+              <ExactNumericInput
                 className={`${INPUT_CLASS} tabular-nums`}
-                value={firstWall.thickness}
+                value={sharedWallLength}
+                placeholder="—"
                 disabled={sharedDisabled}
-                onChange={(e) => {
-                  const t = Number(e.target.value)
-                  for (const id of selectedIds) updateElement(id, { thickness: t } as Partial<WallElement>)
+                parse={(raw) => parseCanvasLength(raw, 1)}
+                onValidValue={(targetLength) => {
+                  for (const id of selectedIds) {
+                    const wall = elements[id]
+                    if (!wall || !isWallElement(wall)) continue
+                    const nextPoints = scaleWallPointsToLength(wall.points, targetLength)
+                    if (!nextPoints) continue
+                    updateElement(id, { points: nextPoints } as Partial<WallElement>)
+                  }
                 }}
+                inputMode="decimal"
+                testId="properties-multi-wall-length"
+              />
+            </div>
+            <div>
+              <label className={LABEL_CLASS}>Thickness</label>
+              <ExactNumericInput
+                className={`${INPUT_CLASS} tabular-nums`}
+                value={formatExactNumber(firstWall.thickness)}
+                disabled={sharedDisabled}
+                parse={(raw) => parseCanvasLength(raw, 2, 20)}
+                onValidValue={(value) => {
+                  for (const id of selectedIds) {
+                    updateElement(id, { thickness: value } as Partial<WallElement>)
+                  }
+                }}
+                inputMode="decimal"
+                testId="properties-multi-wall-thickness"
               />
             </div>
             <div>
@@ -1042,6 +1320,9 @@ export function PropertiesPanel() {
   // suppressed. The "Unlock to edit" button at the top toggles `locked`.
   const lockedDisabled = inputDisabled || el.locked
   const identity = getElementIdentity(el)
+  const parseCanvasLength = (raw: string, min?: number, max?: number) =>
+    parseLengthInput(raw, { scale, scaleUnit, min, max })
+  const currentWallLength = isWallElement(el) ? computeWallPathLength(el.points) : null
 
   // Derive which "details" section to render after Appearance based on type.
   // Walls / tables / conference rooms / common areas have their own custom
@@ -1145,24 +1426,28 @@ export function PropertiesPanel() {
             <label className={`${LABEL_CLASS} inline-flex items-center gap-1`}>
               <Maximize2 size={10} aria-hidden="true" /> Width
             </label>
-            <input
-              type="number"
+            <ExactNumericInput
               className={`${INPUT_CLASS} tabular-nums`}
-              value={Math.round(el.width)}
+              value={formatExactNumber(el.width)}
               disabled={lockedDisabled}
-              onChange={(e) => update({ width: Number(e.target.value) })}
+              parse={(raw) => parseCanvasLength(raw)}
+              onValidValue={(value) => update({ width: value })}
+              inputMode="decimal"
+              testId="properties-layout-width"
             />
           </div>
           <div>
             <label className={`${LABEL_CLASS} inline-flex items-center gap-1`}>
               <Maximize2 size={10} aria-hidden="true" /> Height
             </label>
-            <input
-              type="number"
+            <ExactNumericInput
               className={`${INPUT_CLASS} tabular-nums`}
-              value={Math.round(el.height)}
+              value={formatExactNumber(el.height)}
               disabled={lockedDisabled}
-              onChange={(e) => update({ height: Number(e.target.value) })}
+              parse={(raw) => parseCanvasLength(raw)}
+              onValidValue={(value) => update({ height: value })}
+              inputMode="decimal"
+              testId="properties-layout-height"
             />
           </div>
         </div>
@@ -1171,14 +1456,14 @@ export function PropertiesPanel() {
           <label className={`${LABEL_CLASS} inline-flex items-center gap-1`}>
             <RotateCw size={10} aria-hidden="true" /> Rotation (°)
           </label>
-          <input
-            type="number"
+          <ExactNumericInput
             className={`${INPUT_CLASS} tabular-nums`}
-            value={Math.round(el.rotation)}
+            value={formatExactNumber(el.rotation)}
             disabled={lockedDisabled}
-            onChange={(e) => update({ rotation: Number(e.target.value) % 360 })}
-            min={0}
-            max={359}
+            parse={parseRotationInput}
+            onValidValue={(value) => update({ rotation: value })}
+            inputMode="decimal"
+            testId="properties-layout-rotation"
           />
         </div>
       </Section>
@@ -1263,16 +1548,31 @@ export function PropertiesPanel() {
       {isWallElement(el) && (
         <Section title="Wall details">
           <div>
-            <label className={LABEL_CLASS}>Thickness</label>
-            <input
-              type="number"
-              min={2}
-              max={20}
-              step={1}
+            <label className={LABEL_CLASS}>Length</label>
+            <ExactNumericInput
               className={`${INPUT_CLASS} tabular-nums`}
-              value={el.thickness}
+              value={formatExactNumber(currentWallLength ?? 0)}
               disabled={lockedDisabled}
-              onChange={(e) => update({ thickness: Number(e.target.value) } as Partial<WallElement>)}
+              parse={(raw) => parseCanvasLength(raw, 1)}
+              onValidValue={(targetLength) => {
+                const nextPoints = scaleWallPointsToLength(el.points, targetLength)
+                if (!nextPoints) return
+                update({ points: nextPoints } as Partial<WallElement>)
+              }}
+              inputMode="decimal"
+              testId="properties-wall-length"
+            />
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>Thickness</label>
+            <ExactNumericInput
+              className={`${INPUT_CLASS} tabular-nums`}
+              value={formatExactNumber(el.thickness)}
+              disabled={lockedDisabled}
+              parse={(raw) => parseCanvasLength(raw, 2, 20)}
+              onValidValue={(value) => update({ thickness: value } as Partial<WallElement>)}
+              inputMode="decimal"
+              testId="properties-wall-thickness"
             />
           </div>
           <div>
