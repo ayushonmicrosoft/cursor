@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import * as Tabs from '@radix-ui/react-tabs'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, Download } from 'lucide-react'
 import { useEmployeeStore } from '../../../stores/employeeStore'
 import { useFloorStore } from '../../../stores/floorStore'
 import { useElementsStore } from '../../../stores/elementsStore'
@@ -29,6 +31,7 @@ import { ScenarioCompareView } from './ScenarioCompareView'
 export function ScenariosPage() {
   const canView = useCan('viewReports')
   const canEdit = useCan('editRoster')
+  const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
 
   const scenarios = useScenariosStore((s) => s.scenarios)
   const activeId = useScenariosStore((s) => s.activeScenarioId)
@@ -90,6 +93,9 @@ export function ScenariosPage() {
     if (active) removeScenario(active.id)
   }, [active, removeScenario])
 
+  const reportsHref =
+    teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/reports` : null
+
   if (!canView) {
     return (
       <div className="p-6 text-gray-600 dark:text-gray-300">Not authorized to view scenarios.</div>
@@ -97,9 +103,42 @@ export function ScenariosPage() {
   }
 
   return (
-    <div className="flex h-full min-h-[600px]">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-10">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            {reportsHref && (
+              <Link
+                to={reportsHref}
+                className="mb-3 inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800/50"
+              >
+                <ArrowLeft size={14} aria-hidden="true" />
+                Back to reports
+              </Link>
+            )}
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Reports
+            </p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+              Capacity scenarios
+            </h1>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+              Model headcount and seat changes before committing changes to the live office plan.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => downloadScenariosCsv(scenarios)}
+            disabled={scenarios.length === 0}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800/50"
+          >
+            <Download size={14} aria-hidden="true" />
+            Download CSV
+          </button>
+        </header>
+    <div className="flex min-h-[600px] flex-col overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 lg:flex-row">
       {/* Sidebar — list of scenarios. */}
-      <aside className="w-64 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4 flex flex-col gap-3">
+      <aside className="border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/50 lg:w-64 lg:border-b-0 lg:border-r flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
             Scenarios
@@ -120,7 +159,7 @@ export function ScenariosPage() {
             No scenarios yet. {canEdit ? 'Create one to start planning.' : ''}
           </p>
         ) : (
-          <ul className="flex flex-col gap-1">
+          <ul className="flex max-h-56 flex-col gap-1 overflow-y-auto lg:max-h-none">
             {scenarios.map((s) => (
               <li key={s.id}>
                 <button
@@ -154,7 +193,7 @@ export function ScenariosPage() {
       </aside>
 
       {/* Main area — tabs for edit vs. compare. */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {active ? (
           <Tabs.Root
             value={tab}
@@ -200,6 +239,8 @@ export function ScenariosPage() {
         )}
       </div>
     </div>
+      </div>
+    </div>
   )
 }
 
@@ -218,4 +259,25 @@ function countByDepartment(employees: Record<string, Employee>): Record<string, 
     out[key] = (out[key] ?? 0) + 1
   }
   return out
+}
+
+function downloadScenariosCsv(scenarios: readonly { name: string; adjustments: readonly unknown[]; baseSnapshot: ScenarioBaseSnapshot }[]) {
+  const rows = [
+    ['scenario', 'active_employees', 'total_seats', 'assigned_seats', 'adjustments'],
+    ...scenarios.map((s) => [
+      s.name,
+      String(s.baseSnapshot.activeEmployees),
+      String(s.baseSnapshot.totalSeats),
+      String(s.baseSnapshot.assignedSeats),
+      String(s.adjustments.length),
+    ]),
+  ]
+  const csv = rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = 'capacity-scenarios.csv'
+  anchor.click()
+  URL.revokeObjectURL(url)
 }

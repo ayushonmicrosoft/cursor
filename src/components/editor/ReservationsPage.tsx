@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Calendar, Lock } from 'lucide-react'
+import { ArrowLeft, Calendar, Download, Lock, Search } from 'lucide-react'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useEmployeeStore } from '../../stores/employeeStore'
 import { useReservationsStore } from '../../stores/reservationsStore'
@@ -59,6 +59,7 @@ export function ReservationsPage() {
   const canEdit = canEditRoster || canEditMap
 
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('')
+  const [deskQuery, setDeskQuery] = useState('')
 
   const reservableDesks = useMemo(
     () =>
@@ -68,6 +69,14 @@ export function ReservationsPage() {
         .sort((a, b) => (a.label || a.deskId).localeCompare(b.label || b.deskId)),
     [elements],
   )
+
+  const filteredDesks = useMemo(() => {
+    const q = deskQuery.trim().toLowerCase()
+    if (!q) return reservableDesks
+    return reservableDesks.filter((desk) =>
+      `${desk.label ?? ''} ${desk.deskId}`.toLowerCase().includes(q),
+    )
+  }, [deskQuery, reservableDesks])
 
   const today = todayIso()
   const dates = useMemo(() => {
@@ -128,44 +137,62 @@ export function ReservationsPage() {
     <PageShell>
       <PageHeader mapHref={mapHref} />
 
-      {canEdit && (
-        // Filter row — currently a single employee picker, but the
-        // surrounding flex-wrap row is the natural place to grow more
-        // pills (date-range, floor) without the page chrome having to
-        // shift around.
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <label
-            htmlFor="res-emp-picker"
-            className="text-xs font-medium text-gray-600 dark:text-gray-300"
-          >
-            Reserve for
+      <div className="mt-6 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,320px)_auto] lg:items-end">
+          <label className="block">
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Desk search</span>
+            <div className="mt-1 flex items-center gap-2 rounded-md border border-gray-200 bg-white px-2 py-1.5 dark:border-gray-800 dark:bg-gray-950">
+              <Search size={14} className="text-gray-400" aria-hidden="true" />
+              <input
+                value={deskQuery}
+                onChange={(e) => setDeskQuery(e.target.value)}
+                placeholder="Search by desk label"
+                className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-gray-100"
+              />
+            </div>
           </label>
-          <select
-            id="res-emp-picker"
-            data-testid="reservations-employee-picker"
-            className="px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            value={selectedEmployeeId}
-            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+          {canEdit && (
+            <label className="block">
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Reserve for</span>
+              <select
+                id="res-emp-picker"
+                data-testid="reservations-employee-picker"
+                className="mt-1 w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded-md bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                value={selectedEmployeeId}
+                onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              >
+                <option value="">Pick an employee</option>
+                {employeeList.map((e) => {
+                  const vis = visibleEmployees[e.id]
+                  const label = vis ? vis.name : e.name
+                  return (
+                    <option key={e.id} value={e.id}>
+                      {label}
+                    </option>
+                  )
+                })}
+              </select>
+            </label>
+          )}
+          <button
+            type="button"
+            onClick={() => downloadReservationsCsv(reservableDesks, dates, byCell, visibleEmployees)}
+            disabled={reservableDesks.length === 0}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800/50"
           >
-            <option value="">— pick an employee —</option>
-            {employeeList.map((e) => {
-              const vis = visibleEmployees[e.id]
-              const label = vis ? vis.name : e.name
-              return (
-                <option key={e.id} value={e.id}>
-                  {label}
-                </option>
-              )
-            })}
-          </select>
-          <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
-            {DAYS}-day window
-          </span>
+            <Download size={14} aria-hidden="true" />
+            Export CSV
+          </button>
         </div>
-      )}
+        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+          {filteredDesks.length} of {reservableDesks.length} desks shown · {DAYS}-day window
+        </div>
+      </div>
 
       {reservableDesks.length === 0 ? (
         <EmptyState />
+      ) : filteredDesks.length === 0 ? (
+        <EmptyState title="No desks match that search" body="Clear the desk search to show all reservable desks in this office." />
       ) : (
         <section
           className="mt-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden"
@@ -196,7 +223,7 @@ export function ReservationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {reservableDesks.map((desk) => (
+                {filteredDesks.map((desk) => (
                   <tr
                     key={desk.id}
                     className="border-t border-gray-100 dark:border-gray-800"
@@ -277,7 +304,13 @@ function PageHeader({ mapHref }: { mapHref: string | null }) {
   )
 }
 
-function EmptyState() {
+function EmptyState({
+  title = 'No reservations',
+  body = 'No reservable desks right now. Every desk on this floor is either permanently assigned or decommissioned. Drop a hot desk on the map and it will show up here.',
+}: {
+  title?: string
+  body?: string
+}) {
   return (
     <div className="mt-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-10 text-center">
       <div
@@ -287,15 +320,40 @@ function EmptyState() {
         <Calendar size={22} />
       </div>
       <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-        No reservations
+        {title}
       </h2>
       <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-        No reservable desks right now. Every desk on this floor is either
-        permanently assigned or decommissioned. Drop a hot desk on the map
-        and it will show up here.
+        {body}
       </p>
     </div>
   )
+}
+
+function downloadReservationsCsv(
+  desks: Array<{ id: string; deskId: string; label?: string }>,
+  dates: string[],
+  byCell: Record<string, { employeeId: string }>,
+  visibleEmployees: Record<string, { name: string }>,
+) {
+  const rows = [['desk', 'date', 'employee']]
+  for (const desk of desks) {
+    for (const date of dates) {
+      const reservation = byCell[`${desk.id}|${date}`]
+      rows.push([
+        desk.label || desk.deskId,
+        date,
+        reservation ? visibleEmployees[reservation.employeeId]?.name ?? reservation.employeeId : '',
+      ])
+    }
+  }
+  const csv = rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = 'reservations.csv'
+  anchor.click()
+  URL.revokeObjectURL(url)
 }
 
 // Reserved for a future "viewer-without-permission" landing — currently

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BarChart2, Users } from 'lucide-react'
+import { BarChart2, Download, Users } from 'lucide-react'
 import { useFloorStore } from '../../stores/floorStore'
 import { useVisibleEmployees } from '../../hooks/useVisibleEmployees'
 import { useAllFloorElements } from '../../hooks/useActiveFloorElements'
@@ -115,7 +115,30 @@ export function ReportsPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+      <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            Reports
+          </p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+            Office reports
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+            Track occupancy, department headcount, open seating, and seat-change activity for this office.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => downloadCsv('office-summary.csv', summaryCsv(stats))}
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800/50"
+        >
+          <Download size={14} aria-hidden="true" />
+          Download summary
+        </button>
+      </header>
+
       {/* KPI strip. Matches the card idiom used by FileMenu and
           PropertiesPanel sections: white/gray-900 surface, gray border,
           tabular-nums for the big value so alignment stays tidy. */}
@@ -283,8 +306,21 @@ export function ReportsPage() {
           </Card>
         )}
       </div>
+      </div>
     </div>
   )
+}
+
+function summaryCsv(stats: ReturnType<typeof computeReportsStats>) {
+  return [
+    'metric,value',
+    `employees,${stats.totalEmployees}`,
+    `seats,${stats.totalSeats}`,
+    `occupancy_percent,${stats.occupancyPct}`,
+    `unassigned,${stats.unassigned}`,
+    `floors,${stats.floorCount}`,
+    `departments,${stats.departmentCount}`,
+  ].join('\n')
 }
 
 function StatStrip({
@@ -356,7 +392,8 @@ function EmptyState({
   const rosterHref =
     teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/roster` : null
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
+      <div className="mx-auto max-w-6xl px-6 py-10">
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-10 text-center">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 mb-4">
           <Users size={22} aria-hidden="true" />
@@ -377,6 +414,7 @@ function EmptyState({
           </Link>
         ) : null}
       </div>
+      </div>
     </div>
   )
 }
@@ -392,15 +430,17 @@ function Card({
 }) {
   return (
     <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
         <h2 className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
           {title}
         </h2>
         {onExport ? (
           <button
+            type="button"
             onClick={onExport}
-            className="text-xs px-2 py-1 border border-gray-200 dark:border-gray-800 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            className="inline-flex items-center gap-1.5 self-start text-xs px-2 py-1 border border-gray-200 dark:border-gray-800 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50"
           >
+            <Download size={13} aria-hidden="true" />
             Export CSV
           </button>
         ) : null}
