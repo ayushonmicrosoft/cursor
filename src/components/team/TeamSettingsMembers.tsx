@@ -9,6 +9,7 @@ import {
   removeMember,
   updateMemberRole,
 } from '../../lib/teams/teamRepository'
+import { humanizeError } from '../../lib/errorMessages'
 import { ConfirmDialog } from '../editor/ConfirmDialog'
 import { Button } from '../ui'
 import { InviteMemberModal } from './InviteMemberModal'
@@ -28,8 +29,7 @@ import { useToastStore } from '../../stores/toastStore'
  *   2. Members section: avatar + name/email + role badge + joined-date;
  *      rows expose a `...` menu for "Change role" / "Remove" gated by
  *      admin permission.
- *   3. Pending invites section (hidden entirely at zero): email + role
- *      badge + sent-ago text + status pill ("Waiting" / "Expired") +
+ *   3. Pending invites section: email + delivery detail, status + sent-ago text + status pill ("Waiting" / "Expired") +
  *      per-row actions (Copy link / Revoke).
  *
  * The legacy inline invite form + banner are preserved in spirit by
@@ -114,6 +114,28 @@ function RoleBadge({ role }: { role: TeamMember['role'] }) {
   )
 }
 
+function StatusBadge({
+  label,
+  tone = 'neutral',
+}: {
+  label: string
+  tone?: 'neutral' | 'success' | 'warning' | 'info'
+}) {
+  const toneClass =
+    tone === 'success'
+      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+      : tone === 'warning'
+        ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+        : tone === 'info'
+          ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${toneClass}`}>
+      {label}
+    </span>
+  )
+}
+
 function Avatar({ seed, label }: { seed: string; label: string }) {
   return (
     <div
@@ -137,12 +159,14 @@ function MemberRow({
   member,
   isAdmin,
   isSelf,
+  busy = false,
   onChangeRole,
   onRemove,
 }: {
   member: TeamMember
   isAdmin: boolean
   isSelf: boolean
+  busy?: boolean
   onChangeRole: (next: TeamMember['role']) => void
   onRemove: () => void
 }) {
@@ -172,39 +196,48 @@ function MemberRow({
 
   return (
     <li
-      className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40"
+      className="rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40"
     >
-      <Avatar seed={member.user_id} label={label} />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-          {label}
-          {isSelf && (
-            <span className="ml-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
-              (you)
-            </span>
-          )}
-        </div>
-        {secondary && (
-          <div className="truncate text-xs text-gray-500 dark:text-gray-400">
-            {secondary}
+      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_100px_80px_110px_auto] md:items-center">
+        <div className="min-w-0 flex items-center gap-3">
+          <Avatar seed={member.user_id} label={label} />
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+              {label}
+              {isSelf && (
+                <span className="ml-1.5 text-xs font-normal text-gray-500 dark:text-gray-400">
+                  (you)
+                </span>
+              )}
+            </div>
+            {secondary && (
+              <div className="truncate text-xs text-gray-500 dark:text-gray-400">
+                {secondary}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <div className="shrink-0 flex items-center gap-3">
-        <RoleBadge role={member.role} />
-        {member.joined_at && (
-          <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400 tabular-nums">
-            Joined {sentAgo(member.joined_at)}
-          </span>
-        )}
+        </div>
+        <div>
+          <RoleBadge role={member.role} />
+        </div>
+        <div>
+          <StatusBadge
+            label={isSelf ? 'You' : 'Active'}
+            tone={isSelf ? 'info' : 'success'}
+          />
+        </div>
+        <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+          {member.joined_at ? `Joined ${sentAgo(member.joined_at)}` : 'Joined --'}
+        </span>
         {canActOnRow ? (
-          <div className="relative" data-member-menu={member.user_id}>
+          <div className="relative justify-self-end" data-member-menu={member.user_id}>
             <button
               type="button"
               aria-label={`Actions for ${label}`}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
+              disabled={busy}
               className="p-1 rounded text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <MoreHorizontal size={16} aria-hidden="true" />
@@ -226,6 +259,7 @@ function MemberRow({
                   <Shield size={14} aria-hidden="true" />
                   {member.role === 'admin' ? 'Make member' : 'Make admin'}
                 </button>
+                <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
                 <button
                   role="menuitem"
                   type="button"
@@ -290,62 +324,68 @@ function InviteRow({
     <li
       className={
         expired
-          ? 'flex items-center gap-3 rounded-md px-3 py-2 opacity-60'
-          : 'flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40'
+          ? 'rounded-md px-3 py-2 opacity-60'
+          : 'rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40'
       }
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-        <Mail size={14} aria-hidden="true" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-          {invite.email}
+      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_100px_90px_auto] md:items-center">
+        <div className="min-w-0 flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            <Mail size={14} aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+              {invite.email}
+            </div>
+            <div className="truncate text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+              Sent {sentAgo(invite.created_at)}
+            </div>
+          </div>
         </div>
-        <div className="truncate text-xs text-gray-500 dark:text-gray-400 tabular-nums">
-          Sent {sentAgo(invite.created_at)}
+        <div>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Joins as member
+          </span>
         </div>
-      </div>
-      <div className="shrink-0 flex items-center gap-2">
-        {expired ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-            Expired
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-            Waiting
-          </span>
-        )}
-        {canAct && (
-          <>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={copy}
-              leftIcon={copied ? <Check size={12} aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
-            >
-              {copied ? 'Copied' : 'Copy link'}
-            </Button>
-            {!expired && (
+        <div>
+          <StatusBadge
+            label={expired ? 'Expired' : 'Waiting'}
+            tone={expired ? 'warning' : 'info'}
+          />
+        </div>
+        <div className="shrink-0 flex flex-wrap items-center gap-1.5 md:justify-end">
+          {canAct && (
+            <>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => onResend(invite)}
-                leftIcon={<RefreshCw size={12} aria-hidden="true" />}
+                onClick={copy}
+                leftIcon={copied ? <Check size={12} aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
               >
-                Resend
+                {copied ? 'Copied' : 'Copy link'}
               </Button>
-            )}
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onRevoke(invite)}
-              leftIcon={<Trash2 size={12} aria-hidden="true" />}
-              className="text-red-600 hover:text-red-700 dark:text-red-400"
-            >
-              Revoke
-            </Button>
-          </>
-        )}
+              {!expired && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onResend(invite)}
+                  leftIcon={<RefreshCw size={12} aria-hidden="true" />}
+                >
+                  Resend
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onRevoke(invite)}
+                leftIcon={<Trash2 size={12} aria-hidden="true" />}
+                className="border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/70 dark:text-red-400 dark:hover:bg-red-950/40"
+              >
+                Revoke
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </li>
   )
@@ -374,12 +414,15 @@ export function TeamSettingsMembers({
     selfIdProp ?? (session.status === 'authenticated' ? session.user.id : '')
   const [members, setMembers] = useState<TeamMember[]>([])
   const [invites, setInvites] = useState<Invite[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   // Target of the pending remove confirmation. `null` means no dialog is
   // open. Storing the full member (not just the id) lets the dialog body
   // show the email/name without re-querying the list.
   const [pendingRemove, setPendingRemove] = useState<TeamMember | null>(null)
   const [pendingRevoke, setPendingRevoke] = useState<Invite | null>(null)
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [actionBusy, setActionBusy] = useState<string | null>(null)
   // Wall-clock reference for the "expired" check on invite rows. We
   // own it here (and tick it once a minute) so the row renderers stay
   // pure — the `react-hooks/purity` rule forbids `Date.now()` in a
@@ -392,8 +435,17 @@ export function TeamSettingsMembers({
   const pushToast = useToastStore((s) => s.push)
 
   async function refresh() {
-    setMembers(await listTeamMembers(team.id))
-    setInvites(await listInvites(team.id))
+    setLoading(true)
+    setLoadError(null)
+    try {
+      setMembers(await listTeamMembers(team.id))
+      setInvites(await listInvites(team.id))
+    } catch (err) {
+      const message = humanizeError(err)
+      setLoadError(message)
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => {
     refresh()
@@ -417,14 +469,16 @@ export function TeamSettingsMembers({
   async function copyInviteLink(url: string) {
     try {
       await navigator.clipboard.writeText(url)
-      pushToast({ tone: 'success', title: 'Invite link copied' })
-    } catch {
-      // Clipboard may reject in insecure contexts; surface a visible
-      // fallback hint so the admin doesn't silently think it worked.
       pushToast({
-        tone: 'warning',
-        title: 'Copy failed',
-        body: 'Select the URL manually if clipboard access is blocked.',
+        tone: 'success',
+        title: 'Invite link copied',
+        body: 'Share the copied URL with your teammate.',
+      })
+    } catch (err) {
+      pushToast({
+        tone: 'error',
+        title: 'Copy invite link failed',
+        body: humanizeError(err),
       })
     }
   }
@@ -435,13 +489,59 @@ export function TeamSettingsMembers({
         body: { token: invite.token },
       })
       if (fnErr) throw new Error(fnErr.message ?? 'Failed to resend')
-      pushToast({ tone: 'success', title: `Invitation resent to ${invite.email}` })
+      pushToast({
+        tone: 'success',
+        title: 'Invitation resent',
+        body: `${invite.email} has a fresh email link.`,
+      })
     } catch (err) {
       pushToast({
-        tone: 'warning',
-        title: "Couldn't resend the email",
-        body: err instanceof Error ? err.message : 'Copy the invite link and share it manually.',
+        tone: 'error',
+        title: 'Resend invitation failed',
+        body: humanizeError(err),
       })
+    }
+  }
+
+  async function changeRole(member: TeamMember, next: TeamMember['role']) {
+    setActionBusy(`role:${member.user_id}`)
+    try {
+      await updateMemberRole(team.id, member.user_id, next)
+      pushToast({
+        tone: 'success',
+        title: 'Member role updated',
+        body: `${member.name ?? member.email ?? 'Member'} is now ${next === 'admin' ? 'an admin' : 'a member'}.`,
+      })
+      await refresh()
+    } catch (err) {
+      pushToast({
+        tone: 'error',
+        title: 'Role update failed',
+        body: humanizeError(err),
+      })
+    } finally {
+      setActionBusy(null)
+    }
+  }
+
+  async function confirmRemove(member: TeamMember) {
+    setActionBusy(`remove:${member.user_id}`)
+    try {
+      await removeMember(team.id, member.user_id)
+      pushToast({
+        tone: 'success',
+        title: 'Member removed',
+        body: `${member.name ?? member.email ?? 'Member'} no longer has team access.`,
+      })
+      await refresh()
+    } catch (err) {
+      pushToast({
+        tone: 'error',
+        title: 'Remove member failed',
+        body: humanizeError(err),
+      })
+    } finally {
+      setActionBusy(null)
     }
   }
 
@@ -449,20 +549,26 @@ export function TeamSettingsMembers({
     // Revoke = delete the invite row. RLS on `invites` gates this to
     // the inviter / team admin; failure surfaces as a toast rather
     // than tearing the UI down.
+    setActionBusy(`revoke:${invite.id}`)
     try {
       const { error } = await supabase
         .from('invites')
         .delete()
         .eq('id', invite.id)
       if (error) throw error
-      pushToast({ tone: 'success', title: `Invite to ${invite.email} revoked` })
+      pushToast({
+        tone: 'success',
+        title: 'Invite revoked',
+        body: `${invite.email} can no longer use this invite link.`,
+      })
     } catch (err) {
       pushToast({
         tone: 'error',
-        title: "Couldn't revoke invite",
-        body: err instanceof Error ? err.message : undefined,
+        title: 'Revoke invite failed',
+        body: humanizeError(err),
       })
     } finally {
+      setActionBusy(null)
       setPendingRevoke(null)
       await refresh()
     }
@@ -472,6 +578,21 @@ export function TeamSettingsMembers({
 
   return (
     <div className="space-y-6 text-sm">
+      {loadError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
+        >
+          <div className="font-medium">Couldn't load team members</div>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <span>{loadError}</span>
+            <Button size="sm" variant="ghost" onClick={() => void refresh()}>
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Top bar: stat chips on the left, primary invite CTA on the
           right. Keeps the "what is this page" summary + primary action
           visible at all times. */}
@@ -488,6 +609,14 @@ export function TeamSettingsMembers({
               </span>
             </>
           )}
+          {!loading && pendingCount === 0 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                no pending invites
+              </span>
+            </>
+          )}
         </div>
         {isAdmin && (
           <Button
@@ -499,6 +628,9 @@ export function TeamSettingsMembers({
           </Button>
         )}
       </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        Role changes apply immediately. Removing a member or revoking an invite requires confirmation.
+      </p>
 
       {/* Members section. */}
       <section aria-labelledby="members-heading" className="space-y-2">
@@ -517,10 +649,8 @@ export function TeamSettingsMembers({
                   member={m}
                   isAdmin={isAdmin}
                   isSelf={m.user_id === selfId}
-                  onChangeRole={async (next) => {
-                    await updateMemberRole(team.id, m.user_id, next)
-                    await refresh()
-                  }}
+                  busy={actionBusy === `role:${m.user_id}` || actionBusy === `remove:${m.user_id}`}
+                  onChangeRole={(next) => void changeRole(m, next)}
                   onRemove={() => setPendingRemove(m)}
                 />
               ))}
@@ -552,9 +682,8 @@ export function TeamSettingsMembers({
         </div>
       </section>
 
-      {/* Pending invites — hidden entirely when the list is empty. */}
-      {invites.length > 0 && (
-        <section aria-labelledby="invites-heading" className="space-y-2">
+      {/* Pending invites. */}
+      <section aria-labelledby="invites-heading" className="space-y-2">
           <h2
             id="invites-heading"
             className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400"
@@ -562,7 +691,8 @@ export function TeamSettingsMembers({
             Pending invites ({invites.length})
           </h2>
           <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/60">
-            <ul className="divide-y divide-gray-100 dark:divide-gray-800/60 p-1">
+            {invites.length > 0 ? (
+              <ul className="divide-y divide-gray-100 dark:divide-gray-800/60 p-1">
               {invites.map((inv) => (
                 <InviteRow
                   key={inv.id}
@@ -574,10 +704,33 @@ export function TeamSettingsMembers({
                   nowMs={nowMs}
                 />
               ))}
-            </ul>
+              </ul>
+            ) : (
+              <div className="p-8 text-center">
+                <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                  <Mail size={18} aria-hidden="true" />
+                </div>
+                <p className="mt-2 font-medium text-gray-900 dark:text-gray-100">
+                  No pending invites
+                </p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Sent invitations and manual share links will appear here until they are accepted or revoked.
+                </p>
+                {isAdmin && (
+                  <div className="mt-4">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setInviteOpen(true)}
+                      leftIcon={<UserPlus size={14} aria-hidden="true" />}
+                    >
+                      Create invite
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
-      )}
 
       {pendingRemove && (
         <ConfirmDialog
@@ -601,8 +754,7 @@ export function TeamSettingsMembers({
           onConfirm={async () => {
             const target = pendingRemove
             setPendingRemove(null)
-            await removeMember(team.id, target.user_id)
-            await refresh()
+            await confirmRemove(target)
           }}
           onCancel={() => setPendingRemove(null)}
         />

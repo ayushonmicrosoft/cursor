@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Building2 } from 'lucide-react'
+import { ArrowLeft, Building2, Settings2, Users2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useSession } from '../../lib/auth/session'
 import type { Team } from '../../types/team'
@@ -63,13 +63,13 @@ export function TeamSettingsPage() {
   // Active pill: white panel + shadow on light, elevated gray on dark —
   // matches the topbar MAP/ROSTER pills and the Wave 13C ReportsPage
   // tab idiom. Inactive pills are flat with a hover state.
-  const pillClass = ({ isActive }: { isActive: boolean }) =>
+  const tabClass = ({ isActive }: { isActive: boolean }) =>
     [
-      'inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+      'group rounded-lg border px-3 py-2 text-left transition-colors',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900',
       isActive
-        ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100'
-        : 'text-gray-600 hover:text-gray-900 hover:bg-white/60 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800/60',
+        ? 'border-blue-200 bg-white text-gray-900 shadow-sm dark:border-blue-900/60 dark:bg-gray-800 dark:text-gray-100'
+        : 'border-transparent text-gray-600 hover:border-gray-200 hover:bg-white/60 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800/60 dark:hover:text-gray-200',
     ].join(' ')
 
   return (
@@ -123,13 +123,25 @@ export function TeamSettingsPage() {
         <nav
           role="tablist"
           aria-label="Team settings"
-          className="inline-flex items-center gap-1 p-1 mb-6 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/60"
+          className="mb-6 grid gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2 sm:grid-cols-2 dark:border-gray-800 dark:bg-gray-900/60"
         >
-          <NavLink end to="." className={pillClass} role="tab">
-            General
+          <NavLink end to="." className={tabClass} role="tab">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Settings2 size={14} aria-hidden="true" />
+              <span>General</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Team identity and high-impact controls
+            </p>
           </NavLink>
-          <NavLink to="members" className={pillClass} role="tab">
-            Members
+          <NavLink to="members" className={tabClass} role="tab">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Users2 size={14} aria-hidden="true" />
+              <span>Members</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Roles, invites, and access changes
+            </p>
           </NavLink>
         </nav>
 

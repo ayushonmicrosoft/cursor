@@ -4,6 +4,7 @@ import { Copy, Check, Trash2 } from 'lucide-react'
 import type { Team } from '../../types/team'
 import { renameTeam, deleteTeam } from '../../lib/teams/teamRepository'
 import { humanizeError } from '../../lib/errorMessages'
+import { useToastStore } from '../../stores/toastStore'
 import { Button, Input } from '../ui'
 
 /**
@@ -37,6 +38,7 @@ export function TeamSettingsGeneral({ team, isAdmin }: { team: Team; isAdmin: bo
   const [confirmInput, setConfirmInput] = useState('')
   const [linkCopied, setLinkCopied] = useState(false)
   const navigate = useNavigate()
+  const pushToast = useToastStore((s) => s.push)
 
   const canConfirm =
     confirmInput.trim().toLowerCase() === team.name.trim().toLowerCase()
@@ -46,10 +48,22 @@ export function TeamSettingsGeneral({ team, isAdmin }: { team: Team; isAdmin: bo
     setError(null)
     try {
       await renameTeam(team.id, name)
+      pushToast({
+        tone: 'success',
+        title: 'Team settings updated',
+        body: 'Team name saved successfully.',
+      })
     } catch (e) {
-      setError(humanizeError(e))
+      const message = humanizeError(e)
+      setError(message)
+      pushToast({
+        tone: 'error',
+        title: 'Team settings update failed',
+        body: message,
+      })
+    } finally {
+      setBusy(false)
     }
-    setBusy(false)
   }
 
   async function onDeleteConfirmed() {
@@ -58,9 +72,20 @@ export function TeamSettingsGeneral({ team, isAdmin }: { team: Team; isAdmin: bo
     setError(null)
     try {
       await deleteTeam(team.id)
+      pushToast({
+        tone: 'success',
+        title: 'Team deleted',
+        body: 'Your team was removed successfully.',
+      })
       navigate('/dashboard', { replace: true })
     } catch (e) {
-      setError(humanizeError(e))
+      const message = humanizeError(e)
+      setError(message)
+      pushToast({
+        tone: 'error',
+        title: 'Team deletion failed',
+        body: message,
+      })
       setBusy(false)
     }
   }
@@ -82,9 +107,19 @@ export function TeamSettingsGeneral({ team, isAdmin }: { team: Team; isAdmin: bo
       await navigator.clipboard.writeText(url)
       setLinkCopied(true)
       window.setTimeout(() => setLinkCopied(false), 1800)
+      pushToast({
+        tone: 'success',
+        title: 'Team link copied',
+        body: 'Share this URL with teammates who already have accounts.',
+      })
     } catch {
       // Clipboard API can reject in insecure contexts; the URL is
       // visible in the input either way.
+      pushToast({
+        tone: 'warning',
+        title: 'Copy team link failed',
+        body: 'Select the team link manually and copy it from the field.',
+      })
     }
   }
 

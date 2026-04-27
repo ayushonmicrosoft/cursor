@@ -10,7 +10,7 @@ import { useToastStore } from '../../stores/toastStore'
  * Wave 17C: Extracted the invite form out of `TeamSettingsMembers` into
  * its own modal so it can be reused (empty-state CTA + top-bar button)
  * and because the form needed richer affordances than a single inline
- * row could carry without getting noisy — role selector, helper copy,
+ * row could carry without getting noisy — helper copy,
  * validation, spinner on submit, and a post-submit "email failed, copy
  * the link" fallback that stays in the same surface rather than
  * jump-cutting to a banner below.
@@ -25,8 +25,6 @@ import { useToastStore } from '../../stores/toastStore'
  * "share this link" surface with a one-click copy button, and leave
  * the Cancel/Done buttons in the footer.
  */
-
-type Role = 'admin' | 'member'
 
 interface InviteMemberModalProps {
   open: boolean
@@ -55,7 +53,6 @@ export function InviteMemberModal({
   onInvited,
 }: InviteMemberModalProps) {
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<Role>('member')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [screen, setScreen] = useState<Screen>({ kind: 'form' })
@@ -69,7 +66,6 @@ export function InviteMemberModal({
   useEffect(() => {
     if (open) {
       setEmail('')
-      setRole('member')
       setBusy(false)
       setError(null)
       setScreen({ kind: 'form' })
@@ -99,13 +95,6 @@ export function InviteMemberModal({
     setBusy(true)
     setError(null)
     try {
-      // NOTE: createInvite doesn't accept a role today; the schema only
-      // tracks team_members.role (admin | member) and invites don't
-      // carry a role column. The role selector in this modal is UI
-      // affordance for the eventual schema change — the value is
-      // effectively a no-op server-side, but the admin's intent is
-      // preserved in the shown role badge once the member joins.
-      void role
       const inv = await createInvite(teamId, trimmed, invitedBy)
       const url = `${window.location.origin}/invite/${inv.token}`
 
@@ -230,26 +219,12 @@ export function InviteMemberModal({
               </span>
             )}
           </label>
-          <label className="block">
-            <span className="block mb-1 text-gray-700 dark:text-gray-300">
-              Role
-            </span>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as Role)}
-              disabled={busy}
-              aria-label="Role"
-              className="w-full rounded border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:focus-visible:ring-offset-gray-900 disabled:opacity-50"
-            >
-              <option value="member">Member — can view and edit offices</option>
-              <option value="admin">Admin — can also manage team settings</option>
-            </select>
-          </label>
           <p className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
             <Mail size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
             <span>
-              Invitees get access to every office in this team. Links
-              expire after 7 days.
+              Invitees join as members with access to every office in this
+              team. Admins can promote them after they accept. Links expire
+              after 7 days.
             </span>
           </p>
           {error && (
