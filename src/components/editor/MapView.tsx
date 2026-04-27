@@ -22,10 +22,18 @@ import { AdminStatsToolbar } from './AdminStatsToolbar'
 import { useUIStore } from '../../stores/uiStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { useFloorStore } from '../../stores/floorStore'
+import { useElementsStore } from '../../stores/elementsStore'
 import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
 import { useToastStore } from '../../stores/toastStore'
 import { switchToFloor } from '../../lib/seatAssignment'
 import { focusOnElement } from '../../lib/canvasFocus'
+import type { CanvasElement } from '../../types/elements'
+import type { Floor } from '../../types/floor'
+
+interface ThreeDEntryProps {
+  floor: Floor | null
+  elements: Record<string, CanvasElement>
+}
 
 /**
  * Map (canvas) view. Rendered inside `ProjectShell`'s `<Outlet />`, so the
@@ -53,9 +61,13 @@ export function MapView() {
   // field set) keep the historical behaviour by treating undefined
   // as `true`.
   const showNorthArrow = useCanvasStore((s) => s.settings.showNorthArrow ?? true)
+  const activeFloorId = useFloorStore((s) => s.activeFloorId)
+  const floors = useFloorStore((s) => s.floors)
+  const elements = useElementsStore((s) => s.elements)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [ThreeDEntry, setThreeDEntry] = useState<ComponentType | null>(null)
+  const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<ThreeDEntryProps> | null>(null)
   const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
+  const activeFloor = floors.find((f) => f.id === activeFloorId) ?? null
 
   useEffect(() => {
     if (viewMode !== '2.5d' || ThreeDEntry || threeDLoadFailed) return
@@ -63,11 +75,11 @@ export function MapView() {
     ;(async () => {
       try {
         const mod = await import(
-          /* @vite-ignore */ '../../engine/threeD/MapView3DEntry'
+          /* @vite-ignore */ './view3d'
         )
         const entry =
-          (mod as { default?: ComponentType; MapView3DEntry?: ComponentType }).default ??
-          (mod as { MapView3DEntry?: ComponentType }).MapView3DEntry
+          (mod as { default?: ComponentType<ThreeDEntryProps>; View3DCanvas?: ComponentType<ThreeDEntryProps> }).default ??
+          (mod as { View3DCanvas?: ComponentType<ThreeDEntryProps> }).View3DCanvas
         if (active && entry) {
           setThreeDEntry(() => entry)
           setThreeDLoadFailed(false)
@@ -224,7 +236,7 @@ export function MapView() {
               data-testid="mapview-25d-panel"
             >
               {ThreeDEntry ? (
-                <ThreeDEntry />
+                <ThreeDEntry floor={activeFloor} elements={elements} />
               ) : (
                 <div className="max-w-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 p-5 shadow-sm">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
