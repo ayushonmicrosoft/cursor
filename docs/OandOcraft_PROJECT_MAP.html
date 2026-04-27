@@ -527,6 +527,130 @@
       line-height: 1.35;
     }
 
+    /* Polished master-document layer. These overrides keep the existing
+       structure stable while making the page feel more like a product-grade
+       control surface than a raw checklist. */
+    body {
+      background:
+        radial-gradient(circle at 8% 0%, rgba(167, 111, 43, 0.18), transparent 30rem),
+        radial-gradient(circle at 100% 12%, rgba(16, 35, 63, 0.12), transparent 28rem),
+        linear-gradient(135deg, rgba(16, 35, 63, 0.045) 0 25%, transparent 25% 50%, rgba(167, 111, 43, 0.055) 50% 75%, transparent 75%) 0 0 / 44px 44px,
+        #f4f1eb;
+    }
+
+    header {
+      background: rgba(255, 253, 247, 0.94);
+      border-bottom-color: rgba(16, 35, 63, 0.16);
+      box-shadow: 0 12px 34px rgba(16, 35, 63, 0.08);
+    }
+
+    .top {
+      grid-template-columns: minmax(0, 1fr) 390px;
+      padding-top: 18px;
+    }
+
+    h1 {
+      font-size: clamp(36px, 5vw, 68px);
+      line-height: 0.92;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .meta {
+      border-color: rgba(16, 35, 63, 0.15);
+      background: linear-gradient(180deg, #ffffff 0%, #fbf7ef 100%);
+      box-shadow: 0 10px 26px rgba(16, 35, 63, 0.08);
+    }
+
+    .tab,
+    .quick-actions button,
+    .card,
+    .fact,
+    .decision,
+    .lane,
+    .step,
+    label.todo,
+    .progress {
+      border-radius: 5px;
+    }
+
+    .tab {
+      font-weight: 800;
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .tab.active {
+      box-shadow: 0 8px 20px rgba(16, 35, 63, 0.16);
+    }
+
+    .quick-actions {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    .quick-actions button {
+      min-height: 58px;
+      padding: 9px 10px;
+      box-shadow: 0 5px 13px rgba(16, 35, 63, 0.05);
+    }
+
+    .card {
+      border-color: rgba(16, 35, 63, 0.14);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 10px 26px rgba(16, 35, 63, 0.07);
+    }
+
+    .card h2 {
+      background: linear-gradient(180deg, #ffffff 0%, #faf6ef 100%);
+      letter-spacing: -0.01em;
+    }
+
+    .fact,
+    .decision,
+    .lane,
+    .step {
+      background: #fff;
+      border-color: rgba(16, 35, 63, 0.14);
+    }
+
+    .lane h3 {
+      background: var(--navy);
+      color: #fff;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .archive-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .archive-item {
+      padding: 12px;
+      border: 1px solid rgba(16, 35, 63, 0.14);
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    .archive-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--navy);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .archive-item span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
     @media (max-width: 980px) {
       .top,
       .controls {
@@ -549,7 +673,8 @@
 
       .quick-actions,
       .decision-strip,
-      .workflow-board {
+      .workflow-board,
+      .archive-list {
         grid-template-columns: 1fr;
       }
     }
@@ -561,7 +686,7 @@
       <div class="top">
         <div>
           <h1>OandOcraft Master Document</h1>
-          <p class="subtitle">Single interactive source of truth for the O&O workplace planner: project details, plans, admin functions, repo state, runtime engine, Supabase schema, workflow, main-site integration, quality gates, and launch operations.</p>
+          <p class="subtitle">Single interactive source of truth for the O&O workplace planner: project details, active plans, archived plans, admin functions, repo state, runtime engine, Supabase schema, workflow, main-site integration, quality gates, launch operations, and safe Floor1 incorporation.</p>
         </div>
         <div class="meta">
           <div><strong>Document role:</strong> master project record</div>
@@ -569,6 +694,7 @@
           <div><strong>Model:</strong> bounded Vite SPA under main-site subpath</div>
           <div><strong>Scope:</strong> one O&O workspace with named access</div>
           <div><strong>Repo:</strong> ayushonmicrosoft/OandOcraft on `oando`</div>
+          <div><strong>Vite:</strong> `^8.0.4` declared, `8.0.10` installed</div>
           <div><strong>UI bar:</strong> SmartDraw-like, sharp, professional</div>
         </div>
       </div>
@@ -599,13 +725,15 @@
         <button class="tab" data-tab="integration">Integration</button>
         <button class="tab" data-tab="quality">Quality</button>
         <button class="tab" data-tab="ops">Ops</button>
+        <button class="tab" data-tab="archive">Archive</button>
       </nav>
       <div class="quick-actions" aria-label="Quick project jumps">
         <button data-jump-tab="workflow"><strong>Start</strong><span>workflow and docs</span></button>
         <button data-jump-tab="admin"><strong>Admin</strong><span>powers and HUD</span></button>
         <button data-jump-tab="ui" data-jump-search="compass"><strong>Fix UI</strong><span>compass and corners</span></button>
         <button data-jump-tab="schema"><strong>Schema</strong><span>tables and RLS</span></button>
-        <button data-jump-tab="engine"><strong>Engine</strong><span>runtime and routes</span></button>
+        <button data-jump-tab="engine" data-jump-search="Floor1"><strong>Floor1</strong><span>safe comparison</span></button>
+        <button data-jump-tab="archive"><strong>Archive</strong><span>completed plans</span></button>
         <button data-jump-tab="integration"><strong>Deploy</strong><span>main-site contract</span></button>
         <button data-jump-tab="quality"><strong>Launch</strong><span>risks and gates</span></button>
       </div>
@@ -637,6 +765,7 @@
             <button class="subtab" data-plan-tab="workflow">Workflow</button>
             <button class="subtab" data-plan-tab="integration">Main Site</button>
             <button class="subtab" data-plan-tab="blocks">Blocks</button>
+            <button class="subtab" data-plan-tab="archive">Archive</button>
           </div>
           <div class="plan-panel active" data-plan-panel="strategy">
             <p><code>OandOcraft_OVERHAUL_MASTER_PLAN.md</code> owns the full product, technical, UX, security, data, and launch strategy.</p>
@@ -655,6 +784,9 @@
           </div>
           <div class="plan-panel" data-plan-panel="blocks">
             <p><code>OandOcraft_BLOCK_LIBRARY_SOURCES.md</code> owns the manufacturer-reference plan: MillerKnoll, Steelcase, then BIMobject for gaps.</p>
+          </div>
+          <div class="plan-panel" data-plan-panel="archive">
+            <p><code>docs/archive/completed-plans/</code> stores completed plan and audit snapshots so active docs remain focused.</p>
           </div>
         </div>
       </article>
@@ -782,6 +914,23 @@
           <div class="fact"><strong>Data tools</strong><span>PapaParse CSV, jsPDF export, nanoid IDs, TanStack Virtual rosters.</span></div>
           <div class="fact"><strong>Testing</strong><span>Vitest, Testing Library, jsdom, Playwright for browser checks.</span></div>
           <div class="fact"><strong>Design target</strong><span>Light-first, sharper-corner, dense SmartDraw-like operational UI.</span></div>
+        </div>
+      </article>
+
+      <article class="card wide" data-tab="engine" data-phase="phase-4 phase-6" data-keywords="floor1 github upgrades vite three 3d admin ci dependabot next safe careful">
+        <h2>Floor1 Safe-Incorporation Policy</h2>
+        <div class="body">
+          <div class="pill-row">
+            <span class="pill done">reviewed</span>
+            <span class="pill">Vite 8</span>
+            <span class="pill">single agent</span>
+          </div>
+          <ul>
+            <li><strong>Take now:</strong> CI and Dependabot patterns, already present locally.</li>
+            <li><strong>Evaluate later:</strong> Floor1's 3D preview, but only as a lazy-loaded optional mode with build, route, and bundle checks.</li>
+            <li><strong>Do not copy as-is:</strong> Floor1's super-admin panel, because clear-map and self-promotion controls are unsafe without audited guardrails.</li>
+            <li><strong>No Vite major gap:</strong> this repo declares <code>vite ^8.0.4</code> and currently installs <code>8.0.10</code>; Floor1 declares the same major.</li>
+          </ul>
         </div>
       </article>
 
@@ -1046,7 +1195,23 @@
             <li><code>docs/OandOcraft_WORKFLOW.md</code> is the day-to-day implementation workflow.</li>
             <li><code>docs/OandOcraft_MAIN_SITE_INTEGRATION.md</code> is the deployment contract for the non-Vite main site.</li>
             <li><code>docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md</code> is the source plan for professional floor-plan objects.</li>
+            <li><code>docs/OandOcraft_ADMIN_RUNBOOK.md</code>, <code>docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md</code>, and <code>docs/OandOcraft_SECURITY_REVIEW.md</code> own admin and security operations.</li>
+            <li><code>docs/archive/completed-plans/</code> stores completed plan snapshots so active planning docs stay focused.</li>
           </ul>
+        </div>
+      </article>
+
+      <article class="card full" data-tab="archive" data-phase="phase-0 phase-1 phase-2 phase-3 phase-4 phase-5 phase-6" data-keywords="archive completed plans toolbar docking audit">
+        <h2>Archive</h2>
+        <div class="body archive-list">
+          <div class="archive-item">
+            <strong>Archive Index</strong>
+            <span><code>docs/archive/completed-plans/README.md</code> describes what belongs in archive versus active docs.</span>
+          </div>
+          <div class="archive-item">
+            <strong>Completed Audit</strong>
+            <span><code>docs/archive/completed-plans/OandOcraft_TOOLBAR_DOCKING_AUDIT.md</code> captures the toolbar docking completion snapshot.</span>
+          </div>
         </div>
       </article>
 

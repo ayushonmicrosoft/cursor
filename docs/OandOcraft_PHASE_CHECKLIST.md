@@ -20,7 +20,7 @@ Working docs:
 - `docs/OandOcraft_PROJECT_MAP.html`
 - `docs/OandOcraft_MAIN_SITE_INTEGRATION.md`
 - `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
-- `docs/OandOcraft_TOOLBAR_DOCKING_AUDIT.md`
+- `docs/archive/completed-plans/OandOcraft_TOOLBAR_DOCKING_AUDIT.md`
 - `docs/OandOcraft_RELEASE_RUNBOOK.md`
 - `docs/OandOcraft_ADMIN_RUNBOOK.md`
 - `docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`
