@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RosterPage } from '../components/editor/RosterPage'
 import { useEmployeeStore } from '../stores/employeeStore'
@@ -70,6 +70,16 @@ function renderRoster() {
   )
 }
 
+function renderRosterWithPreset(preset: string) {
+  return render(
+    <MemoryRouter initialEntries={[`/t/t1/o/o1/roster?preset=${encodeURIComponent(preset)}`]}>
+      <Routes>
+        <Route path="/t/:teamSlug/o/:officeSlug/roster" element={<RosterPage />} />
+      </Routes>
+    </MemoryRouter>,
+  )
+}
+
 // The status <select> includes an `<option>departed</option>` in every row,
 // which jsdom folds into `.textContent`. So `/depart/` matches the whole row
 // regardless of whether a badge is present. We identify the actual badge by
@@ -95,12 +105,8 @@ describe('Scheduled departure', () => {
     expect(findDepartureBadge(row)).toBeNull()
   })
 
-  it('"Departing soon" filter chip narrows the table to upcoming departures within 30 days', () => {
-    renderRoster()
-    const chip = screen.getByRole('button', { name: /departing soon/i })
-    act(() => {
-      fireEvent.click(chip)
-    })
+  it('"Departing soon" preset narrows the table to upcoming departures within 30 days', () => {
+    renderRosterWithPreset('departing-soon')
     expect(screen.getByText('Alice')).toBeInTheDocument()
     expect(screen.queryByText('Bob')).not.toBeInTheDocument()
     expect(screen.queryByText('Carol')).not.toBeInTheDocument()

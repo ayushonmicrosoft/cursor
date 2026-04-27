@@ -22,8 +22,8 @@ describe('TeamOnboardingPage', () => {
         </Routes>
       </MemoryRouter>,
     )
-    fireEvent.change(screen.getByLabelText(/team name/i), { target: { value: 'Acme' } })
-    fireEvent.click(screen.getByRole('button', { name: /create team/i }))
+    fireEvent.change(screen.getByLabelText(/workspace name/i), { target: { value: 'Acme' } })
+    fireEvent.click(screen.getByRole('button', { name: /create workspace/i }))
     // `createTeam` now derives the creator from `auth.uid()` inside the
     // SECURITY DEFINER RPC, so the client no longer passes a user id.
     await waitFor(() => expect(createTeam).toHaveBeenCalledWith('Acme'))

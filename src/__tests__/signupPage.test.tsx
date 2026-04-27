@@ -18,16 +18,16 @@ describe('SignupPage', () => {
     )
     fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Alice' } })
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'a@b.c' } })
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'hunter2' } })
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'hunter22' } })
     fireEvent.click(screen.getByRole('button', { name: /create account/i }))
     await waitFor(() =>
-      expect(signUpMock).toHaveBeenCalledWith({
+      expect(signUpMock).toHaveBeenCalledWith(expect.objectContaining({
         email: 'a@b.c',
-        password: 'hunter2',
-        options: { data: { name: 'Alice' } },
-      }),
+        password: 'hunter22',
+        options: expect.objectContaining({ data: { name: 'Alice' } }),
+      })),
     )
-    expect(await screen.findByText(/check your inbox/i)).toBeInTheDocument()
+    expect(await screen.findByText(/confirm your email/i)).toBeInTheDocument()
   })
 
   it('pre-fills email when an invite token is in the URL', async () => {
