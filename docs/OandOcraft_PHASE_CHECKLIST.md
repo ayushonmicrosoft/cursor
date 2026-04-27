@@ -1,4 +1,4 @@
-# OandOcraft Phase Checklist
+﻿# OandOcraft Phase Checklist
 
 Owner model: single-agent execution only. Do not split work across multiple agents unless this document is explicitly changed.
 
@@ -14,13 +14,12 @@ Status key:
 
 Working docs:
 
-- `docs/OandOcraft_OVERHAUL_MASTER_PLAN.md`
-- `docs/OandOcraft_WORKFLOW.md`
+- `docs/OandOcraft_OVERHAUL_MASTER_PLAN.md` (authoritative roadmap)
+- `docs/OandOcraft_PHASE_CHECKLIST.md` (execution checklist)
 - `docs/OandOcraft_PROJECT_CHECKLIST.md`
 - `docs/OandOcraft_PROJECT_MAP.html`
 - `docs/OandOcraft_MAIN_SITE_INTEGRATION.md`
 - `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
-- `docs/archive/completed-plans/OandOcraft_TOOLBAR_DOCKING_AUDIT.md`
 - `docs/OandOcraft_RELEASE_RUNBOOK.md`
 - `docs/OandOcraft_ADMIN_RUNBOOK.md`
 - `docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`
