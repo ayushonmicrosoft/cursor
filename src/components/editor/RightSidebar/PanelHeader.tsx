@@ -60,19 +60,19 @@ export function PanelHeader({
   return (
     <div
       data-testid="panel-header"
-      className={`flex items-start justify-between gap-2 pb-2.5 border-b border-gray-200 dark:border-gray-800 mb-3 ${
+      className={`mb-3 flex min-w-0 items-start justify-between gap-2 border-b border-gray-200 pb-2.5 dark:border-gray-800 ${
         className ?? ''
       }`}
     >
-      <div className="flex flex-col min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 items-center gap-2">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
             {title}
           </h2>
           {typeof count === 'number' && (
             <span
               data-testid="panel-header-count"
-              className="px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900 text-[10px] font-medium text-gray-600 dark:text-gray-300 tabular-nums flex-shrink-0"
+              className="flex-shrink-0 rounded-full border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200"
             >
               {count}
             </span>
@@ -84,7 +84,7 @@ export function PanelHeader({
           </div>
         )}
       </div>
-      {actions && <div className="flex items-center gap-1 flex-shrink-0">{actions}</div>}
+      {actions && <div className="flex flex-shrink-0 items-center gap-1">{actions}</div>}
     </div>
   )
 }

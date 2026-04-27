@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { MonitorSmartphone, X } from 'lucide-react'
 
 const DISMISS_KEY = 'narrowScreenBannerDismissed'
-const NARROW_BREAKPOINT_PX = 1024
+export const MIN_EDITOR_LAYOUT_WIDTH_PX = 1180
+const NARROW_BREAKPOINT_PX = MIN_EDITOR_LAYOUT_WIDTH_PX
 
 function readInitialDismissed(): boolean {
   try {
@@ -19,10 +20,10 @@ function readInitialNarrow(): boolean {
 }
 
 /**
- * Warns map-view users whose viewport is narrower than `lg` (<1024px).
- * The editor is desktop-only — sidebars crowd the canvas below this
- * threshold. The banner offers a one-click link to the roster view
- * (which IS usable on narrow screens) plus a dismiss X that sticks
+ * Warns map-view users when the viewport is below the minimum supported
+ * editing width. The banner makes it explicit that mobile users can still
+ * inspect sample offices on the map while full editing remains desktop-first.
+ * It also offers a one-click roster link plus a dismiss X that sticks
  * per-device via localStorage.
  *
  * Route-gated: the roster itself doesn't need the warning, so we only
@@ -62,11 +63,14 @@ export function NarrowScreenBanner() {
     <div
       className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 text-amber-900 text-sm px-4 py-2 flex items-center gap-3"
       role="status"
+      data-editor-min-width={MIN_EDITOR_LAYOUT_WIDTH_PX}
     >
       <MonitorSmartphone size={16} className="flex-shrink-0" />
-      <span className="flex-1">The editor works best on a larger screen.</span>
+      <span className="flex-1 min-w-0">
+        You can inspect sample offices on mobile, but full editing works best above {MIN_EDITOR_LAYOUT_WIDTH_PX}px.
+      </span>
       <Link to="../roster" className="font-medium underline hover:no-underline">
-        Open roster →
+        Open roster
       </Link>
       <button
         type="button"

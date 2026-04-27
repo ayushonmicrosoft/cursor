@@ -85,19 +85,19 @@ export function AdminStatsToolbar() {
         />
       </div>
       <div className="grid grid-cols-2 gap-2 border-t border-gray-200/80 px-3 py-2 dark:border-gray-800/80">
-        <div className="flex items-center justify-between rounded border border-gray-200/80 bg-gradient-to-r from-white to-[#f4efe8] px-3 py-2 text-xs dark:border-gray-800 dark:from-gray-900 dark:to-[#1b2940]">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <Cloud size={14} aria-hidden="true" />
-            <span className="font-medium uppercase tracking-[0.18em] text-[10px]">Save state</span>
+        <div className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs dark:border-gray-800 dark:bg-gray-900">
+          <div className="flex min-w-0 items-center gap-2 text-gray-600 dark:text-gray-300">
+            <Cloud size={14} aria-hidden="true" className="flex-shrink-0" />
+            <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em]">Save state</span>
           </div>
-          <span className="font-semibold capitalize text-gray-900 dark:text-gray-100">{saveState}</span>
+          <span className="flex-shrink-0 font-semibold capitalize text-gray-900 dark:text-gray-100">{saveState}</span>
         </div>
-        <div className="flex items-center justify-between rounded border border-gray-200/80 bg-white px-3 py-2 text-xs dark:border-gray-800 dark:bg-gray-900">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-            <Database size={14} aria-hidden="true" />
-            <span className="font-medium uppercase tracking-[0.18em] text-[10px]">Payload</span>
+        <div className="flex min-w-0 items-center justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs dark:border-gray-800 dark:bg-gray-900">
+          <div className="flex min-w-0 items-center gap-2 text-gray-600 dark:text-gray-300">
+            <Database size={14} aria-hidden="true" className="flex-shrink-0" />
+            <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em]">Payload</span>
           </div>
-          <span className="font-semibold text-gray-900 dark:text-gray-100">{stats.payloadKb} KB</span>
+          <span className="flex-shrink-0 font-semibold text-gray-900 dark:text-gray-100">{stats.payloadKb} KB</span>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2 border-t border-gray-200/80 px-3 py-2 dark:border-gray-800/80">
@@ -124,9 +124,9 @@ export function AdminStatsToolbar() {
         />
       </div>
       <div className="border-t border-gray-200/80 px-3 py-2 dark:border-gray-800/80">
-        <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
-          <Activity size={13} aria-hidden="true" />
-          <span>Admin-only HUD. Use Recover for force-save/history restore, Audit for event drilldowns, and Conflicts for recovery triage.</span>
+        <div className="flex items-start gap-2 text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+          <Activity size={13} aria-hidden="true" className="mt-0.5 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+          <span className="min-w-0 break-words">Admin-only HUD. Use Recover for force-save/history restore, Audit for event drilldowns, and Conflicts for recovery triage.</span>
         </div>
       </div>
     </DockableToolbar>
@@ -151,13 +151,13 @@ function AdminActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="group rounded border border-gray-200/80 bg-white px-3 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#9b7b55] hover:bg-[#fbf7f0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9b7b55] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-[#b69a77] dark:hover:bg-[#12233a]"
+      className="group min-w-0 rounded-md border border-gray-200 bg-white px-3 py-2 text-left shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-45 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 dark:hover:bg-gray-800/70"
     >
-      <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
-        <Icon size={13} aria-hidden="true" className="text-[#7f6a52]" />
-        {label}
+      <span className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600 dark:text-gray-300">
+        <Icon size={13} aria-hidden="true" className="flex-shrink-0 text-gray-500 dark:text-gray-400" />
+        <span className="truncate">{label}</span>
       </span>
-      <span className="mt-1 block text-[11px] text-gray-500 dark:text-gray-400">{detail}</span>
+      <span className="mt-1 block truncate text-[11px] text-gray-500 dark:text-gray-400">{detail}</span>
     </button>
   )
 }
@@ -176,17 +176,17 @@ function StatCard({
   accentClass?: string
 }) {
   return (
-    <div className={`rounded border border-gray-200/80 bg-gradient-to-br from-white to-[#f7f2ec] p-3 shadow-sm dark:border-gray-800 dark:from-gray-900 dark:to-[#12233a] ${accentClass ?? ''}`}>
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+    <div className={`min-w-0 rounded-md border border-gray-200 bg-white p-3 shadow-sm dark:border-gray-800 dark:bg-gray-900 ${accentClass ?? ''}`}>
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-600 dark:text-gray-300">
           {label}
         </span>
-        <Icon size={14} aria-hidden="true" className="text-[#7f6a52]" />
+        <Icon size={14} aria-hidden="true" className="flex-shrink-0 text-gray-500 dark:text-gray-400" />
       </div>
-      <div className="mt-2 text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+      <div className="mt-2 truncate text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
         {value}
       </div>
-      <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">{detail}</div>
+      <div className="mt-1 truncate text-[11px] text-gray-500 dark:text-gray-400">{detail}</div>
     </div>
   )
 }

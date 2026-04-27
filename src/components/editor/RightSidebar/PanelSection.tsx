@@ -67,7 +67,7 @@ export function PanelSection({
   ariaLabel,
 }: PanelSectionProps) {
   const headerClass = [
-    'flex items-center justify-between gap-2',
+    'flex min-w-0 items-center justify-between gap-2',
     sticky
       ? 'sticky top-0 z-[1] -mx-3 px-3 py-1.5 bg-white/95 dark:bg-gray-950/95 backdrop-blur'
       : '',
@@ -76,7 +76,7 @@ export function PanelSection({
     .join(' ')
 
   const content = card ? (
-    <div className="rounded-md border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/50 p-3">
+    <div className="rounded-md border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
       {children}
     </div>
   ) : (
@@ -85,7 +85,7 @@ export function PanelSection({
 
   const sectionClass = card
     ? `flex flex-col gap-2 ${className ?? ''}`
-    : `flex flex-col gap-2 rounded-md border border-gray-200/80 bg-white/80 p-3 dark:border-gray-800 dark:bg-gray-950/40 ${className ?? ''}`
+    : `flex min-w-0 flex-col gap-2 rounded-md border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900 ${className ?? ''}`
 
   return (
     <section
@@ -93,17 +93,17 @@ export function PanelSection({
       className={sectionClass}
     >
       <div className={headerClass}>
-        <div className="flex flex-col min-w-0">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <div className="flex min-w-0 flex-col">
+          <h3 className="truncate text-[11px] font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 normal-case tracking-normal font-normal mt-0.5">
+            <p className="mt-0.5 truncate text-[11px] font-normal normal-case tracking-normal text-gray-500 dark:text-gray-400">
               {subtitle}
             </p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-1 flex-shrink-0">{actions}</div>}
+        {actions && <div className="flex flex-shrink-0 items-center gap-1">{actions}</div>}
       </div>
       {content}
     </section>

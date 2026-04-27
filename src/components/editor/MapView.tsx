@@ -19,6 +19,7 @@ import { AlignDistributeToolbar } from './Canvas/AlignDistributeToolbar'
 import { ElementHoverCard } from './Canvas/ElementHoverCard'
 import { FirstRunCoach } from './FirstRunCoach'
 import { AdminStatsToolbar } from './AdminStatsToolbar'
+import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 import { useUIStore } from '../../stores/uiStore'
 import {
   normalizeNorthArrowVisibility,
@@ -38,6 +39,13 @@ interface ThreeDEntryProps {
   floor: Floor | null
   elements: Record<string, CanvasElement>
   onRequestFallback2D?: () => void
+}
+
+const CANVAS_INSPECTION_MIN_WIDTH_PX = 375
+
+function readViewportWidth(): number {
+  if (typeof window === 'undefined') return MIN_EDITOR_LAYOUT_WIDTH_PX
+  return window.innerWidth
 }
 
 /**
@@ -80,10 +88,14 @@ export function MapView() {
   const floors = useFloorStore((s) => s.floors)
   const elements = useElementsStore((s) => s.elements)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [viewportWidth, setViewportWidth] = useState(() => readViewportWidth())
   const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<ThreeDEntryProps> | null>(null)
   const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
   const previousSelectionCountRef = useRef(selectedIds.length)
+  const collapsedSidebarForCompactRef = useRef(false)
+  const wasCompactEditorRef = useRef(viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX)
   const activeFloor = floors.find((f) => f.id === activeFloorId) ?? null
+  const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
   const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
   const showFirstRunCoach = selectedIds.length === 0 && !rightSidebarOpen
 
@@ -104,6 +116,28 @@ export function MapView() {
     // First-load calm state only. Selection changes are handled below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    const onResize = () => {
+      setViewportWidth(window.innerWidth)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    const wasCompactEditor = wasCompactEditorRef.current
+
+    if (isCompactEditor && rightSidebarOpen && (!wasCompactEditor || !collapsedSidebarForCompactRef.current)) {
+      collapsedSidebarForCompactRef.current = true
+      setRightSidebarOpen(false)
+    } else if (!isCompactEditor && wasCompactEditor && collapsedSidebarForCompactRef.current) {
+      collapsedSidebarForCompactRef.current = false
+      setRightSidebarOpen(true)
+    }
+
+    wasCompactEditorRef.current = isCompactEditor
+  }, [isCompactEditor, rightSidebarOpen, setRightSidebarOpen])
 
   useEffect(() => {
     const previousSelectionCount = previousSelectionCountRef.current
@@ -272,7 +306,12 @@ export function MapView() {
   return (
     <>
       <FloorSwitcher />
-      <div className="flex flex-1 min-w-0 overflow-hidden">
+      <div className="flex flex-1 min-w-0 overflow-x-auto overflow-y-hidden">
+        <div
+          className="flex min-w-0 flex-1 overflow-hidden"
+          style={{ minWidth: `${CANVAS_INSPECTION_MIN_WIDTH_PX}px` }}
+          data-editor-min-width={CANVAS_INSPECTION_MIN_WIDTH_PX}
+        >
         {/*
           The sidebar scrolls as a single unit. ToolSelector +
           LayerVisibilityPanel + ElementLibrary stack at their natural
@@ -282,24 +321,29 @@ export function MapView() {
           library owned its own `overflow-y-auto` inside a `min-h-0`
           column, which clipped tiles when its siblings took more space.
         */}
-        <div className="w-[260px] flex-shrink-0 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-y-auto">
-          <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
-            <ToolSelector />
-          </CollapsibleSection>
-          <CollapsibleSection title="Layers" defaultOpen={false} storageKey="layers">
-            <LayerVisibilityPanel />
-          </CollapsibleSection>
-          <CollapsibleSection title="Library" defaultOpen storageKey="library">
-            <ElementLibrary />
-          </CollapsibleSection>
-        </div>
+        {!isCompactEditor && (
+          <div
+            className="flex w-[260px] flex-shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
+            data-testid="mapview-left-sidebar"
+          >
+            <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
+              <ToolSelector />
+            </CollapsibleSection>
+            <CollapsibleSection title="Layers" defaultOpen={false} storageKey="layers">
+              <LayerVisibilityPanel />
+            </CollapsibleSection>
+            <CollapsibleSection title="Library" defaultOpen storageKey="library">
+              <ElementLibrary />
+            </CollapsibleSection>
+          </div>
+        )}
         <div
-          className="flex-1 min-w-0 relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.95),_rgba(244,239,232,0.9)_40%,_rgba(226,232,240,0.82)_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(20,31,50,0.98),_rgba(11,22,40,0.96)_45%,_rgba(3,7,18,0.98)_100%)]"
+          className="relative min-w-0 flex-1 overflow-hidden bg-slate-100 dark:bg-gray-950"
           data-canvas-toolbar-host
         >
           {viewMode === '2.5d' ? (
             <div
-              className="absolute inset-0 z-10 flex items-center justify-center p-6 text-center bg-white/85 dark:bg-gray-950/85"
+              className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 p-6 text-center dark:bg-gray-950/90"
               data-testid="mapview-25d-panel"
             >
               {ThreeDEntry ? (
@@ -309,7 +353,7 @@ export function MapView() {
                   onRequestFallback2D={() => setViewMode('2d')}
                 />
               ) : (
-                <div className="max-w-lg rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/80 p-5 shadow-sm">
+                <div className="max-w-lg rounded-md border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     2.5D preview is starting
                   </p>
@@ -322,7 +366,7 @@ export function MapView() {
                     <button
                       type="button"
                       onClick={() => setViewMode('2d')}
-                      className="mt-3 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+                      className="mt-3 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
                     >
                       Return to 2D editor
                     </button>
@@ -349,16 +393,28 @@ export function MapView() {
               the control belongs to the panel it controls. Only
               renders when the panel is hidden. */}
           {!rightSidebarOpen && <SidebarToggle variant="floating" />}
+          {rightSidebarOpen && isCompactEditor && (
+            <div
+              className={`absolute inset-y-0 right-0 z-20 overflow-y-auto border-l border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-950 ${
+                emptyPropertiesState ? 'w-[min(272px,85vw)]' : 'w-[min(320px,85vw)]'
+              }`}
+              data-testid="mapview-right-sidebar-overlay"
+            >
+              <RightSidebar />
+            </div>
+          )}
         </div>
-        {rightSidebarOpen && (
+        {rightSidebarOpen && !isCompactEditor && (
           <div
-            className={`flex-shrink-0 bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 overflow-y-auto transition-[width] duration-200 ${
+            className={`flex-shrink-0 overflow-y-auto border-l border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-950 ${
               emptyPropertiesState ? 'w-[272px]' : 'w-[320px]'
             }`}
+            data-testid="mapview-right-sidebar-docked"
           >
             <RightSidebar />
           </div>
         )}
+      </div>
       </div>
     </>
   )

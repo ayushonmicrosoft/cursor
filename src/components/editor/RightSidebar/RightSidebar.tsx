@@ -68,7 +68,7 @@ export function RightSidebar() {
 
   return (
     <div className="flex flex-col h-full min-w-0">
-      <div className="flex items-stretch border-b border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-gray-950/90 backdrop-blur-sm">
+      <div className="flex items-stretch border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
         {/* Collapse handle lives at the leftmost slot of the tablist
             row so it reads as part of the side panel, not part of the
             top ribbon. The four content tabs follow to the right. */}
@@ -82,13 +82,13 @@ export function RightSidebar() {
         {tabs.map((t) => {
           const selected = tab === t.id
           const baseButtonClass =
-            'relative flex flex-1 items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset'
+            'relative flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset'
           const selectedClass = t.secondary
-            ? 'border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-900/70 dark:text-gray-200'
-            : 'border-gray-300 bg-white text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
+            ? 'border-gray-300 bg-gray-100 text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
+            : 'border-gray-300 bg-gray-100 text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
           const idleClass = t.secondary
-            ? 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900/60'
-            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900/60'
+            ? 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-900/70 dark:hover:text-gray-200'
+            : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-900/70 dark:hover:text-gray-200'
           return (
             <button
               key={t.id}
@@ -104,7 +104,7 @@ export function RightSidebar() {
               onClick={() => setTab(t.id)}
               className={`${baseButtonClass} ${selected ? selectedClass : idleClass}`}
             >
-              {t.icon}
+              <span className="flex-shrink-0">{t.icon}</span>
               <span className="truncate">{t.label}</span>
               {t.id === 'insights' && badgeCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
@@ -120,7 +120,7 @@ export function RightSidebar() {
         role="tabpanel"
         id={panelId(tab)}
         aria-labelledby={tabId(tab)}
-        className="flex-1 overflow-y-auto p-2.5"
+        className="flex-1 overflow-y-auto bg-gray-50/60 p-2.5 dark:bg-gray-950"
       >
         {tab === 'properties' && <PropertiesPanel />}
         {tab === 'people' && <PeoplePanel />}

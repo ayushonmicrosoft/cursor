@@ -321,7 +321,7 @@ export function FloorSwitcher() {
 
   return (
     <div
-      className="h-10 min-w-0 overflow-hidden bg-gradient-to-r from-white via-[#f8f3ed] to-white dark:from-gray-950 dark:via-[#0f1e32] dark:to-gray-950 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3"
+      className="flex h-10 min-w-0 items-center gap-3 overflow-hidden border-b border-gray-200 bg-white px-4 dark:border-gray-800 dark:bg-gray-950"
       data-fixed-toolbar="floor-switcher"
       data-fixed-toolbar-reason="Office identity and floor tabs are route/navigation chrome, not canvas tools."
     >
@@ -338,7 +338,7 @@ export function FloorSwitcher() {
           <input
             ref={officeNameInputRef}
             aria-label="Rename office"
-            className="text-sm font-semibold px-2 py-1 border border-blue-400 rounded outline-none bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-blue-500 max-w-[220px]"
+            className="max-w-[220px] rounded-md border border-gray-300 bg-white px-2 py-1 text-sm font-semibold text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
             value={officeNameValue}
             onChange={(e) => setOfficeNameValue(e.target.value)}
             onBlur={handleOfficeRenameSubmit}
@@ -365,11 +365,11 @@ export function FloorSwitcher() {
           the office switcher and the Add-Floor button on the right.
           The tablist itself keeps its left-to-right ordering and
           all of its existing roving/drag behaviour. */}
-      <div className="flex-1 flex justify-center min-w-0 overflow-x-auto">
+      <div className="flex min-w-0 flex-1 justify-center overflow-x-auto">
       <div
         role="tablist"
         aria-label="Floors"
-        className="flex items-center gap-1"
+        className="flex min-w-0 items-center gap-1"
         onKeyDown={onTablistKeyDown}
         aria-dropeffect={draggingFloorId ? 'move' : undefined}
       >
@@ -393,7 +393,7 @@ export function FloorSwitcher() {
               <input
                 ref={renameInputRef}
                 aria-label={`Rename floor ${floor.name}`}
-                className="px-3 py-1.5 text-sm font-medium rounded-t border border-blue-400 outline-none w-28"
+                className="w-28 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
                 onBlur={handleRenameSubmit}
@@ -411,10 +411,10 @@ export function FloorSwitcher() {
                 draggable={canEdit}
                 onDragStart={(e) => handleDragStart(e, floor.id)}
                 onDragEnd={handleDragEnd}
-                className={`px-3 py-1.5 text-sm font-medium rounded-t cursor-pointer transition-colors ${
+                className={`max-w-[150px] cursor-pointer truncate rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                   floor.id === activeFloorId
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 bg-blue-50 dark:bg-blue-950/40'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    ? 'border-gray-300 bg-gray-100 text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-600 hover:border-gray-200 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:border-gray-800 dark:hover:bg-gray-900/70 dark:hover:text-gray-100'
                 } ${draggingFloorId === floor.id ? 'opacity-50' : ''}`}
                 onClick={() => handleSwitchFloor(floor.id)}
                 onContextMenu={(e) => handleContextMenu(e, floor.id)}
@@ -440,16 +440,16 @@ export function FloorSwitcher() {
           Add-Floor sits in a flex-shrink-0 cluster so it always
           renders at the row's right edge, balancing the left-side
           office switcher. */}
-      <div className="flex-shrink-0 flex items-center gap-1">
+      <div className="flex flex-shrink-0 items-center gap-1">
         {canEdit && (
           <button
             type="button"
             onClick={handleAddFloor}
             aria-label="Add floor"
-            className="flex items-center gap-1 px-2 py-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            className="flex items-center gap-1 rounded-md border border-transparent px-2 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-gray-50 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:border-gray-800 dark:hover:bg-gray-900/70 dark:hover:text-gray-100"
           >
             <Plus size={14} aria-hidden="true" />
-            <span>Add Floor</span>
+            <span className="whitespace-nowrap">Add Floor</span>
           </button>
         )}
       </div>
@@ -457,24 +457,24 @@ export function FloorSwitcher() {
       {contextMenuFloorId && canEdit && (
         <div
           ref={contextMenuRef}
-          className="fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-1 z-50 min-w-[120px]"
+          className="fixed z-50 min-w-[120px] rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-800 dark:bg-gray-900"
           style={{ left: contextMenuPos.x, top: contextMenuPos.y }}
         >
           <button
-            className="w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 dark:text-gray-200 dark:hover:bg-gray-800"
             onClick={() => handleRenameStart(contextMenuFloorId)}
           >
             Rename
           </button>
           <button
-            className="w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="w-full px-3 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 dark:text-gray-200 dark:hover:bg-gray-800"
             onClick={() => handleDuplicate(contextMenuFloorId)}
           >
             Duplicate
           </button>
           {floors.length > 1 && (
             <button
-              className="w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
+              className="w-full px-3 py-1.5 text-left text-sm text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500 dark:text-red-400 dark:hover:bg-red-950/40"
               onClick={() => openDeleteConfirm(contextMenuFloorId)}
             >
               Delete
