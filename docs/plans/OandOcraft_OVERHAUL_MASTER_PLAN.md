@@ -7,7 +7,12 @@ Planning mode: single source of truth
 ## Current execution status
 
 - Engine track in execution: **Option 2 (Hybrid Konva + Three.js)**.
-- Active implementation window: **Phase 0, Phase 1, Phase 2**.
+- Active implementation window: **Phase 5 completion + Phase 8 hardening prep**.
+- Phase 3 status: **Complete** (dockable toolbar model, presets, persistence/reset).
+- Phase 4 status: **Complete** (exact numeric edit inputs with unit-aware parsing + validation).
+- Phase 5 status: **In progress** (visual token/symbol updates implemented; readability QA still open).
+- Phase 6 status: **Complete** (compass persistence/normalization and minimap interaction coverage).
+- Phase 7 status: **Complete** (2D/2.5D toggle, 3D mapping, review camera presets, fallback path).
 - Baseline/telemetry artifact: `docs/plans/2026-04-27-phase-0-interaction-baseline.md`.
 
 ## 1. Non-negotiable outcomes
@@ -172,6 +177,9 @@ Deliverables:
 Acceptance:
 - Toolbar behavior is predictable and recoverable.
 
+Status:
+- Complete.
+
 ### Phase 4 - Precision drafting and measurement entry (Week 4)
 
 Deliverables:
@@ -182,6 +190,9 @@ Deliverables:
 Acceptance:
 - Operators can produce exact geometry without drag approximation.
 
+Status:
+- Complete.
+
 ### Phase 5 - Visual/shape overhaul (Week 5)
 
 Deliverables:
@@ -190,6 +201,9 @@ Deliverables:
 
 Acceptance:
 - Mixed-layout canvas looks professional and consistent.
+
+Status:
+- In progress.
 
 ### Phase 6 - Compass and navigation correctness (Week 6)
 
@@ -200,6 +214,9 @@ Deliverables:
 Acceptance:
 - Compass is stable across route/floor/session transitions.
 
+Status:
+- Complete.
+
 ### Phase 7 - 2.5D mode (Week 7-8, Option 2 track)
 
 Deliverables:
@@ -209,6 +226,9 @@ Deliverables:
 
 Acceptance:
 - 2.5D is usable for review without breaking 2D edit flow.
+
+Status:
+- Complete.
 
 ### Phase 8 - Hardening and release (Week 9)
 

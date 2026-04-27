@@ -5,7 +5,7 @@ Checklist role: execution tracker only (the roadmap lives in `OandOcraft_OVERHAU
 
 Execution status snapshot:
 - Current engine path: Option 2 (Hybrid Konva + Three.js).
-- Active delivery window: Phase 0, Phase 1, and Phase 2.
+- Active delivery window: Phase 5 completion and Phase 8 preparation.
 
 ## Engine decision checkpoint (must be explicit)
 
@@ -35,32 +35,32 @@ Execution status snapshot:
 
 ## Phase 3 - Toolbar/workspace architecture
 
-- [ ] Standardize docking behavior across all toolbars.
-- [ ] Add workspace presets (Design/Admin/Review).
-- [ ] Validate persistence and reset behavior.
+- [x] Standardize docking behavior across all toolbars.
+- [x] Add workspace presets (Design/Admin/Review).
+- [x] Validate persistence and reset behavior.
 
 ## Phase 4 - Precision drafting and measurement entry
 
-- [ ] Add exact numeric inputs for width/height/length/angle.
-- [ ] Add inline exact-value entry during draw/edit.
-- [ ] Add unit parsing and validation safeguards.
+- [x] Add exact numeric inputs for width/height/length/angle.
+- [x] Add inline exact-value entry during draw/edit.
+- [x] Add unit parsing and validation safeguards.
 
 ## Phase 5 - Visual and shape overhaul
 
-- [ ] Apply sharp, professional visual token system.
-- [ ] Replace weak generic symbols with normalized block families.
+- [x] Apply sharp, professional visual token system.
+- [x] Replace weak generic symbols with normalized block families.
 - [ ] Pass readability QA at common zoom levels.
 
 ## Phase 6 - Compass and navigation reliability
 
-- [ ] Fix compass persistence and interaction behavior.
-- [ ] Add regression coverage for compass + minimap interactions.
+- [x] Fix compass persistence and interaction behavior.
+- [x] Add regression coverage for compass + minimap interactions.
 
 ## Phase 7 - 2.5D mode
 
-- [ ] Deliver 2D <-> 2.5D toggle.
-- [ ] Add extruded geometry mapping for core floor entities.
-- [ ] Add camera presets and performance fallback behavior.
+- [x] Deliver 2D <-> 2.5D toggle.
+- [x] Add extruded geometry mapping for core floor entities.
+- [x] Add camera presets and performance fallback behavior.
 
 ## Phase 8 - Hardening and release
 
