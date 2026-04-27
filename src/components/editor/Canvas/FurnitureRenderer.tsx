@@ -2,13 +2,15 @@ import { Circle, Group, Line, Rect, Text } from 'react-konva'
 import type { BaseElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
 import { truncateToWidth } from '../../../lib/textTruncate'
+import { useCanvasStore } from '../../../stores/canvasStore'
+import { CANVAS_COLORS, interactionStrokeWidth, labelDensityForScale } from './visualStyle'
 
 interface FurnitureRendererProps {
   element: BaseElement
 }
 
 const SHARP_CORNER = 1
-const SELECTED_STROKE = '#2563EB'
+const SELECTED_STROKE = CANVAS_COLORS.selected
 const LABEL_FONT_SIZE = 9
 
 const secondaryStroke = (width: number) => Math.max(1, width * 0.72)
@@ -17,8 +19,14 @@ const tertiaryStroke = (width: number) => Math.max(0.75, width * 0.56)
 export function FurnitureRenderer({ element }: FurnitureRendererProps) {
   const selectedIds = useUIStore((s) => s.selectedIds)
   const isSelected = selectedIds.includes(element.id)
-  const stroke = isSelected ? SELECTED_STROKE : element.style.stroke
-  const strokeWidth = isSelected ? 2.5 : element.style.strokeWidth
+  const stageScale = useCanvasStore((s) => s.stageScale)
+  const labelDensity = labelDensityForScale(stageScale, isSelected)
+  const stroke = isSelected
+    ? SELECTED_STROKE
+    : element.locked
+      ? CANVAS_COLORS.locked
+      : CANVAS_COLORS.furnitureStroke
+  const strokeWidth = interactionStrokeWidth(isSelected)
   const opacity = element.style.opacity
   const labelWidth = Math.max(20, element.width - 8)
   const labelText = truncateToWidth(element.label ?? '', labelWidth, LABEL_FONT_SIZE)
@@ -96,7 +104,7 @@ export function FurnitureRenderer({ element }: FurnitureRendererProps) {
   return (
     <Group rotation={element.rotation} listening={!element.locked}>
       {symbol}
-      {element.width >= 48 && element.height >= 24 && element.label && (
+      {labelDensity === 'full' && element.width >= 48 && element.height >= 24 && element.label && (
         <Text
           text={labelText}
           x={-element.width / 2 + 4}
@@ -108,6 +116,9 @@ export function FurnitureRenderer({ element }: FurnitureRendererProps) {
           fill="#475569"
           listening={false}
         />
+      )}
+      {element.locked && (
+        <LockedFurnitureMark width={element.width} height={element.height} />
       )}
     </Group>
   )
@@ -223,5 +234,23 @@ function GenericBlockSymbol({ width: w, height: h, fill, stroke, strokeWidth, op
       <Rect x={-w * 0.34} y={-h * 0.24} width={w * 0.68} height={h * 0.18} fill="#FFFFFF" opacity={opacity * 0.45} cornerRadius={SHARP_CORNER} listening={false} />
       <Line points={[-w * 0.3, h * 0.18, w * 0.3, h * 0.18]} stroke={stroke} strokeWidth={tertiaryStroke(strokeWidth)} opacity={opacity * 0.45} listening={false} />
     </>
+  )
+}
+
+function LockedFurnitureMark({ width, height }: { width: number; height: number }) {
+  const size = Math.min(16, Math.max(9, Math.min(width, height) * 0.24))
+  return (
+    <Rect
+      x={width / 2 - size - 1}
+      y={-height / 2 + 1}
+      width={size}
+      height={size}
+      fill={CANVAS_COLORS.lockedFill}
+      stroke={CANVAS_COLORS.locked}
+      strokeWidth={0.8}
+      dash={[2, 2]}
+      cornerRadius={SHARP_CORNER}
+      listening={false}
+    />
   )
 }

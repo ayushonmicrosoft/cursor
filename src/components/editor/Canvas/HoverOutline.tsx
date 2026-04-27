@@ -3,6 +3,7 @@ import { useRef, useEffect } from 'react'
 import type Konva from 'konva'
 import { useUIStore } from '../../../stores/uiStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
+import { CANVAS_COLORS } from './visualStyle'
 
 /**
  * Faint dashed outline that tracks the currently hovered element when
@@ -64,10 +65,10 @@ export function HoverOutline() {
         resizeEnabled={false}
         rotateEnabled={false}
         // `borderEnabled` defaults true; we just want the rectangle.
-        borderStroke="#60A5FA"
-        borderStrokeWidth={1}
-        borderDash={[4, 3]}
-        padding={3}
+        borderStroke={CANVAS_COLORS.hover}
+        borderStrokeWidth={1.25}
+        borderDash={[3, 3]}
+        padding={4}
       />
     </Layer>
   )

@@ -1,13 +1,14 @@
 import { Group, Rect } from 'react-konva'
 import type { SofaElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
+import { CANVAS_COLORS, interactionStrokeWidth } from './visualStyle'
 
 interface Props {
   element: SofaElement
 }
 
 const SHARP_CORNER = 1
-const SELECTED_STROKE = '#2563EB'
+const SELECTED_STROKE = CANVAS_COLORS.selected
 
 /**
  * Sofa renderer — a rounded main body with two inset armrest bars. The
@@ -24,8 +25,12 @@ export function SofaRenderer({ element }: Props) {
   // Armrest width is ~10% of body width, clamped to a 6–24px range so it
   // stays visible when shrunk and doesn't eat the sofa when enlarged.
   const armW = Math.max(6, Math.min(24, w * 0.1))
-  const stroke = isSelected ? SELECTED_STROKE : element.style.stroke
-  const strokeWidth = isSelected ? 2.5 : element.style.strokeWidth
+  const stroke = isSelected
+    ? SELECTED_STROKE
+    : element.locked
+      ? CANVAS_COLORS.locked
+      : CANVAS_COLORS.furnitureStroke
+  const strokeWidth = interactionStrokeWidth(isSelected)
   const detailStrokeWidth = Math.max(1, strokeWidth * 0.7)
   const armrestInsetY = Math.max(1, h * 0.06)
   const innerPadX = armW + 2
@@ -48,6 +53,10 @@ export function SofaRenderer({ element }: Props) {
         strokeWidth={strokeWidth}
         cornerRadius={SHARP_CORNER}
         opacity={element.style.opacity}
+        shadowColor="#0F172A"
+        shadowBlur={3}
+        shadowOpacity={0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
       {/* Left armrest */}
       <Rect
@@ -97,6 +106,20 @@ export function SofaRenderer({ element }: Props) {
         cornerRadius={SHARP_CORNER}
         listening={false}
       />
+      {element.locked && (
+        <Rect
+          x={w / 2 - 15}
+          y={-h / 2 + 2}
+          width={13}
+          height={13}
+          fill={CANVAS_COLORS.lockedFill}
+          stroke={CANVAS_COLORS.locked}
+          strokeWidth={0.8}
+          dash={[2, 2]}
+          cornerRadius={SHARP_CORNER}
+          listening={false}
+        />
+      )}
     </Group>
   )
 }

@@ -3,6 +3,7 @@ import type { WallElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
 import { wallPathData, wallSegments, segmentMidpoint } from '../../../lib/wallPath'
 import { useTheme } from '../../../lib/theme'
+import { CANVAS_COLORS } from './visualStyle'
 
 interface WallRendererProps {
   element: WallElement
@@ -49,9 +50,13 @@ export function WallRenderer({ element }: WallRendererProps) {
   // an off-white (gray-100) so walls read on dark — but respect any
   // explicit colour the user picked from the inspector.
   if (resolvedTheme === 'dark' && baseStroke === '#111827') {
-    baseStroke = '#F3F4F6'
+    baseStroke = CANVAS_COLORS.structureDark
   }
-  const stroke = isSelected ? '#3B82F6' : baseStroke
+  const stroke = isSelected
+    ? CANVAS_COLORS.selected
+    : element.locked
+      ? CANVAS_COLORS.locked
+      : baseStroke
   const hitStrokeWidth = Math.max(12, element.thickness + 6)
 
   // Opacity + dash derive from wallType first, then dashStyle can still
@@ -63,7 +68,9 @@ export function WallRenderer({ element }: WallRendererProps) {
   // inherits the cap inside the gap so a 0.1-unit "dash" renders as a
   // circular dot the width of the stroke).
   let dash: number[] | undefined
-  if (element.dashStyle === 'dashed') {
+  if (element.locked && (!element.dashStyle || element.dashStyle === 'solid')) {
+    dash = [element.thickness * 1.2, element.thickness * 1.1]
+  } else if (element.dashStyle === 'dashed') {
     dash = [element.thickness * 2.5, element.thickness * 1.5]
   } else if (element.dashStyle === 'dotted') {
     dash = [0.1, element.thickness * 1.4]
@@ -95,12 +102,16 @@ export function WallRenderer({ element }: WallRendererProps) {
       <Path
         data={pathData}
         stroke={stroke}
-        strokeWidth={element.thickness}
+        strokeWidth={isSelected ? element.thickness + 1.5 : element.thickness}
         lineCap="round"
         lineJoin="round"
         hitStrokeWidth={hitStrokeWidth}
         fillEnabled={false}
         dash={dash}
+        shadowColor="#0F172A"
+        shadowBlur={isSelected ? 3 : 1}
+        shadowOpacity={isSelected ? 0.16 : 0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
       {wallType === 'half-height' && (
         // Secondary dashed rail painted on the same path at reduced opacity

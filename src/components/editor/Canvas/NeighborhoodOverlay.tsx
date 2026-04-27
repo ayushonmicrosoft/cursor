@@ -4,6 +4,7 @@ import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { useFloorStore } from '../../../stores/floorStore'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useEmployeeStore } from '../../../stores/employeeStore'
+import { useCanvasStore } from '../../../stores/canvasStore'
 import {
   computeNeighborhoodMetrics,
   type NeighborhoodHealth,
@@ -32,6 +33,7 @@ export function NeighborhoodOverlay() {
   const activeFloorId = useFloorStore((s) => s.activeFloorId)
   const elements = useElementsStore((s) => s.elements)
   const employees = useEmployeeStore((s) => s.employees)
+  const stageScale = useCanvasStore((s) => s.stageScale)
 
   // Filter to the active floor before computing metrics so a project with
   // many floors worth of neighborhoods doesn't pay the cost of the others.
@@ -65,7 +67,7 @@ export function NeighborhoodOverlay() {
     })
   }, [metrics, neighborhoods, elements])
 
-  if (chips.length === 0) return <Layer listening={false} />
+  if (chips.length === 0 || stageScale < 0.7) return <Layer listening={false} />
 
   return (
     <Layer listening={false}>

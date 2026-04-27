@@ -8,6 +8,7 @@ import {
   isDoorElement,
   isWindowElement,
 } from '../../../types/elements'
+import { CANVAS_COLORS } from './visualStyle'
 
 /**
  * Cardinal-angle snaps for the Transformer's rotate handle. Konva snaps
@@ -149,10 +150,10 @@ export function SelectionOverlay() {
         onTransformStart={handleTransformStart}
         onTransform={handleTransform}
         onTransformEnd={handleTransformEnd}
-        borderStroke="#3B82F6"
-        borderStrokeWidth={1.5}
+        borderStroke={CANVAS_COLORS.selected}
+        borderStrokeWidth={2}
         anchorFill="#ffffff"
-        anchorStroke="#3B82F6"
+        anchorStroke={CANVAS_COLORS.selected}
         anchorSize={8}
         anchorCornerRadius={2}
         rotateAnchorOffset={20}

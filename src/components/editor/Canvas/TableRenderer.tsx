@@ -5,6 +5,8 @@ import { useEmployeeStore } from '../../../stores/employeeStore'
 import { useVisibleEmployees } from '../../../hooks/useVisibleEmployees'
 import { UNASSIGNED_SEAT_FILL, UNASSIGNED_SEAT_STROKE } from '../../../lib/constants'
 import { truncateToWidth } from '../../../lib/textTruncate'
+import { useCanvasStore } from '../../../stores/canvasStore'
+import { CANVAS_COLORS, interactionStrokeWidth, labelDensityForScale } from './visualStyle'
 
 interface TableRendererProps {
   element: TableElement
@@ -32,12 +34,18 @@ export function TableRenderer({ element }: TableRendererProps) {
   // conference/team tables should show initials, not full names.
   const employees = useVisibleEmployees()
   const getDepartmentColor = useEmployeeStore((s) => s.getDepartmentColor)
+  const stageScale = useCanvasStore((s) => s.stageScale)
+  const labelDensity = labelDensityForScale(stageScale, isSelected)
 
-  const showLabel = !TOO_SMALL_FOR_ID(element.width, element.height) && !!element.label
+  const showLabel = labelDensity === 'full' && !TOO_SMALL_FOR_ID(element.width, element.height) && !!element.label
   const labelWidth = Math.max(20, element.width - 8)
   const tableLabel = truncateToWidth(element.label ?? '', labelWidth, LABEL_FONT_SIZE)
-  const stroke = isSelected ? '#2563EB' : element.style.stroke
-  const strokeWidth = isSelected ? 2.5 : element.style.strokeWidth
+  const stroke = isSelected
+    ? CANVAS_COLORS.selected
+    : element.locked
+      ? CANVAS_COLORS.locked
+      : element.style.stroke
+  const strokeWidth = interactionStrokeWidth(isSelected)
   const highlightW = Math.max(16, element.width * 0.72)
 
   return (
@@ -51,6 +59,10 @@ export function TableRenderer({ element }: TableRendererProps) {
         stroke={stroke}
         strokeWidth={strokeWidth}
         cornerRadius={SHARP_CORNER}
+        shadowColor="#0F172A"
+        shadowBlur={3}
+        shadowOpacity={0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
       <Rect
         x={-highlightW / 2}
@@ -90,7 +102,9 @@ export function TableRenderer({ element }: TableRendererProps) {
         // neighbors on tightly-packed tables.
         const PILL_W = 44
         const PILL_H = 13
-        const displayName = truncateToWidth(firstName, PILL_W - 8, SEAT_LABEL_FONT_SIZE)
+        const displayName = labelDensity === 'compact'
+          ? firstName.slice(0, 1).toUpperCase()
+          : truncateToWidth(firstName, PILL_W - 8, SEAT_LABEL_FONT_SIZE)
 
         return (
           <Group key={seat.id} x={seat.offsetX} y={seat.offsetY}>
@@ -101,7 +115,7 @@ export function TableRenderer({ element }: TableRendererProps) {
               strokeWidth={1.5}
               dash={employee ? undefined : [3, 3]}
             />
-            {employee && (
+            {employee && labelDensity !== 'hidden' && (
               // Rounded-pill background behind the first-name label,
               // tinted with the department color at low alpha (mirrors
               // DeskRenderer's employee-chip treatment). Keeps the name
@@ -134,6 +148,20 @@ export function TableRenderer({ element }: TableRendererProps) {
           </Group>
         )
       })}
+      {element.locked && (
+        <Rect
+          x={element.width / 2 - 16}
+          y={-element.height / 2 + 2}
+          width={14}
+          height={14}
+          fill={CANVAS_COLORS.lockedFill}
+          stroke={CANVAS_COLORS.locked}
+          strokeWidth={0.8}
+          dash={[2, 2]}
+          cornerRadius={SHARP_CORNER}
+          listening={false}
+        />
+      )}
     </Group>
   )
 }

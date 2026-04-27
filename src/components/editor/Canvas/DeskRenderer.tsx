@@ -16,6 +16,14 @@ import {
   type AccommodationBadgeAnchor,
 } from './SeatLabel'
 import { truncateToWidth } from '../../../lib/textTruncate'
+import {
+  CANVAS_COLORS,
+  interactionStrokeWidth,
+  labelDensityForScale,
+  seatDashForStatus,
+  seatFillForStatus,
+  seatStrokeForStatus,
+} from './visualStyle'
 
 /** Visual palette for the drop-target outline painted while the user is
  *  dragging an employee chip over the canvas. Green = open desk, amber =
@@ -24,7 +32,7 @@ import { truncateToWidth } from '../../../lib/textTruncate'
 const DROP_OPEN_STROKE = '#10B981'   // emerald-500
 const DROP_BUSY_STROKE = '#F59E0B'   // amber-500
 const DROP_HOVER_STROKE = '#2563EB'  // blue-600
-const SELECTED_STROKE = '#2563EB'
+const SELECTED_STROKE = CANVAS_COLORS.selected
 const ID_FONT_SIZE = 9
 
 /**
@@ -129,14 +137,48 @@ function AccommodationBadge({
 /** Visual tweaks driven off the derived seat status — kept here so each
  *  sub-renderer reads the same source of truth and the policy lives in one
  *  place ("decommissioned = 40% opacity; reserved = orange outline"). */
-const RESERVED_STROKE = '#F59E0B' // amber-500
 const SHARP_CORNER = 1
 function seatStatusVisuals(el: DeskElement | WorkstationElement | PrivateOfficeElement) {
   const status = deriveSeatStatus(el)
   return {
+    status,
     opacityMul: status === 'decommissioned' ? 0.4 : 1,
-    overrideStroke: status === 'reserved' ? RESERVED_STROKE : null,
   }
+}
+
+function LockedCornerMarker({
+  width,
+  height,
+  opacity = 1,
+}: {
+  width: number
+  height: number
+  opacity?: number
+}) {
+  const size = Math.min(18, Math.max(10, Math.min(width, height) * 0.28))
+  const x = width / 2 - size - 1
+  const y = -height / 2 + 1
+  return (
+    <Group listening={false} opacity={opacity}>
+      <Rect
+        x={x}
+        y={y}
+        width={size}
+        height={size}
+        fill={CANVAS_COLORS.lockedFill}
+        stroke={CANVAS_COLORS.locked}
+        strokeWidth={0.8}
+        cornerRadius={SHARP_CORNER}
+        perfectDrawEnabled={false}
+      />
+      <Line
+        points={[x + 3, y + size - 3, x + size - 3, y + 3]}
+        stroke={CANVAS_COLORS.locked}
+        strokeWidth={1}
+        listening={false}
+      />
+    </Group>
+  )
 }
 
 interface DeskRendererProps {
@@ -164,6 +206,8 @@ export function DeskRenderer({ element }: DeskRendererProps) {
   // card. Toggled via View → "Show desk IDs".
   const showDeskIds: boolean =
     useCanvasStore((s) => s.settings.showDeskIds) ?? false
+  const stageScale = useCanvasStore((s) => s.stageScale)
+  const labelDensity = labelDensityForScale(stageScale, isSelected)
   // Drag-in-flight outline: when an employee is being dragged from
   // PeoplePanel, paint every assignable desk with an affordance outline
   // so the user can see where they can drop. `hoveredSeatId` bumps the
@@ -192,6 +236,7 @@ export function DeskRenderer({ element }: DeskRendererProps) {
         dragState={dragState}
         seatLabelStyle={seatLabelStyle}
         showDeskIds={showDeskIds}
+        labelDensity={labelDensity}
       />
     )
   }
@@ -206,6 +251,7 @@ export function DeskRenderer({ element }: DeskRendererProps) {
         dragState={dragState}
         seatLabelStyle={seatLabelStyle}
         showDeskIds={showDeskIds}
+        labelDensity={labelDensity}
       />
     )
   }
@@ -219,6 +265,7 @@ export function DeskRenderer({ element }: DeskRendererProps) {
       dragState={dragState}
       seatLabelStyle={seatLabelStyle}
       showDeskIds={showDeskIds}
+      labelDensity={labelDensity}
     />
   )
 }
@@ -285,18 +332,24 @@ interface DeskElementRendererProps {
    *  so the canvas doesn't duplicate info the hover card and the
    *  Properties panel already carry. */
   showDeskIds: boolean
+  labelDensity: ReturnType<typeof labelDensityForScale>
 }
 
-function DeskElementRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds }: DeskElementRendererProps) {
+function DeskElementRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds, labelDensity }: DeskElementRendererProps) {
   const employee = element.assignedEmployeeId ? employees[element.assignedEmployeeId] : null
   const departmentColor = employee?.department ? getDepartmentColor(employee.department) : null
-  const isHotDesk = element.type === 'hot-desk'
-  const fillColor = isHotDesk ? '#FEF9C3' : '#FEF3C7'
-  const { opacityMul, overrideStroke } = seatStatusVisuals(element)
+  const { status, opacityMul } = seatStatusVisuals(element)
+  const effectiveStatus = element.type === 'hot-desk' && status === 'unassigned'
+    ? 'hot-desk'
+    : status
+  const fillColor = seatFillForStatus(effectiveStatus, !!employee)
   const borderColor = isSelected
     ? SELECTED_STROKE
-    : (overrideStroke || departmentColor || '#9CA3AF')
-  const borderDash = employee ? undefined : [4, 4]
+    : element.locked
+      ? CANVAS_COLORS.locked
+      : seatStrokeForStatus(effectiveStatus, departmentColor)
+  const borderDash = seatDashForStatus(effectiveStatus, !!employee)
+  const isWarning = effectiveStatus === 'reserved'
 
   // Wave 16 layout contract.
   //
@@ -336,11 +389,39 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
         height={element.height}
         fill={fillColor}
         stroke={borderColor}
-        strokeWidth={isSelected ? 2.5 : overrideStroke ? 2.5 : 1.5}
+        strokeWidth={interactionStrokeWidth(isSelected, isWarning)}
         cornerRadius={SHARP_CORNER}
         dash={borderDash}
         opacity={element.style.opacity * opacityMul}
+        shadowColor="#0F172A"
+        shadowBlur={employee ? 3 : 1}
+        shadowOpacity={employee ? 0.1 : 0.04}
+        shadowOffset={{ x: 0, y: 1 }}
       />
+      {departmentColor && (
+        <Rect
+          x={-element.width / 2 + 4}
+          y={element.height / 2 - 5}
+          width={Math.max(0, element.width - 8)}
+          height={2}
+          fill={departmentColor}
+          opacity={0.9 * element.style.opacity * opacityMul}
+          cornerRadius={1}
+          listening={false}
+        />
+      )}
+      {isWarning && (
+        <Rect
+          x={-element.width / 2 + 4}
+          y={-element.height / 2 + 4}
+          width={Math.max(0, element.width - 8)}
+          height={2}
+          fill={CANVAS_COLORS.warning}
+          opacity={0.9}
+          cornerRadius={1}
+          listening={false}
+        />
+      )}
 
       {/* Desk-id corner badge. Wave 16: opt-in via View → "Show desk
           IDs" (default off). Hidden for the `'card'` style — its 4px
@@ -387,6 +468,7 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
         containerWidth={element.width}
         underlyingFill="#FFFFFF"
         attenuated={!!dragState}
+        labelDensity={labelDensity}
       />
       <AccommodationBadge
         employee={employee}
@@ -400,6 +482,13 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
           height={element.height}
           isOccupied={!!employee}
           isHovered={dragState.isHovered}
+        />
+      )}
+      {element.locked && (
+        <LockedCornerMarker
+          width={element.width}
+          height={element.height}
+          opacity={element.style.opacity * opacityMul}
         />
       )}
     </Group>
@@ -416,16 +505,22 @@ interface WorkstationRendererProps {
   dragState: { isHovered: boolean; hoveredSlotIndex: number | null } | null
   seatLabelStyle: SeatLabelStyle
   showDeskIds: boolean
+  labelDensity: ReturnType<typeof labelDensityForScale>
 }
 
-function WorkstationRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds }: WorkstationRendererProps) {
+function WorkstationRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds, labelDensity }: WorkstationRendererProps) {
   const slotWidth = element.width / element.positions
   const slotTopReserve = showDeskIds ? 14 : 4
   const slotBottomReserve = 6
-  const { opacityMul, overrideStroke } = seatStatusVisuals(element)
+  const { status, opacityMul } = seatStatusVisuals(element)
+  const hasAssignment = element.assignedEmployeeIds.some(Boolean)
+  const fillColor = seatFillForStatus(status, hasAssignment)
   const borderColor = isSelected
     ? SELECTED_STROKE
-    : (overrideStroke || element.style.stroke)
+    : element.locked
+      ? CANVAS_COLORS.locked
+      : seatStrokeForStatus(status, element.style.stroke)
+  const isWarning = status === 'reserved'
   const deskIdText = truncateToWidth(element.deskId, Math.max(20, element.width - 8), ID_FONT_SIZE)
 
   return (
@@ -435,11 +530,16 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
         y={-element.height / 2}
         width={element.width}
         height={element.height}
-        fill={element.style.fill}
+        fill={fillColor}
         stroke={borderColor}
-        strokeWidth={isSelected ? 2.5 : overrideStroke ? 2.5 : element.style.strokeWidth}
+        strokeWidth={interactionStrokeWidth(isSelected, isWarning)}
         cornerRadius={SHARP_CORNER}
+        dash={seatDashForStatus(status, hasAssignment)}
         opacity={element.style.opacity * opacityMul}
+        shadowColor="#0F172A"
+        shadowBlur={hasAssignment ? 3 : 1}
+        shadowOpacity={hasAssignment ? 0.1 : 0.04}
+        shadowOffset={{ x: 0, y: 1 }}
       />
 
       {/* Desk ID (Wave 16: opt-in via View → "Show desk IDs"). */}
@@ -553,6 +653,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
               containerWidth={slotWidth}
               underlyingFill="#FFFFFF"
               attenuated={!!dragState}
+              labelDensity={labelDensity}
             />
           </Group>
         )
@@ -601,6 +702,13 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
           />
         )
       })}
+      {element.locked && (
+        <LockedCornerMarker
+          width={element.width}
+          height={element.height}
+          opacity={element.style.opacity * opacityMul}
+        />
+      )}
     </Group>
   )
 }
@@ -615,9 +723,10 @@ interface PrivateOfficeRendererProps {
   dragState: { isHovered: boolean; hoveredSlotIndex: number | null } | null
   seatLabelStyle: SeatLabelStyle
   showDeskIds: boolean
+  labelDensity: ReturnType<typeof labelDensityForScale>
 }
 
-function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds }: PrivateOfficeRendererProps) {
+function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds, labelDensity }: PrivateOfficeRendererProps) {
   const assignedEmployees = element.assignedEmployeeIds
     .map((id) => employees[id])
     .filter(Boolean)
@@ -625,7 +734,8 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
   const firstDeptColor = assignedEmployees[0]?.department
     ? getDepartmentColor(assignedEmployees[0].department)
     : null
-  const { opacityMul, overrideStroke } = seatStatusVisuals(element)
+  const { status, opacityMul } = seatStatusVisuals(element)
+  const isWarning = status === 'reserved'
   const deskIdText = truncateToWidth(element.deskId, Math.max(20, element.width - 8), ID_FONT_SIZE)
 
   return (
@@ -635,16 +745,35 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
         y={-element.height / 2}
         width={element.width}
         height={element.height}
-        fill="#EFF6FF"
+        fill={seatFillForStatus(status, assignedEmployees.length > 0) === CANVAS_COLORS.assignedFill ? CANVAS_COLORS.officeFill : seatFillForStatus(status, assignedEmployees.length > 0)}
         stroke={
           isSelected
             ? SELECTED_STROKE
-            : (overrideStroke || firstDeptColor || borderColor)
+            : element.locked
+              ? CANVAS_COLORS.locked
+              : seatStrokeForStatus(status, firstDeptColor || borderColor)
         }
-        strokeWidth={isSelected ? 3 : 2}
+        strokeWidth={interactionStrokeWidth(isSelected, isWarning)}
         cornerRadius={SHARP_CORNER}
+        dash={seatDashForStatus(status, assignedEmployees.length > 0)}
         opacity={element.style.opacity * opacityMul}
+        shadowColor="#0F172A"
+        shadowBlur={4}
+        shadowOpacity={0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
+      {isWarning && (
+        <Rect
+          x={-element.width / 2 + 6}
+          y={-element.height / 2 + 5}
+          width={Math.max(0, element.width - 12)}
+          height={2}
+          fill={CANVAS_COLORS.warning}
+          opacity={0.9}
+          cornerRadius={1}
+          listening={false}
+        />
+      )}
 
       {/* Desk ID (Wave 16: opt-in via View → "Show desk IDs"). */}
       {showDeskIds && (
@@ -692,6 +821,7 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
               containerWidth={element.width}
               underlyingFill="#EFF6FF"
               attenuated={!!dragState}
+              labelDensity={labelDensity}
             />
           )
         }
@@ -716,6 +846,7 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
               containerWidth={element.width}
               underlyingFill="#EFF6FF"
               attenuated={!!dragState}
+              labelDensity={labelDensity}
             />
           )
         })
@@ -740,6 +871,13 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
           height={element.height}
           isOccupied={assignedEmployees.length > 0}
           isHovered={dragState.isHovered}
+        />
+      )}
+      {element.locked && (
+        <LockedCornerMarker
+          width={element.width}
+          height={element.height}
+          opacity={element.style.opacity * opacityMul}
         />
       )}
     </Group>

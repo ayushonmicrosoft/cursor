@@ -10,6 +10,7 @@ import {
   COMPACT_SLOT_W,
 } from '../components/editor/Canvas/SeatLabel'
 import { DeskRenderer } from '../components/editor/Canvas/DeskRenderer'
+import { labelDensityForScale } from '../components/editor/Canvas/visualStyle'
 import { useCanvasStore } from '../stores/canvasStore'
 import { useEmployeeStore } from '../stores/employeeStore'
 import { useSeatDragStore } from '../stores/seatDragStore'
@@ -274,6 +275,60 @@ describe('SeatLabel — per-style unit coverage', () => {
     const texts: string[] = []
     stage?.find('Text').forEach((t: any) => texts.push(t.text()))
     expect(texts).toContain('C')
+  })
+
+  it('compact density renders initials without full names or open-seat copy', () => {
+    const assignedStage = mountLabel(
+      <SeatLabel
+        style="pill"
+        employee={{ id: 'e1', name: 'Jane Doe', department: 'Engineering' }}
+        departmentColor="#4F46E5"
+        width={120}
+        height={60}
+        labelDensity="compact"
+      />,
+    )
+    const assignedTexts: string[] = []
+    assignedStage?.find('Text').forEach((t: any) => assignedTexts.push(t.text()))
+    expect(assignedTexts).toContain('JD')
+    expect(assignedTexts.some((s) => s.includes('Jane'))).toBe(false)
+
+    const openStage = mountLabel(
+      <SeatLabel
+        style="pill"
+        employee={null}
+        departmentColor={null}
+        width={120}
+        height={60}
+        labelDensity="compact"
+      />,
+    )
+    const openTexts: string[] = []
+    openStage?.find('Text').forEach((t: any) => openTexts.push(t.text()))
+    expect(openTexts).not.toContain('Open')
+  })
+
+  it('hidden density emits no label text', () => {
+    const stage = mountLabel(
+      <SeatLabel
+        style="pill"
+        employee={{ id: 'e1', name: 'Jane Doe', department: 'Engineering' }}
+        departmentColor="#4F46E5"
+        width={120}
+        height={60}
+        labelDensity="hidden"
+      />,
+    )
+    const texts: string[] = []
+    stage?.find('Text').forEach((t: any) => texts.push(t.text()))
+    expect(texts).toEqual([])
+  })
+
+  it('maps canvas zoom to label density thresholds', () => {
+    expect(labelDensityForScale(0.5)).toBe('hidden')
+    expect(labelDensityForScale(0.75)).toBe('compact')
+    expect(labelDensityForScale(1)).toBe('full')
+    expect(labelDensityForScale(0.5, true)).toBe('full')
   })
 })
 

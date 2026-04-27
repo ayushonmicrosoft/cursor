@@ -1,6 +1,7 @@
 import { Group, Rect, Line } from 'react-konva'
 import type { PrinterElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
+import { CANVAS_COLORS, interactionStrokeWidth } from './visualStyle'
 
 interface Props {
   element: PrinterElement
@@ -31,10 +32,14 @@ export function PrinterRenderer({ element }: Props) {
         width={w}
         height={h}
         fill={element.style.fill}
-        stroke={isSelected ? '#3B82F6' : element.style.stroke}
-        strokeWidth={isSelected ? 2.5 : element.style.strokeWidth}
+        stroke={isSelected ? CANVAS_COLORS.selected : element.locked ? CANVAS_COLORS.locked : CANVAS_COLORS.furnitureStroke}
+        strokeWidth={interactionStrokeWidth(isSelected)}
         cornerRadius={2}
         opacity={element.style.opacity}
+        shadowColor="#0F172A"
+        shadowBlur={3}
+        shadowOpacity={0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
       <Rect
         x={-w * 0.34}

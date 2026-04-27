@@ -1,6 +1,7 @@
 import { Group, Line, Rect } from 'react-konva'
 import type { WhiteboardElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
+import { CANVAS_COLORS, interactionStrokeWidth } from './visualStyle'
 
 interface Props {
   element: WhiteboardElement
@@ -24,11 +25,15 @@ export function WhiteboardRenderer({ element }: Props) {
         width={element.width}
         height={element.height}
         fill={element.style.fill}
-        stroke={isSelected ? '#3B82F6' : element.style.stroke}
+        stroke={isSelected ? CANVAS_COLORS.selected : element.locked ? CANVAS_COLORS.locked : element.style.stroke}
         // Dark frame — +2 over the configured stroke so it always reads
         // as "framed" against the light fill.
-        strokeWidth={(isSelected ? 2.5 : element.style.strokeWidth) + 2}
+        strokeWidth={interactionStrokeWidth(isSelected) + 2}
         opacity={element.style.opacity}
+        shadowColor="#0F172A"
+        shadowBlur={2}
+        shadowOpacity={0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
       <Line
         points={[-element.width * 0.42, element.height * 0.15, element.width * 0.42, element.height * 0.15]}

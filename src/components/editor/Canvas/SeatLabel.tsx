@@ -1,6 +1,7 @@
 import { Group, Rect, Text } from 'react-konva'
 import type { SeatLabelStyle } from '../../../types/project'
 import { truncateToWidth } from '../../../lib/textTruncate'
+import type { CanvasLabelDensity } from './visualStyle'
 
 /**
  * Wave 16 — full rework of seat-label rendering.
@@ -172,6 +173,9 @@ interface SeatLabelProps {
    *  style and the dept stripe on the banner so the dashed drop
    *  affordance stays the dominant edge cue. */
   attenuated?: boolean
+  /** Zoom-aware density. `compact` renders identity-only initials and
+   *  suppresses open-seat copy; `hidden` emits no label nodes. */
+  labelDensity?: CanvasLabelDensity
 }
 
 /**
@@ -227,10 +231,19 @@ function deriveInitials(name: string): string {
 }
 
 export function SeatLabel(props: SeatLabelProps) {
-  const { width, height, containerWidth, attenuated } = props
+  const { width, height, containerWidth, attenuated, labelDensity = 'full' } = props
   // Degenerate sizes can't usefully host any style. Bail early so we
   // never emit a Konva node with a negative dimension.
   if (width < 10 || height < 10) return null
+  if (labelDensity === 'hidden') return null
+  if (labelDensity === 'compact') {
+    return (
+      <CompactIdentityLabel
+        {...props}
+        labelDensity="compact"
+      />
+    )
+  }
   const effectiveStyle = degradeStyle(props.style, containerWidth)
   const inner = (() => {
     switch (effectiveStyle) {
@@ -255,6 +268,52 @@ export function SeatLabel(props: SeatLabelProps) {
     )
   }
   return inner
+}
+
+function CompactIdentityLabel({
+  employee,
+  departmentColor,
+  width,
+  height,
+  x = 0,
+  y = 0,
+}: SeatLabelProps) {
+  if (!employee) return null
+  const initials = deriveInitials(employee.name)
+  const accent = departmentColor ?? NEUTRAL_ACCENT
+  const centerX = r(x + width / 2)
+  const centerY = r(y + height / 2)
+  const chipD = Math.min(20, Math.max(14, Math.min(width, height) - 6))
+  return (
+    <Group listening={false}>
+      <Rect
+        x={r(centerX - chipD / 2)}
+        y={r(centerY - chipD / 2)}
+        width={chipD}
+        height={chipD}
+        cornerRadius={chipD / 2}
+        fill={accent}
+        stroke="#FFFFFF"
+        strokeWidth={1}
+        opacity={0.95}
+        listening={false}
+        perfectDrawEnabled={false}
+      />
+      <Text
+        text={initials}
+        x={r(centerX - chipD / 2)}
+        y={r(centerY - 5)}
+        width={chipD}
+        align="center"
+        fontSize={chipD < 18 ? 8 : 9}
+        fontStyle="bold"
+        fontFamily={LABEL_FONT}
+        fill="#FFFFFF"
+        listening={false}
+        perfectDrawEnabled={false}
+      />
+    </Group>
+  )
 }
 
 /* ────────────────────────────────────────────────────────────────────

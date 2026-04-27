@@ -1,6 +1,7 @@
 import { Group, Circle, Rect } from 'react-konva'
 import type { PlantElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
+import { CANVAS_COLORS, interactionStrokeWidth } from './visualStyle'
 
 interface Props {
   element: PlantElement
@@ -31,9 +32,13 @@ export function PlantRenderer({ element }: Props) {
         y={-h / 2 + foliageR}
         radius={foliageR}
         fill={element.style.fill}
-        stroke={isSelected ? '#3B82F6' : element.style.stroke}
-        strokeWidth={isSelected ? 2.5 : element.style.strokeWidth}
+        stroke={isSelected ? CANVAS_COLORS.selected : element.locked ? CANVAS_COLORS.locked : '#166534'}
+        strokeWidth={interactionStrokeWidth(isSelected)}
         opacity={element.style.opacity}
+        shadowColor="#0F172A"
+        shadowBlur={2}
+        shadowOpacity={0.08}
+        shadowOffset={{ x: 0, y: 1 }}
       />
       {/* Pot base */}
       <Rect
@@ -46,6 +51,19 @@ export function PlantRenderer({ element }: Props) {
         cornerRadius={[0, 0, 2, 2]}
         listening={false}
       />
+      {element.locked && (
+        <Rect
+          x={w / 2 - 12}
+          y={-h / 2 + 1}
+          width={11}
+          height={11}
+          fill={CANVAS_COLORS.lockedFill}
+          stroke={CANVAS_COLORS.locked}
+          strokeWidth={0.8}
+          dash={[2, 2]}
+          listening={false}
+        />
+      )}
     </Group>
   )
 }

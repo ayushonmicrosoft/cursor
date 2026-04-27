@@ -1,6 +1,7 @@
 import { Layer, Rect, Text } from 'react-konva'
 import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { useFloorStore } from '../../../stores/floorStore'
+import { useCanvasStore } from '../../../stores/canvasStore'
 
 /**
  * Renders translucent, labeled rectangles for every neighborhood on the
@@ -16,6 +17,8 @@ import { useFloorStore } from '../../../stores/floorStore'
 export function NeighborhoodLayer() {
   const neighborhoods = useNeighborhoodStore((s) => s.neighborhoods)
   const activeFloorId = useFloorStore((s) => s.activeFloorId)
+  const stageScale = useCanvasStore((s) => s.stageScale)
+  const showLabels = stageScale >= 0.65
 
   const visible = Object.values(neighborhoods).filter(
     (n) => n.floorId === activeFloorId,
@@ -46,16 +49,18 @@ export function NeighborhoodLayer() {
             strokeWidth={1}
             dash={[6, 4]}
           />,
-          <Text
-            key={`${n.id}-label`}
-            name={`neighborhood-label-${n.id}`}
-            x={left + 6}
-            y={top + 4}
-            text={n.name}
-            fontSize={12}
-            fontStyle="bold"
-            fill={n.color}
-          />,
+          showLabels ? (
+            <Text
+              key={`${n.id}-label`}
+              name={`neighborhood-label-${n.id}`}
+              x={left + 6}
+              y={top + 4}
+              text={n.name}
+              fontSize={12}
+              fontStyle="bold"
+              fill={n.color}
+            />
+          ) : null,
         ]
       })}
     </Layer>
