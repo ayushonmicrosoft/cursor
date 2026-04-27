@@ -871,10 +871,14 @@ export function TopBar() {
           avatar so it reads as an admin tool rather than part of the user's
           own session state. The component self-gates on role so non-owners
           don't see it at all. */}
-      <ViewAsMenu />
-
-      <div className="hidden xl:block">
-        <PlanHealthPill />
+      <div
+        className="hidden lg:flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
+        aria-label="Admin and diagnostics controls"
+      >
+        <ViewAsMenu />
+        <div className="hidden xl:block">
+          <PlanHealthPill />
+        </div>
       </div>
 
       {/* Account block — Wave 15D gives the avatar visual weight by
