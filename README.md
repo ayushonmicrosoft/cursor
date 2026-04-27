@@ -1,4 +1,4 @@
-# OandOcraft
+﻿# OandOcraft
 
 > Interactive office floor planner and seating management application for modern teams
 
@@ -15,33 +15,33 @@
 
 ## Overview
 
-OandOcraft is a browser-based office floor planner built for IT operations teams, office managers, and workplace administrators. Users draw floor plans with walls, doors, and windows on a Konva canvas, populate the space with desks, conference rooms, phone booths, and decorative elements, then assign employees to seats — all persisted in real time to a team-scoped Supabase backend. An AI-style insights engine continuously analyzes seat utilization, team proximity, onboarding readiness, pending moves, and equipment status, surfacing actionable warnings directly in the editor sidebar.
+OandOcraft is a browser-based office floor planner built for IT operations teams, office managers, and workplace administrators. Users draw floor plans with walls, doors, and windows on a Konva canvas, populate the space with desks, conference rooms, phone booths, and decorative elements, then assign employees to seats â€” all persisted in real time to a team-scoped Supabase backend. An AI-style insights engine continuously analyzes seat utilization, team proximity, onboarding readiness, pending moves, and equipment status, surfacing actionable warnings directly in the editor sidebar.
 
 ---
 
 ## Features
 
-- **Multi-floor canvas editor** — draw walls (including curved/arc segments), doors with configurable swing direction, and windows on a snapping grid; switch between floors using a tab bar with drag-to-reorder; zoom in/out with scroll wheel or keyboard shortcuts; pan with middle-mouse or the pan tool
-- **Rich element library** — 20+ element types: desks (standard, L-shape, cubicle), hot desks, workstations, private offices (U-shape), conference rooms, phone booths, common areas, chairs, counters, tables (rectangular, conference, round, oval), dividers, planters, text labels, background images, and a full decorative set (armchair, couch, reception desk, kitchen counter, fridge, whiteboard, column, stairs, elevator)
-- **Curved wall segments** — per-segment arc bulges rendered as smooth SVG-style arcs on the Konva stage; editing handles let you drag any midpoint to bend a straight segment into a curve
-- **Smart wall attachment** — doors and windows snap to the nearest wall and track its position when the wall is moved; a ghost preview shows the snap target before drop
-- **Seat assignment** — drag employees from the People panel onto desks, workstations, or private offices; duplicate elements automatically clear occupant fields; assignment mutations atomically update both the element and the employee record
-- **Employee management** — full CRUD for employees with name, email, department, team, title, manager (org-chart hierarchy), employment type (full-time/part-time/contractor), status, office days, start/end dates, equipment needs, photo URL, and free-form tags
-- **CSV round-trip** — export the full employee roster to CSV (manager exported by name for portability), edit in any spreadsheet app, and re-import with a two-pass resolver that matches manager names back to IDs
-- **Insights engine** — six pluggable analyzers run on every canvas + roster change: **utilization** (over/under-occupied zones), **team proximity** (scattered team members), **onboarding** (new-hire seat readiness), **moves** (pending relocation flags), **equipment** (unresolved equipment needs), and **trends** (occupancy patterns); insights are severity-ranked (critical / warning / info), filterable by category, and persistable as dismissed per-project in `localStorage`
-- **Reports panel** — four report overlays: Seat Map Color Mode (color seats by department, team, employment type, or office days), Org Chart Overlay (visualize manager–report chains on the canvas), Move Planner (track in-progress employee relocations), and Employee Directory (searchable/filterable full-roster table)
-- **Export** — export the active floor as PNG (configurable pixel ratio), PDF (A4/A3/Letter, portrait or landscape, 150 or 300 DPI), or JSON (full project payload for backup/migration)
-- **Undo/redo with temporal Zustand** — up to 50-step undo history via `zundo`; assignment fields are deliberately excluded from the undo tree to prevent element ↔ employee state desync
-- **Team workspaces** — each account belongs to one or more named teams (identified by a URL slug); team admins can rename/delete the team, invite members by email (via a Resend-powered Edge Function), and remove members
-- **Direct office access and permissions** — offices can be workspace-edit or restricted; named internal/external people are invited directly and managed from a ShareModal with visibility control, per-person roles (owner / editor / hr editor / space planner / viewer), revoke actions, and admin overwrite-history recovery backed by Supabase RLS
-- **Conflict-safe cloud sync** — changes are debounced 2 seconds then saved with an optimistic-lock (`updated_at` predicate); if another session wrote first, a ConflictModal lets the user choose Reload (discard local) or Overwrite (force-save); transient errors retry with exponential backoff up to 30 s
-- **Auth flows** — email/password sign-up, login, forgot-password, and email-link verify/reset; invite tokens in email links pre-fill the sign-up form and auto-accept team membership on first sign-in
-- **Code-split lazy loading** — the Konva canvas tree and all editor chunks are loaded on demand; the landing page ships the minimum JS bundle
-- **Floor plan templates** — four built-in starter templates: Blank Canvas, Open Plan Office (~40 desks), Mixed Office (6 private offices + 30 open desks), and Executive Floor (12 private offices + boardroom)
-- **Keyboard shortcuts** — full keyboard shortcut set with a discoverable overlay (`?` key); shortcuts are suppressed when a modal or drawer owns focus via a modal reference count in `uiStore`
-- **Alignment guides** — live magenta guide lines appear when dragging elements near the horizontal/vertical edges of other elements (configurable threshold)
-- **Minimap** — always-on minimap shows viewport position relative to the full canvas extent
-- **Presentation mode** — hides all sidebars and toolbars for clean screen-sharing or screenshot capture
+- **Multi-floor canvas editor** â€” draw walls (including curved/arc segments), doors with configurable swing direction, and windows on a snapping grid; switch between floors using a tab bar with drag-to-reorder; zoom in/out with scroll wheel or keyboard shortcuts; pan with middle-mouse or the pan tool
+- **Rich element library** â€” 20+ element types: desks (standard, L-shape, cubicle), hot desks, workstations, private offices (U-shape), conference rooms, phone booths, common areas, chairs, counters, tables (rectangular, conference, round, oval), dividers, planters, text labels, background images, and a full decorative set (armchair, couch, reception desk, kitchen counter, fridge, whiteboard, column, stairs, elevator)
+- **Curved wall segments** â€” per-segment arc bulges rendered as smooth SVG-style arcs on the Konva stage; editing handles let you drag any midpoint to bend a straight segment into a curve
+- **Smart wall attachment** â€” doors and windows snap to the nearest wall and track its position when the wall is moved; a ghost preview shows the snap target before drop
+- **Seat assignment** â€” drag employees from the People panel onto desks, workstations, or private offices; duplicate elements automatically clear occupant fields; assignment mutations atomically update both the element and the employee record
+- **Employee management** â€” full CRUD for employees with name, email, department, team, title, manager (org-chart hierarchy), employment type (full-time/part-time/contractor), status, office days, start/end dates, equipment needs, photo URL, and free-form tags
+- **CSV round-trip** â€” export the full employee roster to CSV (manager exported by name for portability), edit in any spreadsheet app, and re-import with a two-pass resolver that matches manager names back to IDs
+- **Insights engine** â€” six pluggable analyzers run on every canvas + roster change: **utilization** (over/under-occupied zones), **team proximity** (scattered team members), **onboarding** (new-hire seat readiness), **moves** (pending relocation flags), **equipment** (unresolved equipment needs), and **trends** (occupancy patterns); insights are severity-ranked (critical / warning / info), filterable by category, and persistable as dismissed per-project in `localStorage`
+- **Reports panel** â€” four report overlays: Seat Map Color Mode (color seats by department, team, employment type, or office days), Org Chart Overlay (visualize managerâ€“report chains on the canvas), Move Planner (track in-progress employee relocations), and Employee Directory (searchable/filterable full-roster table)
+- **Export** â€” export the active floor as PNG (configurable pixel ratio), PDF (A4/A3/Letter, portrait or landscape, 150 or 300 DPI), or JSON (full project payload for backup/migration)
+- **Undo/redo with temporal Zustand** â€” up to 50-step undo history via `zundo`; assignment fields are deliberately excluded from the undo tree to prevent element â†” employee state desync
+- **Team workspaces** â€” each account belongs to one or more named teams (identified by a URL slug); team admins can rename/delete the team, invite members by email (via a Resend-powered Edge Function), and remove members
+- **Direct office access and permissions** â€” offices can be workspace-edit or restricted; named internal/external people are invited directly and managed from a ShareModal with visibility control, per-person roles (owner / editor / hr editor / space planner / viewer), revoke actions, and admin overwrite-history recovery backed by Supabase RLS
+- **Conflict-safe cloud sync** â€” changes are debounced 2 seconds then saved with an optimistic-lock (`updated_at` predicate); if another session wrote first, a ConflictModal lets the user choose Reload (discard local) or Overwrite (force-save); transient errors retry with exponential backoff up to 30 s
+- **Auth flows** â€” email/password sign-up, login, forgot-password, and email-link verify/reset; invite tokens in email links pre-fill the sign-up form and auto-accept team membership on first sign-in
+- **Code-split lazy loading** â€” the Konva canvas tree and all editor chunks are loaded on demand; the landing page ships the minimum JS bundle
+- **Floor plan templates** â€” four built-in starter templates: Blank Canvas, Open Plan Office (~40 desks), Mixed Office (6 private offices + 30 open desks), and Executive Floor (12 private offices + boardroom)
+- **Keyboard shortcuts** â€” full keyboard shortcut set with a discoverable overlay (`?` key); shortcuts are suppressed when a modal or drawer owns focus via a modal reference count in `uiStore`
+- **Alignment guides** â€” live magenta guide lines appear when dragging elements near the horizontal/vertical edges of other elements (configurable threshold)
+- **Minimap** â€” always-on minimap shows viewport position relative to the full canvas extent
+- **Presentation mode** â€” hides all sidebars and toolbars for clean screen-sharing or screenshot capture
 
 ---
 
@@ -84,14 +84,14 @@ OandOcraft is a browser-based office floor planner built for IT operations teams
 
 The editor canvas is a `react-konva` `<Stage>` managed by `CanvasStage.tsx`. Each element type maps to a dedicated renderer component:
 
-- `WallRenderer` — polyline walls with optional per-segment arc bulges
-- `DoorRenderer` / `WindowRenderer` — wall-attached elements with snap ghosts
-- `DeskRenderer`, `FurnitureRenderer`, `RoomRenderer`, `TableRenderer` — seating and space elements
-- `ElementRenderer` — dispatcher that routes each `CanvasElement` to the correct renderer
-- `SelectionOverlay` — multi-select bounding box with resize handles
-- `AlignmentGuides` — live snapping guide lines during drag
-- `GridLayer` — background dot/line grid
-- `WallDrawingOverlay` / `WallEditOverlay` — overlays that capture pointer events during wall draw/edit sessions
+- `WallRenderer` â€” polyline walls with optional per-segment arc bulges
+- `DoorRenderer` / `WindowRenderer` â€” wall-attached elements with snap ghosts
+- `DeskRenderer`, `FurnitureRenderer`, `RoomRenderer`, `TableRenderer` â€” seating and space elements
+- `ElementRenderer` â€” dispatcher that routes each `CanvasElement` to the correct renderer
+- `SelectionOverlay` â€” multi-select bounding box with resize handles
+- `AlignmentGuides` â€” live snapping guide lines during drag
+- `GridLayer` â€” background dot/line grid
+- `WallDrawingOverlay` / `WallEditOverlay` â€” overlays that capture pointer events during wall draw/edit sessions
 
 Custom shapes (L-desk, cubicle, U-office, round/oval tables, all decor pieces) live in `src/components/editor/Canvas/shapes/` and are rendered as Konva `Shape` nodes with programmatic path functions.
 
@@ -115,11 +115,11 @@ Seven Zustand stores provide the full client state:
 
 Supabase provides the full backend:
 
-- **Database** — 5 migration files define the schema (`offices`, `profiles`, `team_members`, `invites`, `office_permissions`), RLS helper functions, row-level security policies, triggers (e.g. auto-create profile on signup), and an `accept_invite` RPC
-- **Auth** — Supabase Auth with email/password; the `AuthProvider` wraps the app and exposes a `useSession()` hook; `RequireAuth` and `RequireTeam` route guards redirect unauthenticated users
-- **Edge Functions** — `send-invite-email` sends team invitation emails via the [Resend](https://resend.com) API
-- **Optimistic locking** — `saveOffice()` issues `UPDATE offices SET payload=... WHERE id=? AND updated_at=?`; a `null` result means another session wrote first, triggering the ConflictModal
-- **Repositories** — `officeRepository.ts` (CRUD for offices), `permissionsRepository.ts` (per-user role overrides), `teamRepository.ts` (team + member operations)
+- **Database** â€” 5 migration files define the schema (`offices`, `profiles`, `team_members`, `invites`, `office_permissions`), RLS helper functions, row-level security policies, triggers (e.g. auto-create profile on signup), and an `accept_invite` RPC
+- **Auth** â€” Supabase Auth with email/password; the `AuthProvider` wraps the app and exposes a `useSession()` hook; `RequireAuth` and `RequireTeam` route guards redirect unauthenticated users
+- **Edge Functions** â€” `send-invite-email` sends team invitation emails via the [Resend](https://resend.com) API
+- **Optimistic locking** â€” `saveOffice()` issues `UPDATE offices SET payload=... WHERE id=? AND updated_at=?`; a `null` result means another session wrote first, triggering the ConflictModal
+- **Repositories** â€” `officeRepository.ts` (CRUD for offices), `permissionsRepository.ts` (per-user role overrides), `teamRepository.ts` (team + member operations)
 
 ### Routing (React Router v7)
 
@@ -133,14 +133,14 @@ Supabase provides the full backend:
 /invite/:token             InvitePage (accept team invite)
 /onboarding/team           TeamOnboardingPage (RequireAuth)
 /account                   AccountPage (RequireAuth)
-/dashboard                 DashboardRedirect → /t/:teamSlug (RequireAuth + RequireTeam)
-/t/:teamSlug               TeamHomePage — office grid
+/dashboard                 DashboardRedirect â†’ /t/:teamSlug (RequireAuth + RequireTeam)
+/t/:teamSlug               TeamHomePage â€” office grid
 /t/:teamSlug/settings      TeamSettingsPage
-  (index)                    → TeamSettingsGeneral
-  members                    → TeamSettingsMembers
+  (index)                    â†’ TeamSettingsGeneral
+  members                    â†’ TeamSettingsMembers
 /t/:teamSlug/o/:officeSlug ProjectShell (editor layout route)
-  (index → map)              MapView — Konva canvas
-  roster                     RosterPage — employee management
+  (index â†’ map)              MapView â€” Konva canvas
+  roster                     RosterPage â€” employee management
 ```
 
 The editor tree (`ProjectShell`, `MapView`, `RosterPage`) is code-split with `React.lazy` to keep the landing page bundle lean.
@@ -173,8 +173,8 @@ cp .env.example .env.local
 
 | Variable | Required | Description |
 |---|---|---|
-| `VITE_SUPABASE_URL` | Yes | Your Supabase project URL (e.g. `https://xyz.supabase.co`). Found in Supabase dashboard → Project Settings → API. |
-| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase `anon` / public key. Same location as above. Injected into the browser bundle — safe to expose. |
+| `VITE_SUPABASE_URL` | Yes | Your Supabase project URL (e.g. `https://xyz.supabase.co`). Found in Supabase dashboard â†’ Project Settings â†’ API. |
+| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase `anon` / public key. Same location as above. Injected into the browser bundle â€” safe to expose. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge Functions only | Service role key for server-side operations. Never expose in the browser. |
 | `RESEND_API_KEY` | Edge Functions only | API key from [resend.com](https://resend.com) dashboard. Powers team invite emails. |
 | `APP_URL` | Edge Functions only | Base URL of the deployed app (for O&O production use `https://oando.co.in/OandOcraft`). Used to construct invite callback URLs. |
@@ -229,11 +229,11 @@ npm run release:manifest
 `build:oando` emits assets for `/OandOcraft/`. `release:manifest` writes
 `dist/OandOcraft-release-manifest.json` with per-file SHA-256 values,
 aggregate SHA-256, commit, version label, and artifact name. Use
-`docs/OandOcraft_RELEASE_RUNBOOK.md` and `CHANGELOG.md` for release,
+`docs/guide/OandOcraft_RELEASE_RUNBOOK.md` and `CHANGELOG.md` for release,
 rollback, and sign-off records. Admin and recovery operations are documented in
-`docs/OandOcraft_ADMIN_RUNBOOK.md`,
-`docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`, and
-`docs/OandOcraft_SECURITY_REVIEW.md`.
+`docs/guide/OandOcraft_ADMIN_RUNBOOK.md`,
+`docs/guide/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`, and
+`docs/guide/OandOcraft_SECURITY_REVIEW.md`.
 
 ### Preview Production Build
 
@@ -254,65 +254,65 @@ npm run test:watch  # watch mode
 
 ```
 src/
-├── App.tsx                  # Root component — router + AuthProvider + lazy route tree
-├── main.tsx                 # Vite entry point
-├── index.css                # Tailwind v4 base styles
-├── vite-env.d.ts            # Vite env type declarations
-│
-├── components/
-│   ├── auth/                # Login, signup, forgot-password, verify/reset, route guards
-│   ├── dashboard/           # NewProjectModal (legacy, pre-team)
-│   ├── editor/
-│   │   ├── Canvas/          # Konva stage + all element renderers + shape library
-│   │   ├── LeftSidebar/     # Tool selector + element library drag-to-drop
-│   │   ├── RightSidebar/    # Properties, People, Reports, Insights panels
-│   │   ├── Share/           # Visibility radio + access table sub-components
-│   │   └── *.tsx            # Editor-level: ProjectShell, TopBar, StatusBar, MapView,
-│   │                        #   RosterPage, ShareModal, ExportDialog, FloorSwitcher,
-│   │                        #   ConflictModal, Minimap, KeyboardShortcutsOverlay
-│   ├── landing/             # LandingPage with session-aware CTAs
-│   ├── reports/             # EmployeeDirectory, MovePlanner, OccupancyDashboard,
-│   │                        #   OrgChartOverlay, SeatMapColorMode, UnassignedReport
-│   └── team/                # TeamHomePage, TeamOnboarding, TeamSettings (General +
-│                            #   Members), TeamSwitcher, UserMenu, AccountPage, InvitePage
-│
-├── stores/                  # Zustand stores (see Architecture section)
-│
-├── hooks/
-│   ├── useActiveFloorElements.ts  # Derived selector: elements on the active floor
-│   ├── useKeyboardShortcuts.ts    # Global keyboard shortcut registration
-│   ├── useTemporalState.ts        # Exposes zundo undo/redo from elementsStore
-│   └── useWallDrawing.ts          # State machine for the interactive wall drawing tool
-│
-├── lib/
-│   ├── analyzers/           # Six insight analyzer modules + composite runner
-│   ├── auth/                # AuthProvider, session utilities
-│   ├── offices/             # officeRepository, permissionsRepository, useOfficeSync
-│   ├── teams/               # teamRepository, useMyTeams hook
-│   ├── constants.ts         # Grid size, zoom limits, element defaults, color palettes
-│   ├── csv.ts               # Generic CSV parse helpers
-│   ├── employeeCsv.ts       # Employee-specific CSV export/import
-│   ├── exportJson.ts        # Full project JSON export
-│   ├── exportPdf.ts         # jsPDF-based PDF export
-│   ├── exportPng.ts         # Konva stage PNG export
-│   ├── geometry.ts          # Point/vector math utilities
-│   ├── seatAssignment.ts    # Atomic element ↔ employee seat assignment mutations
-│   ├── seatLayout.ts        # Auto-compute seat positions for tables
-│   ├── slug.ts              # URL slug generation
-│   ├── supabase.ts          # Singleton Supabase client
-│   ├── time.ts              # Date formatting utilities
-│   ├── wallAttachment.ts    # Door/window snap-to-wall geometry
-│   ├── wallEditing.ts       # Wall node drag/move operations
-│   └── wallPath.ts          # Arc bulge math (curved wall geometry)
-│
-├── data/
-│   └── templates/           # Built-in floor plan templates (blank, open-plan, mixed, executive)
-│
-├── types/                   # TypeScript interfaces — elements, employee, floor, project,
-│                            #   team, auth, insights, collaboration
-│
-└── __tests__/               # Vitest unit and component tests (~35 test files)
-    └── analyzers/           # Per-analyzer unit tests
+â”œâ”€â”€ App.tsx                  # Root component â€” router + AuthProvider + lazy route tree
+â”œâ”€â”€ main.tsx                 # Vite entry point
+â”œâ”€â”€ index.css                # Tailwind v4 base styles
+â”œâ”€â”€ vite-env.d.ts            # Vite env type declarations
+â”‚
+â”œâ”€â”€ components/
+â”‚   â”œâ”€â”€ auth/                # Login, signup, forgot-password, verify/reset, route guards
+â”‚   â”œâ”€â”€ dashboard/           # NewProjectModal (legacy, pre-team)
+â”‚   â”œâ”€â”€ editor/
+â”‚   â”‚   â”œâ”€â”€ Canvas/          # Konva stage + all element renderers + shape library
+â”‚   â”‚   â”œâ”€â”€ LeftSidebar/     # Tool selector + element library drag-to-drop
+â”‚   â”‚   â”œâ”€â”€ RightSidebar/    # Properties, People, Reports, Insights panels
+â”‚   â”‚   â”œâ”€â”€ Share/           # Visibility radio + access table sub-components
+â”‚   â”‚   â””â”€â”€ *.tsx            # Editor-level: ProjectShell, TopBar, StatusBar, MapView,
+â”‚   â”‚                        #   RosterPage, ShareModal, ExportDialog, FloorSwitcher,
+â”‚   â”‚                        #   ConflictModal, Minimap, KeyboardShortcutsOverlay
+â”‚   â”œâ”€â”€ landing/             # LandingPage with session-aware CTAs
+â”‚   â”œâ”€â”€ reports/             # EmployeeDirectory, MovePlanner, OccupancyDashboard,
+â”‚   â”‚                        #   OrgChartOverlay, SeatMapColorMode, UnassignedReport
+â”‚   â””â”€â”€ team/                # TeamHomePage, TeamOnboarding, TeamSettings (General +
+â”‚                            #   Members), TeamSwitcher, UserMenu, AccountPage, InvitePage
+â”‚
+â”œâ”€â”€ stores/                  # Zustand stores (see Architecture section)
+â”‚
+â”œâ”€â”€ hooks/
+â”‚   â”œâ”€â”€ useActiveFloorElements.ts  # Derived selector: elements on the active floor
+â”‚   â”œâ”€â”€ useKeyboardShortcuts.ts    # Global keyboard shortcut registration
+â”‚   â”œâ”€â”€ useTemporalState.ts        # Exposes zundo undo/redo from elementsStore
+â”‚   â””â”€â”€ useWallDrawing.ts          # State machine for the interactive wall drawing tool
+â”‚
+â”œâ”€â”€ lib/
+â”‚   â”œâ”€â”€ analyzers/           # Six insight analyzer modules + composite runner
+â”‚   â”œâ”€â”€ auth/                # AuthProvider, session utilities
+â”‚   â”œâ”€â”€ offices/             # officeRepository, permissionsRepository, useOfficeSync
+â”‚   â”œâ”€â”€ teams/               # teamRepository, useMyTeams hook
+â”‚   â”œâ”€â”€ constants.ts         # Grid size, zoom limits, element defaults, color palettes
+â”‚   â”œâ”€â”€ csv.ts               # Generic CSV parse helpers
+â”‚   â”œâ”€â”€ employeeCsv.ts       # Employee-specific CSV export/import
+â”‚   â”œâ”€â”€ exportJson.ts        # Full project JSON export
+â”‚   â”œâ”€â”€ exportPdf.ts         # jsPDF-based PDF export
+â”‚   â”œâ”€â”€ exportPng.ts         # Konva stage PNG export
+â”‚   â”œâ”€â”€ geometry.ts          # Point/vector math utilities
+â”‚   â”œâ”€â”€ seatAssignment.ts    # Atomic element â†” employee seat assignment mutations
+â”‚   â”œâ”€â”€ seatLayout.ts        # Auto-compute seat positions for tables
+â”‚   â”œâ”€â”€ slug.ts              # URL slug generation
+â”‚   â”œâ”€â”€ supabase.ts          # Singleton Supabase client
+â”‚   â”œâ”€â”€ time.ts              # Date formatting utilities
+â”‚   â”œâ”€â”€ wallAttachment.ts    # Door/window snap-to-wall geometry
+â”‚   â”œâ”€â”€ wallEditing.ts       # Wall node drag/move operations
+â”‚   â””â”€â”€ wallPath.ts          # Arc bulge math (curved wall geometry)
+â”‚
+â”œâ”€â”€ data/
+â”‚   â””â”€â”€ templates/           # Built-in floor plan templates (blank, open-plan, mixed, executive)
+â”‚
+â”œâ”€â”€ types/                   # TypeScript interfaces â€” elements, employee, floor, project,
+â”‚                            #   team, auth, insights, collaboration
+â”‚
+â””â”€â”€ __tests__/               # Vitest unit and component tests (~35 test files)
+    â””â”€â”€ analyzers/           # Per-analyzer unit tests
 ```
 
 ---
@@ -337,7 +337,7 @@ src/
 
 ## Deployment
 
-For the main-site deployment path, build with `npm run build:oando` and serve the emitted `dist/` bundle from `/OandOcraft/`. The host must rewrite nested client routes such as `/OandOcraft/login`, `/OandOcraft/dashboard`, `/OandOcraft/t/*`, `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and `/OandOcraft/invite/*` back to `/OandOcraft/index.html`. See [docs/OandOcraft_MAIN_SITE_INTEGRATION.md](docs/OandOcraft_MAIN_SITE_INTEGRATION.md) for the exact host rules, Supabase redirect URLs, and production env vars.
+For the main-site deployment path, build with `npm run build:oando` and serve the emitted `dist/` bundle from `/OandOcraft/`. The host must rewrite nested client routes such as `/OandOcraft/login`, `/OandOcraft/dashboard`, `/OandOcraft/t/*`, `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and `/OandOcraft/invite/*` back to `/OandOcraft/index.html`. See [docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md](docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md) for the exact host rules, Supabase redirect URLs, and production env vars.
 
 Edge Functions are deployed to Supabase:
 
@@ -348,10 +348,10 @@ npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://oando.co.in/O
 
 Operational docs:
 
-- [Admin runbook](docs/OandOcraft_ADMIN_RUNBOOK.md)
-- [Supabase recovery runbook](docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md)
-- [Security review](docs/OandOcraft_SECURITY_REVIEW.md)
-- [Release runbook](docs/OandOcraft_RELEASE_RUNBOOK.md)
+- [Admin runbook](docs/guide/OandOcraft_ADMIN_RUNBOOK.md)
+- [Supabase recovery runbook](docs/guide/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md)
+- [Security review](docs/guide/OandOcraft_SECURITY_REVIEW.md)
+- [Release runbook](docs/guide/OandOcraft_RELEASE_RUNBOOK.md)
 
 ---
 
@@ -367,4 +367,5 @@ Operational docs:
 
 ## License
 
-[MIT](LICENSE) — © OandOcraft contributors
+[MIT](LICENSE) â€” Â© OandOcraft contributors
+

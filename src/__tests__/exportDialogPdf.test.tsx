@@ -96,7 +96,7 @@ describe('ExportDialog PDF + PNG wiring', () => {
     expect(exportPdfMock).not.toHaveBeenCalled()
     expect(useUIStore.getState().exportDialogOpen).toBe(true)
     // Export failures surface via the global Toaster, not inline in the
-    // dialog (see docs/ERROR_DISPLAY_CONVENTION.md).
+    // dialog (see docs/guide/ERROR_DISPLAY_CONVENTION.md).
     const toasts = useToastStore.getState().items
     expect(toasts).toHaveLength(1)
     expect(toasts[0].tone).toBe('error')

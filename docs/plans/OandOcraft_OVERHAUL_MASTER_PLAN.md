@@ -10,7 +10,7 @@ The repo accumulated multiple planning docs because requests were delivered incr
 
 From now on:
 - This file is the only authoritative overhaul plan.
-- `docs/OandOcraft_PHASE_CHECKLIST.md` remains the execution checklist.
+- `docs/plans/OandOcraft_PHASE_CHECKLIST.md` remains the execution checklist.
 - Other plan docs are supporting references, not independent roadmaps.
 
 ## Executive goals
@@ -189,3 +189,4 @@ No schema-breaking backend dependency required for phases 1-5.
 4. Phase 5 (compass).
 5. Phase 3 (premium visual/system polish).
 6. Phase 6 (2.5D mode).
+

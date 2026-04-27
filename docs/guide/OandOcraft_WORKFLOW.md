@@ -1,4 +1,4 @@
-# OandOcraft Project Workflow
+﻿# OandOcraft Project Workflow
 
 Purpose: keep OandOcraft execution disciplined while the app is being overhauled from a Floorcraft-derived planner into a controlled O&O workplace planning product.
 
@@ -27,10 +27,10 @@ git branch --show-current
 2. Review the active planning docs:
 
 ```bash
-docs/OandOcraft_PHASE_CHECKLIST.md
-docs/OandOcraft_OVERHAUL_MASTER_PLAN.md
-docs/OandOcraft_MAIN_SITE_INTEGRATION.md
-docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md
+docs/plans/OandOcraft_PHASE_CHECKLIST.md
+docs/plans/OandOcraft_OVERHAUL_MASTER_PLAN.md
+docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md
+docs/plans/OandOcraft_BLOCK_LIBRARY_SOURCES.md
 ```
 
 3. Pick one phase or one small cross-phase slice.
@@ -230,3 +230,4 @@ Broken editor save:
 2. Use office history recovery if needed.
 3. Confirm RLS role and office permission.
 4. Confirm payload size and schema version.
+

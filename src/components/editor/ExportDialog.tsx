@@ -32,7 +32,7 @@ export function ExportDialog() {
   const employees = canViewPII ? rawEmployees : redactEmployeeMap(rawEmployees)
   // Export failures are async outcomes (PDF render blew up, canvas
   // unmounted) — no single field is at fault — so they surface via the
-  // global Toaster per docs/ERROR_DISPLAY_CONVENTION.md, not inline here.
+  // global Toaster per docs/guide/ERROR_DISPLAY_CONVENTION.md, not inline here.
   const pushToast = useToastStore((s) => s.push)
 
   const close = () => {

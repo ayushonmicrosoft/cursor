@@ -14,16 +14,16 @@ Status key:
 
 Working docs:
 
-- `docs/OandOcraft_OVERHAUL_MASTER_PLAN.md` (authoritative roadmap)
-- `docs/OandOcraft_PHASE_CHECKLIST.md` (execution checklist)
-- `docs/OandOcraft_PROJECT_CHECKLIST.md`
-- `docs/OandOcraft_PROJECT_MAP.html`
-- `docs/OandOcraft_MAIN_SITE_INTEGRATION.md`
-- `docs/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
-- `docs/OandOcraft_RELEASE_RUNBOOK.md`
-- `docs/OandOcraft_ADMIN_RUNBOOK.md`
-- `docs/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`
-- `docs/OandOcraft_SECURITY_REVIEW.md`
+- `docs/plans/OandOcraft_OVERHAUL_MASTER_PLAN.md` (authoritative roadmap)
+- `docs/plans/OandOcraft_PHASE_CHECKLIST.md` (execution checklist)
+- `docs/plans/OandOcraft_PROJECT_CHECKLIST.md`
+- `docs/guide/OandOcraft_PROJECT_MAP.html`
+- `docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md`
+- `docs/plans/OandOcraft_BLOCK_LIBRARY_SOURCES.md`
+- `docs/guide/OandOcraft_RELEASE_RUNBOOK.md`
+- `docs/guide/OandOcraft_ADMIN_RUNBOOK.md`
+- `docs/guide/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`
+- `docs/guide/OandOcraft_SECURITY_REVIEW.md`
 
 ## Phase 0 - Repo, Deployment, And Ground Rules
 
@@ -169,3 +169,4 @@ Exit criteria:
 - Supabase production Site URL, redirect allow-list, and Edge Function `APP_URL` must be changed in the hosted project.
 - Hosted database row-count capture and duplicate-office cleanup require hosted database credentials/access.
 - Live production smoke tests, Supabase auth redirect verification, admin recovery verification, and end-to-end production flow require the production host or approved staging environment.
+
