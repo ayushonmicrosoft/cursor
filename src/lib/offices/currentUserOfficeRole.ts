@@ -1,20 +1,9 @@
 import { supabase } from '../supabase'
 import type { OfficeRole } from './permissionsRepository'
 
-const OFFICE_ROLES: ReadonlySet<string> = new Set([
-  'owner',
-  'editor',
-  'hr-editor',
-  'space-planner',
-  'viewer',
-])
-
 /**
- * Resolve the current viewer's effective role for a given office.
- *
- * Team admins are owner-equivalent for the single O&O workspace model.
- * Non-admins use explicit office_permissions overrides, then fall back to
- * editor for team members with office access.
+ * Resolve the current viewer's effective role.
+ * In the single-role model, any team member is an 'admin'.
  */
 export async function currentUserOfficeRole(
   officeId: string,
@@ -25,6 +14,7 @@ export async function currentUserOfficeRole(
     .select('team_id')
     .eq('id', officeId)
     .maybeSingle()
+  
   if (officeError) return null
 
   const teamId = (office as { team_id?: string } | null)?.team_id
@@ -36,23 +26,9 @@ export async function currentUserOfficeRole(
     .eq('team_id', teamId)
     .eq('user_id', userId)
     .maybeSingle()
+  
   if (membershipError) return null
 
-  if ((membership as { role?: string } | null)?.role === 'admin') {
-    return 'owner'
-  }
-
-  const { data, error } = await supabase
-    .from('office_permissions')
-    .select('role')
-    .eq('office_id', officeId)
-    .eq('user_id', userId)
-    .maybeSingle()
-  if (error) return null
-
-  const explicit = (data as { role?: string } | null)?.role
-  if (explicit && OFFICE_ROLES.has(explicit)) {
-    return explicit as OfficeRole
-  }
-  return 'editor'
+  // If they are in the team at all, they get full admin access in this model.
+  return membership ? 'admin' : null
 }

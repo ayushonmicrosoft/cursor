@@ -1,18 +1,15 @@
-import { Layer, Rect, Text } from 'react-konva'
+import { Group, Rect, Text } from 'react-konva'
 import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { useFloorStore } from '../../../stores/floorStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 
 /**
  * Renders translucent, labeled rectangles for every neighborhood on the
- * active floor. The layer sits BELOW `ElementRenderer` so seats, walls,
+ * active floor. The group sits BELOW `ElementRenderer` so seats, walls,
  * and furniture render on top of the tint.
  *
  * `listening={false}` — neighborhood picking happens through the
- * `NeighborhoodEditOverlay` so this layer stays cheap on pointer events.
- * The main canvas doesn't need to hit-test tinted rectangles; the
- * dedicated overlay owns that flow and lets this layer batch-repaint
- * without interaction concerns.
+ * `NeighborhoodEditOverlay` so this group stays cheap on pointer events.
  */
 export function NeighborhoodLayer() {
   const neighborhoods = useNeighborhoodStore((s) => s.neighborhoods)
@@ -24,10 +21,10 @@ export function NeighborhoodLayer() {
     (n) => n.floorId === activeFloorId,
   )
 
-  if (visible.length === 0) return <Layer listening={false} />
+  if (visible.length === 0) return null
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {visible.flatMap((n) => {
         const left = n.x - n.width / 2
         const top = n.y - n.height / 2
@@ -39,11 +36,6 @@ export function NeighborhoodLayer() {
             y={top}
             width={n.width}
             height={n.height}
-            // Fill: hex color at 15% alpha. Konva accepts an 8-digit hex
-            // string — '26' ≈ 0.15 * 255 rounded. Keeping the alpha in
-            // the fill string (rather than via the `opacity` attribute)
-            // means the stroke stays fully opaque so the outline reads
-            // clearly even when the tint is very faint.
             fill={`${n.color}26`}
             stroke={n.color}
             strokeWidth={1}
@@ -63,6 +55,6 @@ export function NeighborhoodLayer() {
           ) : null,
         ]
       })}
-    </Layer>
+    </Group>
   )
 }

@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { nanoid } from 'nanoid'
 
 const STORAGE_KEY = 'floocraft.library.customShapes'
 const MAX_SHAPES = 25
@@ -25,7 +24,7 @@ export const useCustomShapes = create<CustomShapesState>()(
       shapes: [],
       addShape: (name, svgSource) => {
         if (get().shapes.length >= MAX_SHAPES) return null
-        const shape: CustomShape = { id: nanoid(8), name, svgSource }
+        const shape: CustomShape = { id: crypto.randomUUID().slice(0, 8), name, svgSource }
         set((state) => ({ shapes: [...state.shapes, shape] }))
         return shape
       },

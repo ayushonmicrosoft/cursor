@@ -1,4 +1,4 @@
-import { Stage } from 'react-konva'
+import { Stage, Layer } from 'react-konva'
 import { useRef, useCallback, useState, useEffect } from 'react'
 import type Konva from 'konva'
 import { useCanvasStore } from '../../../stores/canvasStore'
@@ -31,7 +31,6 @@ import { useEmployeeStore } from '../../../stores/employeeStore'
 import { consumeQueueAtElement } from '../../../lib/multiSeatAssign'
 import { useToastStore } from '../../../stores/toastStore'
 import { findNearestStraightWallHit } from '../../../lib/wallAttachment'
-import { nanoid } from 'nanoid'
 import type { DoorElement, WindowElement, CanvasElement } from '../../../types/elements'
 import { LIBRARY_DRAG_MIME, buildLibraryElement, type LibraryItem } from '../LeftSidebar/ElementLibrary'
 import {
@@ -84,7 +83,16 @@ export function CanvasStage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 800, height: 600 })
 
-  const { stageX, stageY, stageScale, setStagePosition, activeTool } = useCanvasStore(useShallow((s) => ({ stageX: s.stageX, stageY: s.stageY, stageScale: s.stageScale, setStagePosition: s.setStagePosition, activeTool: s.activeTool })))
+  const { stageX, stageY, stageScale, setStagePosition, activeTool, settings } = useCanvasStore(useShallow((s) => ({
+    stageX: s.stageX,
+    stageY: s.stageY,
+    stageScale: s.stageScale,
+    setStagePosition: s.setStagePosition,
+    activeTool: s.activeTool,
+    settings: s.settings
+  })))
+  const northRotation = settings.northRotation ?? 0
+
   const { clearSelection, setContextMenu } = useUIStore(useShallow((s) => ({ clearSelection: s.clearSelection, setContextMenu: s.setContextMenu })))
   const canEdit = useCan('editMap')
   // Annotations are explicitly `editMap || editRoster` — HR editors should
@@ -455,8 +463,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         setMeasureSession((prev) => {
           // Clicking AFTER a finalised session starts fresh — the user
           // is effectively saying "new measurement" by clicking again.
@@ -481,8 +489,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         onWallMouseDown(canvasX, canvasY)
         return
       }
@@ -497,8 +505,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         const cs = useCalibrateScaleStore.getState()
         // Auto-arm so a fresh click on the tool's first use still works
         // without relying on a separate "begin()" call site.
@@ -515,8 +523,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
 
         if (activeTool === 'free-text') {
           const elementsStore = useElementsStore.getState()
@@ -546,8 +554,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         neighborhoodDragRef.current = { startX: canvasX, startY: canvasY }
         setNeighborhoodPreview({
           startX: canvasX,
@@ -575,8 +583,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
 
         // Resolve element under cursor via the same ancestor-group walk
         // the assignment-click path uses. `target === getStage()` means
@@ -608,8 +616,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         // Snap to the nearest straight wall segment. If no wall is close,
         // ignore the click — don't silently create an orphaned element.
         const elementsStore = useElementsStore.getState()
@@ -626,7 +634,7 @@ export function CanvasStage() {
         const nextZ = elementsStore.getMaxZIndex() + 1
         if (activeTool === 'door') {
           const door: DoorElement = {
-            id: nanoid(),
+            id: crypto.randomUUID(),
             type: 'door',
             x: hit.point.x,
             y: hit.point.y,
@@ -653,7 +661,7 @@ export function CanvasStage() {
           useUIStore.getState().setSelectedIds([door.id])
         } else {
           const win: WindowElement = {
-            id: nanoid(),
+            id: crypto.randomUUID(),
             type: 'window',
             x: hit.point.x,
             y: hit.point.y,
@@ -700,8 +708,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         marqueeStartRef.current = {
           x: canvasX,
           y: canvasY,
@@ -765,8 +773,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         const start = marqueeStartRef.current
         const x = Math.min(start.x, canvasX)
         const y = Math.min(start.y, canvasY)
@@ -781,8 +789,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         handleCanvasMouseMove(canvasX, canvasY)
       }
 
@@ -811,8 +819,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         setMeasureSession((prev) =>
           prev.points.length === 0 || prev.finalised
             ? prev
@@ -828,8 +836,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         const start = shapeDragRef.current
         setShapePreview({
           tool: activeTool,
@@ -849,8 +857,8 @@ export function CanvasStage() {
         if (!stage) return
         const pointer = stage.getPointerPosition()
         if (!pointer) return
-        const canvasX = (pointer.x - stageX) / stageScale
-        const canvasY = (pointer.y - stageY) / stageScale
+        const transform = stage.getAbsoluteTransform().copy().invert()
+        const { x: canvasX, y: canvasY } = transform.point(pointer)
         const start = neighborhoodDragRef.current
         setNeighborhoodPreview({
           startX: start.startX,
@@ -989,7 +997,7 @@ export function CanvasStage() {
   // below.
   useEffect(() => {
     if (activeTool !== 'measure') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setMeasureSession((prev) =>
         prev.points.length > 0 || prev.cursor || prev.finalised
           ? { points: [], cursor: null, finalised: false }
@@ -1004,7 +1012,7 @@ export function CanvasStage() {
   // cascade-render.
   useEffect(() => {
     if (activeTool !== 'door' && activeTool !== 'window') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setGhostCursor((g) => (g ? null : g))
     }
   }, [activeTool])
@@ -1088,8 +1096,8 @@ export function CanvasStage() {
       if (!stage) return
       const pointer = stage.getPointerPosition()
       if (!pointer) return
-      const canvasX = (pointer.x - stageX) / stageScale
-      const canvasY = (pointer.y - stageY) / stageScale
+      const transform = stage.getAbsoluteTransform().copy().invert()
+      const { x: canvasX, y: canvasY } = transform.point(pointer)
       onWallMouseUp(canvasX, canvasY)
     }
 
@@ -1115,7 +1123,7 @@ export function CanvasStage() {
           (n) => n.floorId === floorId,
         ).length
         const paletteIdx = existingCount % NEIGHBORHOOD_PALETTE.length
-        const id = nanoid()
+        const id = crypto.randomUUID()
         nbStore.addNeighborhood({
           id,
           name: `Neighborhood ${existingCount + 1}`,
@@ -1199,8 +1207,8 @@ export function CanvasStage() {
         stage.setPointersPositions(e.nativeEvent)
         const pointer = stage.getPointerPosition()
         if (pointer) {
-          const cx = (pointer.x - stageX) / stageScale
-          const cy = (pointer.y - stageY) / stageScale
+          const transform = stage.getAbsoluteTransform().copy().invert()
+          const { x: cx, y: cy } = transform.point(pointer)
           const elements = useElementsStore.getState().elements
           let hitId: string | null = null
           let hitZ = -Infinity
@@ -1396,6 +1404,7 @@ export function CanvasStage() {
         y={stageY}
         scaleX={stageScale}
         scaleY={stageScale}
+        rotation={northRotation}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -1403,45 +1412,50 @@ export function CanvasStage() {
         onDblClick={handleStageDoubleClick}
         onContextMenu={(e) => e.evt.preventDefault()}
       >
-        <GridLayer width={size.width} height={size.height} />
-        {/* NeighborhoodLayer sits between the grid and the element layer so
-            seats, walls, and furniture paint on top of the translucent tint. */}
-        <NeighborhoodLayer />
+        {/* ── Layer 1: Background ─────────────────────────────────── */}
+        <Layer listening={false}>
+          <GridLayer width={size.width} height={size.height} />
+          {/* NeighborhoodLayer sits between the grid and the element layer so
+              seats, walls, and furniture paint on top of the translucent tint. */}
+          <NeighborhoodLayer />
+        </Layer>
+
+        {/* ── Layer 2: Content (interactive — main element tree) ── */}
         <ElementRenderer />
-        <DimensionLayer />
-        <HoverOutline />
+
+        {/* ── Layer 3: Interactive overlays (own layers for Transformer / drag handles) ── */}
         <SelectionOverlay />
         <WallEditOverlay />
-        {orgChartOverlayEnabled && <OrgChartOverlay />}
-        {seatMapColorMode && <SeatMapColorMode />}
-        <AlignmentGuides guides={dragAlignmentGuides} />
-        <WallDrawingOverlay {...wallDrawingState} />
-        <AttachmentGhost
-          tool={activeTool}
-          cursor={ghostCursor}
-          stageScale={stageScale}
-          snapPx={DOOR_WINDOW_SNAP_PX}
-          onHitChange={setGhostHasHit}
-        />
-        <MarqueeOverlay rect={marquee} />
-        <ShapeDrawingOverlay preview={shapePreview} />
-        <MeasureOverlay
-          session={measureSession}
-          scale={projectScale}
-          scaleUnit={projectScaleUnit}
-        />
-        <CalibrateOverlay />
         <NeighborhoodEditOverlay preview={neighborhoodPreview} />
-        {/* Occupancy chips render last so they float above the canvas
-            content — the layer is `listening={false}` so they stay
-            purely decorative. */}
-        {showNeighborhoodOverlay && <NeighborhoodOverlay />}
-        {/* Equipment-needs overlay: translucent tint per assigned desk
-            showing whether the seated employee's equipmentNeeds are met.
-            Gated on overlaysStore.equipment (default off). */}
-        {showEquipmentOverlay && <EquipmentOverlayLayer />}
-        {/* Annotation pins render on their own layer above the element
-            layer so a pin never disappears behind a wall or furniture. */}
+
+        {/* ── Layer 4: Decorative overlays (non-interactive, shared canvas) ── */}
+        <Layer listening={false}>
+          <DimensionLayer />
+          <HoverOutline />
+          {orgChartOverlayEnabled && <OrgChartOverlay />}
+          {seatMapColorMode && <SeatMapColorMode />}
+          <AlignmentGuides guides={dragAlignmentGuides} />
+          <WallDrawingOverlay {...wallDrawingState} />
+          <AttachmentGhost
+            tool={activeTool}
+            cursor={ghostCursor}
+            stageScale={stageScale}
+            snapPx={DOOR_WINDOW_SNAP_PX}
+            onHitChange={setGhostHasHit}
+          />
+          <MarqueeOverlay rect={marquee} />
+          <ShapeDrawingOverlay preview={shapePreview} />
+          <MeasureOverlay
+            session={measureSession}
+            scale={projectScale}
+            scaleUnit={projectScaleUnit}
+          />
+          <CalibrateOverlay />
+          {showNeighborhoodOverlay && <NeighborhoodOverlay />}
+          {showEquipmentOverlay && <EquipmentOverlayLayer />}
+        </Layer>
+
+        {/* ── Layer 5: Annotations (interactive — pin clicks) ────── */}
         <AnnotationLayer
           onPinClick={(id, sx, sy) => {
             setLastPinAnchor({ x: sx, y: sy })

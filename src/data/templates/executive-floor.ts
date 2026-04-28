@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 import type {
   CanvasElement,
   DeskElement,
@@ -10,7 +9,7 @@ import type {
 
 function makeDesk(x: number, y: number, index: number, zIndex: number): DeskElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'desk',
     x,
     y,
@@ -39,7 +38,7 @@ function makeWall(
   label: string,
 ): WallElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'wall',
     x,
     y,
@@ -73,7 +72,7 @@ export function createExecutiveFloorTemplate(): CanvasElement[] {
   const topOfficeXPositions = [50, 210, 370, 530, 690, 850]
   for (let i = 0; i < 6; i++) {
     const office: PrivateOfficeElement = {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       type: 'private-office',
       x: topOfficeXPositions[i],
       y: 50,
@@ -98,7 +97,7 @@ export function createExecutiveFloorTemplate(): CanvasElement[] {
   for (let i = 0; i < 3; i++) {
     // Left side
     const leftOffice: PrivateOfficeElement = {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       type: 'private-office',
       x: 50,
       y: sideOfficeYPositions[i],
@@ -119,7 +118,7 @@ export function createExecutiveFloorTemplate(): CanvasElement[] {
 
     // Right side
     const rightOffice: PrivateOfficeElement = {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       type: 'private-office',
       x: 1010,
       y: sideOfficeYPositions[i],
@@ -141,7 +140,7 @@ export function createExecutiveFloorTemplate(): CanvasElement[] {
 
   // --- Boardroom (zIndex: 3) ---
   const boardroom: ConferenceRoomElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'conference-room',
     x: 450,
     y: 550,
@@ -161,7 +160,7 @@ export function createExecutiveFloorTemplate(): CanvasElement[] {
 
   // --- Executive lounge (zIndex: 1) ---
   const lounge: CommonAreaElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'common-area',
     x: 800,
     y: 600,

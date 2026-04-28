@@ -1,14 +1,13 @@
 import { useId, useMemo, useRef, type KeyboardEvent, type ReactNode } from 'react'
-import { AlertTriangle, BarChart3, Settings, Users } from 'lucide-react'
+import { AlertTriangle, BarChart3, Settings } from 'lucide-react'
 import { useInsightsStore } from '../../../stores/insightsStore'
 import { useUIStore } from '../../../stores/uiStore'
 import { InsightsPanel } from './InsightsPanel'
-import { PeoplePanel } from './PeoplePanel'
 import { PropertiesPanel } from './PropertiesPanel'
 import { ReportsPanel } from './ReportsPanel'
 import { SidebarToggle } from './SidebarToggle'
 
-type TabId = 'properties' | 'people' | 'reports' | 'insights'
+type TabId = 'properties' | 'reports' | 'insights'
 
 export function RightSidebar() {
   const tab = useUIStore((s) => s.rightSidebarTab)
@@ -28,7 +27,6 @@ export function RightSidebar() {
 
   const tabs: { id: TabId; label: string; icon: ReactNode; secondary?: boolean }[] = [
     { id: 'properties', label: 'Properties', icon: <Settings size={13} aria-hidden="true" /> },
-    { id: 'people', label: 'People', icon: <Users size={13} aria-hidden="true" />, secondary: true },
     { id: 'reports', label: 'Reports', icon: <BarChart3 size={13} aria-hidden="true" />, secondary: true },
     { id: 'insights', label: 'Insights', icon: <AlertTriangle size={13} aria-hidden="true" />, secondary: true },
   ]
@@ -42,7 +40,6 @@ export function RightSidebar() {
 
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
     properties: null,
-    people: null,
     reports: null,
     insights: null,
   })
@@ -123,7 +120,6 @@ export function RightSidebar() {
         className="flex-1 overflow-y-auto bg-gray-50/60 p-2.5 dark:bg-gray-950"
       >
         {tab === 'properties' && <PropertiesPanel />}
-        {tab === 'people' && <PeoplePanel />}
         {tab === 'reports' && <ReportsPanel />}
         {tab === 'insights' && <InsightsPanel />}
       </div>

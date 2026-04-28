@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 import type {
   CanvasElement,
   DeskElement,
@@ -113,7 +112,7 @@ function makeWall(
   const width = Math.max(...xs) - Math.min(...xs)
   const height = Math.max(...ys) - Math.min(...ys)
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'wall',
     x,
     y,
@@ -142,7 +141,7 @@ function makeDoor(
   label: string,
 ): DoorElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'door',
     x,
     y,
@@ -171,7 +170,7 @@ function makeWindow(
   label: string,
 ): WindowElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'window',
     x,
     y,
@@ -196,7 +195,7 @@ function makeDesk(
   opts: { equipment?: string[]; label?: string } = {},
 ): DeskElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'desk',
     x,
     y,
@@ -224,7 +223,7 @@ function makeWorkstation(
   opts: { equipment?: string[]; label?: string; width?: number; height?: number } = {},
 ): WorkstationElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'workstation',
     x,
     y,
@@ -257,7 +256,7 @@ function makePrivateOffice(
   opts: { capacity?: 1 | 2; equipment?: string[] } = {},
 ): PrivateOfficeElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'private-office',
     x,
     y,
@@ -286,7 +285,7 @@ function makeConferenceRoom(
   capacity: number,
 ): ConferenceRoomElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'conference-room',
     x,
     y,
@@ -306,7 +305,7 @@ function makeConferenceRoom(
 
 function makePhoneBooth(x: number, y: number, label: string): PhoneBoothElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'phone-booth',
     x,
     y,
@@ -330,7 +329,7 @@ function makeCommonArea(
   name: string,
 ): CommonAreaElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'common-area',
     x,
     y,
@@ -349,7 +348,7 @@ function makeCommonArea(
 
 function makePlant(x: number, y: number): PlantElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'plant',
     x,
     y,
@@ -367,7 +366,7 @@ function makePlant(x: number, y: number): PlantElement {
 
 function makeSofa(x: number, y: number, width = 120, height = 56): SofaElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'sofa',
     x,
     y,
@@ -391,7 +390,7 @@ function makeConferenceTable(
   seatCount = 8,
 ): TableElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'table-conference',
     x,
     y,
@@ -500,7 +499,7 @@ interface FloorBuild {
 function buildGroundFloor(): FloorBuild {
   const els: CanvasElement[] = []
   const seatIds: string[] = []
-  const floorId = nanoid()
+  const floorId = crypto.randomUUID()
 
   // Perimeter walls — one intentional angled segment in the top-right so the
   // demo shows off non-rectilinear plans. Canvas is 1200x800.
@@ -622,7 +621,7 @@ function buildGroundFloor(): FloorBuild {
   // so a first-time user immediately sees how notes land on the canvas.
   const annotations: Annotation[] = [
     {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       body: 'Click any desk or office to see its assignee card — drag from the roster to reassign.',
       authorName: 'OandOcraft team',
       createdAt: new Date().toISOString(),
@@ -630,7 +629,7 @@ function buildGroundFloor(): FloorBuild {
       anchor: { type: 'floor-position', floorId, x: 120, y: 150 },
     },
     {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       body: 'Doors snap to walls as you drag them. Try the "Door" tool in the library.',
       authorName: 'OandOcraft team',
       createdAt: new Date().toISOString(),
@@ -667,7 +666,7 @@ function buildGroundFloor(): FloorBuild {
 function buildEngineeringFloor(): FloorBuild {
   const els: CanvasElement[] = []
   const seatIds: string[] = []
-  const floorId = nanoid()
+  const floorId = crypto.randomUUID()
 
   // Perimeter — an angled NW corner + a curved SE corner so the demo
   // exercises both the `points` polyline and the `bulges` curved-segment
@@ -721,7 +720,7 @@ function buildEngineeringFloor(): FloorBuild {
     // 440x240 — the previous 400x220 was 4px too tight on each axis to
     // fully contain the 3x2 desk grid laid out at the offsets below.
     const n: Neighborhood = {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       name: sq.name,
       color: ENG_SQUAD_COLORS[sq.name],
       x: sq.cx,
@@ -800,7 +799,7 @@ function buildEngineeringFloor(): FloorBuild {
   const annotations: Annotation[] = firstNeighborhoodId
     ? [
         {
-          id: nanoid(),
+          id: crypto.randomUUID(),
           body: 'Neighborhoods group seats by team. Drag the rect to move a whole squad; the desk tints update automatically.',
           authorName: 'OandOcraft team',
           createdAt: new Date().toISOString(),
@@ -808,7 +807,7 @@ function buildEngineeringFloor(): FloorBuild {
           anchor: { type: 'floor-position', floorId, x: 260, y: 80 },
         },
         {
-          id: nanoid(),
+          id: crypto.randomUUID(),
           body: 'The standing-desk badge here is driven by the occupant\'s "standing-desk" accommodation — swap to show the accommodation glyph.',
           authorName: 'OandOcraft team',
           createdAt: new Date().toISOString(),
@@ -850,7 +849,7 @@ function buildEngineeringFloor(): FloorBuild {
 function buildLeadershipFloor(): FloorBuild {
   const els: CanvasElement[] = []
   const seatIds: string[] = []
-  const floorId = nanoid()
+  const floorId = crypto.randomUUID()
 
   // Perimeter — straightforward rectangle with a rounded NE corner via a
   // bulge on the north wall.
@@ -958,7 +957,7 @@ function buildLeadershipFloor(): FloorBuild {
 
   const annotations: Annotation[] = [
     {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       body: 'Use floor tabs at the bottom to move between the three floors. Each carries its own neighborhoods and annotations.',
       authorName: 'OandOcraft team',
       createdAt: new Date().toISOString(),
@@ -1771,7 +1770,7 @@ export function buildDemoOfficePayload(): DemoOfficePayload {
   const now = new Date().toISOString()
   const employees: Record<string, Employee> = {}
   for (const seed of EMPLOYEE_SEEDS) {
-    const id = nanoid()
+    const id = crypto.randomUUID()
     const seatId =
       seed.seatIndex !== null && seed.seatIndex < allSeats.length
         ? allSeats[seed.seatIndex]
@@ -1779,7 +1778,7 @@ export function buildDemoOfficePayload(): DemoOfficePayload {
     const floorId = seatId ? seatToFloor[seatId] ?? null : null
 
     const accommodations: Accommodation[] = (seed.accommodations ?? []).map((type) => ({
-      id: nanoid(),
+      id: crypto.randomUUID(),
       type,
       notes: null,
       createdAt: now,

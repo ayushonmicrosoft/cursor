@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useCanvasStore, type ToolType, type WallDrawStyle } from '../../../stores/canvasStore'
-import { useCan } from '../../../hooks/useCan'
+
 import { useFirstUseTooltip } from '../../../hooks/useFirstUseTooltip'
 import { FirstUseTooltip } from '../FirstUseTooltip'
 import {
@@ -135,21 +135,15 @@ export function ToolSelector() {
   const setActiveTool = useCanvasStore((s) => s.setActiveTool)
   const wallDrawStyle = useCanvasStore((s) => s.wallDrawStyle)
   const setWallDrawStyle = useCanvasStore((s) => s.setWallDrawStyle)
-  const canEdit = useCan('editMap')
+
   const { showRichTooltip, markToolUsed } = useFirstUseTooltip()
 
   // Hovered tool id; only one rich tooltip is visible at a time to avoid
   // a stack of cards when the user sweeps the cursor down the rail.
   const [hoveredToolId, setHoveredToolId] = useState<ToolType | null>(null)
 
-  // Viewers only get the navigation tools (select, pan). The creation tools
-  // would be silently no-ops against CanvasStage's canEdit guard — hiding
-  // them keeps the picker from implying capabilities the role doesn't have.
-  // Viewers keep Select, Pan, and Measure — the first two are navigation,
-  // the third is read-only, so none expand the viewer's capability surface.
-  const visibleTools = canEdit
-    ? tools
-    : tools.filter((t) => t.id === 'select' || t.id === 'pan' || t.id === 'measure')
+  // Admin-only architecture: all tools are always visible.
+  const visibleTools = tools
 
   const handleToolClick = (tool: ToolDef) => {
     setActiveTool(tool.id)

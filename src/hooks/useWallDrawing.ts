@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useCanvasStore } from '../stores/canvasStore'
 import { useElementsStore } from '../stores/elementsStore'
 import { useUIStore } from '../stores/uiStore'
-import { nanoid } from 'nanoid'
 import type { WallElement } from '../types/elements'
 import { snapToGrid } from '../lib/geometry'
 import { signedPerpOffset, clampBulge } from '../lib/wallEditing'
@@ -311,7 +310,7 @@ export function useWallDrawing() {
       // uses whatever is selected right now.
       const wallDrawStyle = useCanvasStore.getState().wallDrawStyle
       const wall: WallElement = {
-        id: nanoid(),
+        id: crypto.randomUUID(),
         type: 'wall',
         x: 0,
         y: 0,

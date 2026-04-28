@@ -1,6 +1,9 @@
-// Zero-dependency class-name concatenator. Filters out falsy parts (so
-// the common `cond && 'class'` / `cond ? 'a' : null` patterns just work)
-// and joins what remains with a single space.
-export function cn(...parts: Array<string | false | null | undefined>): string {
-  return parts.filter(Boolean).join(' ')
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+/**
+ * Combines Tailwind classes safely without collisions.
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }

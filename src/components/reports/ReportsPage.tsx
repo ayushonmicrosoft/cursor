@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { BarChart2, Download, Users } from 'lucide-react'
-import { useFloorStore } from '../../stores/floorStore'
+import { useFloorStore, useActiveFloor } from '../../stores/floorStore'
 import { useVisibleEmployees } from '../../hooks/useVisibleEmployees'
-import { useAllFloorElements } from '../../hooks/useActiveFloorElements'
+import { useElementsStore } from '../../stores/elementsStore'
 import { useCan } from '../../hooks/useCan'
 import {
   floorUtilization,
@@ -18,13 +18,7 @@ import { OccupancyDashboard } from './OccupancyDashboard'
 
 /**
  * Wave 13C: refresh the Reports surface to match the JSON-Crack/Linear
- * chrome the rest of the editor uses. The page is still a single
- * components-all-in-one view (sibling reports like Move Planner and
- * Employee Directory are invoked from the editor shell and keep their
- * own routing), but the sections now sit under a sticky in-page tab bar
- * fronted by a KPI stat strip so the room-level numbers are visible
- * without scrolling. Picking a tab just toggles which section renders;
- * no routing changes.
+ * chrome the rest of the editor uses.
  */
 
 type ReportTab = 'occupancy' | 'utilization' | 'departments' | 'unassigned' | 'churn'
@@ -45,20 +39,17 @@ const TABS: TabDef[] = [
 export function ReportsPage() {
   const canView = useCan('viewReports')
   const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
-  const floors = useFloorStore((s) => s.floors)
-  // Headcount still counts accurately (redaction preserves id/seatId/
-  // department/status), but the unassigned table renders initials + blank
-  // email so a viewer-role report consumer sees the same GDPR-safe view
-  // as on the roster.
+  
+  const floor = useActiveFloor()
+  const elements = useElementsStore((s) => s.elements)
   const employees = useVisibleEmployees()
-  const floorsWithElements = useAllFloorElements()
 
-  const utilRows = useMemo(() => floorUtilization(floors), [floors])
+  const utilRows = useMemo(() => floorUtilization([floor]), [floor])
   const deptRows = useMemo(() => departmentHeadcount(employees), [employees])
   const unassignedRows = useMemo(() => unassignedEmployees(employees), [employees])
   const stats = useMemo(
-    () => computeReportsStats(employees, floorsWithElements),
-    [employees, floorsWithElements],
+    () => computeReportsStats(employees, elements),
+    [employees, elements],
   )
 
   const [activeTab, setActiveTab] = useState<ReportTab>('occupancy')
@@ -74,25 +65,17 @@ export function ReportsPage() {
     return <div className="p-6 text-gray-600 dark:text-gray-300">Not authorized to view reports.</div>
   }
 
-  const floorCompareHref =
-    teamSlug && officeSlug
-      ? `/t/${teamSlug}/o/${officeSlug}/reports/floor-compare`
-      : null
-
   const scenariosHref =
     teamSlug && officeSlug
       ? `/t/${teamSlug}/o/${officeSlug}/reports/scenarios`
       : null
 
-  const isEmpty = stats.totalEmployees === 0 && stats.floorCount === 0
+  const isEmpty = stats.totalEmployees === 0 && stats.totalSeats === 0
 
   if (isEmpty) {
     return <EmptyState teamSlug={teamSlug} officeSlug={officeSlug} />
   }
 
-  // Roving tabindex: only the selected tab is in the tab order; arrow
-  // keys cycle between tabs. Copies the FloorSwitcher pattern so the
-  // editor's two primary tab strips share one mental model.
   const onTablistKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (
       e.key !== 'ArrowLeft' &&
@@ -139,40 +122,19 @@ export function ReportsPage() {
         </button>
       </header>
 
-      {/* KPI strip. Matches the card idiom used by FileMenu and
-          PropertiesPanel sections: white/gray-900 surface, gray border,
-          tabular-nums for the big value so alignment stays tidy. */}
       <StatStrip stats={stats} />
 
-      {/* Cross-links to sibling report pages that live on their own
-          routes. Kept above the tabs because they're navigations to a
-          different page, not a view switch. */}
-      {(scenariosHref || floorCompareHref) && (
+      {scenariosHref && (
         <nav aria-label="Reports navigation" className="flex flex-wrap items-center gap-2 mt-4">
-          {scenariosHref && (
-            <Link
-              to={scenariosHref}
-              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-            >
-              Capacity scenarios →
-            </Link>
-          )}
-          {floorCompareHref && (
-            <Link
-              to={floorCompareHref}
-              className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-            >
-              <BarChart2 size={14} />
-              Floor compare
-            </Link>
-          )}
+          <Link
+            to={scenariosHref}
+            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+          >
+            Capacity scenarios →
+          </Link>
         </nav>
       )}
 
-      {/* Sticky tab bar. Pinned to the top of the scroll container so
-          section headers stay reachable as the user scrolls through a
-          long churn table. Same blue-underline treatment as
-          FloorSwitcher. */}
       <div
         role="tablist"
         aria-label="Reports sections"
@@ -328,9 +290,6 @@ function StatStrip({
 }: {
   stats: ReturnType<typeof computeReportsStats>
 }) {
-  // Derived secondary lines. We keep them cheap — "X% of seats",
-  // "Y of total" — so the strip stays a render-free pure-format
-  // operation. Nothing here reaches back into stores.
   const occupiedOfSeats =
     stats.totalSeats > 0
       ? `${Math.round((stats.occupancyPct * stats.totalSeats) / 100)} / ${stats.totalSeats} occupied`
@@ -389,8 +348,6 @@ function EmptyState({
   teamSlug?: string
   officeSlug?: string
 }) {
-  const rosterHref =
-    teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/roster` : null
   const mapHref =
     teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/map` : null
   return (
@@ -411,24 +368,14 @@ function EmptyState({
           Import your roster and lay out a floor to unlock occupancy,
           utilisation and churn metrics.
         </p>
-        {(rosterHref || mapHref) && (
+        {mapHref && (
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            {rosterHref ? (
-              <Link
-                to={rosterHref}
-                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-              >
-                Go to roster
-              </Link>
-            ) : null}
-            {mapHref ? (
-              <Link
-                to={mapHref}
-                className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-              >
-                Back to map
-              </Link>
-            ) : null}
+            <Link
+              to={mapHref}
+              className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            >
+              Back to map
+            </Link>
           </div>
         )}
       </div>

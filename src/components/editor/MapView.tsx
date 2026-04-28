@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FloorSwitcher } from './FloorSwitcher'
 import { ToolSelector } from './LeftSidebar/ToolSelector'
 import { LayerVisibilityPanel } from './LeftSidebar/LayerVisibilityPanel'
 import { ElementLibrary } from './LeftSidebar/ElementLibrary'
@@ -9,6 +8,8 @@ import { RightSidebar } from './RightSidebar/RightSidebar'
 import { SidebarToggle } from './RightSidebar/SidebarToggle'
 import { StatusBar } from './StatusBar'
 import { CanvasStage } from './Canvas/CanvasStage'
+import { PixiStage, type PixiStageHandle } from './Canvas/PixiStage'
+import { PixiStatusBar } from './Canvas/PixiStatusBar'
 import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
 import { Minimap } from './Minimap'
@@ -20,17 +21,18 @@ import { ElementHoverCard } from './Canvas/ElementHoverCard'
 import { FirstRunCoach } from './FirstRunCoach'
 import { AdminStatsToolbar } from './AdminStatsToolbar'
 import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
+import { PanelLeftClose, PanelLeft, LayoutGrid } from 'lucide-react'
 import { useUIStore } from '../../stores/uiStore'
 import {
   normalizeNorthArrowVisibility,
   normalizeNorthRotation,
   useCanvasStore,
 } from '../../stores/canvasStore'
-import { useFloorStore } from '../../stores/floorStore'
+import { useFloorStore, useActiveFloor } from '../../stores/floorStore'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
 import { useToastStore } from '../../stores/toastStore'
-import { switchToFloor } from '../../lib/seatAssignment'
+
 import { focusOnElement } from '../../lib/canvasFocus'
 import type { CanvasElement } from '../../types/elements'
 import type { Floor } from '../../types/floor'
@@ -80,25 +82,37 @@ export function MapView() {
   const setCanvasSettings = useCanvasStore((s) => s.setSettings)
   const northRotationRaw = useCanvasStore((s) => s.settings.northRotation)
   const showNorthArrowRaw = useCanvasStore((s) => s.settings.showNorthArrow)
-  // The north-arrow compass renders by default but the user can hide
-  // it via View → "Toggle compass" or the `N` hotkey when the floor
-  // plan has no real-world cardinal alignment. Legacy projects (no
-  // field set) keep the historical behaviour by treating undefined
-  // as `true`.
   const showNorthArrow = normalizeNorthArrowVisibility(showNorthArrowRaw)
-  const activeFloorId = useFloorStore((s) => s.activeFloorId)
-  const floors = useFloorStore((s) => s.floors)
+  const activeFloor = useActiveFloor()
   const elements = useElementsStore((s) => s.elements)
   const [searchParams, setSearchParams] = useSearchParams()
   const [viewportWidth, setViewportWidth] = useState(() => readViewportWidth())
   const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<ThreeDEntryProps> | null>(null)
   const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
   const previousSelectionCountRef = useRef(selectedIds.length)
   const collapsedSidebarForCompactRef = useRef(false)
   const wasCompactEditorRef = useRef(viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX)
-  const activeFloor = floors.find((f) => f.id === activeFloorId) ?? null
+
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
   const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
+
+  // ── Pixi stage refs ────────────────────────────────────────────────
+  const pixiStageRef = useRef<PixiStageHandle | null>(null)
+  const [pixiSize, setPixiSize] = useState({ w: 0, h: 0 })
+  const pixiRoRef = useRef<ResizeObserver | null>(null)
+  const pixiContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (pixiRoRef.current) { pixiRoRef.current.disconnect(); pixiRoRef.current = null }
+    if (!node) return
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      setPixiSize({ w: Math.round(width), h: Math.round(height) })
+    })
+    ro.observe(node)
+    pixiRoRef.current = ro
+    const { width, height } = node.getBoundingClientRect()
+    if (width > 0 && height > 0) setPixiSize({ w: Math.round(width), h: Math.round(height) })
+  }, [])
   const showFirstRunCoach =
     firstRunCoachOpen || (selectedIds.length === 0 && !rightSidebarOpen)
 
@@ -200,61 +214,22 @@ export function MapView() {
   }, [ThreeDEntry, threeDLoadFailed, viewMode])
 
   useEffect(() => {
-    const floorId = searchParams.get('floor')
     const seatId = searchParams.get('seat')
     const focusId = searchParams.get('focus')
-    if (!floorId && !seatId && !focusId) return
+    if (!seatId && !focusId) return
 
-    if (floorId) {
-      switchToFloor(floorId)
-    }
-
-    if (seatId) {
-      const floors = useFloorStore.getState().floors
-      const target = floors.find(
-        (f) => f.id === (floorId ?? useFloorStore.getState().activeFloorId),
-      )
-      const element = target?.elements[seatId]
+    // `?seat=<id>` or `?focus=<id>` — focus on a specific element.
+    // Since there's only one floor, we just look up the element
+    // directly in the current floor.
+    if (seatId || focusId) {
+      const id = seatId || focusId
+      const element = elements[id!]
       if (element) {
-        useUIStore.getState().setSelectedIds([seatId])
+        useUIStore.getState().setSelectedIds([id!])
         focusOnElement(
           { x: element.x, y: element.y, width: element.width, height: element.height },
-          seatId,
+          id!,
         )
-      }
-    }
-
-    // `?focus=<id>` — cross-office search landing. Walk every floor for
-    // an element or a neighborhood with this id; whichever hits first
-    // wins. We switch to the owning floor and pan/zoom to it so the
-    // operator doesn't have to hunt. Done in a single effect after the
-    // store-hydration in ProjectShell has completed (the palette
-    // navigates to this route, and by the time the effect fires the
-    // stores have rehydrated the destination office).
-    if (focusId) {
-      const floors = useFloorStore.getState().floors
-      let foundOn: string | null = null
-      let bounds: { x: number; y: number; width: number; height: number } | null = null
-      for (const f of floors) {
-        const el = f.elements[focusId]
-        if (el) {
-          foundOn = f.id
-          bounds = { x: el.x, y: el.y, width: el.width, height: el.height }
-          break
-        }
-      }
-      if (!bounds) {
-        const neighborhoods = useNeighborhoodStore.getState().neighborhoods
-        const n = neighborhoods[focusId]
-        if (n) {
-          foundOn = n.floorId
-          bounds = { x: n.x, y: n.y, width: n.width, height: n.height }
-        }
-      }
-      if (foundOn && bounds) {
-        switchToFloor(foundOn)
-        useUIStore.getState().setSelectedIds([focusId])
-        focusOnElement(bounds, focusId)
       }
     }
 
@@ -308,36 +283,44 @@ export function MapView() {
 
   return (
     <>
-      <FloorSwitcher />
-      <div className="flex flex-1 min-w-0 overflow-x-auto overflow-y-hidden">
+      <div className="flex flex-1 min-w-0 overflow-hidden">
         <div
           className="flex min-w-0 flex-1 overflow-hidden"
           style={{ minWidth: `${CANVAS_INSPECTION_MIN_WIDTH_PX}px` }}
           data-editor-min-width={CANVAS_INSPECTION_MIN_WIDTH_PX}
         >
-        {/*
-          The sidebar scrolls as a single unit. ToolSelector +
-          LayerVisibilityPanel + ElementLibrary stack at their natural
-          heights and the whole column owns the scrollbar — so when the
-          top panels grow (filters open, more layers, etc.) they can't
-          squeeze ElementLibrary's tiles off the bottom. Previously the
-          library owned its own `overflow-y-auto` inside a `min-h-0`
-          column, which clipped tiles when its siblings took more space.
-        */}
+        {/* ── Left sidebar ────────────────────────────────────── */}
         {!isCompactEditor && (
           <div
-            className="flex w-[260px] flex-shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
+            className={`flex flex-shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 transition-[width] duration-200 ${
+              leftSidebarOpen ? 'w-[240px] overflow-y-auto' : 'w-10 overflow-hidden'
+            }`}
             data-testid="mapview-left-sidebar"
           >
-            <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
-              <ToolSelector />
-            </CollapsibleSection>
-            <CollapsibleSection title="Layers" defaultOpen={false} storageKey="layers">
-              <LayerVisibilityPanel />
-            </CollapsibleSection>
-            <CollapsibleSection title="Library" defaultOpen storageKey="library">
-              <ElementLibrary />
-            </CollapsibleSection>
+            {/* Toggle button */}
+            <button
+              type="button"
+              onClick={() => setLeftSidebarOpen((v) => !v)}
+              className="flex h-9 w-full items-center justify-center gap-1.5 border-b border-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-200 transition-colors"
+              title={leftSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+              aria-label={leftSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              {leftSidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
+              {leftSidebarOpen && <span className="text-[11px] font-medium">Collapse</span>}
+            </button>
+            {leftSidebarOpen && (
+              <>
+                <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
+                  <ToolSelector />
+                </CollapsibleSection>
+                <CollapsibleSection title="Layers" defaultOpen={false} storageKey="layers">
+                  <LayerVisibilityPanel />
+                </CollapsibleSection>
+                <CollapsibleSection title="Library" defaultOpen storageKey="library">
+                  <ElementLibrary />
+                </CollapsibleSection>
+              </>
+            )}
           </div>
         )}
         <div
@@ -405,21 +388,49 @@ export function MapView() {
             </div>
           ) : (
             <>
-              <CanvasStage />
-              <StatusBar />
-              <Minimap />
-              <AlignDistributeToolbar />
-              <ElementHoverCard />
-              <CanvasActionDock />
-              <AdminStatsToolbar />
-              <CanvasScaleBar />
-              {showNorthArrow && <NorthArrow />}
-              {showFirstRunCoach && (
-                <FirstRunCoach
-                  forceTourOpen={firstRunCoachOpen}
-                  onTourClosed={() => setFirstRunCoachOpen(false)}
-                />
+              {/* ── Pixi WebGL renderer ─────────────────────── */}
+              {viewMode === 'pixi' && (
+                <div
+                  ref={pixiContainerRef}
+                  className="absolute inset-0"
+                  data-testid="mapview-pixi-stage"
+                  style={{ background: '#f1f5f9', zIndex: 1 }}
+                >
+                  {pixiSize.w > 0 && (
+                    <PixiStage
+                      ref={pixiStageRef}
+                      width={pixiSize.w}
+                      height={pixiSize.h}
+                    />
+                  )}
+                  <ToolSelector />
+                  <StatusBar />
+                  <CanvasActionDock />
+                  <PixiStatusBar stageRef={pixiStageRef as React.RefObject<PixiStageHandle | null>} />
+                </div>
               )}
+              {/* ── Konva 2D renderer (unmounted in pixi mode) ── */}
+              {viewMode !== 'pixi' && (
+              <div className="absolute inset-0">
+                <CanvasStage />
+                <StatusBar />
+                <Minimap />
+                <AlignDistributeToolbar />
+                <ElementHoverCard />
+                <CanvasActionDock />
+                <AdminStatsToolbar />
+                <CanvasScaleBar />
+                {showNorthArrow && <NorthArrow />}
+                {showFirstRunCoach && (
+                  <FirstRunCoach
+                    forceTourOpen={firstRunCoachOpen}
+                    onTourClosed={() => setFirstRunCoachOpen(false)}
+                  />
+                )}
+              </div>
+              )}
+              {/* ── Toolbar toggle ─────────────────────────── */}
+              <ToolbarTogglePill />
             </>
           )}
           {/* Closed-state pull-tab to expand the right sidebar.
@@ -453,3 +464,41 @@ export function MapView() {
     </>
   )
 }
+
+/**
+ * Small pill at the bottom-left of the canvas that toggles all dockable
+ * toolbars visible/hidden at once. Gives users a single click to
+ * declutter the canvas or bring everything back.
+ */
+function ToolbarTogglePill() {
+  const visibility = useUIStore((s) => s.dockableToolbarVisibility)
+  const setVisible = useUIStore((s) => s.setDockableToolbarVisible)
+  const ids = ['canvas-actions', 'align-distribute', 'admin-stats'] as const
+  const anyVisible = ids.some((id) => visibility[id] !== false)
+
+  const toggleAll = () => {
+    const nextVisible = !anyVisible
+    for (const id of ids) {
+      setVisible(id, nextVisible)
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={toggleAll}
+      className={`absolute bottom-12 left-4 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium shadow-md backdrop-blur transition-all ${
+        anyVisible
+          ? 'border-gray-200 bg-white/90 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/90 dark:text-gray-300 dark:hover:bg-gray-800'
+          : 'border-indigo-200 bg-indigo-50/90 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60'
+      }`}
+      title={anyVisible ? 'Hide all toolbars' : 'Show all toolbars'}
+      aria-label={anyVisible ? 'Hide all toolbars' : 'Show all toolbars'}
+      aria-pressed={anyVisible}
+    >
+      <LayoutGrid size={14} />
+      <span>{anyVisible ? 'Hide toolbars' : 'Show toolbars'}</span>
+    </button>
+  )
+}
+

@@ -13,8 +13,6 @@ import { UtilizationWidgets } from './UtilizationWidgets'
 import { NeighborhoodMetrics } from './NeighborhoodMetrics'
 import { NeighborhoodUtilizationList } from './NeighborhoodUtilizationList'
 import { AnnotationsPanel } from './AnnotationsPanel'
-import { SeatSwapsPanel } from './SeatSwapsPanel'
-import { RoomBookingsPanel } from './RoomBookingsPanel'
 import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { focusElements } from '../../../lib/focusElements'
 import { PanelHeader } from './PanelHeader'
@@ -206,13 +204,6 @@ export function InsightsPanel() {
           Click a row to focus the anchor. Resolved notes collapse under
           the open list. */}
       <AnnotationsPanel />
-
-      {/* Seat-swap requests — managers approve / deny, requesters cancel. */}
-      <SeatSwapsPanel />
-
-      {/* Meeting-room bookings — today's holds rolled up per room.
-          Click a row to focus the room. */}
-      <RoomBookingsPanel />
 
       <PanelSection title="Severity" subtitle="Open issues grouped by impact">
         <SeveritySummary

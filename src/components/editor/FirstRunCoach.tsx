@@ -11,7 +11,6 @@ import { useAnnotationsStore } from '../../stores/annotationsStore'
 import { useToastStore } from '../../stores/toastStore'
 import { buildDemoOfficePayload } from '../../lib/demo/createDemoOffice'
 import { saveOffice } from '../../lib/offices/officeRepository'
-import { emit } from '../../lib/audit'
 import { prefersReducedMotion } from '../../lib/prefersReducedMotion'
 
 const STORAGE_KEY = 'firstRunWelcomeSeen'
@@ -178,13 +177,6 @@ function FirstRunDemoSeeder() {
       useCanvasStore.setState({ settings: payload.settings })
       useNeighborhoodStore.setState({ neighborhoods: payload.neighborhoods })
       useAnnotationsStore.setState({ annotations: payload.annotations })
-
-      // Best-effort audit trail — skips if the user isn't authenticated
-      // or we're in a hosted-share context without a team id.
-      void emit('demo.load', 'office', officeId, {
-        floors: payload.floors.length,
-        employees: Object.keys(payload.employees).length,
-      })
 
       useToastStore.getState().push({
         tone: 'success',

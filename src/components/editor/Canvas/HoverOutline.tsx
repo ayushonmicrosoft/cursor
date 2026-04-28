@@ -1,4 +1,4 @@
-import { Layer, Transformer } from 'react-konva'
+import { Group, Transformer } from 'react-konva'
 import { useRef, useEffect } from 'react'
 import type Konva from 'konva'
 import { useUIStore } from '../../../stores/uiStore'
@@ -59,7 +59,7 @@ export function HoverOutline() {
   if (!shouldRender) return null
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       <Transformer
         ref={trRef}
         resizeEnabled={false}
@@ -70,6 +70,6 @@ export function HoverOutline() {
         borderDash={[3, 3]}
         padding={4}
       />
-    </Layer>
+    </Group>
   )
 }

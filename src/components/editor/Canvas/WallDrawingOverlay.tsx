@@ -1,4 +1,4 @@
-import { Layer, Path, Circle, Text } from 'react-konva'
+import { Group, Path, Circle, Text } from 'react-konva'
 import { distanceBetween } from '../../../lib/geometry'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { wallPathData } from '../../../lib/wallPath'
@@ -49,7 +49,7 @@ export function WallDrawingOverlay({
   if (!isDrawing) {
     if (!currentPoint) return null
     return (
-      <Layer listening={false}>
+      <Group listening={false}>
         <Circle
           x={currentPoint.x}
           y={currentPoint.y}
@@ -59,7 +59,7 @@ export function WallDrawingOverlay({
           strokeWidth={2}
           opacity={0.45}
         />
-      </Layer>
+      </Group>
     )
   }
 
@@ -89,7 +89,7 @@ export function WallDrawingOverlay({
   }
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {/* Always render as <Path> so the node identity is stable when the
           user transitions a segment between straight and curved during a
           single drawing session. */}
@@ -125,6 +125,6 @@ export function WallDrawingOverlay({
           fontStyle="bold"
         />
       )}
-    </Layer>
+    </Group>
   )
 }

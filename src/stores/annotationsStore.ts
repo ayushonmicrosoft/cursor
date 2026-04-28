@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
-import { nanoid } from 'nanoid'
 import { UNDO_LIMIT } from '../lib/constants'
 import {
   ANNOTATION_BODY_MAX,
@@ -93,7 +92,7 @@ export const useAnnotationsStore = create<AnnotationsState>()(
       draft: null,
 
       addAnnotation: ({ body, authorName, anchor, createdAt }) => {
-        const id = nanoid()
+        const id = crypto.randomUUID()
         const entry: Annotation = {
           id,
           body: clampBody(body),

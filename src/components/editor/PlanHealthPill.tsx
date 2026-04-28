@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 import { AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useEmployeeStore } from '../../stores/employeeStore'
-import { useFloorStore } from '../../stores/floorStore'
+import { useActiveFloor } from '../../stores/floorStore'
 import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
 import { analyzePlan, type PlanHealth } from '../../lib/planHealth'
 import { PlanHealthDrawer } from './PlanHealthDrawer'
@@ -31,44 +30,24 @@ export function PlanHealthPill() {
   // floorStore for inactive floors. This matches the rest of the editor
   // (FloorSwitcher, focusElements) and avoids stale data after a floor
   // switch.
-  const { floors, activeFloorId } = useFloorStore(
-    useShallow((s) => ({
-      floors: s.floors,
-      activeFloorId: s.activeFloorId,
-    })),
-  )
+  const floor = useActiveFloor()
   const activeElements = useElementsStore((s) => s.elements)
   const employees = useEmployeeStore((s) => s.employees)
   const neighborhoods = useNeighborhoodStore((s) => s.neighborhoods)
 
   const health: PlanHealth = useMemo(() => {
-    const floorIds: string[] = []
-    const elementsByFloorMap: Record<string, Record<string, (typeof activeElements)[string]>> = {}
-    for (const f of floors) {
-      floorIds.push(f.id)
-      elementsByFloorMap[f.id] =
-        f.id === activeFloorId ? activeElements : f.elements
-    }
-
-    // Bucket neighborhoods by floorId so the analyzer can look them up by
-    // floor without re-scanning the whole map.
-    const neighborhoodsByFloor: Record<string, Record<string, (typeof neighborhoods)[string]>> = {}
-    for (const f of floors) neighborhoodsByFloor[f.id] = {}
-    for (const id in neighborhoods) {
-      const n = neighborhoods[id]
-      if (n.floorId in neighborhoodsByFloor) {
-        neighborhoodsByFloor[n.floorId][id] = n
-      }
-    }
+    // Only one floor exists in the single-floor model.
+    const elementsByFloorMap = { [floor.id]: activeElements }
+    const neighborhoodsByFloor = { [floor.id]: neighborhoods }
 
     return analyzePlan({
       elementsByFloor: elementsByFloorMap,
       neighborhoodsByFloor,
       employees,
-      floorIds,
-      activeFloorId,
+      floorIds: [floor.id],
+      activeFloorId: floor.id,
     })
-  }, [floors, activeFloorId, activeElements, employees, neighborhoods])
+  }, [floor, activeElements, employees, neighborhoods])
 
   const total = health.errorCount + health.warningCount + health.infoCount
   const hasError = health.errorCount > 0

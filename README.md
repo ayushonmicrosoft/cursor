@@ -1,4 +1,4 @@
-﻿# OandOcraft
+# OandOcraft
 
 > Interactive office floor planner and seating management application for modern teams
 
@@ -97,7 +97,7 @@ Custom shapes (L-desk, cubicle, U-office, round/oval tables, all decor pieces) l
 
 ### State Management (Zustand)
 
-Seven Zustand stores provide the full client state:
+Six Zustand stores provide the full client state:
 
 | Store | File | Manages |
 |---|---|---|
@@ -107,7 +107,7 @@ Seven Zustand stores provide the full client state:
 | `useProjectStore` | `stores/projectStore.ts` | Project metadata, save state, Supabase office ID, optimistic-lock version, conflict payload |
 | `useEmployeeStore` | `stores/employeeStore.ts` | Employee roster, department color palette, search/filter/sort UI state |
 | `useInsightsStore` | `stores/insightsStore.ts` | Insight results, dismissal set (persisted in `localStorage` per project), filter state |
-| `useCollaborationStore` | `stores/collaborationStore.ts` | Cursor positions and comments (foundation for real-time multi-user, not yet wired to Supabase Realtime) |
+
 
 `useElementsStore` uses `zundo`'s `temporal` middleware. Assignment fields (`assignedEmployeeId`, `assignedEmployeeIds`, seat `assignedGuestId`) are stripped from the undo snapshot via `partialize` so undoing a spatial move cannot desync element and employee state.
 

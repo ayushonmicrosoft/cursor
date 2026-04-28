@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { Group, Rect, Line, Arc, Layer, Circle } from 'react-konva'
+import { Group, Rect, Line, Arc, Circle } from 'react-konva'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { findNearestStraightWallHit } from '../../../lib/wallAttachment'
 import { wallSegments, tangentAt } from '../../../lib/wallPath'
@@ -61,7 +61,7 @@ export function AttachmentGhost({ tool, cursor, stageScale, snapPx, onHitChange 
     // 8 canvas-unit arms; scale down with zoom so they stay ~8 screen px.
     const arm = 8 / stageScale
     return (
-      <Layer listening={false}>
+      <Group listening={false}>
         <Circle
           x={cursor.x}
           y={cursor.y}
@@ -80,7 +80,7 @@ export function AttachmentGhost({ tool, cursor, stageScale, snapPx, onHitChange 
           stroke="#9CA3AF"
           strokeWidth={1 / stageScale}
         />
-      </Layer>
+      </Group>
     )
   }
 
@@ -99,7 +99,7 @@ export function AttachmentGhost({ tool, cursor, stageScale, snapPx, onHitChange 
     const h = thickness
     const radius = w
     return (
-      <Layer listening={false} opacity={0.45}>
+      <Group listening={false} opacity={0.45}>
         <Group x={hit.point.x} y={hit.point.y} rotation={rotationDeg}>
           <Rect
             x={-w / 2}
@@ -125,7 +125,7 @@ export function AttachmentGhost({ tool, cursor, stageScale, snapPx, onHitChange 
             dash={[4, 4]}
           />
         </Group>
-      </Layer>
+      </Group>
     )
   }
 
@@ -133,7 +133,7 @@ export function AttachmentGhost({ tool, cursor, stageScale, snapPx, onHitChange 
   const w = 48
   const h = Math.max(4, hit.wall.thickness)
   return (
-    <Layer listening={false} opacity={0.45}>
+    <Group listening={false} opacity={0.45}>
       <Group x={hit.point.x} y={hit.point.y} rotation={rotationDeg}>
         <Rect
           x={-w / 2}
@@ -146,6 +146,6 @@ export function AttachmentGhost({ tool, cursor, stageScale, snapPx, onHitChange 
         />
         <Line points={[-w / 2, 0, w / 2, 0]} stroke="#1E3A8A" strokeWidth={1} />
       </Group>
-    </Layer>
+    </Group>
   )
 }

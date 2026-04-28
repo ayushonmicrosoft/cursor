@@ -233,7 +233,7 @@ export function AccountPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <main id="main-content" className="max-w-5xl mx-auto px-6 py-10">
         {/* Breadcrumb back-link — small + understated, positioned above
             the identity header so it reads as "how do I leave this
             page" rather than a primary action. Mirrors the
@@ -311,7 +311,7 @@ export function AccountPage() {
 
           <DangerZoneSection onSignOut={onSignOut} />
         </div>
-      </div>
+      </main>
     </div>
   )
 }

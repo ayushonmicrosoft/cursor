@@ -11,7 +11,6 @@ import {
   type ImportIssue,
 } from '../../../lib/employeeCsv'
 import type { EmployeeImportRow } from '../../../types/employee'
-import { emit } from '../../../lib/audit'
 import {
   useState,
   useCallback,
@@ -495,7 +494,6 @@ export function CSVImportDialog() {
       skipped,
       warnings,
     })
-    void emit('csv.import', 'csv', null, { count: imported.length })
     setOpen(false)
   }, [preview, editedRows, selected, existingReduced, addEmployee, updateEmployee, setOpen])
 

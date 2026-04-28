@@ -4,7 +4,6 @@ import {
   Users,
   Share2,
   Layers,
-  MousePointer2,
   Presentation,
 } from 'lucide-react'
 import { useSession } from '../../lib/auth/session'
@@ -61,6 +60,11 @@ export function LandingPage() {
           to="/help"
           className="px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800/50 text-lg text-center"
         >
+        </Link>
+        <Link
+          to="/help"
+          className="px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800/50 text-lg text-center"
+        >
           Read the guide
         </Link>
       </div>
@@ -70,164 +74,162 @@ export function LandingPage() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(157,135,108,0.18),transparent_34%),linear-gradient(180deg,#f7f4ef_0%,#ffffff_56%,#f5f7fa_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(157,135,108,0.16),transparent_34%),linear-gradient(180deg,#050b17_0%,#0b1628_55%,#050b17_100%)]">
       <LandingNav />
 
-      {/* Hero */}
-      <section
-        aria-labelledby="hero-heading"
-        className="max-w-5xl mx-auto px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center"
-      >
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f6a52] dark:text-[#c8b69f] mb-5">
-          O&O workplace planning
-        </p>
-        <h1
-          id="hero-heading"
-          className="text-5xl sm:text-6xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4"
+      <main id="main-content">
+        {/* Hero */}
+        <section
+          aria-labelledby="hero-heading"
+          className="max-w-5xl mx-auto px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center"
         >
-          Plan your O&O workspace.
-          <br />
-          <span className="text-gray-500 dark:text-gray-400">Seat your team.</span>
-        </h1>
-        {/* Subheadline revision: the pre-polish version ("The
-            floor-plan editor built for hybrid workplace teams.") read
-            as a tagline without saying what a visitor gets. The new
-            copy names the two endpoints of the workflow — draft in
-            minutes, publish in an afternoon — which is the actual
-            value prop for someone debating whether to click Start
-            free. */}
-        <p className="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
-          Draft a floor plan in minutes, seat your team, and share a live map with the
-          people who need it.
-        </p>
-        {primaryCta}
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7f6a52] dark:text-[#c8b69f] mb-5">
+            O&O workplace planning
+          </p>
+          <h1
+            id="hero-heading"
+            className="text-5xl sm:text-6xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4"
+          >
+            Plan your O&O workspace.
+            <br />
+            <span className="text-gray-500 dark:text-gray-400">Seat your team.</span>
+          </h1>
+          {/* Subheadline revision: the pre-polish version ("The
+              floor-plan editor built for hybrid workplace teams.") read
+              as a tagline without saying what a visitor gets. The new
+              copy names the two endpoints of the workflow — draft in
+              minutes, publish in an afternoon — which is the actual
+              value prop for someone debating whether to click Start
+              free. */}
+          <p className="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto">
+            Draft a floor plan in minutes, seat your team, and share a live map with the
+            people who need it.
+          </p>
+          {primaryCta}
 
-        <LandingStats />
+          <LandingStats />
 
-        <div className="mt-10 sm:mt-12 max-w-3xl mx-auto rounded-2xl border border-gray-200 bg-white/80 px-5 py-4 text-left shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-950/70">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7f6a52] dark:text-[#c8b69f]">
-                Live product preview
-              </p>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                A real office layout, not a mock logo wall.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs font-medium text-gray-600 dark:text-gray-300">
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
-                Sample office
-              </span>
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
-                Multi-floor plan
-              </span>
-              <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
-                Seats and rooms
-              </span>
+          <div className="mt-10 sm:mt-12 max-w-3xl mx-auto rounded-2xl border border-gray-200 bg-white/80 px-5 py-4 text-left shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-950/70">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7f6a52] dark:text-[#c8b69f]">
+                  Live product preview
+                </p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  A real office layout, not a mock logo wall.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs font-medium text-gray-600 dark:text-gray-300">
+                <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
+                  Sample office
+                </span>
+                <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
+                  Full office plan
+                </span>
+                <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 dark:border-gray-800 dark:bg-gray-900">
+                  Seats and rooms
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Enlarged hero illustration inside a simulated browser
-            chrome. The indigo glow sits behind the frame to lift it
-            off the gradient background. */}
-        <div className="relative mt-16 sm:mt-20 max-w-4xl mx-auto">
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-8 top-10 bottom-0 rounded-3xl bg-[#9d876c]/20 dark:bg-[#9d876c]/10 blur-3xl"
-          />
-          <div className="relative">
-            <BrowserFrame>
-              <FloorPlanHero />
-            </BrowserFrame>
+          {/* Enlarged hero illustration inside a simulated browser
+              chrome. The indigo glow sits behind the frame to lift it
+              off the gradient background. */}
+          <div className="relative mt-16 sm:mt-20 max-w-4xl mx-auto">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-8 top-10 bottom-0 rounded-3xl bg-[#9d876c]/20 dark:bg-[#9d876c]/10 blur-3xl"
+            />
+            <div className="relative">
+              <BrowserFrame>
+                <FloorPlanHero />
+              </BrowserFrame>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Feature grid keeps the landing focused on product behavior. */}
-      <section
-        aria-labelledby="features-heading"
-        className="max-w-5xl mx-auto px-6 pb-20 sm:pb-24"
-      >
-        <h2
-          id="features-heading"
-          className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center mb-10"
+        {/* Feature grid keeps the landing focused on product behavior. */}
+        <section
+          aria-labelledby="features-heading"
+          className="max-w-5xl mx-auto px-6 pb-20 sm:pb-24"
         >
-          What you can do
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-8">
-          <FeatureCard
-            icon={Pencil}
-            title="Draw in minutes"
-            description="Drop walls, desks, and rooms on an infinite canvas. Snap-to-grid keeps everything clean without fighting alignment."
-          />
-          <FeatureCard
-            icon={Users}
-            title="Assign the whole team"
-            description="Drag employees onto seats, or import from CSV. Color-coded neighborhoods make it obvious who sits where."
-          />
-          <FeatureCard
-            icon={Share2}
-            title="Share a living plan"
-            description="One-click view-only links for stakeholders. Presentation mode for the all-hands."
-          />
-          <FeatureCard
-            icon={Layers}
-            title="Orchestrate multiple floors"
-            description="Stack floors into a single office and jump between them with keyboard shortcuts. Department colors roll up across every level."
-          />
-          <FeatureCard
-            icon={MousePointer2}
-            title="See teammates live"
-            description="Presence cursors show who is viewing the plan right now, so planning meetings stay in the same pixel without a screen share."
-          />
-          <FeatureCard
-            icon={Presentation}
-            title="Present without switching tools"
-            description="Full-screen presentation mode hides the editor chrome, so your floor plan fits straight into the next all-hands deck."
-          />
-        </div>
-      </section>
-
-      <HowItWorks />
-
-      <section aria-labelledby="trusted-heading" className="max-w-4xl mx-auto px-6 pb-20">
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-5 py-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-950/50 dark:text-gray-400">
           <h2
-            id="trusted-heading"
-            className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400"
+            id="features-heading"
+            className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-center mb-10"
           >
-            Proof, not logos
+            What you can do
           </h2>
-          <p className="mt-2">
-            The landing page now shows product preview and workflow detail instead of implying
-            customers we have not named here.
-          </p>
-        </div>
-      </section>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-8">
+            <FeatureCard
+              icon={Pencil}
+              title="Draw in minutes"
+              description="Drop walls, desks, and rooms on an infinite canvas. Snap-to-grid keeps everything clean without fighting alignment."
+            />
+            <FeatureCard
+              icon={Users}
+              title="Assign the whole team"
+              description="Drag employees onto seats, or import from CSV. Color-coded neighborhoods make it obvious who sits where."
+            />
+            <FeatureCard
+              icon={Share2}
+              title="Share a living plan"
+              description="One-click view-only links for stakeholders. Presentation mode for the all-hands."
+            />
+            <FeatureCard
+              icon={Layers}
+              title="AI-powered insights"
+              description="Six analyzers continuously flag utilization gaps, team proximity issues, onboarding readiness, and equipment mismatches."
+            />
 
-      <section
-        aria-labelledby="cta-heading"
-        className="bg-gradient-to-r from-[#10233b] via-[#1f3653] to-[#7f6a52] scroll-mt-16"
-      >
-        <div className="max-w-4xl mx-auto px-6 py-16 sm:py-20 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d9cbb8] mb-4">
-            Built for planning teams
-          </p>
-          <h2
-            id="cta-heading"
-            className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3"
-          >
-            Bring the next office plan online.
-          </h2>
-          <p className="text-lg text-slate-100 mb-8">
-            Build layouts, assign seats, and share read-only views from one live workspace.
-          </p>
-          <Link
-            to="/signup"
-            className="inline-block px-8 py-3 bg-white dark:bg-gray-900 text-[#1f3653] dark:text-[#d9cbb8] text-lg font-medium rounded-xl hover:bg-[#f4efe8] dark:hover:bg-[#10233b] shadow-lg transition-all"
-          >
-            Create your first office
-          </Link>
-        </div>
-      </section>
+            <FeatureCard
+              icon={Presentation}
+              title="Present without switching tools"
+              description="Full-screen presentation mode hides the editor chrome, so your floor plan fits straight into the next all-hands deck."
+            />
+          </div>
+        </section>
+
+        <HowItWorks />
+
+        <section aria-labelledby="trusted-heading" className="max-w-4xl mx-auto px-6 pb-20">
+          <div className="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-5 py-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-950/50 dark:text-gray-400">
+            <h2
+              id="trusted-heading"
+              className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400"
+            >
+              Proof, not logos
+            </h2>
+            <p className="mt-2">
+              The landing page now shows product preview and workflow detail instead of implying
+              customers we have not named here.
+            </p>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="cta-heading"
+          className="bg-gradient-to-r from-[#10233b] via-[#1f3653] to-[#7f6a52] scroll-mt-16"
+        >
+          <div className="max-w-4xl mx-auto px-6 py-16 sm:py-20 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d9cbb8] mb-4">
+              Built for planning teams
+            </p>
+            <h2
+              id="cta-heading"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3"
+            >
+              Bring the next office plan online.
+            </h2>
+            <p className="text-lg text-slate-100 mb-8">
+              Build layouts, assign seats, and share read-only views from one live workspace.
+            </p>
+            <Link
+              to="/signup"
+              className="inline-block px-8 py-3 bg-white dark:bg-gray-900 text-[#1f3653] dark:text-[#d9cbb8] text-lg font-medium rounded-xl hover:bg-[#f4efe8] dark:hover:bg-[#10233b] shadow-lg transition-all"
+            >
+              Create your first office
+            </Link>
+          </div>
+        </section>
+      </main>
 
       <LandingFooter />
     </div>

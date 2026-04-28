@@ -2,7 +2,6 @@ import { Group, Line, Rect, Text } from 'react-konva'
 import type { ConferenceRoomElement, PhoneBoothElement, CommonAreaElement } from '../../../types/elements'
 import { isConferenceRoomElement, isCommonAreaElement } from '../../../types/elements'
 import { useUIStore } from '../../../stores/uiStore'
-import { RoomBookingBadge } from './RoomBookingBadge'
 import { truncateToWidth } from '../../../lib/textTruncate'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import {
@@ -117,7 +116,6 @@ function ConferenceRoomRenderer({ element, isSelected, labelDensity }: Conferenc
         />
       )}
 
-      <RoomBookingBadge elementId={element.id} width={element.width} height={element.height} />
       {element.locked && <LockedRoomCorner width={element.width} height={element.height} />}
     </Group>
   )
@@ -189,7 +187,6 @@ function PhoneBoothRenderer({ element, isSelected, labelDensity }: PhoneBoothRen
         />
       )}
 
-      <RoomBookingBadge elementId={element.id} width={element.width} height={element.height} />
       {element.locked && <LockedRoomCorner width={element.width} height={element.height} />}
     </Group>
   )
@@ -263,7 +260,6 @@ function CommonAreaRenderer({ element, isSelected, labelDensity }: CommonAreaRen
         />
       )}
 
-      <RoomBookingBadge elementId={element.id} width={element.width} height={element.height} />
       {element.locked && <LockedRoomCorner width={element.width} height={element.height} />}
     </Group>
   )

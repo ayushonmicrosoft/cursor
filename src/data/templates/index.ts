@@ -41,7 +41,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     id: 'executive-floor',
-    name: 'Executive Floor',
+    name: 'Executive Suite',
     category: 'office',
     description: '12 private offices, boardroom, executive lounge, admin desks',
     createElements: createExecutiveFloorTemplate,

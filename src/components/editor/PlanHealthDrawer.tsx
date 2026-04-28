@@ -32,7 +32,7 @@ export function PlanHealthDrawer({ health, onClose }: Props) {
   const drawerRef = useRef<HTMLElement>(null)
   const navigate = useNavigate()
   const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
-  const floors = useFloorStore((s) => s.floors)
+  const floor = useFloorStore((s) => s.floor)
   const employees = useEmployeeStore((s) => s.employees)
 
   const onCloseRef = useRef(onClose)
@@ -55,8 +55,8 @@ export function PlanHealthDrawer({ health, onClose }: Props) {
   }, [])
 
   const floorName = (floorId: string | null): string => {
-    if (!floorId) return 'No floor'
-    return floors.find((f) => f.id === floorId)?.name ?? 'Unknown floor'
+    if (!floorId || floorId !== floor.id) return 'Unknown floor'
+    return floor.name
   }
 
   const handleJump = (issue: PlanIssue) => {

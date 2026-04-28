@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 import type {
   CanvasElement,
   DeskElement,
@@ -10,7 +9,7 @@ import type {
 
 function makeDesk(x: number, y: number, index: number, zIndex: number): DeskElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'desk',
     x,
     y,
@@ -42,7 +41,7 @@ function makeWall(
   label: string,
 ): WallElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'wall',
     x,
     y,
@@ -112,7 +111,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
 
   // --- Conference rooms (zIndex: 3) ---
   const confRoom1: ConferenceRoomElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'conference-room',
     x: 50,
     y: 600,
@@ -130,7 +129,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
   }
 
   const confRoom2: ConferenceRoomElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'conference-room',
     x: 800,
     y: 600,
@@ -151,7 +150,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
 
   // --- Phone booths (zIndex: 3) ---
   const phoneBooth1: PhoneBoothElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'phone-booth',
     x: 50,
     y: 50,
@@ -167,7 +166,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
   }
 
   const phoneBooth2: PhoneBoothElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'phone-booth',
     x: 1100,
     y: 50,
@@ -186,7 +185,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
 
   // --- Common area / kitchen (zIndex: 1) ---
   const kitchen: CommonAreaElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'common-area',
     x: 500,
     y: 700,
@@ -206,7 +205,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
 
   // --- Dividers and planters for aesthetics (zIndex: 1) ---
   elements.push({
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'divider',
     x: 450,
     y: 90,
@@ -222,7 +221,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
   })
 
   elements.push({
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'divider',
     x: 650,
     y: 290,
@@ -238,7 +237,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
   })
 
   elements.push({
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'planter',
     x: 460,
     y: 500,
@@ -254,7 +253,7 @@ export function createOpenPlanOfficeTemplate(): CanvasElement[] {
   })
 
   elements.push({
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'planter',
     x: 900,
     y: 500,

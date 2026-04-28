@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { nanoid } from 'nanoid'
 
 export type ToastTone = 'info' | 'success' | 'warning' | 'error'
 
@@ -29,7 +28,7 @@ const MAX_TOASTS = 3
 export const useToastStore = create<ToastState>((set) => ({
   items: [],
   push: (item) => {
-    const id = nanoid()
+    const id = crypto.randomUUID()
     set((state) => {
       const next = [...state.items, { ...item, id }]
       return { items: next.slice(-MAX_TOASTS) }

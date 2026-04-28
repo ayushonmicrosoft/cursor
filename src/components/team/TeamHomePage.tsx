@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Building2,
   Plus,
@@ -282,77 +283,71 @@ function OfficeCardSkeleton() {
 
 export function TeamHomePage() {
   const { teamSlug } = useParams<{ teamSlug: string }>()
-  const [team, setTeam] = useState<TeamWithOptionalLogo | null>(null)
-  const [offices, setOffices] = useState<OfficeListItem[]>([])
-  const [loadingOffices, setLoadingOffices] = useState(true)
+  const queryClient = useQueryClient()
   const [q, setQ] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('recent')
   const [filterMode, setFilterMode] = useState<FilterMode>('all')
   const [creating, setCreating] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<OfficeListItem | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [memberCount, setMemberCount] = useState<number>(0)
-  const [canCreateOffices, setCanCreateOffices] = useState(false)
-  // `recentSlugs` is captured at mount; we intentionally don't reactively
-  // update it as the user navigates away and back — the Recent row
-  // reflects what the user did *before* this dashboard view. Reloading
-  // the page is the refresh gesture.
-  const [recentSlugs, setRecentSlugs] = useState<string[]>([])
+  const [recentSlugs] = useState<string[]>(() => getRecents())
   const searchRef = useRef<HTMLInputElement>(null)
   const session = useSession()
   const navigate = useNavigate()
   const pushToast = useToastStore((s) => s.push)
 
-  // The session object identity changes on every render (zustand
-  // returns a fresh selector snapshot); depend on the stable
-  // user-id + status pair so the load effect doesn't re-fire in a
-  // loop.
   const sessionUserId =
     session.status === 'authenticated' ? session.user.id : null
   const sessionStatus = session.status
 
-  // Load team + offices. Team-member role + count come from the
-  // `team_members` table; a failed role lookup leaves `canCreateOffices`
-  // at false (fail-closed — RLS on the server is the real gate, this
-  // is just the UI affordance).
-  useEffect(() => {
-    async function load() {
-      setLoadingOffices(true)
-      try {
-        const { data: t } = await supabase.from('teams').select('*').eq('slug', teamSlug).single()
-        if (!t) return
-        setTeam(t as TeamWithOptionalLogo)
-        setOffices(await listOffices((t as Team).id))
-        setRecentSlugs(getRecents())
+  // ── Team ────────────────────────────────────────────────────────────────
+  const { data: team, isLoading: loadingTeam } = useQuery({
+    queryKey: ['team', teamSlug],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('slug', teamSlug)
+        .single()
+      return (data as TeamWithOptionalLogo) ?? null
+    },
+    enabled: !!teamSlug,
+  })
 
-        // Team-admin gate for "+ New office". We check the session's
-        // membership row; RLS on `offices` will ultimately refuse the
-        // insert anyway, but hiding the button avoids an obvious
-        // dead-end affordance.
-        if (sessionStatus === 'authenticated' && sessionUserId) {
-          const { data: m } = await supabase
-            .from('team_members')
-            .select('role')
-            .eq('team_id', (t as Team).id)
-            .eq('user_id', sessionUserId)
-            .maybeSingle()
-          const role = (m as { role?: string } | null)?.role
-          setCanCreateOffices(role === 'admin' || role === 'member')
+  // ── Offices ─────────────────────────────────────────────────────────────
+  const { data: offices = [], isLoading: loadingOffices } = useQuery({
+    queryKey: ['offices', team?.id],
+    queryFn: () => listOffices((team as Team).id),
+    enabled: !!team?.id,
+  })
 
-          // Member count for the stat strip. A head-count query avoids
-          // transferring every row; we only need the number.
-          const { count } = await supabase
-            .from('team_members')
-            .select('user_id', { count: 'exact', head: true })
-            .eq('team_id', (t as Team).id)
-          setMemberCount(count ?? 0)
-        }
-      } finally {
-        setLoadingOffices(false)
+  // ── Membership (role + count) ────────────────────────────────────────────
+  const { data: membership } = useQuery({
+    queryKey: ['membership', team?.id, sessionUserId],
+    queryFn: async () => {
+      const [roleRes, countRes] = await Promise.all([
+        supabase
+          .from('team_members')
+          .select('role')
+          .eq('team_id', (team as Team).id)
+          .eq('user_id', sessionUserId!)
+          .maybeSingle(),
+        supabase
+          .from('team_members')
+          .select('user_id', { count: 'exact', head: true })
+          .eq('team_id', (team as Team).id),
+      ])
+      const role = (roleRes.data as { role?: string } | null)?.role
+      return {
+        canCreate: role === 'admin' || role === 'member',
+        memberCount: countRes.count ?? 0,
       }
-    }
-    load()
-  }, [teamSlug, sessionStatus, sessionUserId])
+    },
+    enabled: !!team?.id && sessionStatus === 'authenticated' && !!sessionUserId,
+  })
+
+  const canCreateOffices = membership?.canCreate ?? false
+  const memberCount = membership?.memberCount ?? 0
 
   // Global "/" shortcut focuses the search input. Matches the
   // Linear / GitHub pattern — a single unshifted "/" while nothing
@@ -422,7 +417,8 @@ export function TeamHomePage() {
     setCreating(true)
     try {
       const created = await createOffice(team.id, name)
-      navigate(`/t/${team.slug}/o/${created.slug}/map`)
+      await queryClient.invalidateQueries({ queryKey: ['offices', team.id] })
+      navigate(`/t/${team.slug}/o/${created.slug}/engine`)
     } finally {
       setCreating(false)
     }
@@ -455,6 +451,7 @@ export function TeamHomePage() {
     setCreating(true)
     try {
       const created = await createOffice(team.id, name)
+      await queryClient.invalidateQueries({ queryKey: ['offices', team.id] })
       navigate(`/t/${team.slug}/o/${created.slug}/roster?import=csv`)
     } finally {
       setCreating(false)
@@ -481,6 +478,7 @@ export function TeamHomePage() {
         body: 'Loaded a three-floor sample with seats, employees, and departments ready to review.',
       })
       navigate(`/t/${team.slug}/o/${created.slug}/roster`)
+      await queryClient.invalidateQueries({ queryKey: ['offices', team.id] })
     } finally {
       setCreating(false)
     }
@@ -488,13 +486,11 @@ export function TeamHomePage() {
 
   async function performDelete(office: OfficeListItem) {
     setDeleting(true)
-    const prev = offices
-    setOffices((os) => os.filter((o) => o.id !== office.id))
     try {
       await deleteOffice(office.id)
+      await queryClient.invalidateQueries({ queryKey: ['offices', team?.id] })
     } catch (err) {
-      console.warn('Delete office failed; restoring card', err)
-      setOffices(prev)
+      console.warn('Delete office failed', err)
     } finally {
       setDeleting(false)
       setPendingDelete(null)
@@ -576,11 +572,11 @@ export function TeamHomePage() {
     return out
   }, [recentSlugs, offices])
 
-  if (!team) {
+  if (loadingTeam || !team) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
         <div className="p-6 max-w-7xl mx-auto px-6 text-sm text-gray-500 dark:text-gray-400">
-          Loading…
+          {loadingTeam ? 'Loading…' : 'Team not found.'}
         </div>
       </div>
     )
@@ -591,7 +587,7 @@ export function TeamHomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-6 py-8">
         {/* Team identity header. Logo + name on the left, CTAs on
             the right. The "+ New office" button is only rendered for
             team admins / members — viewers (invited share recipients
@@ -669,6 +665,7 @@ export function TeamHomePage() {
             </Link>
           </div>
         </header>
+
 
         {/* Stat strip — matches the Wave 13C ReportsPage idiom.
             Grid collapses to 2 columns on mobile. */}
@@ -922,7 +919,7 @@ export function TeamHomePage() {
             }}
           />
         )}
-      </div>
+      </main>
     </div>
   )
 }

@@ -7,7 +7,6 @@ import {
   withHistoryRecording,
   isOuterRecordingFrame,
 } from '../stores/seatHistoryStore'
-import { emit } from './audit'
 import type { CanvasElement, DoorElement, WindowElement } from '../types/elements'
 import {
   isDeskElement,
@@ -70,12 +69,6 @@ function recordHistory(args: {
  * Atomically updates BOTH stores. If the employee was previously seated,
  * clears the old seat. If the target desk already has an occupant (and is
  * single-capacity), evicts them.
- *
- * `slotIndex` is workstation-specific: when supplied (and in range), the
- * employee is placed at exactly that slot — evicting whoever was there,
- * matching the 1:1 desk reassignment idiom. When omitted (or out of
- * range), the employee lands at the first empty slot. Ignored for desks
- * and private offices.
  */
 export function assignEmployee(
   employeeId: string,
@@ -99,11 +92,6 @@ function doAssignEmployee(
   const employee = employeeStore.employees[employeeId]
   if (!employee) return
 
-  // Short-circuit if the employee is already seated at the target on the same
-  // floor AND the element side agrees — avoids a clear-then-re-add cycle that
-  // would publish an intermediate invalid state and pollute undo history with
-  // no-op frames. If the element disagrees (drift), fall through so the full
-  // assignment flow heals the inconsistency.
   if (employee.seatId === targetElementId && employee.floorId === floorId) {
     const isTargetOnActive = floorId === floorStore.activeFloorId
     const targetElements = isTargetOnActive
@@ -111,10 +99,6 @@ function doAssignEmployee(
       : floorStore.getFloorElements(floorId)
     const target = targetElements[targetElementId]
     if (target && isAssignableElement(target)) {
-      // For workstations with an explicit `slotIndex`, "agrees" means
-      // the employee is already AT THAT SLOT — otherwise we need to
-      // shuffle them, which is the whole point of slot-aware
-      // assignment.
       const agrees = isDeskElement(target)
         ? target.assignedEmployeeId === employeeId
         : isWorkstationElement(target)
@@ -128,14 +112,10 @@ function doAssignEmployee(
     }
   }
 
-  // 1. If employee was previously assigned, clear the old desk (which may be on
-  //    the active floor OR on another floor stored in floorStore)
   if (employee.seatId && employee.floorId) {
     clearEmployeeFromElement(employee.seatId, employeeId, employee.floorId)
   }
 
-  // 2. Find the target element - it could be on the active floor (elementsStore)
-  //    or on a different floor (floorStore)
   const isTargetOnActiveFloor = floorId === floorStore.activeFloorId
   const targetElements = isTargetOnActiveFloor
     ? useElementsStore.getState().elements
@@ -144,14 +124,6 @@ function doAssignEmployee(
   const target = targetElements[targetElementId]
   if (!target || !isAssignableElement(target)) return
 
-  // Capture the previous desk occupant *before* the eviction write so the
-  // history entry can tag this call as a reassignment rather than a bare
-  // assign. For 1:1 desks the predecessor is whoever was on the desk;
-  // for workstations the predecessor is whoever held the *target slot*
-  // (computed below alongside the slot resolution). Private offices
-  // still don't evict on add, so the predecessor there stays null —
-  // the interesting predecessor is the employee's OLD seat, which we
-  // capture separately (below) for the employee-centric history view.
   let previousDeskOccupant: string | null =
     isDeskElement(target) &&
     target.assignedEmployeeId &&
@@ -159,17 +131,10 @@ function doAssignEmployee(
       ? target.assignedEmployeeId
       : null
 
-  // 3. Compute the workstation slot write (if applicable). We resolve
-  //    the target slot here so its evicted occupant can flow through
-  //    the same eviction + history machinery that the 1:1 desk path
-  //    uses below.
   let workstationNextSlots: Array<string | null> | null = null
   let workstationEvicted: string | null = null
   if (isWorkstationElement(target)) {
     const next: Array<string | null> = [...target.assignedEmployeeIds]
-    // If this employee already occupies a slot on this workstation,
-    // free that slot first so they don't end up on the workstation
-    // twice when the user shuffles them within the same bench.
     const existingIdx = next.findIndex((id) => id === employeeId)
     if (existingIdx !== -1) next[existingIdx] = null
 
@@ -183,15 +148,7 @@ function doAssignEmployee(
     const fallbackSlot = next.findIndex((id) => id === null)
     const placeAt = requestedSlot >= 0 ? requestedSlot : fallbackSlot
 
-    if (placeAt === -1) {
-      // No empty slot AND no specific slot requested — workstation is
-      // full. Bail without mutating; the caller's 1:1 short-circuit
-      // above already handled the "already on this workstation" case.
-      // This mirrors how dropping on a full single desk is a no-op
-      // when no eviction can happen; surfacing it as an audit/error
-      // is left to a follow-up if call sites care.
-      return
-    }
+    if (placeAt === -1) return
 
     const evicted = next[placeAt]
     if (evicted && evicted !== employeeId) {
@@ -202,23 +159,14 @@ function doAssignEmployee(
     workstationNextSlots = next
   }
 
-  // 4. Evict previous occupant(s) if needed. Both the 1:1 desk path
-  //    and the workstation slot path funnel through the same eviction
-  //    so the employee record gets nulled identically (and the seat
-  //    history gets a single "reassign" entry per call).
   if (previousDeskOccupant) {
     const prev = employeeStore.employees[previousDeskOccupant]
     if (prev) {
       employeeStore.updateEmployee(previousDeskOccupant, { seatId: null, floorId: null })
     }
   }
-  // Silence unused-binding lint when the workstation branch didn't
-  // populate `workstationEvicted` — the value is intentionally captured
-  // for symmetry / future audit hooks even if eviction is already
-  // handled via `previousDeskOccupant`.
   void workstationEvicted
 
-  // 5. Update the element
   const updatedElement: CanvasElement = isDeskElement(target)
     ? { ...target, assignedEmployeeId: employeeId }
     : isWorkstationElement(target) && workstationNextSlots
@@ -234,16 +182,8 @@ function doAssignEmployee(
     floorStore.setFloorElements(floorId, { ...currentFloorElements, [targetElementId]: updatedElement })
   }
 
-  // 5. Update the employee
   employeeStore.updateEmployee(employeeId, { seatId: targetElementId, floorId })
 
-  void emit('seat.assign', 'employee', employeeId, { seatId: targetElementId })
-
-  // 6. Append history. If the assigned employee was previously seated
-  //    somewhere else, that earlier desk also gets an unassign entry so
-  //    the old seat's timeline reflects the vacancy. The desk-level
-  //    reassignment (previous occupant ← new occupant on the target) is
-  //    the primary entry for this call.
   const oldEmployeeSeat = employee.seatId && employee.seatId !== targetElementId
     ? employee.seatId
     : null
@@ -261,17 +201,6 @@ function doAssignEmployee(
   })
 }
 
-/**
- * Swap two employees' seats. Both must be currently seated (otherwise the
- * operation falls back to a plain `assignEmployee` of `aId → bId's seat`,
- * i.e. reassignment with eviction). Wrapped in a single history-recording
- * frame so undo treats the whole swap as one step, matching user intent
- * ("I moved Alice and Bob" is one action, not two).
- *
- * Returns the two element ids that were swapped, or `null` when no swap
- * could be performed (either employee missing, or one wasn't seated to
- * begin with — callers should handle the single-assign case separately).
- */
 export function swapEmployees(aId: string, bId: string): { aSeat: string; bSeat: string } | null {
   if (aId === bId) return null
   const employees = useEmployeeStore.getState().employees
@@ -285,28 +214,14 @@ export function swapEmployees(aId: string, bId: string): { aSeat: string; bSeat:
   if (!aSeat || !bSeat || !aFloor || !bFloor) return null
   if (aSeat === bSeat) return null
 
-  // Record the entire swap as one history frame. Internally each
-  // `doAssignEmployee` call evicts the other party, but by freezing the
-  // starting snapshot we avoid the intermediate "nobody at either desk"
-  // state — both assignments compose atomically from the caller's view.
   withHistoryRecording(() => {
-    // Step 1: unseat A to break the tie. Without this, assigning A → bSeat
-    // would evict B and immediately clear bSeat on B's employee record
-    // — then we'd be unable to find B's old seat for the second call.
     doUnassignEmployee(aId)
-    // Step 2: move B to A's old seat first. B is still seated at bSeat
-    // here; assignEmployee will clear them from bSeat and place them at
-    // aSeat.
     doAssignEmployee(bId, aSeat, aFloor)
-    // Step 3: finally place A at bSeat (now empty).
     doAssignEmployee(aId, bSeat, bFloor)
   })
   return { aSeat, bSeat }
 }
 
-/**
- * Unassign an employee from whatever seat they currently occupy.
- */
 export function unassignEmployee(employeeId: string): void {
   withHistoryRecording(() => doUnassignEmployee(employeeId))
 }
@@ -320,8 +235,6 @@ function doUnassignEmployee(employeeId: string): void {
   clearEmployeeFromElement(employee.seatId, employeeId, employee.floorId)
   employeeStore.updateEmployee(employeeId, { seatId: null, floorId: null })
 
-  void emit('seat.unassign', 'employee', employeeId, {})
-
   recordHistory({
     elementId: clearedElementId,
     employeeId: null,
@@ -329,16 +242,9 @@ function doUnassignEmployee(employeeId: string): void {
   })
 }
 
-/**
- * Fully delete an employee, clearing them from any assigned desk first.
- * Also walks every floor's elements to clear stale `assignedGuestId`
- * references on TableElement seats, and nulls `managerId` on any direct
- * reports so the drawer's Manager dropdown doesn't show a dangling pointer.
- */
 export function deleteEmployee(employeeId: string): void {
   unassignEmployee(employeeId)
 
-  // Walk all floors and clean TableElement seat references.
   const floorStore = useFloorStore.getState()
   const elementsStore = useElementsStore.getState()
   const activeFloorId = floorStore.activeFloorId
@@ -365,9 +271,6 @@ export function deleteEmployee(employeeId: string): void {
     }
   }
 
-  // Null out managerId on anyone who reported to the deleted person —
-  // otherwise the drawer's Manager dropdown would show a "Former manager —
-  // cleared?" state on every report and exports would carry a dead id.
   const employeeStore = useEmployeeStore.getState()
   for (const emp of Object.values(employeeStore.employees)) {
     if (emp.managerId === employeeId) {
@@ -378,36 +281,25 @@ export function deleteEmployee(employeeId: string): void {
   useEmployeeStore.getState().removeEmployee(employeeId)
 }
 
-/**
- * Centralized floor deletion: clears any employee `seatId`/`floorId`
- * references that point at elements on the floor being deleted, then removes
- * the floor. If the deleted floor was active, reloads the new active floor's
- * elements into elementsStore.
- */
 export function deleteFloor(floorId: string): void {
   const floorStore = useFloorStore.getState()
   const elementsStore = useElementsStore.getState()
   const employeeStore = useEmployeeStore.getState()
   const wasActive = floorStore.activeFloorId === floorId
 
-  // Read the floor's elements — live elementsStore if active, otherwise
-  // the stored copy in floorStore.
   const floorElements = wasActive
     ? elementsStore.elements
     : floorStore.getFloorElements(floorId)
 
-  // Clear any employee that is assigned to an element on this floor.
   for (const emp of Object.values(employeeStore.employees)) {
     if (emp.floorId !== floorId) continue
     if (emp.seatId && floorElements[emp.seatId]) {
       employeeStore.updateEmployee(emp.id, { seatId: null, floorId: null })
     } else if (emp.seatId === null) {
-      // floorId set but seatId null — still reset the floor pointer.
       employeeStore.updateEmployee(emp.id, { floorId: null })
     }
   }
 
-  // Remove the floor (this also picks a new activeFloorId if needed).
   floorStore.removeFloor(floorId)
 
   if (wasActive) {
@@ -418,13 +310,6 @@ export function deleteFloor(floorId: string): void {
   }
 }
 
-/**
- * Clear all assignment state for an element — both sides. Safe to call at any
- * time (idempotent): clears the element's `assignedEmployeeId` /
- * `assignedEmployeeIds` / table-seat `assignedGuestId` first, then clears any
- * employees pointing at it. Works whether the element is on the active floor
- * (live elementsStore) or stored on another floor.
- */
 export function cleanupElementAssignments(
   elementId: string,
   options?: { skipElementWrite?: boolean }
@@ -434,7 +319,6 @@ export function cleanupElementAssignments(
   const floorStore = useFloorStore.getState()
   const skipElementWrite = options?.skipElementWrite === true
 
-  // 1. Locate the element: active floor first, then other floors.
   let foundFloorId: string | null = null
   let foundElement: CanvasElement | null = null
 
@@ -454,9 +338,6 @@ export function cleanupElementAssignments(
     }
   }
 
-  // 2. Clear element-side assignments (skipped when the caller is about to
-  //    delete the element anyway — avoids a wasted write and an extra frame
-  //    in undo history).
   if (!skipElementWrite && foundElement && foundFloorId) {
     let cleaned: CanvasElement | null = null
     if (isDeskElement(foundElement)) {
@@ -464,11 +345,6 @@ export function cleanupElementAssignments(
         cleaned = { ...foundElement, assignedEmployeeId: null }
       }
     } else if (isWorkstationElement(foundElement)) {
-      // Workstation `assignedEmployeeIds` is a SPARSE positional array
-      // (length === positions). Cleanup means "every slot empty" — i.e.
-      // an array of nulls of the same length, NOT a truncated `[]` (the
-      // renderer iterates `0..positions` and would silently re-show
-      // stale ids if the array were shorter than expected).
       if (foundElement.assignedEmployeeIds.some((id) => id !== null)) {
         cleaned = {
           ...foundElement,
@@ -498,17 +374,12 @@ export function cleanupElementAssignments(
     }
   }
 
-  // 3. Clear employee-side pointers.
   const affected = Object.values(employeeStore.employees).filter((e) => e.seatId === elementId)
   for (const emp of affected) {
     employeeStore.updateEmployee(emp.id, { seatId: null, floorId: null })
   }
 }
 
-/**
- * Remove a specific employee reference from an element's assignment (without
- * touching the employee record — call sites may update the employee separately).
- */
 function clearEmployeeFromElement(elementId: string, employeeId: string, floorId: string): void {
   const elementsStore = useElementsStore.getState()
   const floorStore = useFloorStore.getState()
@@ -522,9 +393,6 @@ function clearEmployeeFromElement(elementId: string, employeeId: string, floorId
   if (isDeskElement(el) && el.assignedEmployeeId === employeeId) {
     updated = { ...el, assignedEmployeeId: null }
   } else if (isWorkstationElement(el)) {
-    // Sparse positional array — null out the slot the employee occupied
-    // rather than filtering, which would shift everyone left and break
-    // the slot ↔ index contract.
     if (el.assignedEmployeeIds.some((id) => id === employeeId)) {
       updated = {
         ...el,
@@ -543,28 +411,16 @@ function clearEmployeeFromElement(elementId: string, employeeId: string, floorId
   }
 }
 
-/**
- * Atomically delete one or more elements from the currently active floor.
- * Performs cascades and cleanup in a single store update so zundo sees it
- * as one undoable step:
- *
- *   - Walls: cascade-delete any doors/windows whose parentWallId matches.
- *   - Assignable elements (desk/workstation/private-office): unassign any
- *     employees currently seated at them.
- *   - Locked elements: silently skipped.
- */
 export function deleteElements(elementIds: string[]): void {
   const elementsState = useElementsStore.getState().elements
   const employeesState = useEmployeeStore.getState().employees
 
-  // 1. Filter out locked + unknown ids.
   const validIds = elementIds.filter((id) => {
     const el = elementsState[id]
     return !!el && !el.locked
   })
   if (validIds.length === 0) return
 
-  // 2. Collect the final deletion set (including wall cascades).
   const toDelete = new Set<string>(validIds)
   for (const id of validIds) {
     const el = elementsState[id]
@@ -581,7 +437,6 @@ export function deleteElements(elementIds: string[]): void {
     }
   }
 
-  // 3. Collect employees to unassign (from assignable elements in toDelete).
   const employeesToUnassign: string[] = []
   for (const id of toDelete) {
     const el = elementsState[id]
@@ -591,12 +446,8 @@ export function deleteElements(elementIds: string[]): void {
         if (emp.seatId === id) employeesToUnassign.push(emp.id)
       }
     }
-    // Tables also carry guest assignments on their seats, but guests are a
-    // separate concept from employees and already cleaned up elsewhere
-    // (see deleteEmployee). We only need employee unassignment here.
   }
 
-  // 4. Apply both mutations in ONE combined update so zundo snapshots once.
   const nextElements = { ...elementsState }
   for (const id of toDelete) delete nextElements[id]
 
@@ -608,30 +459,17 @@ export function deleteElements(elementIds: string[]): void {
     }
   }
 
-  // elementsStore is the temporal (zundo-tracked) store. Write elements first,
-  // then employees — employees are excluded from the undo partialize so their
-  // update can be applied separately without affecting the snapshot count.
   useElementsStore.setState({ elements: nextElements })
   useEmployeeStore.setState({ employees: nextEmployees })
-
-  for (const id of toDelete) {
-    void emit('element.delete', 'element', id, {})
-  }
 }
 
-/**
- * Centralized floor switch: saves current elements to the outgoing floor,
- * loads the incoming floor's elements into elementsStore, sets activeFloorId.
- */
 export function switchToFloor(newFloorId: string): void {
   const floorStore = useFloorStore.getState()
   const elementsStore = useElementsStore.getState()
   const currentFloorId = floorStore.activeFloorId
   if (newFloorId === currentFloorId) return
 
-  // Save current floor's live elements
   floorStore.setFloorElements(currentFloorId, elementsStore.elements)
-  // Load new floor
   floorStore.setActiveFloor(newFloorId)
   elementsStore.setElements(floorStore.getFloorElements(newFloorId))
 }

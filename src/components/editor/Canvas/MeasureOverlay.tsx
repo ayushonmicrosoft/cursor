@@ -1,4 +1,4 @@
-import { Layer, Line, Circle, Label, Tag, Text } from 'react-konva'
+import { Group, Line, Circle, Label, Tag, Text } from 'react-konva'
 import { useMemo } from 'react'
 import type { LengthUnit } from '../../../lib/units'
 import {
@@ -142,7 +142,7 @@ export function MeasureOverlay({ session, scale, scaleUnit }: Props) {
   if (points.length === 0 && !cursor) return null
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {/* Ruler line. `tension={0}` keeps it a straight polyline; dashing makes
           it visibly distinct from permanent canvas geometry. */}
       {polyline.length >= 4 && (
@@ -201,7 +201,7 @@ export function MeasureOverlay({ session, scale, scaleUnit }: Props) {
           />
         </Label>
       )}
-    </Layer>
+    </Group>
   )
 }
 

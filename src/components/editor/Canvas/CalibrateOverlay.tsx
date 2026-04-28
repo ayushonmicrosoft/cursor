@@ -1,4 +1,4 @@
-import { Layer, Line, Circle, Label, Tag, Text } from 'react-konva'
+import { Group, Line, Circle, Label, Tag, Text } from 'react-konva'
 import { useCalibrateScaleStore } from '../../../stores/calibrateScaleStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { pointDistance } from '../../../lib/calibrateScale'
@@ -55,7 +55,7 @@ export function CalibrateOverlay() {
   const labelAnchor = secondPoint ?? liveEndpoint ?? null
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {/* Rubberband from the first committed point out to the cursor. */}
       {showLiveLine && (
         <Line
@@ -114,7 +114,7 @@ export function CalibrateOverlay() {
           />
         </Label>
       )}
-    </Layer>
+    </Group>
   )
 }
 

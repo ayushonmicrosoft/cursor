@@ -1,4 +1,4 @@
-import { Layer, Rect } from 'react-konva'
+import { Group, Rect } from 'react-konva'
 
 interface MarqueeOverlayProps {
   rect: { x: number; y: number; w: number; h: number } | null
@@ -17,7 +17,7 @@ interface MarqueeOverlayProps {
 export function MarqueeOverlay({ rect }: MarqueeOverlayProps) {
   if (!rect) return null
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       <Rect
         x={rect.x}
         y={rect.y}
@@ -30,6 +30,6 @@ export function MarqueeOverlay({ rect }: MarqueeOverlayProps) {
         fill="rgba(59, 130, 246, 0.08)"
         dash={[4, 4]}
       />
-    </Layer>
+    </Group>
   )
 }

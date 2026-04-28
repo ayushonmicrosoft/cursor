@@ -292,7 +292,7 @@ interface UIState {
 
   // Presentation
   presentationMode: boolean
-  viewMode: '2d' | '2.5d'
+  viewMode: '2d' | '2.5d' | 'pixi'
 
   // Minimap
   minimapVisible: boolean
@@ -371,6 +371,8 @@ interface UIState {
   setCsvImportSummary: (summary: CSVImportSummary | null) => void
   setPresentationMode: (mode: boolean) => void
   setViewMode: (mode: UIState['viewMode']) => void
+  /** Convenience: cycle Konva ↔ PixiJS experimental renderer. */
+  togglePixiMode: () => void
   setMinimapVisible: (v: boolean) => void
   toggleMinimap: () => void
   setContextMenu: (menu: UIState['contextMenu']) => void
@@ -477,6 +479,7 @@ function createUIStore() {
   setCsvImportSummary: (summary) => set({ csvImportSummary: summary }),
   setPresentationMode: (mode) => set({ presentationMode: mode }),
   setViewMode: (mode) => set({ viewMode: mode }),
+  togglePixiMode: () => set((s) => ({ viewMode: s.viewMode === 'pixi' ? '2d' : 'pixi' })),
   setMinimapVisible: (v) => set({ minimapVisible: v }),
   toggleMinimap: () => set((s) => ({ minimapVisible: !s.minimapVisible })),
   setContextMenu: (menu) => set({ contextMenu: menu }),

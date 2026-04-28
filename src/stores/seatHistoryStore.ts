@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { nanoid } from 'nanoid'
 import type { SeatHistoryEntry } from '../types/seatHistory'
 
 /**
@@ -25,7 +24,7 @@ interface SeatHistoryState {
 
   /**
    * Append ONE entry. Callers pass everything except the synthetic `id`
-   * (filled in here with `nanoid()`), so the id is guaranteed unique
+   * (filled in here with `crypto.randomUUID()`), so the id is guaranteed unique
    * even when two record calls land in the same microtask. Returns the
    * created entry so tests and the analyzer pipeline can assert on the
    * shape without a second `getState()` round-trip.
@@ -49,7 +48,7 @@ export const useSeatHistoryStore = create<SeatHistoryState>((set, get) => ({
   entries: {},
 
   recordAssignment: (partial) => {
-    const id = nanoid()
+    const id = crypto.randomUUID()
     const entry: SeatHistoryEntry = { id, ...partial }
     set((state) => ({ entries: { ...state.entries, [id]: entry } }))
     return entry

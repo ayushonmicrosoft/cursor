@@ -1,4 +1,4 @@
-import { Layer, Rect, Ellipse, Line, Arrow } from 'react-konva'
+import { Group, Rect, Ellipse, Line, Arrow } from 'react-konva'
 import type { ToolType } from '../../../../stores/canvasStore'
 
 export interface ShapeDrawingPreview {
@@ -31,9 +31,9 @@ export function ShapeDrawingOverlay({ preview }: Props) {
     const w = Math.abs(endX - startX)
     const h = Math.abs(endY - startY)
     return (
-      <Layer listening={false}>
+      <Group listening={false}>
         <Rect x={x} y={y} width={w} height={h} stroke={STROKE} dash={DASH} strokeWidth={1.5} />
-      </Layer>
+      </Group>
     )
   }
 
@@ -43,23 +43,23 @@ export function ShapeDrawingOverlay({ preview }: Props) {
     const rx = Math.abs(endX - startX) / 2
     const ry = Math.abs(endY - startY) / 2
     return (
-      <Layer listening={false}>
+      <Group listening={false}>
         <Ellipse x={cx} y={cy} radiusX={rx} radiusY={ry} stroke={STROKE} dash={DASH} strokeWidth={1.5} />
-      </Layer>
+      </Group>
     )
   }
 
   if (tool === 'line-shape') {
     return (
-      <Layer listening={false}>
+      <Group listening={false}>
         <Line points={[startX, startY, endX, endY]} stroke={STROKE} dash={DASH} strokeWidth={1.5} />
-      </Layer>
+      </Group>
     )
   }
 
   if (tool === 'arrow') {
     return (
-      <Layer listening={false}>
+      <Group listening={false}>
         <Arrow
           points={[startX, startY, endX, endY]}
           stroke={STROKE}
@@ -69,7 +69,7 @@ export function ShapeDrawingOverlay({ preview }: Props) {
           pointerLength={10}
           pointerWidth={10}
         />
-      </Layer>
+      </Group>
     )
   }
 

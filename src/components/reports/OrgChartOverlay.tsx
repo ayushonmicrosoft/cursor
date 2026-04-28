@@ -2,14 +2,15 @@ import { useMemo } from 'react'
 import { Layer, Line } from 'react-konva'
 import { useEmployeeStore } from '../../stores/employeeStore'
 import { useVisibleEmployees } from '../../hooks/useVisibleEmployees'
-import { useFloorStore } from '../../stores/floorStore'
 import { useUIStore } from '../../stores/uiStore'
-import { useFloorElements } from '../../hooks/useActiveFloorElements'
+import { useElementsStore } from '../../stores/elementsStore'
+import { useActiveFloor } from '../../stores/floorStore'
 
 export function OrgChartOverlay() {
   const orgChartOverlayEnabled = useUIStore((s) => s.orgChartOverlayEnabled)
-  const activeFloorId = useFloorStore((s) => s.activeFloorId)
-  const floorElements = useFloorElements(activeFloorId)
+  const floorElements = useElementsStore((s) => s.elements)
+  const activeFloor = useActiveFloor()
+  const activeFloorId = activeFloor.id
   // Under redaction managerId is blanked, so the overlay renders no lines
   // for viewers — which is the intended GDPR outcome: the reporting graph
   // itself is PII.

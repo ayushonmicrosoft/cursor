@@ -35,7 +35,6 @@ import { DepartmentChip } from './roster/DepartmentChip'
 import { StatusPill } from './roster/StatusPill'
 import { SeatCell } from './roster/SeatCell'
 import { RosterDetailDrawer } from './RosterDetailDrawer'
-import { SeatSwapRequestDialog } from './SeatSwapRequestDialog'
 import { RosterBulkEditPopover } from './RosterBulkEditPopover'
 import { RosterFilterPresetsMenu } from './RosterFilterPresetsMenu'
 import { ConfirmDialog } from './ConfirmDialog'
@@ -138,7 +137,8 @@ export function RosterPage() {
   // raw store — they're gated on `canEdit` and write-path role checks, and
   // never touch the redacted projection.
   const employees = useVisibleEmployees()
-  const floors = useFloorStore((s) => s.floors)
+  const singleFloor = useFloorStore((s) => s.floor)
+  const floors = useMemo(() => [singleFloor], [singleFloor])
   const departmentColors = useEmployeeStore((s) => s.departmentColors)
   const getDepartmentColor = useEmployeeStore((s) => s.getDepartmentColor)
   const addEmployee = useEmployeeStore((s) => s.addEmployee)
@@ -326,10 +326,7 @@ export function RosterPage() {
     string[] | null
   >(null)
 
-  // Id of the employee whose "Request swap" dialog is open, or null when
-  // nothing is open. Kept at the page level rather than on the menu so the
-  // modal persists past the menu's close-on-outside-click.
-  const [swapRequestEmployeeId, setSwapRequestEmployeeId] = useState<string | null>(null)
+
 
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -1820,10 +1817,6 @@ export function RosterPage() {
                             requestRowDelete(emp.id)
                             setOpenMenuId(null)
                           }}
-                          onRequestSwap={() => {
-                            setSwapRequestEmployeeId(emp.id)
-                            setOpenMenuId(null)
-                          }}
                           onClose={() => setOpenMenuId(null)}
                         />
                       )}
@@ -1869,12 +1862,7 @@ export function RosterPage() {
         />
       )}
 
-      {swapRequestEmployeeId && (
-        <SeatSwapRequestDialog
-          requesterId={swapRequestEmployeeId}
-          onClose={() => setSwapRequestEmployeeId(null)}
-        />
-      )}
+
 
       {helpOpen && <ShortcutsCheatSheet onClose={() => setHelpOpen(false)} />}
 
@@ -2734,7 +2722,6 @@ function RowActionMenu({
   onEdit,
   onUnassign,
   onDelete,
-  onRequestSwap,
   onClose,
   canEdit,
 }: {
@@ -2744,7 +2731,6 @@ function RowActionMenu({
   onEdit: () => void
   onUnassign: () => void
   onDelete: () => void
-  onRequestSwap: () => void
   onClose: () => void
   canEdit: boolean
 }) {
@@ -2858,18 +2844,6 @@ function RowActionMenu({
             <Mail size={12} /> Send invite…
           </button>
         )}
-        {/* Request swap — available to anyone (swap requests are a
-            non-destructive workflow; a manager still has to approve).
-            Disabled when the row has no seat, because there's nothing
-            to swap. */}
-        <button
-          onClick={onRequestSwap}
-          disabled={!employee.seatId}
-          className="w-full text-left px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-          title={employee.seatId ? 'Request a seat swap' : 'Assign a seat before requesting a swap'}
-        >
-          Request swap
-        </button>
         {canEdit && (
           <>
             <button

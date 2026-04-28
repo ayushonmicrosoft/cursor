@@ -14,36 +14,6 @@ import {
 import { WALL_TYPES, type WallType } from '../../types/elements'
 import type { Annotation, AnnotationAnchor } from '../../types/annotations'
 import { ANNOTATION_BODY_MAX } from '../../types/annotations'
-import {
-  isSeatSwapStatus,
-  type SeatSwapRequest,
-} from '../../types/seatSwaps'
-
-/**
- * Legacy-payload migration helpers.
- *
- * Before Phase 4 introduced Supabase-backed offices, Floocraft autosaved
- * the user's current project to `localStorage` under a single key
- * (`floocraft-autosave`). The autosave loop itself was removed in
- * Phase 6 — it's a dead-end once every office has a server-side row —
- * but the *migration* logic (adapting legacy payloads to current store
- * shapes) lives on because:
- *
- *   1. Supabase-stored office payloads use the same shape as the old
- *      autosave envelope. Any back-fill the old loader had to do also
- *      applies to old offices that were synced to the server before the
- *      field was introduced (e.g. `employees[*].status`).
- *   2. The existing unit tests (`autoSaveSafety`, `wallAutoSave`,
- *      `employeeMigration`) exercise subtle corner-cases — corrupt
- *      JSON, arrays-where-objects-expected, back-filled wall bulges —
- *      that we don't want to lose coverage on.
- *
- * So this module keeps `loadAutoSave` as a pure helper over
- * `localStorage`, exporting it so those tests keep working; `ProjectShell`
- * no longer calls it but may in the future if we decide to offer a
- * "recover from last local autosave" escape hatch for users who lost
- * their account.
- */
 
 const SAVE_KEY = 'floocraft-autosave'
 
@@ -57,23 +27,6 @@ type AutoSavePayload = {
   settings: ReturnType<typeof useCanvasStore.getState>['settings']
 }
 
-/**
- * Migrate a deserialized elements map. Older payloads predate the curved-walls
- * feature and don't have `bulges` or `connectedWallIds` on wall elements.
- * Back-fill these fields so consumers can safely `.some(b => b !== 0)` and
- * `.length === points.length/2 - 1` without first checking for undefined.
- * Unknown properties are preserved — this is a forward-compatible migration.
- */
-/**
- * Seat-bearing element types carry an optional `equipment: string[]`
- * that the equipment-needs overlay reads. Older payloads predate the
- * field; normalise it here so the overlay/renderer can assume any
- * present value is already a `string[]` (each entry non-empty and
- * trimmed). Absent → `[]`. Non-array → `[]`. Non-string entries are
- * dropped silently; empty/whitespace-only tags are dropped because the
- * overlay comparator is case-insensitive-trimmed and those collapse to
- * noise anyway.
- */
 function migrateEquipment(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
   const out: string[] = []
@@ -93,23 +46,6 @@ const EQUIPPABLE_TYPES = new Set([
   'private-office',
 ])
 
-/**
- * Workstations now carry a SPARSE positional `assignedEmployeeIds`:
- * the array length is exactly `positions`, and `null` at index `i`
- * means slot `i` is empty. Older payloads stored a dense `string[]`
- * of however many people were seated.
- *
- * This helper:
- *   - right-pads short legacy arrays with `null` to length `positions`,
- *   - truncates over-long arrays defensively (shouldn't happen but
- *     keeps the invariant true on hand-crafted payloads),
- *   - passes through arrays already in the sparse shape unchanged
- *     (idempotent — see test fixture in
- *     `src/__tests__/workstationSlotAssignment.test.ts`).
- *
- * Non-array input collapses to an all-empty array of the right length
- * so the renderer can iterate without bounds checks.
- */
 function migrateWorkstationAssignedEmployeeIds(
   raw: unknown,
   positions: number,
@@ -124,15 +60,13 @@ function migrateWorkstationAssignedEmployeeIds(
     if (typeof entry === 'string' && entry.length > 0) {
       out.push(entry)
     } else {
-      // Treat anything that isn't a non-empty string (null, undefined,
-      // empty string from very old fixtures) as "slot empty".
       out.push(null)
     }
   }
   return out
 }
 
-function migrateElements(
+export function migrateElements(
   elements: Record<string, unknown>,
 ): ReturnType<typeof useElementsStore.getState>['elements'] {
   const out: Record<string, unknown> = {}
@@ -142,18 +76,11 @@ function migrateElements(
     if (el.type === 'wall' && Array.isArray(el.points)) {
       const expectedBulges = Math.max(0, el.points.length / 2 - 1)
       const currentBulges = Array.isArray(el.bulges) ? el.bulges : []
-      // Pad/trim to exactly the segment count; replace non-finite entries
-      // with 0 so arc rendering never hits NaN.
       const bulges: number[] = []
       for (let i = 0; i < expectedBulges; i++) {
         const b = currentBulges[i]
         bulges.push(typeof b === 'number' && Number.isFinite(b) ? b : 0)
       }
-      // `wallType` (semantic classification) was introduced after the
-      // original wall shape; any legacy payload missing it defaults to
-      // 'solid' (drywall) — same pattern as the `bulges` back-fill above.
-      // Unknown string values coerce to 'solid' rather than silently
-      // propagating, so the renderer's switch is exhaustive.
       const wallType: WallType =
         typeof el.wallType === 'string' &&
         (WALL_TYPES as readonly string[]).includes(el.wallType)
@@ -168,20 +95,10 @@ function migrateElements(
         wallType,
       }
     } else if (typeof el.type === 'string' && EQUIPPABLE_TYPES.has(el.type)) {
-      // Back-fill the optional `equipment: string[]` on every seat-bearing
-      // element so the equipment-needs overlay can treat it as an invariant
-      // `string[]` without first nulling-out. See `migrateEquipment`.
       const migrated: Record<string, unknown> = {
         ...el,
         equipment: migrateEquipment(el.equipment),
       }
-      // Workstations carry a SPARSE positional `assignedEmployeeIds`
-      // (length === positions, `null` for empty slots). Older payloads
-      // stored a dense `string[]` of however many people were seated;
-      // `migrateWorkstationAssignedEmployeeIds` right-pads to the new
-      // shape. Idempotent — payloads already containing nulls pass
-      // through unchanged because the helper preserves entries that
-      // are already valid string ids.
       if (el.type === 'workstation') {
         const positions =
           typeof el.positions === 'number' && Number.isFinite(el.positions)
@@ -208,12 +125,6 @@ function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && v.length > 0
 }
 
-/**
- * Validate a `yyyy-mm-dd` date string. We accept only that format (not
- * full ISO timestamps) because the pending-status queue stores day
- * precision, and Date.parse tolerates too many legacy formats to be a
- * safe gate on user-visible scheduling.
- */
 function isIsoDate(v: unknown): v is string {
   if (typeof v !== 'string') return false
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false
@@ -221,52 +132,21 @@ function isIsoDate(v: unknown): v is string {
   return !Number.isNaN(t)
 }
 
-/**
- * Back-fill and scrub the `pendingStatusChanges` queue on a legacy
- * employee payload. Invalid entries (missing id, bad date, unknown
- * status) are dropped with a `console.warn` — the user gets a clean
- * queue rather than a crash on the next render. Survivors are sorted
- * ascending by `effectiveDate` to match the invariant documented on
- * `Employee`.
- */
 function migratePendingStatusChanges(
   raw: unknown,
   employeeId: string,
 ): PendingStatusChange[] {
   if (raw === undefined || raw === null) return []
   if (!Array.isArray(raw)) {
-    console.warn(
-      `[migrateEmployees] pendingStatusChanges on ${employeeId} is not an array; dropping`,
-    )
     return []
   }
   const out: PendingStatusChange[] = []
   for (const entry of raw) {
-    if (!entry || typeof entry !== 'object') {
-      console.warn(
-        `[migrateEmployees] invalid pendingStatusChange entry on ${employeeId}; dropping`,
-      )
-      continue
-    }
+    if (!entry || typeof entry !== 'object') continue
     const e = entry as Record<string, unknown>
-    if (!isNonEmptyString(e.id)) {
-      console.warn(
-        `[migrateEmployees] pendingStatusChange missing id on ${employeeId}; dropping`,
-      )
-      continue
-    }
-    if (!isIsoDate(e.effectiveDate)) {
-      console.warn(
-        `[migrateEmployees] pendingStatusChange on ${employeeId} has invalid effectiveDate ${String(e.effectiveDate)}; dropping`,
-      )
-      continue
-    }
-    if (!isEmployeeStatus(e.status)) {
-      console.warn(
-        `[migrateEmployees] pendingStatusChange on ${employeeId} has unknown status ${String(e.status)}; dropping`,
-      )
-      continue
-    }
+    if (!isNonEmptyString(e.id)) continue
+    if (!isIsoDate(e.effectiveDate)) continue
+    if (!isEmployeeStatus(e.status)) continue
     out.push({
       id: e.id,
       status: e.status,
@@ -279,38 +159,11 @@ function migratePendingStatusChanges(
   return out
 }
 
-/**
- * Migrate a deserialized employees map. Older payloads predate the
- * `status` field; back-fill to `'active'` (and coerce any invalid value
- * to `'active'` too) so consumers can trust the enum unconditionally.
- *
- * Phase 4 added five lifecycle fields (`leaveType`, `expectedReturnDate`,
- * `coverageEmployeeId`, `leaveNotes`, `departureDate`) — back-fill each
- * to `null` when absent or invalid so downstream UI can rely on the
- * shape. `leaveType` is validated against the `LEAVE_TYPES` enum; the
- * date/id/notes fields accept any non-empty string.
- */
-/**
- * Coerce a single unknown value to an `Accommodation` or drop it. An entry
- * must have a non-empty string `id`, a known `type`, and (optionally) a
- * string `notes`. Anything else is discarded with a console.warn so an
- * inbound corrupted payload surfaces during devtools-triage rather than
- * silently stripping data.
- */
 function coerceAccommodation(raw: unknown): Accommodation | null {
   if (!raw || typeof raw !== 'object') return null
   const a = raw as Record<string, unknown>
-  if (!isNonEmptyString(a.id)) {
-    console.warn('[accommodation migration] dropping entry with missing id', a)
-    return null
-  }
-  if (!isAccommodationType(a.type)) {
-    console.warn(
-      `[accommodation migration] dropping entry with unknown type "${String(a.type)}"`,
-      a,
-    )
-    return null
-  }
+  if (!isNonEmptyString(a.id)) return null
+  if (!isAccommodationType(a.type)) return null
   return {
     id: a.id,
     type: a.type,
@@ -329,13 +182,6 @@ function migrateAccommodations(raw: unknown): Accommodation[] {
   return out
 }
 
-/**
- * Back-fill `sensitivityTags` for legacy payloads. The field was
- * introduced alongside the adjacency-conflict analyzer. We accept any
- * array of non-empty strings and drop everything else (including raw
- * strings and malformed entries). `null` / `undefined` / non-arrays
- * default to `[]` so `.includes(...)` / `.some(...)` is always safe.
- */
 function migrateSensitivityTags(raw: unknown): string[] {
   if (!Array.isArray(raw)) return []
   const out: string[] = []
@@ -375,17 +221,6 @@ export function migrateEmployees(
   return out as ReturnType<typeof useEmployeeStore.getState>['employees']
 }
 
-/**
- * Migrate a deserialized annotations map. Legacy payloads predate the
- * annotations feature and simply omit the `annotations` key; callers fall
- * back to `{}` before invoking this helper. Entries that don't match the
- * expected shape (missing id, bad anchor discriminant, non-string body)
- * are dropped with a `console.warn` rather than crashing the editor.
- *
- * The migration is defensive by design: a partially-saved or hand-crafted
- * payload should load as a clean (possibly empty) annotations map, never
- * as a crashed app.
- */
 export function migrateAnnotations(
   raw: unknown,
 ): Record<string, Annotation> {
@@ -394,19 +229,11 @@ export function migrateAnnotations(
   for (const [id, value] of Object.entries(raw as Record<string, unknown>)) {
     if (!value || typeof value !== 'object') continue
     const a = value as Record<string, unknown>
-    if (!isNonEmptyString(a.id)) {
-      console.warn('[annotation migration] dropping entry with missing id', a)
-      continue
-    }
-    if (typeof a.body !== 'string') {
-      console.warn(`[annotation migration] dropping ${a.id}: non-string body`)
-      continue
-    }
+    if (!isNonEmptyString(a.id)) continue
+    if (typeof a.body !== 'string') continue
     const rawAnchor = a.anchor as Record<string, unknown> | null | undefined
-    if (!rawAnchor || typeof rawAnchor !== 'object') {
-      console.warn(`[annotation migration] dropping ${a.id}: missing anchor`)
-      continue
-    }
+    if (!rawAnchor || typeof rawAnchor !== 'object') continue
+    
     let anchor: AnnotationAnchor | null = null
     if (rawAnchor.type === 'element' && isNonEmptyString(rawAnchor.elementId)) {
       anchor = { type: 'element', elementId: rawAnchor.elementId }
@@ -425,10 +252,8 @@ export function migrateAnnotations(
         y: rawAnchor.y,
       }
     }
-    if (!anchor) {
-      console.warn(`[annotation migration] dropping ${a.id}: invalid anchor`)
-      continue
-    }
+    if (!anchor) continue
+    
     const body = a.body.slice(0, ANNOTATION_BODY_MAX)
     out[id] = {
       id: a.id,
@@ -444,80 +269,15 @@ export function migrateAnnotations(
   return out
 }
 
-/**
- * Coerce the top-level `seatSwaps` payload slot into a `Record<id,
- * SeatSwapRequest>`. Legacy payloads predate the feature and will have
- * `undefined` (or legacy array/null shapes) — fall back to `{}` in any
- * case that isn't a well-formed object. Entries missing required
- * fields are dropped with a `console.warn`.
- */
-export function migrateSeatSwaps(
-  raw: unknown,
-): Record<string, SeatSwapRequest> {
-  if (!raw || typeof raw !== 'object') return {}
-  // Legacy snapshot from an earlier task shape might have stored an array
-  // rather than a Record. Normalise both paths through the same loop.
-  const entries: unknown[] = Array.isArray(raw)
-    ? raw
-    : Object.values(raw as Record<string, unknown>)
-  const out: Record<string, SeatSwapRequest> = {}
-  for (const entry of entries) {
-    if (!entry || typeof entry !== 'object') continue
-    const e = entry as Record<string, unknown>
-    if (!isNonEmptyString(e.id)) {
-      console.warn('[seatSwap migration] dropping entry with missing id', e)
-      continue
-    }
-    if (!isNonEmptyString(e.requesterId) || !isNonEmptyString(e.targetEmployeeId)) {
-      console.warn(`[seatSwap migration] dropping ${e.id}: missing party ids`)
-      continue
-    }
-    if (!isNonEmptyString(e.requesterSeatId) || !isNonEmptyString(e.targetSeatId)) {
-      console.warn(`[seatSwap migration] dropping ${e.id}: missing seat ids`)
-      continue
-    }
-    if (!isSeatSwapStatus(e.status)) {
-      console.warn(`[seatSwap migration] dropping ${e.id}: invalid status`)
-      continue
-    }
-    out[e.id] = {
-      id: e.id,
-      requesterId: e.requesterId,
-      requesterSeatId: e.requesterSeatId,
-      targetEmployeeId: e.targetEmployeeId,
-      targetSeatId: e.targetSeatId,
-      status: e.status,
-      reason: typeof e.reason === 'string' ? e.reason : '',
-      createdAt: isNonEmptyString(e.createdAt) ? e.createdAt : new Date(0).toISOString(),
-      resolvedAt: isNonEmptyString(e.resolvedAt) ? e.resolvedAt : null,
-      resolvedBy: isNonEmptyString(e.resolvedBy) ? e.resolvedBy : null,
-    }
-  }
-  return out
-}
-
-/**
- * Shape-validate a deserialized autosave payload. We don't run a full schema
- * (overkill for a local-storage autosave), but we reject payloads where
- * required top-level fields are the wrong type — better to start a new
- * project than to load a half-broken one and crash the renderer.
- */
 function isValidPayload(value: unknown): value is Partial<AutoSavePayload> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
   const v = value as Record<string, unknown>
-  // `elements` and `employees` are Records keyed by id. Arrays and
-  // non-objects get coerced to `{}` in the loader below — we DON'T reject
-  // the whole payload over a malformed sub-field, because discarding the
-  // user's entire save to punish a legacy/empty `employees: []` would be
-  // far worse than silently normalising it. Only reject if the type is
-  // genuinely unusable (e.g. `elements: "oops"`).
   if (v.elements && typeof v.elements !== 'object') return false
   if (v.employees && typeof v.employees !== 'object') return false
   if (v.floors && !Array.isArray(v.floors)) return false
   return true
 }
 
-/** Normalise a field that must be a Record. Arrays/non-objects → `{}`. */
 function ensureRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   return value as Record<string, unknown>
@@ -533,16 +293,6 @@ export function loadAutoSave(): AutoSavePayload | null {
     return null
   }
   if (!isValidPayload(parsed)) return null
-  // Apply element migrations before returning, so callers never have to
-  // think about legacy payload shapes. `ensureRecord` coerces arrays into
-  // `{}` so downstream `Object.entries` never sees numeric array keys
-  // (which would otherwise produce phantom element ids like `"0"`, `"1"`).
-  //
-  // Important: only populate each field when it was *present* in the raw
-  // payload. Synthesising `employees: {}` for a payload that legitimately
-  // omitted the field (very early autosaves, or hand-crafted fixtures)
-  // would stomp on whatever the consumer has already seeded — leaving
-  // `undefined` to mean "leave the store alone".
   const payload = parsed as AutoSavePayload
   const rawObj = parsed as Record<string, unknown>
   if (rawObj.elements !== undefined) {

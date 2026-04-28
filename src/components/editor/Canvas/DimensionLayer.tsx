@@ -1,4 +1,4 @@
-import { Layer, Label, Tag, Text } from 'react-konva'
+import { Group, Label, Tag, Text } from 'react-konva'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { isWallElement } from '../../../types/elements'
@@ -68,5 +68,5 @@ export function DimensionLayer() {
     }
   }
 
-  return <Layer listening={false}>{labels}</Layer>
+  return <Group listening={false}>{labels}</Group>
 }

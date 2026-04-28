@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { nanoid } from 'nanoid'
 import type { Scenario, ScenarioAdjustment, ScenarioBaseSnapshot } from '../lib/scenarios'
 
 /**
@@ -86,7 +85,7 @@ export const useScenariosStore = create<ScenariosState>((set, get) => ({
   compareScenarioId: null,
 
   createScenario: (base, name) => {
-    const id = nanoid()
+    const id = crypto.randomUUID()
     const scenario: Scenario = {
       id,
       name: name ?? defaultName(get().scenarios),
@@ -108,7 +107,7 @@ export const useScenariosStore = create<ScenariosState>((set, get) => ({
   cloneScenario: (id) => {
     const source = get().scenarios.find((s) => s.id === id)
     if (!source) return null
-    const newId = nanoid()
+    const newId = crypto.randomUUID()
     const copy: Scenario = {
       id: newId,
       name: `${source.name} (copy)`,
@@ -120,7 +119,7 @@ export const useScenariosStore = create<ScenariosState>((set, get) => ({
       // identity with the original. Scenario adjustments are keyed on id
       // in the UI, and sharing keys across two scenarios would let an
       // edit on one flash into the other on the compare view.
-      adjustments: source.adjustments.map((a) => ({ ...a, id: nanoid() })),
+      adjustments: source.adjustments.map((a) => ({ ...a, id: crypto.randomUUID() })),
     }
     set((s) => ({
       scenarios: [...s.scenarios, copy],
@@ -156,7 +155,7 @@ export const useScenariosStore = create<ScenariosState>((set, get) => ({
   setCompareScenario: (id) => set({ compareScenarioId: id }),
 
   addAdjustment: (id, adjustment) => {
-    const withId = { ...adjustment, id: nanoid() } as ScenarioAdjustment
+    const withId = { ...adjustment, id: crypto.randomUUID() } as ScenarioAdjustment
     set((s) => ({
       scenarios: s.scenarios.map((sc) =>
         sc.id === id

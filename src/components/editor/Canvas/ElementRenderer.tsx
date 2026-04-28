@@ -54,8 +54,6 @@ import type Konva from 'konva'
 import { snapToGrid, getSnappedPosition } from '../../../lib/geometry'
 import { elementBounds } from '../../../lib/elementBounds'
 import { ALIGNMENT_THRESHOLD } from '../../../lib/constants'
-import { isBookableRoom } from '../../../lib/roomBookings'
-import { useRoomBookingDialogStore } from '../../../lib/roomBookingDialogStore'
 import { useElementSpawnAnimation } from '../../../hooks/useElementSpawnAnimation'
 
 export function ElementRenderer() {
@@ -198,13 +196,6 @@ export function ElementRenderer() {
   const handleClick = useCallback(
     (id: string, e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
       e.cancelBubble = true
-      if (activeTool === 'book') {
-        const el = useElementsStore.getState().elements[id]
-        if (el && isBookableRoom(el)) {
-          useRoomBookingDialogStore.getState().open(id)
-        }
-        return
-      }
       // Reliability fallback: if the operator is stuck in pan mode and
       // clicks an element, promote that click to selection and switch
       // back to select so subsequent edits work without hunting for tools.
@@ -292,7 +283,7 @@ export function ElementRenderer() {
           const VariantRenderer = getShapeRenderer(el)
           if (VariantRenderer) {
             return (
-              <Group rotation={el.rotation} listening={!el.locked}>
+              <Group rotation={el.rotation}>
                 <Group x={-el.width / 2} y={-el.height / 2} listening={false}>
                   <VariantRenderer element={el} />
                 </Group>

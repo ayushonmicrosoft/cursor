@@ -100,7 +100,7 @@ function usePopoverPosition(
   // — the container is always mounted before any popover opens, and the
   // popover itself is keyed on a stable change (draft anchor / active
   // annotation id) so it re-measures when we want it to.
-  // eslint-disable-next-line react-hooks/refs
+   
   const rect = containerRef.current?.getBoundingClientRect()
   if (!rect) return { left: 0, top: 0 }
   // Shift the popover slightly down-right of the anchor so the pin
@@ -388,7 +388,7 @@ function ViewPopoverBody({
     // already mounted when this popover body renders, so reading its rect
     // in render is safe. The body is keyed on `entry.id` by the gate, so
     // it remeasures when the active annotation changes.
-    // eslint-disable-next-line react-hooks/refs
+     
     const rect = containerRef.current?.getBoundingClientRect()
     const anchor = getLastPinAnchor()
     if (rect && anchor) {

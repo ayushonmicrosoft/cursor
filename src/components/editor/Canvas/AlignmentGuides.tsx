@@ -1,4 +1,4 @@
-import { Layer, Line, Group, Rect, Text } from 'react-konva'
+import { Line, Group, Rect, Text } from 'react-konva'
 import { useMemo } from 'react'
 import { ALIGNMENT_GUIDE_COLOR } from '../../../lib/constants'
 import type { AlignmentGuide } from '../../../lib/geometry'
@@ -206,7 +206,7 @@ export function AlignmentGuides({ guides }: AlignmentGuidesProps) {
   const invScale = stageScale > 0 ? 1 / stageScale : 1
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {dedupedGuides.map((guide, i) => (
         <Line
           key={`line-${i}`}
@@ -264,6 +264,6 @@ export function AlignmentGuides({ guides }: AlignmentGuidesProps) {
           />
         </Group>
       ))}
-    </Layer>
+    </Group>
   )
 }

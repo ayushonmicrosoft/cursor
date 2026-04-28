@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from 'react'
 import { X, ArrowRight, Check, Trash2, Plus } from 'lucide-react'
 import { useVisibleEmployees } from '../../hooks/useVisibleEmployees'
-import { useFloorStore } from '../../stores/floorStore'
+import { useActiveFloor } from '../../stores/floorStore'
 import { useUIStore } from '../../stores/uiStore'
 import { useShallow } from 'zustand/react/shallow'
-import { useAllFloorElements } from '../../hooks/useActiveFloorElements'
+import { useElementsStore } from '../../stores/elementsStore'
 import { assignEmployee } from '../../lib/seatAssignment'
 import {
   isDeskElement,
@@ -15,18 +15,14 @@ import {
 interface PendingMove {
   employeeId: string
   fromSeatId: string | null
-  fromFloorId: string | null
   toSeatId: string
-  toFloorId: string
 }
 
 export function MovePlanner() {
-  // Display-layer read — the planner lists employees to pick from, so
-  // names need the same redaction every other surface uses. Mutations
-  // (`assignEmployee`) are already editor-only.
   const employees = useVisibleEmployees()
-  const floors = useFloorStore((s) => s.floors)
-  const floorsWithElements = useAllFloorElements()
+  const floor = useActiveFloor()
+  const elements = useElementsStore((s) => s.elements)
+  
   const { setMovePlannerActive, setActiveReport } = useUIStore(
     useShallow((s) => ({
       setMovePlannerActive: s.setMovePlannerActive,
@@ -36,29 +32,21 @@ export function MovePlanner() {
 
   const [pendingMoves, setPendingMoves] = useState<PendingMove[]>([])
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('')
-  const [selectedFloorId, setSelectedFloorId] = useState('')
   const [selectedDeskId, setSelectedDeskId] = useState('')
 
-  const allEmployees = useMemo(() => Object.values(employees).sort((a, b) => a.name.localeCompare(b.name)), [employees])
-
-  const floorMap = useMemo(() => {
-    const m: Record<string, string> = {}
-    for (const f of floors) m[f.id] = f.name
-    return m
-  }, [floors])
+  const allEmployees = useMemo(() => 
+    Object.values(employees).sort((a, b) => a.name.localeCompare(b.name)), 
+  [employees])
 
   const assignableDesks = useMemo(() => {
-    if (!selectedFloorId) return []
-    const f = floorsWithElements.find((x) => x.floorId === selectedFloorId)
-    if (!f) return []
-    return Object.values(f.elements)
+    return Object.values(elements)
       .filter((el) => isDeskElement(el) || isWorkstationElement(el) || isPrivateOfficeElement(el))
       .map((el) => ({ id: el.id, label: el.label || el.id }))
       .sort((a, b) => a.label.localeCompare(b.label))
-  }, [floorsWithElements, selectedFloorId])
+  }, [elements])
 
   const handleAddMove = useCallback(() => {
-    if (!selectedEmployeeId || !selectedFloorId || !selectedDeskId) return
+    if (!selectedEmployeeId || !selectedDeskId) return
     const emp = employees[selectedEmployeeId]
     if (!emp) return
 
@@ -67,21 +55,19 @@ export function MovePlanner() {
       {
         employeeId: selectedEmployeeId,
         fromSeatId: emp.seatId,
-        fromFloorId: emp.floorId,
         toSeatId: selectedDeskId,
-        toFloorId: selectedFloorId,
       },
     ])
     setSelectedEmployeeId('')
     setSelectedDeskId('')
-  }, [selectedEmployeeId, selectedFloorId, selectedDeskId, employees])
+  }, [selectedEmployeeId, selectedDeskId, employees])
 
   const handleApplyAll = useCallback(() => {
     for (const move of pendingMoves) {
-      assignEmployee(move.employeeId, move.toSeatId, move.toFloorId)
+      assignEmployee(move.employeeId, move.toSeatId, floor.id)
     }
     setPendingMoves([])
-  }, [pendingMoves])
+  }, [pendingMoves, floor.id])
 
   const handleDiscard = useCallback(() => {
     setPendingMoves([])
@@ -95,18 +81,16 @@ export function MovePlanner() {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Yellow banner */}
-      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800">
+      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
         <span className="font-semibold">Move Planner</span> — Plan seat changes before committing
       </div>
 
-      {/* Add Move form */}
       <div className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-800">
         <div className="text-xs font-medium text-gray-600 dark:text-gray-300">Add a move</div>
         <select
           value={selectedEmployeeId}
           onChange={(e) => setSelectedEmployeeId(e.target.value)}
-          className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Select employee...</option>
           {allEmployees.map((emp) => (
@@ -117,24 +101,9 @@ export function MovePlanner() {
         </select>
 
         <select
-          value={selectedFloorId}
-          onChange={(e) => {
-            setSelectedFloorId(e.target.value)
-            setSelectedDeskId('')
-          }}
-          className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Target floor...</option>
-          {floors.map((f) => (
-            <option key={f.id} value={f.id}>{f.name}</option>
-          ))}
-        </select>
-
-        <select
           value={selectedDeskId}
           onChange={(e) => setSelectedDeskId(e.target.value)}
-          className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          disabled={!selectedFloorId}
+          className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value="">Target desk...</option>
           {assignableDesks.map((d) => (
@@ -144,7 +113,7 @@ export function MovePlanner() {
 
         <button
           onClick={handleAddMove}
-          disabled={!selectedEmployeeId || !selectedFloorId || !selectedDeskId}
+          disabled={!selectedEmployeeId || !selectedDeskId}
           className="flex items-center justify-center gap-1.5 w-full px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Plus size={12} />
@@ -152,7 +121,6 @@ export function MovePlanner() {
         </button>
       </div>
 
-      {/* Pending moves list */}
       {pendingMoves.length > 0 && (
         <div className="flex flex-col gap-1.5">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -160,15 +128,8 @@ export function MovePlanner() {
           </div>
           {pendingMoves.map((move) => {
             const emp = employees[move.employeeId]
-            const fromLabel = move.fromSeatId
-              ? move.fromFloorId !== move.toFloorId
-                ? `${floorMap[move.fromFloorId || ''] || '?'}, ${move.fromSeatId}`
-                : move.fromSeatId
-              : 'Unassigned'
-            const toLabel =
-              move.fromFloorId !== move.toFloorId
-                ? `${floorMap[move.toFloorId] || '?'}, ${move.toSeatId}`
-                : move.toSeatId
+            const fromLabel = move.fromSeatId || 'Unassigned'
+            const toLabel = move.toSeatId
             return (
               <div
                 key={move.employeeId}
@@ -192,7 +153,6 @@ export function MovePlanner() {
         </div>
       )}
 
-      {/* Action buttons */}
       <div className="flex gap-2">
         <button
           onClick={handleApplyAll}

@@ -7,15 +7,9 @@ import { useUIStore } from '../../../stores/uiStore'
 import { useCan } from '../../../hooks/useCan'
 
 /**
- * Floating north-arrow compass pinned to the top-left of the canvas.
+ * Floating north-arrow compass pinned to the top-right of the canvas.
  * Drag (or arrow-key) to rotate so a floor plan can be aligned with
- * real-world cardinal directions for wayfinding. The rotation lives on
- * `useCanvasStore.settings.northRotation`, defaulting to 0 (N up) for
- * older projects where the field is absent.
- *
- * Hidden in presentation mode. Read-only when the viewer can't edit the
- * map (no `slider` semantics, no drag) — the compass still renders so
- * the orientation is visible, just not adjustable.
+ * real-world cardinal directions for wayfinding.
  */
 export function NorthArrow() {
   const presentationMode = useUIStore((s) => s.presentationMode)
@@ -41,8 +35,7 @@ export function NorthArrow() {
     setDragging(false)
   }, [])
 
-  // Self-heal legacy/corrupted payload values so autosave persists the
-  // canonical [0, 360) heading after the first map render.
+  // Self-heal legacy/corrupted payload values
   useEffect(() => {
     if (northRotationRaw === undefined) return
     const normalized = normalizeNorthRotation(northRotationRaw)
@@ -51,11 +44,6 @@ export function NorthArrow() {
     }
   }, [northRotationRaw, setSettings])
 
-  // Drag-to-rotate. We compute the angle from the centre of the compass to
-  // the cursor on every pointermove; the visible needle plus the persisted
-  // setting both follow in real time. Pointer-capture isn't strictly
-  // required since we listen on `window` while dragging, but it keeps the
-  // browser cursor consistent across sub-pixel hovers off the element.
   useEffect(() => {
     if (!dragging) return
     const el = ref.current
@@ -70,9 +58,6 @@ export function NorthArrow() {
       const cy = rect.top + rect.height / 2
       const dx = e.clientX - cx
       const dy = e.clientY - cy
-      // atan2 returns radians measured from +x axis. We want degrees from
-      // "up" (the visible N direction at rotation 0). Up is -y, so add 90°
-      // to align, then normalize to [0, 360).
       const deg = ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360
       setSettings({ northRotation: deg })
     }
@@ -108,7 +93,7 @@ export function NorthArrow() {
     try {
       e.currentTarget.setPointerCapture(e.pointerId)
     } catch {
-      // Pointer capture can fail on detached nodes; dragging still works.
+      // Pointer capture can fail on detached nodes
     }
     setDragging(true)
   }
@@ -138,50 +123,93 @@ export function NorthArrow() {
     }
   }
 
+  const degLabel = Math.round(northRotation)
+
   return (
     <div
       ref={ref}
       data-testid="north-arrow"
       data-compass-anchor="top-right-offset"
-      className={`absolute top-14 right-4 z-20 w-20 rounded border border-gray-300 bg-white/95 shadow-md backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+      className={`absolute top-14 right-4 z-20 select-none ${canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
       onPointerDown={handlePointerDown}
-      aria-label={`Compass controls. North arrow rotated ${Math.round(northRotation)} degrees.${canEdit ? ' Drag, use buttons, or use arrow keys to rotate.' : ''}`}
+      aria-label={`Compass controls. North arrow rotated ${degLabel} degrees.${canEdit ? ' Drag, use buttons, or use arrow keys to rotate.' : ''}`}
       role="group"
     >
-      <div className="flex items-center justify-between border-b border-gray-200 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-600 dark:border-gray-800 dark:text-gray-300">
-        <span>N</span>
-        <span className="tabular-nums">{Math.round(northRotation)}°</span>
-      </div>
+      {/* Compass circle */}
       <div
-        className="flex h-10 items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        onKeyDown={handleKeyDown}
-        aria-label={`North arrow rotated ${Math.round(northRotation)} degrees`}
-        role={canEdit ? 'slider' : undefined}
-        aria-valuenow={canEdit ? Math.round(northRotation) : undefined}
-        aria-valuemin={canEdit ? 0 : undefined}
-        aria-valuemax={canEdit ? 360 : undefined}
-        tabIndex={canEdit ? 0 : -1}
+        className="relative w-16 h-16 rounded-full shadow-lg"
+        style={{
+          background: 'linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%)',
+          border: '2px solid rgba(0,0,0,0.08)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9)',
+        }}
       >
-        <svg
-          width="30"
-          height="30"
-          viewBox="0 0 32 32"
+        {/* Cardinal direction labels */}
+        <span className="absolute top-0.5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-red-600 tracking-wider">N</span>
+        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] font-semibold text-gray-400">S</span>
+        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[8px] font-semibold text-gray-400">W</span>
+        <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[8px] font-semibold text-gray-400">E</span>
+
+        {/* Needle SVG */}
+        <div
+          className="absolute inset-0 flex items-center justify-center transition-transform duration-150"
           style={{ transform: `rotate(${northRotation}deg)` }}
-          className="transition-transform"
-          aria-hidden
+          onKeyDown={handleKeyDown}
+          role={canEdit ? 'slider' : undefined}
+          aria-valuenow={canEdit ? degLabel : undefined}
+          aria-valuemin={canEdit ? 0 : undefined}
+          aria-valuemax={canEdit ? 360 : undefined}
+          tabIndex={canEdit ? 0 : -1}
+          aria-label={`North arrow rotated ${degLabel} degrees`}
         >
-          <polygon points="16,3 11,18 16,15 21,18" className="fill-red-600" />
-          <polygon points="16,29 11,14 16,17 21,14" className="fill-gray-500 dark:fill-gray-500" />
-          <circle cx="16" cy="16" r="2.25" className="fill-white stroke-gray-600 dark:fill-gray-900 dark:stroke-gray-300" />
-        </svg>
+          <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden>
+            {/* North half (red) */}
+            <polygon
+              points="18,4 14,17 18,15 22,17"
+              fill="url(#northGrad)"
+            />
+            {/* South half (dark) */}
+            <polygon
+              points="18,32 14,19 18,21 22,19"
+              fill="url(#southGrad)"
+            />
+            {/* Center dot */}
+            <circle cx="18" cy="18" r="2.5" fill="#fff" stroke="#475569" strokeWidth="1.2" />
+            <defs>
+              <linearGradient id="northGrad" x1="18" y1="4" x2="18" y2="17" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#dc2626" />
+                <stop offset="100%" stopColor="#ef4444" />
+              </linearGradient>
+              <linearGradient id="southGrad" x1="18" y1="19" x2="18" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#64748b" />
+                <stop offset="100%" stopColor="#94a3b8" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
       </div>
+
+      {/* Degree readout pill */}
+      <div
+        className="mt-1 mx-auto w-fit rounded-full px-2 py-0.5 text-[9px] font-bold tabular-nums text-gray-600 dark:text-gray-300"
+        style={{
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(4px)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+        }}
+      >
+        {degLabel}°
+      </div>
+
+      {/* Quick rotation buttons */}
       {canEdit && (
-        <div className="grid grid-cols-3 border-t border-gray-200 dark:border-gray-800">
+        <div className="mt-1 flex items-center justify-center gap-0.5">
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => rotateBy(-15)}
-            className="h-7 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="h-5 w-7 rounded text-[9px] font-semibold text-gray-500 hover:bg-white/80 hover:text-gray-700 transition-colors"
+            style={{ backdropFilter: 'blur(4px)' }}
             aria-label="Rotate compass counterclockwise"
             title="Rotate counterclockwise"
           >
@@ -191,7 +219,8 @@ export function NorthArrow() {
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => setSettings({ northRotation: 0 })}
-            className="h-7 border-x border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="h-5 w-7 rounded text-[9px] font-bold text-gray-600 hover:bg-white/80 hover:text-gray-900 transition-colors"
+            style={{ backdropFilter: 'blur(4px)' }}
             aria-label="Reset compass north"
             title="Reset north"
           >
@@ -201,7 +230,8 @@ export function NorthArrow() {
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => rotateBy(15)}
-            className="h-7 text-xs font-semibold text-gray-600 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="h-5 w-7 rounded text-[9px] font-semibold text-gray-500 hover:bg-white/80 hover:text-gray-700 transition-colors"
+            style={{ backdropFilter: 'blur(4px)' }}
             aria-label="Rotate compass clockwise"
             title="Rotate clockwise"
           >

@@ -43,7 +43,6 @@ import type {
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useCan } from '../../../hooks/useCan'
-import { nanoid } from 'nanoid'
 import { computeSeatPositions } from '../../../lib/seatLayout'
 import { nextSeatNumber } from '../../../lib/seatNumbering'
 
@@ -208,7 +207,7 @@ export function buildLibraryElement(
   existingElements: Record<string, import('../../../types/elements').CanvasElement> = {},
 ): AnyLibraryElement {
   const defaults = getDefaults(item.type, item.shape) || { width: 60, height: 60, fill: '#F3F4F6', stroke: '#6B7280' }
-  const id = nanoid()
+  const id = crypto.randomUUID()
 
   const baseProps = {
     id,
@@ -564,7 +563,7 @@ function LibrarySection({
         {headerAction ? <div className="ml-auto flex items-center">{headerAction}</div> : null}
       </div>
       {!isCollapsed && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 gap-1">
           {items.map((item) => (
             <LibraryTile
               key={itemKey(item)}

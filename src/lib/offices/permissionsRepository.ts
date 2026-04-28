@@ -1,11 +1,6 @@
 import { supabase } from '../supabase'
 
-export type OfficeRole =
-  | 'owner'
-  | 'editor'
-  | 'hr-editor'
-  | 'space-planner'
-  | 'viewer'
+export type OfficeRole = 'admin'
 
 export interface OfficePermEntry {
   user_id: string
@@ -16,10 +11,8 @@ export interface OfficePermEntry {
 }
 
 /**
- * Returns one row per team member of the office's team, merged with any
- * explicit `office_permissions` override. Members without an override fall
- * back to the default `editor` role — the visibility setting on the office
- * row decides whether that default is actually editable or view-only.
+ * Returns one row per team member of the office's team.
+ * In the single-role model, everyone is an 'admin'.
  */
 export async function listPermissions(
   officeId: string,
@@ -30,21 +23,16 @@ export async function listPermissions(
     .from('team_members')
     .select('user_id, profiles!inner(email, name)')
     .eq('team_id', teamId)
+  
   if (error) throw error
-  const { data: perms } = await supabase
-    .from('office_permissions')
-    .select('user_id, role')
-    .eq('office_id', officeId)
-  const roleMap = new Map<string, OfficeRole>(
-    (perms ?? []).map((p: { user_id: string; role: string }) => [p.user_id, p.role as OfficeRole]),
-  )
-  return (members ?? []).map((m: { user_id: string; profiles: unknown }) => {
+
+  return (members ?? []).map((m: any) => {
     const prof = m.profiles as { email: string; name: string | null }
     return {
       user_id: m.user_id,
       email: prof.email,
       name: prof.name,
-      role: roleMap.get(m.user_id) ?? 'editor',
+      role: 'admin' as const,
       isSelf: m.user_id === selfId,
     }
   })
@@ -55,9 +43,10 @@ export async function upsertPermission(
   userId: string,
   role: OfficeRole,
 ): Promise<void> {
+  // Always 'admin' in this model
   const { error } = await supabase
     .from('office_permissions')
-    .upsert({ office_id: officeId, user_id: userId, role }, { onConflict: 'office_id,user_id' })
+    .upsert({ office_id: officeId, user_id: userId, role: 'admin' }, { onConflict: 'office_id,user_id' })
   if (error) throw error
 }
 

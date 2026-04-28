@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 
 const adjectives = [
   'bright', 'calm', 'bold', 'swift', 'warm',
@@ -12,11 +11,18 @@ const nouns = [
   'loft', 'wing', 'bay', 'den', 'hub',
 ]
 
+const CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789'
+
+/** Cryptographically-random alphanumeric string of `len` characters. */
+function randomId(len: number): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(len))
+  return Array.from(bytes, (b) => CHARS[b % CHARS.length]).join('')
+}
+
 export function generateSlug(): string {
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)]
   const noun = nouns[Math.floor(Math.random() * nouns.length)]
-  const id = nanoid(6)
-  return `${adj}-${noun}-${id}`
+  return `${adj}-${noun}-${randomId(6)}`
 }
 
 /**
@@ -37,5 +43,5 @@ export function slugFromName(name: string): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, 40)
   const base = cleaned || generateSlug()
-  return `${base}-${nanoid(6)}`
+  return `${base}-${randomId(6)}`
 }

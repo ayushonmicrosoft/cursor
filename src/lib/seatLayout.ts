@@ -1,5 +1,4 @@
 import type { SeatPosition, TableType } from '../types/elements'
-import { nanoid } from 'nanoid'
 
 function computeRoundSeats(seatCount: number, width: number, height: number): SeatPosition[] {
   // Inscribed circle: use min dimension / 2 plus a small offset for chair placement
@@ -74,7 +73,7 @@ function computeRectSeats(
     const startX = -(seatCount - 1) * seatSpacing / 2
     for (let i = 0; i < seatCount; i++) {
       seats.push({
-        id: nanoid(8),
+        id: crypto.randomUUID().slice(0, 8),
         offsetX: startX + i * seatSpacing,
         offsetY: height / 2 + offset,
         rotation: 0,
@@ -86,7 +85,7 @@ function computeRectSeats(
     const startX = -(perSide - 1) * seatSpacing / 2
     for (let i = 0; i < perSide; i++) {
       seats.push({
-        id: nanoid(8),
+        id: crypto.randomUUID().slice(0, 8),
         offsetX: startX + i * seatSpacing,
         offsetY: -(height / 2 + offset),
         rotation: 180,
@@ -97,7 +96,7 @@ function computeRectSeats(
     const startX2 = -(bottomCount - 1) * seatSpacing / 2
     for (let i = 0; i < bottomCount; i++) {
       seats.push({
-        id: nanoid(8),
+        id: crypto.randomUUID().slice(0, 8),
         offsetX: startX2 + i * seatSpacing,
         offsetY: height / 2 + offset,
         rotation: 0,
@@ -115,28 +114,28 @@ function computeRectSeats(
     const topCount = perLongSide + (remaining > 0 ? 1 : 0)
     const topStart = -(topCount - 1) * seatSpacing / 2
     for (let i = 0; i < topCount; i++) {
-      seats.push({ id: nanoid(8), offsetX: topStart + i * seatSpacing, offsetY: -(height / 2 + offset), rotation: 180, assignedGuestId: null })
+      seats.push({ id: crypto.randomUUID().slice(0, 8), offsetX: topStart + i * seatSpacing, offsetY: -(height / 2 + offset), rotation: 180, assignedGuestId: null })
       idx++
     }
     // Right side
     const rightCount = perShortSide
     const rightStart = -(rightCount - 1) * seatSpacing / 2
     for (let i = 0; i < rightCount; i++) {
-      seats.push({ id: nanoid(8), offsetX: width / 2 + offset, offsetY: rightStart + i * seatSpacing, rotation: 270, assignedGuestId: null })
+      seats.push({ id: crypto.randomUUID().slice(0, 8), offsetX: width / 2 + offset, offsetY: rightStart + i * seatSpacing, rotation: 270, assignedGuestId: null })
       idx++
     }
     // Bottom side
     const bottomCount = perLongSide
     const bottomStart = (bottomCount - 1) * seatSpacing / 2
     for (let i = 0; i < bottomCount; i++) {
-      seats.push({ id: nanoid(8), offsetX: bottomStart - i * seatSpacing, offsetY: height / 2 + offset, rotation: 0, assignedGuestId: null })
+      seats.push({ id: crypto.randomUUID().slice(0, 8), offsetX: bottomStart - i * seatSpacing, offsetY: height / 2 + offset, rotation: 0, assignedGuestId: null })
       idx++
     }
     // Left side
     const leftCount = seatCount - idx
     const leftStart = (leftCount - 1) * seatSpacing / 2
     for (let i = 0; i < leftCount; i++) {
-      seats.push({ id: nanoid(8), offsetX: -(width / 2 + offset), offsetY: leftStart - i * seatSpacing, rotation: 90, assignedGuestId: null })
+      seats.push({ id: crypto.randomUUID().slice(0, 8), offsetX: -(width / 2 + offset), offsetY: leftStart - i * seatSpacing, rotation: 90, assignedGuestId: null })
     }
   }
 

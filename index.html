@@ -4,9 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OandOcraft</title>
+    <meta name="description" content="Floorcraft – interactive office floor plan editor. Design, assign seats, and manage your workspace in 2D and 2.5D." />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Floorcraft — Office Floor Plan Editor" />
+    <meta property="og:description" content="Design office layouts, assign seats, and share live floor plans with your team." />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Floorcraft — Office Floor Plan Editor" />
+    <meta name="twitter:description" content="Design office layouts, assign seats, and share live floor plans with your team." />
+
+    <title>Floorcraft — Office Floor Plan Editor</title>
   </head>
   <body>
+    <!-- Skip navigation link for keyboard/screen reader users -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-white focus:text-blue-700 focus:rounded focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      Skip to main content
+    </a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

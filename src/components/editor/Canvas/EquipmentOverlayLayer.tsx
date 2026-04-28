@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Layer, Rect } from 'react-konva'
+import { Group, Rect } from 'react-konva'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useEmployeeStore } from '../../../stores/employeeStore'
 import { computeRects } from '../../../lib/equipmentOverlayRects'
@@ -33,10 +33,10 @@ export function EquipmentOverlayLayer() {
     employees,
   ])
 
-  if (rects.length === 0) return <Layer listening={false} />
+  if (rects.length === 0) return null
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {rects.map((r) => (
         <Rect
           key={r.id}
@@ -53,6 +53,6 @@ export function EquipmentOverlayLayer() {
           cornerRadius={4}
         />
       ))}
-    </Layer>
+    </Group>
   )
 }

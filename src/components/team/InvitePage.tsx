@@ -209,7 +209,7 @@ function InviteShell({ children }: { children: React.ReactNode }) {
         />
         <span>OandOcraft</span>
       </Link>
-      <div className="w-full max-w-md">{children}</div>
+      <main id="main-content" className="w-full max-w-md">{children}</main>
     </div>
   )
 }

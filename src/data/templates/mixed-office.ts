@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid'
 import type {
   CanvasElement,
   DeskElement,
@@ -11,7 +10,7 @@ import type {
 
 function makeDesk(x: number, y: number, index: number, zIndex: number): DeskElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'desk',
     x,
     y,
@@ -40,7 +39,7 @@ function makeWall(
   label: string,
 ): WallElement {
   return {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'wall',
     x,
     y,
@@ -75,7 +74,7 @@ export function createMixedOfficeTemplate(): CanvasElement[] {
 
   for (let i = 0; i < 6; i++) {
     const office: PrivateOfficeElement = {
-      id: nanoid(),
+      id: crypto.randomUUID(),
       type: 'private-office',
       x: officeXPositions[i],
       y: 50,
@@ -131,7 +130,7 @@ export function createMixedOfficeTemplate(): CanvasElement[] {
 
   // --- Conference rooms at bottom (zIndex: 3) ---
   const confRoom1: ConferenceRoomElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'conference-room',
     x: 50,
     y: 600,
@@ -149,7 +148,7 @@ export function createMixedOfficeTemplate(): CanvasElement[] {
   }
 
   const confRoom2: ConferenceRoomElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'conference-room',
     x: 350,
     y: 600,
@@ -170,7 +169,7 @@ export function createMixedOfficeTemplate(): CanvasElement[] {
 
   // --- Phone booths (zIndex: 3) ---
   const phoneBooth1: PhoneBoothElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'phone-booth',
     x: 1000,
     y: 50,
@@ -186,7 +185,7 @@ export function createMixedOfficeTemplate(): CanvasElement[] {
   }
 
   const phoneBooth2: PhoneBoothElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'phone-booth',
     x: 1100,
     y: 50,
@@ -205,7 +204,7 @@ export function createMixedOfficeTemplate(): CanvasElement[] {
 
   // --- Reception / Lobby common area (zIndex: 1) ---
   const reception: CommonAreaElement = {
-    id: nanoid(),
+    id: crypto.randomUUID(),
     type: 'common-area',
     x: 700,
     y: 600,

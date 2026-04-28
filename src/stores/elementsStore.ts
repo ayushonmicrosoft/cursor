@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
-import { nanoid } from 'nanoid'
 import type { CanvasElement } from '../types/elements'
 import {
   isDeskElement,
@@ -63,7 +62,7 @@ export const useElementsStore = create<ElementsState>()(
 
       removeElement: (id) =>
         set((state) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+           
           const { [id]: _removed, ...rest } = state.elements
           return { elements: rest }
         }),
@@ -81,13 +80,13 @@ export const useElementsStore = create<ElementsState>()(
 
       duplicateElements: (ids) => {
         const newIds: string[] = []
-        const newGroupId = nanoid()
+        const newGroupId = crypto.randomUUID()
         set((state) => {
           const next = { ...state.elements }
           for (const id of ids) {
             const el = state.elements[id]
             if (!el) continue
-            const newId = nanoid()
+            const newId = crypto.randomUUID()
             newIds.push(newId)
             let copy: CanvasElement = {
               ...el,
@@ -191,7 +190,7 @@ export const useElementsStore = create<ElementsState>()(
         }),
 
       groupElements: (ids) => {
-        const groupId = nanoid()
+        const groupId = crypto.randomUUID()
         set((state) => {
           const next = { ...state.elements }
           for (const id of ids) {

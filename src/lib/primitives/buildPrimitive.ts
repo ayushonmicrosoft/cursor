@@ -4,7 +4,6 @@
  * Konva event handlers means the drag→element math can be unit-tested
  * without the rendering stack.
  */
-import { nanoid } from 'nanoid'
 import type {
   RectShapeElement,
   EllipseElement,
@@ -64,7 +63,7 @@ export function buildRectShape(
 ): RectShapeElement {
   const { x, y, width, height } = rectFromDrag(d)
   return {
-    ...baseFields(nanoid(), zIndex),
+    ...baseFields(crypto.randomUUID(), zIndex),
     type: 'rect-shape',
     x,
     y,
@@ -82,7 +81,7 @@ export function buildEllipse(
 ): EllipseElement {
   const { x, y, width, height } = rectFromDrag(d)
   return {
-    ...baseFields(nanoid(), zIndex),
+    ...baseFields(crypto.randomUUID(), zIndex),
     type: 'ellipse',
     x,
     y,
@@ -100,7 +99,7 @@ export function buildLineShape(
 ): LineShapeElement {
   const { x, y, width, height } = rectFromDrag(d)
   return {
-    ...baseFields(nanoid(), zIndex),
+    ...baseFields(crypto.randomUUID(), zIndex),
     type: 'line-shape',
     x,
     y,
@@ -119,7 +118,7 @@ export function buildArrow(
 ): ArrowElement {
   const { x, y, width, height } = rectFromDrag(d)
   return {
-    ...baseFields(nanoid(), zIndex),
+    ...baseFields(crypto.randomUUID(), zIndex),
     type: 'arrow',
     x,
     y,
@@ -139,7 +138,7 @@ export function buildFreeText(
   fontSize = 18,
 ): FreeTextElement {
   return {
-    ...baseFields(nanoid(), zIndex),
+    ...baseFields(crypto.randomUUID(), zIndex),
     type: 'free-text',
     x: posX,
     y: posY,

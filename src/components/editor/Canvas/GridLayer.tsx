@@ -1,4 +1,4 @@
-import { Layer, Line } from 'react-konva'
+import { Group, Line } from 'react-konva'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useShallow } from 'zustand/react/shallow'
 import { useTheme } from '../../../lib/theme'
@@ -40,5 +40,5 @@ export function GridLayer({ width, height }: GridLayerProps) {
     )
   }
 
-  return <Layer listening={false}>{lines}</Layer>
+  return <Group listening={false}>{lines}</Group>
 }

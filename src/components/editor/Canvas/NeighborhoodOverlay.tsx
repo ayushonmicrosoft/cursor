@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Layer, Group, Rect, Text } from 'react-konva'
+import { Group, Rect, Text } from 'react-konva'
 import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { useFloorStore } from '../../../stores/floorStore'
 import { useElementsStore } from '../../../stores/elementsStore'
@@ -67,10 +67,10 @@ export function NeighborhoodOverlay() {
     })
   }, [metrics, neighborhoods, elements])
 
-  if (chips.length === 0 || stageScale < 0.7) return <Layer listening={false} />
+  if (chips.length === 0 || stageScale < 0.7) return null
 
   return (
-    <Layer listening={false}>
+    <Group listening={false}>
       {chips.map(({ metric: m, top, left }) => (
         <OccupancyChip
           key={m.neighborhoodId}
@@ -81,7 +81,7 @@ export function NeighborhoodOverlay() {
           health={m.health}
         />
       ))}
-    </Layer>
+    </Group>
   )
 }
 

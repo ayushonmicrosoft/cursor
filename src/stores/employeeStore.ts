@@ -1,8 +1,6 @@
 import { create } from 'zustand'
-import { nanoid } from 'nanoid'
 import type { Employee } from '../types/employee'
 import { DEPARTMENT_COLORS } from '../lib/constants'
-import { emit } from '../lib/audit'
 
 // Single source of truth for mapping a department name to a palette color.
 // Used by both CSV bulk-import (addEmployees) and the on-demand fallback in
@@ -55,7 +53,7 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
   sortBy: 'name',
 
   addEmployee: (data) => {
-    const id = nanoid()
+    const id = crypto.randomUUID()
     const employee: Employee = {
       id,
       name: data.name,
@@ -88,7 +86,6 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
     set((state) => ({
       employees: { ...state.employees, [id]: employee },
     }))
-    void emit('employee.create', 'employee', id, { name: employee.name })
     return id
   },
 
@@ -98,7 +95,7 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
       const nextColors = { ...state.departmentColors }
 
       for (const e of newEmployees) {
-        const id = nanoid()
+        const id = crypto.randomUUID()
         next[id] = {
           id,
           name: e.name,
@@ -147,7 +144,7 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
       return { employees: { ...state.employees, [id]: { ...employee, ...updates } } }
     })
     if (didUpdate) {
-      void emit('employee.update', 'employee', id, { fields: Object.keys(updates) })
+      // audit removed
     }
   },
 
@@ -157,7 +154,7 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
       const removed = state.employees[id]
       if (!removed) return state
       didRemove = true
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+       
       const { [id]: _removed, ...rest } = state.employees
       // If this was the last employee in their department, drop the
       // orphaned departmentColors entry so the palette stays clean.
@@ -165,7 +162,7 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
         const dept = removed.department
         const stillUsed = Object.values(rest).some((e) => e.department === dept)
         if (!stillUsed) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+           
           const { [dept]: _removedColor, ...remainingColors } = state.departmentColors
           return { employees: rest, departmentColors: remainingColors }
         }
@@ -173,7 +170,7 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
       return { employees: rest }
     })
     if (didRemove) {
-      void emit('employee.delete', 'employee', id, {})
+      // audit removed
     }
   },
 
@@ -183,9 +180,6 @@ export const useEmployeeStore = create<EmployeeState>((set, get) => ({
       for (const id of ids) delete next[id]
       return { employees: next }
     })
-    for (const id of ids) {
-      void emit('employee.delete', 'employee', id, {})
-    }
   },
 
   setEmployees: (employees) => set({ employees }),
