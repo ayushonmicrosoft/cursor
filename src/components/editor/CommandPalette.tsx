@@ -13,6 +13,7 @@ import {
   Zap,
   Globe,
   Building2,
+  Bot,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useUIStore } from '../../stores/uiStore'
@@ -70,6 +71,7 @@ const SECTION_ICON: Record<CommandSection, LucideIcon> = {
  * never invent a shortcut just to fill the column.
  */
 const ACTION_SHORTCUT: Record<string, string> = {
+  'action-ai-assistant': 'AI',
   'view-toggle-grid': 'G',
   'view-zoom-in': '+',
   'view-zoom-out': '-',
@@ -571,6 +573,7 @@ function PaletteRow({
   testId,
 }: PaletteRowProps) {
   const shortcut = ACTION_SHORTCUT[item.id]
+  const RowIcon = item.id === 'action-ai-assistant' ? Bot : Icon
   return (
     <button
       type="button"
@@ -584,7 +587,7 @@ function PaletteRow({
           : 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }`}
     >
-      <Icon
+      <RowIcon
         size={14}
         className="text-gray-500 dark:text-gray-400 flex-shrink-0"
         aria-hidden="true"

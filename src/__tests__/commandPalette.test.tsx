@@ -106,6 +106,7 @@ beforeEach(() => {
     presentationMode: false,
     exportDialogOpen: false,
     shortcutsOverlayOpen: false,
+    aiAssistantOpen: false,
     firstRunCoachOpen: false,
     selectedIds: [],
   } as any)
@@ -438,5 +439,17 @@ describe('CommandPalette', () => {
       )
     })
     expect(useUIStore.getState().firstRunCoachOpen).toBe(true)
+  })
+
+  it('opens the AI assistant launcher without sending office data', () => {
+    renderPalette()
+    act(() => useUIStore.getState().setCommandPaletteOpen(true))
+
+    act(() => {
+      fireEvent.click(screen.getByTestId('command-palette-item-action-ai-assistant'))
+    })
+
+    expect(useUIStore.getState().aiAssistantOpen).toBe(true)
+    expect(screen.queryByTestId('command-palette')).toBeNull()
   })
 })

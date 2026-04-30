@@ -1,18 +1,7 @@
 import { Outlet, useLocation, useParams } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { TopBar } from './TopBar'
 import { NarrowScreenBanner } from './NarrowScreenBanner'
-import { ContextMenu } from './ContextMenu'
-import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
-import { CommandPalette } from './CommandPalette'
-import { CanvasFinder } from './CanvasFinder'
-import { CSVImportDialog } from './RightSidebar/CSVImportDialog'
-import { CSVImportSummaryModal } from './CSVImportSummaryModal'
-import { ExportDialog } from './ExportDialog'
-import { NewProjectModal } from '../dashboard/NewProjectModal'
-import { CalibrateScaleModal } from './CalibrateScaleModal'
-import { EmployeeDirectory } from '../reports/EmployeeDirectory'
-import { ConflictModal } from './ConflictModal'
 import { Toaster } from '../common/Toaster'
 import { useUIStore } from '../../stores/uiStore'
 import { useProjectStore } from '../../stores/projectStore'
@@ -43,8 +32,60 @@ import { todayIsoDate } from '../../lib/time'
 import { useEffectiveDateTick } from '../../hooks/useEffectiveDateTick'
 import type { Project } from '../../types/project'
 import { DEFAULT_CANVAS_SETTINGS, isSeatLabelStyle } from '../../types/project'
+import type { Floor } from '../../types/floor'
 
 type ShellState = 'loading' | 'not_found' | 'ready'
+
+const ContextMenu = lazy(() =>
+  import('./ContextMenu').then((m) => ({ default: m.ContextMenu })),
+)
+const KeyboardShortcutsOverlay = lazy(() =>
+  import('./KeyboardShortcutsOverlay').then((m) => ({
+    default: m.KeyboardShortcutsOverlay,
+  })),
+)
+const CommandPalette = lazy(() =>
+  import('./CommandPalette').then((m) => ({ default: m.CommandPalette })),
+)
+const CanvasFinder = lazy(() =>
+  import('./CanvasFinder').then((m) => ({ default: m.CanvasFinder })),
+)
+const CSVImportDialog = lazy(() =>
+  import('./RightSidebar/CSVImportDialog').then((m) => ({
+    default: m.CSVImportDialog,
+  })),
+)
+const CSVImportSummaryModal = lazy(() =>
+  import('./CSVImportSummaryModal').then((m) => ({
+    default: m.CSVImportSummaryModal,
+  })),
+)
+const ExportDialog = lazy(() =>
+  import('./ExportDialog').then((m) => ({ default: m.ExportDialog })),
+)
+const AIAssistantDialog = lazy(() =>
+  import('../ai/AIAssistantDialog').then((m) => ({
+    default: m.AIAssistantDialog,
+  })),
+)
+const NewProjectModal = lazy(() =>
+  import('../dashboard/NewProjectModal').then((m) => ({
+    default: m.NewProjectModal,
+  })),
+)
+const CalibrateScaleModal = lazy(() =>
+  import('./CalibrateScaleModal').then((m) => ({
+    default: m.CalibrateScaleModal,
+  })),
+)
+const EmployeeDirectory = lazy(() =>
+  import('../reports/EmployeeDirectory').then((m) => ({
+    default: m.EmployeeDirectory,
+  })),
+)
+const ConflictModal = lazy(() =>
+  import('./ConflictModal').then((m) => ({ default: m.ConflictModal })),
+)
 
 export function ProjectShell() {
   const { teamSlug, officeSlug } = useParams<{
@@ -57,6 +98,8 @@ export function ProjectShell() {
   const currentProject = useProjectStore((s) => s.currentProject)
   const conflict = useProjectStore((s) => s.conflict)
   const session = useSession()
+  const sessionUserId =
+    session.status === 'authenticated' ? session.user.id : null
 
   useKeyboardShortcuts()
   useUndoDataLossToast()
@@ -128,7 +171,7 @@ export function ProjectShell() {
         departmentColors: (p.departmentColors ?? {}) as Record<string, string>,
       })
 
-      const floors = (p.floors ?? []) as any[]
+      const floors = (p.floors ?? []) as Floor[]
       if (floors.length > 0) {
         useFloorStore.getState().setFloor(floors[0])
       }
@@ -177,8 +220,7 @@ export function ProjectShell() {
       })
       useProjectStore.setState({
         currentTeamId: office.team_id,
-        currentUserId:
-          session.status === 'authenticated' ? session.user.id : null,
+        currentUserId: sessionUserId,
       })
       useInsightsStore.getState().setCurrentProjectId(office.id)
 
@@ -188,7 +230,7 @@ export function ProjectShell() {
     return () => {
       cancelled = true
     }
-  }, [teamSlug, officeSlug])
+  }, [teamSlug, officeSlug, sessionUserId])
 
   if (shellState === 'loading') {
     return (
@@ -222,27 +264,30 @@ export function ProjectShell() {
       >
         <Outlet />
       </main>
-      <ContextMenu />
-      <KeyboardShortcutsOverlay />
-      <CommandPalette />
-      <CanvasFinder />
-      <CSVImportDialog />
-      <CSVImportSummaryModal />
-      <ExportDialog />
-      <NewProjectModal />
-      <CalibrateScaleModal />
-      {employeeDirectoryOpen && <EmployeeDirectory />}
+      <Suspense fallback={null}>
+        <ContextMenu />
+        <KeyboardShortcutsOverlay />
+        <CommandPalette />
+        <CanvasFinder />
+        <CSVImportDialog />
+        <CSVImportSummaryModal />
+        <ExportDialog />
+        <AIAssistantDialog />
+        <NewProjectModal />
+        <CalibrateScaleModal />
+        {employeeDirectoryOpen && <EmployeeDirectory />}
+        {conflict && (
+          <ConflictModal
+            onReload={() => window.location.reload()}
+            onOverwrite={() => void overwrite()}
+            onCancel={() => {
+              const version = useProjectStore.getState().loadedVersion
+              useProjectStore.getState().dismissConflictForVersion(version)
+            }}
+          />
+        )}
+      </Suspense>
       <Toaster />
-      {conflict && (
-        <ConflictModal
-          onReload={() => window.location.reload()}
-          onOverwrite={() => void overwrite()}
-          onCancel={() => {
-            const version = useProjectStore.getState().loadedVersion
-            useProjectStore.getState().dismissConflictForVersion(version)
-          }}
-        />
-      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { useCanvasStore } from '../stores/canvasStore'
 import { useElementsStore } from '../stores/elementsStore'
 import { useUIStore } from '../stores/uiStore'
 import type { WallElement } from '../types/elements'
-import { snapToGrid } from '../lib/geometry'
+import { SnapEngine } from '../lib/snapEngine'
 import { signedPerpOffset, clampBulge } from '../lib/wallEditing'
 
 /** Min pointer travel (canvas units) before a press counts as a drag. */
@@ -90,10 +90,7 @@ export function useWallDrawing() {
 
   const snapPoint = useCallback(
     (x: number, y: number) => {
-      if (showGrid) {
-        return { x: snapToGrid(x, gridSize), y: snapToGrid(y, gridSize) }
-      }
-      return { x, y }
+      return SnapEngine.gridPoint({ x, y }, { enabled: showGrid, gridSize })
     },
     [gridSize, showGrid],
   )

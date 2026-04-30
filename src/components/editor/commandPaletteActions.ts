@@ -23,6 +23,7 @@ import { useFloorStore } from '../../stores/floorStore'
 import { switchToFloor } from '../../lib/seatAssignment'
 import { focusOnElement } from '../../lib/canvasFocus'
 import type { CommandItem } from '../../lib/commandPaletteFilter'
+import { isAIAssistantAvailable } from '../../lib/ai'
 
 /** People section cap — keeps the list bounded for very large rosters. */
 export const MAX_PEOPLE_RESULTS = 8
@@ -305,6 +306,16 @@ export function buildCommandItems(input: BuildCommandItemsInput): CommandItem[] 
   }
 
   // --- Actions (presentation, discovery, export) ---------------------------
+  out.push({
+    id: 'action-ai-assistant',
+    section: 'actions',
+    label: 'Open AI assistant',
+    subtitle: isAIAssistantAvailable() ? 'AI' : 'AI not configured',
+    run: () => {
+      useUIStore.getState().setAIAssistantOpen(true)
+      close()
+    },
+  })
   out.push({
     id: 'action-presentation',
     section: 'actions',

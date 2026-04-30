@@ -3,7 +3,6 @@ import {
   Armchair,
   Cloud,
   Database,
-  History,
   Layers3,
   LifeBuoy,
   ShieldCheck,
@@ -26,11 +25,13 @@ import { useCan } from '../../hooks/useCan'
 import { computeRosterStats } from '../../lib/rosterStats'
 import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
 import { useOfficeSync } from '../../lib/offices/useOfficeSync'
+import { useUIStore } from '../../stores/uiStore'
 
 export function AdminStatsToolbar() {
   const canManageTeam = useCan('manageTeam')
   const navigate = useNavigate()
   const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
+  const setShareModalOpen = useUIStore((s) => s.setShareModalOpen)
   
   const elements = useElementsStore((s) => s.elements)
   
@@ -49,6 +50,7 @@ export function AdminStatsToolbar() {
   const employees = useMemo(() => Object.values(employeesById), [employeesById])
 
   const [activeTab, setActiveTab] = useState<'stats' | 'ops'>('stats')
+  const conflictCount = conflict ? 1 : 0
 
   const stats = useMemo(() => {
     const roster = computeRosterStats(employees, elements)
@@ -89,19 +91,48 @@ export function AdminStatsToolbar() {
 
       <div className="max-h-[500px] overflow-y-auto">
         {activeTab === 'stats' && (
-          <div className="grid grid-cols-3 gap-2 p-3">
-            <StatCard icon={Tag} label="Areas" value={stats.neighborhoods} detail="Neighborhood count" />
-            <StatCard icon={Users} label="People" value={stats.people} detail={`${stats.unassigned} unassigned`} />
-            <StatCard icon={Armchair} label="Occupancy" value={`${stats.occupancyPct}%`} detail="Realtime seating load" />
-            <StatCard icon={Layers3} label="Objects" value={stats.objects} detail="Canvas payload" />
-            <StatCard icon={ShieldCheck} label="Assigned" value={stats.assigned} detail="People seated" />
-            <StatCard
-              icon={AlertTriangle}
-              label="Alerts"
-              value={stats.critical + stats.warning}
-              detail={`${stats.critical} critical`}
-              accentClass={healthTone}
-            />
+          <div className="p-3">
+            <div className="grid grid-cols-3 gap-2">
+              <StatCard icon={Tag} label="Areas" value={stats.neighborhoods} detail="Neighborhood count" />
+              <StatCard icon={Users} label="People" value={stats.people} detail={`${stats.unassigned} unassigned`} />
+              <StatCard icon={Armchair} label="Occupancy" value={`${stats.occupancyPct}%`} detail="Realtime seating load" />
+              <StatCard icon={Layers3} label="Objects" value={stats.objects} detail="Canvas payload" />
+              <StatCard icon={ShieldCheck} label="Assigned" value={stats.assigned} detail="People seated" />
+              <StatCard
+                icon={AlertTriangle}
+                label="Alerts"
+                value={stats.critical + stats.warning}
+                detail={`${stats.critical} critical`}
+                accentClass={healthTone}
+              />
+            </div>
+            <div className="mt-3 space-y-1">
+              <h3 className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Recovery shortcuts</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <AdminActionButton
+                  icon={LifeBuoy}
+                  label="Recover"
+                  detail="Open recovery tools"
+                  onClick={() => setShareModalOpen(true)}
+                />
+                <AdminActionButton
+                  icon={ShieldCheck}
+                  label="Audit"
+                  detail="Open audit trail"
+                  onClick={() => {
+                    if (!teamSlug || !officeSlug) return
+                    navigate(`/t/${teamSlug}/o/${officeSlug}/audit`)
+                  }}
+                />
+                <AdminActionButton
+                  icon={AlertTriangle}
+                  label="Conflicts"
+                  detail={`${conflictCount} active`}
+                  disabled={conflictCount === 0}
+                  onClick={() => setShareModalOpen(true)}
+                />
+              </div>
+            </div>
           </div>
         )}
 

@@ -10,14 +10,22 @@
  */
 import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { Application, Container, Graphics, Text, TextStyle, type FederatedPointerEvent } from 'pixi.js'
+import { Viewport } from 'pixi-viewport'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useUIStore } from '../../../stores/uiStore'
+import { useCanvasStore } from '../../../stores/canvasStore'
 import { useEmployeeStore } from '../../../stores/employeeStore'
 import { useNeighborhoodStore } from '../../../stores/neighborhoodStore'
 import { useFloorStore } from '../../../stores/floorStore'
 import type { CanvasElement, DeskElement, PrivateOfficeElement, WorkstationElement } from '../../../types/elements'
 import type { Employee } from '../../../types/employee'
-import { blocksByCategory, isPolylineType } from '../../../blocks/registry'
+import {
+  DESK_BLOCK_TYPES,
+  ROOM_BLOCK_TYPES,
+  TABLE_BLOCK_TYPES,
+  isCenterAnchoredBlock,
+  isStrokeOnlyBlock,
+} from '../../../blocks/rendering'
 import { renderDesk } from './PixiDeskRenderer'
 import { renderWorkstation } from './PixiWorkstationRenderer'
 import { renderWall } from './PixiWallRenderer'
@@ -28,19 +36,29 @@ import { syncAlignmentGuides } from './PixiAlignmentGuides'
 import { syncSelectionHandles } from './PixiSelectionHandles'
 import { syncGrid } from './PixiGridLayer'
 import { parsePixiColor } from '../../../lib/pixiColor'
+import { ZOOM_FACTOR, ZOOM_MAX, ZOOM_MIN } from '../../../lib/constants'
 
-export interface PixiStageHandle { exportPng(): Promise<void> }
+export interface PixiViewportState {
+  scale: number
+  x: number
+  y: number
+}
+
+export interface PixiStageHandle {
+  exportPng(): Promise<void>
+  zoomIn(): void
+  zoomOut(): void
+  fitToContent(): void
+  resetView(): void
+  getViewport(): PixiViewportState
+}
+
 interface PixiStageProps {
   width: number
   height: number
   onError?: (message: string) => void
+  onViewportChange?: (viewport: PixiViewportState) => void
 }
-
-// Type sets from registry — typed as Set<string> for runtime .has(el.type)
-const DESK_TYPES  = new Set<string>(blocksByCategory('desk').filter(t => t !== 'workstation'))
-const WALL_TYPES  = new Set<string>(blocksByCategory('wall'))
-const TABLE_TYPES = new Set<string>(blocksByCategory('table'))
-const ROOM_TYPES  = new Set<string>(blocksByCategory('room'))
 
 const SEAT_STYLE = new TextStyle({ fontSize: 9, fill: '#1F2937', fontFamily: 'Inter,sans-serif', fontWeight: '600' })
 const PALETTE = [0x6366f1,0x10b981,0xf59e0b,0xef4444,0x8b5cf6,0x06b6d4,0xf97316,0x84cc16]
@@ -50,16 +68,77 @@ function deptColor(dept: string | null): number {
   return PALETTE[h % PALETTE.length]
 }
 
-export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function PixiStage({ width, height, onError }, ref) {
+export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function PixiStage({ width, height, onError, onViewportChange }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const appRef = useRef<Application | null>(null)
-  const worldRef = useRef<Container | null>(null)
+  const worldRef = useRef<Viewport | null>(null)
   const mapRef = useRef<Map<string, Container>>(new Map())
   const gridLayerRef = useRef<Container | null>(null)
   const dragRef = useRef<{ id: string; swx: number; swy: number; sex: number; sey: number } | null>(null)
   const rafRef = useRef<number | null>(null)
+  const viewportPublishRafRef = useRef<number | null>(null)
   const buildFailureRef = useRef(0)
   const drawOverrunRef = useRef(0)
+  const lastViewportRef = useRef<PixiViewportState | null>(null)
+
+  const emitViewport = (force = false) => {
+    const world = worldRef.current
+    if (!world) return
+    const next = { scale: world.scale.x, x: world.x, y: world.y }
+    const prev = lastViewportRef.current
+    const changed =
+      !prev ||
+      Math.abs(next.scale - prev.scale) > 0.001 ||
+      Math.abs(next.x - prev.x) > 2 ||
+      Math.abs(next.y - prev.y) > 2
+    if (!force && !changed) return
+    lastViewportRef.current = next
+    onViewportChange?.(next)
+  }
+
+  const publishViewport = (force = false) => {
+    if (force) {
+      if (viewportPublishRafRef.current !== null) {
+        cancelAnimationFrame(viewportPublishRafRef.current)
+        viewportPublishRafRef.current = null
+      }
+      emitViewport(true)
+      return
+    }
+    if (viewportPublishRafRef.current !== null) return
+    viewportPublishRafRef.current = requestAnimationFrame(() => {
+      viewportPublishRafRef.current = null
+      emitViewport(false)
+    })
+  }
+
+  const redrawGrid = () => {
+    const gridLayer = gridLayerRef.current
+    const world = worldRef.current
+    if (!gridLayer || !world) return
+    if (!useCanvasStore.getState().settings.showGrid) {
+      gridLayer.removeChildren().forEach((child) => child.destroy())
+      return
+    }
+    syncGrid(gridLayer, world.x, world.y, world.scale.x, width || 800, height || 600)
+  }
+
+  const zoomAtViewportCenter = (factor: number) => {
+    const world = worldRef.current
+    if (!world) return
+    const oldScale = world.scale.x || 1
+    const nextScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, oldScale * factor))
+    if (nextScale === oldScale) return
+    const centerX = (width || 800) / 2
+    const centerY = (height || 600) / 2
+    const worldX = (centerX - world.x) / oldScale
+    const worldY = (centerY - world.y) / oldScale
+    world.scale.set(nextScale, nextScale)
+    world.x = centerX - worldX * nextScale
+    world.y = centerY - worldY * nextScale
+    redrawGrid()
+    publishViewport(true)
+  }
 
   useImperativeHandle(ref, () => ({
     async exportPng() {
@@ -75,6 +154,32 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
         a.download=`${p?.name??'office'}-${fl?.name??'floor'}-pixi.png`.toLowerCase().replace(/[^a-z0-9-]/g,'-')
         a.click(); URL.revokeObjectURL(a.href)
       },'image/png')
+    },
+    zoomIn() {
+      zoomAtViewportCenter(ZOOM_FACTOR)
+    },
+    zoomOut() {
+      zoomAtViewportCenter(1 / ZOOM_FACTOR)
+    },
+    fitToContent() {
+      const world = worldRef.current
+      if (!world) return
+      fitWorldToElements(world, useElementsStore.getState().elements, width || 800, height || 600)
+      redrawGrid()
+      publishViewport(true)
+    },
+    resetView() {
+      const world = worldRef.current
+      if (!world) return
+      world.x = 0
+      world.y = 0
+      world.scale.set(1, 1)
+      redrawGrid()
+      publishViewport(true)
+    },
+    getViewport() {
+      const world = worldRef.current
+      return world ? { scale: world.scale.x, x: world.x, y: world.y } : { scale: 1, x: 0, y: 0 }
     }
   }))
 
@@ -99,7 +204,21 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       appRef.current = app
 
       // ── Layer stack ──────────────────────────────────────────────────
-      const world = new Container(); app.stage.addChild(world); worldRef.current = world
+      const world = new Viewport({
+        screenWidth: w,
+        screenHeight: h,
+        worldWidth: 5000,
+        worldHeight: 5000,
+        events: app.renderer.events,
+        passiveWheel: false,
+      })
+      app.stage.addChild(world); worldRef.current = world
+      world
+        .drag({ mouseButtons: 'left' })
+        .pinch()
+        .wheel()
+        .decelerate()
+        .clampZoom({ minScale: ZOOM_MIN, maxScale: ZOOM_MAX })
       const gridLayer = new Container()   // [0] grid
       const nlLayer   = new Container()   // [1] neighborhoods
       const elLayer   = new Container()   // [2] elements
@@ -109,10 +228,14 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       world.addChild(elLayer);   world.addChild(glLayer); world.addChild(hlLayer)
       gridLayerRef.current = gridLayer
 
-      // ── Pan ───────────────────────────────────────────────────────────
-      let pan=false, px=0, py=0
+      const handleViewportMove = () => {
+        schedGrid()
+        publishViewport()
+      }
+      world.on('moved', handleViewportMove)
+      world.on('zoomed', handleViewportMove)
+
       app.stage.eventMode='static'; app.stage.hitArea=app.screen
-      app.stage.on('pointerdown',(e:FederatedPointerEvent)=>{ if(e.button!==0 || dragRef.current)return; pan=true;px=e.globalX;py=e.globalY })
       app.stage.on('pointermove',(e:FederatedPointerEvent)=>{
         if(dragRef.current){
           const d=dragRef.current
@@ -121,27 +244,16 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
           schedDraw()
           return
         }
-        if(!pan)return
-        world.x+=e.globalX-px; world.y+=e.globalY-py; px=e.globalX; py=e.globalY
-        schedGrid()
       })
-      app.stage.on('pointerup',()=>{ pan=false; dragRef.current=null })
-      app.stage.on('pointerupoutside',()=>{ pan=false; dragRef.current=null })
-
-      // ── Zoom ──────────────────────────────────────────────────────────
-      const onWheel=(e:WheelEvent)=>{
-        e.preventDefault()
-        const f=Math.exp(-e.deltaY*0.001)
-        const b=(e.target as HTMLElement).getBoundingClientRect()
-        const mx=e.clientX-b.left,my=e.clientY-b.top
-        world.x=mx-(mx-world.x)*f; world.y=my-(my-world.y)*f
-        world.scale.x*=f; world.scale.y*=f
-        schedGrid()
-      }
-      canvasRef.current?.addEventListener('wheel',onWheel,{passive:false})
+      app.stage.on('pointerup',()=>{ dragRef.current=null })
+      app.stage.on('pointerupoutside',()=>{ dragRef.current=null })
 
       // ── Grid helpers ──────────────────────────────────────────────────
       function drawGrid(){
+        if (!useCanvasStore.getState().settings.showGrid) {
+          gridLayer.removeChildren().forEach((child) => child.destroy())
+          return
+        }
         syncGrid(gridLayer,world.x,world.y,world.scale.x,w,h)
       }
       let gridRaf: number|null = null
@@ -196,6 +308,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       // Initial draw + subscriptions
       fitWorldToElements(world, useElementsStore.getState().elements, w, h)
       drawGrid()
+      publishViewport(true)
       schedDraw()
       const u1=useElementsStore.subscribe(schedDraw)
       const u2=useUIStore.subscribe((state, prev) => {
@@ -209,10 +322,15 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       })
       const u3=useNeighborhoodStore.subscribe(schedDraw)
       const u4=useFloorStore.subscribe(schedDraw)
+      const u5=useCanvasStore.subscribe((state, prev) => {
+        if (state.settings.showGrid !== prev.settings.showGrid) schedGrid()
+      })
       ;(app as Application&{_c?:()=>void})._c=()=>{
-        u1();u2();u3();u4()
-        canvasRef.current?.removeEventListener('wheel',onWheel)
+        u1();u2();u3();u4();u5()
+        world.off('moved', handleViewportMove)
+        world.off('zoomed', handleViewportMove)
         if(rafRef.current){ cancelAnimationFrame(rafRef.current); rafRef.current=null }
+        if(viewportPublishRafRef.current!==null){ cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current=null }
         if(gridRaf){ cancelAnimationFrame(gridRaf); gridRaf=null }
       }
     }).catch((error) => {
@@ -224,6 +342,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
     return ()=>{
       dead=true
       if(rafRef.current){ cancelAnimationFrame(rafRef.current); rafRef.current=null }
+      if(viewportPublishRafRef.current!==null){ cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current=null }
       const a=appRef.current as (Application&{_c?:()=>void})|null
       if(a){a._c?.();a.destroy(true);appRef.current=null}
       map.clear()
@@ -235,9 +354,16 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
     const app=appRef.current; if(!app)return
     const w=width>0?width:800, h=height>0?height:600
     app.renderer.resize(w,h)
+    worldRef.current?.resize(w,h,5000,5000)
     // Redraw grid at new size
     const gl=gridLayerRef.current, world=worldRef.current
-    if(gl&&world) syncGrid(gl,world.x,world.y,world.scale.x,w,h)
+    if(gl&&world) {
+      if (useCanvasStore.getState().settings.showGrid) {
+        syncGrid(gl,world.x,world.y,world.scale.x,w,h)
+      } else {
+        gl.removeChildren().forEach((child) => child.destroy())
+      }
+    }
   },[width,height])
 
   return (
@@ -348,13 +474,13 @@ function buildEl(
   const t = el.type as string
   if(t==='workstation'){
     renderWorkstation(g,c,el as WorkstationElement,emps,sel)
-  } else if(WALL_TYPES.has(t) && isPolylineType(el.type as Parameters<typeof isPolylineType>[0])){
+  } else if(isStrokeOnlyBlock(el.type)){
     renderWall(g,el as Parameters<typeof renderWall>[1],sel)
-  } else if(DESK_TYPES.has(t)){
+  } else if(DESK_BLOCK_TYPES.has(t)){
     renderDesk(g,el as DeskElement|PrivateOfficeElement,sel)
-  } else if(TABLE_TYPES.has(t)){
+  } else if(TABLE_BLOCK_TYPES.has(t)){
     renderTable(g,el as Parameters<typeof renderTable>[1],sel)
-  } else if(ROOM_TYPES.has(t)){
+  } else if(ROOM_BLOCK_TYPES.has(t)){
     renderRoom(c,el as Parameters<typeof renderRoom>[1],sel)
   } else {
     if (w > 0 && h > 0) {
@@ -363,10 +489,10 @@ function buildEl(
       g.roundRect(0,0,w,h,3).fill({color:f}).stroke({color:sel?0x7c3aed:s,width:sel?2:1})
     }
   }
-  if(!ROOM_TYPES.has(t)) c.addChild(g)
+  if(!ROOM_BLOCK_TYPES.has(t)) c.addChild(g)
 
   // Seat label — single-seat desks only
-  if(DESK_TYPES.has(t) && t !== 'workstation'){
+  if(DESK_BLOCK_TYPES.has(t) && t !== 'workstation'){
     const aid=(el as DeskElement).assignedEmployeeId
     if(aid&&emps[aid]){
       const emp=emps[aid]; const dc=deptColor(emp.department)
@@ -445,5 +571,5 @@ function fitWorldToElements(
 }
 
 function isCenterAnchoredElement(el: CanvasElement): boolean {
-  return !(WALL_TYPES.has(el.type as string) && isPolylineType(el.type as Parameters<typeof isPolylineType>[0]))
+  return isCenterAnchoredBlock(el.type)
 }

@@ -4,27 +4,27 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useElementsStore } from '../../../stores/elementsStore'
 import type { PixiStageHandle } from './PixiStage'
-import { blocksByCategory, isPolylineType } from '../../../blocks/registry'
-import type { CanvasElement, ElementType } from '../../../types/elements'
+import {
+  DESK_BLOCK_TYPES,
+  ROOM_BLOCK_TYPES,
+  TABLE_BLOCK_TYPES,
+  isStrokeOnlyBlock,
+} from '../../../blocks/rendering'
+import type { CanvasElement } from '../../../types/elements'
 
 interface PixiStatusBarProps {
   stageRef: RefObject<PixiStageHandle | null>
   onBackToMap?: () => void
 }
 
-const DESK_TYPES = new Set<string>(blocksByCategory('desk').filter((t) => t !== 'workstation'))
-const WALL_TYPES = new Set<string>(blocksByCategory('wall'))
-const TABLE_TYPES = new Set<string>(blocksByCategory('table'))
-const ROOM_TYPES = new Set<string>(blocksByCategory('room'))
-
 function isRenderableInPixi(el: CanvasElement): boolean {
   if (!el.visible) return false
   const t = el.type as string
   if (t === 'workstation') return el.width > 0 && el.height > 0
-  if (WALL_TYPES.has(t) && isPolylineType(el.type as ElementType)) {
+  if (isStrokeOnlyBlock(el.type)) {
     return Array.isArray((el as { points?: unknown }).points)
   }
-  if (DESK_TYPES.has(t) || TABLE_TYPES.has(t) || ROOM_TYPES.has(t)) {
+  if (DESK_BLOCK_TYPES.has(t) || TABLE_BLOCK_TYPES.has(t) || ROOM_BLOCK_TYPES.has(t)) {
     return el.width > 0 && el.height > 0
   }
   return el.width > 0 && el.height > 0
@@ -77,18 +77,20 @@ export function PixiStatusBar({ stageRef, onBackToMap }: PixiStatusBarProps) {
     <div
       style={{
         position: 'absolute',
-        bottom: 16,
+        bottom: 48,
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
         alignItems: 'center',
+        maxWidth: 'calc(100% - 32px)',
+        overflowX: 'auto',
         gap: 8,
-        background: 'rgba(10,11,15,0.85)',
+        background: 'rgba(10,11,15,0.88)',
         backdropFilter: 'blur(8px)',
-        border: '1px solid rgba(139,92,246,0.3)',
-        borderRadius: 10,
+        border: '1px solid rgba(148,163,184,0.25)',
+        borderRadius: 999,
         padding: '6px 14px',
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: 'inherit',
         fontSize: 12,
         color: '#9ba3b8',
         boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
@@ -98,9 +100,9 @@ export function PixiStatusBar({ stageRef, onBackToMap }: PixiStatusBarProps) {
       }}
     >
       <span style={{
-        background: 'linear-gradient(135deg,#7c3aed,#6366f1)',
+        background: 'linear-gradient(135deg,#2563eb,#0f172a)',
         color: '#fff',
-        borderRadius: 5,
+        borderRadius: 999,
         padding: '2px 8px',
         fontSize: 10,
         fontWeight: 700,

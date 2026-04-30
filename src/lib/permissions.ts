@@ -46,17 +46,50 @@ const ALL_ACTIONS: Action[] = [
   'viewAuditLog',
 ]
 
-const MATRIX: Record<'edit' | 'view', Action[]> = {
-  edit: ALL_ACTIONS,
-  view: ['viewReports', 'viewSeatHistory', 'viewMap'],
+const MATRIX: Record<
+  'owner' | 'admin' | 'editor' | 'hr-editor' | 'space-planner' | 'viewer',
+  Action[]
+> = {
+  owner: ALL_ACTIONS,
+  admin: ALL_ACTIONS,
+  editor: [
+    'editRoster',
+    'editMap',
+    'viewReports',
+    'viewSeatHistory',
+    'viewMap',
+    'viewPII',
+    'generateShareLink',
+  ],
+  'hr-editor': [
+    'editRoster',
+    'viewSeatHistory',
+    'viewMap',
+    'viewPII',
+    'viewAuditLog',
+  ],
+  'space-planner': [
+    'editMap',
+    'viewReports',
+    'viewSeatHistory',
+    'viewMap',
+  ],
+  viewer: ['viewMap'],
 }
 
-function normalizeRole(role: Role | null): 'edit' | 'view' | null {
+function normalizeRole(
+  role: Role | null,
+): 'owner' | 'admin' | 'editor' | 'hr-editor' | 'space-planner' | 'viewer' | null {
   if (role === null) return null
+  if (role === 'owner') return 'owner'
+  if (role === 'admin') return 'admin'
+  if (role === 'hr-editor') return 'hr-editor'
+  if (role === 'space-planner') return 'space-planner'
   if (role === 'view' || role === 'viewer' || role === 'shareViewer') {
-    return 'view'
+    return 'viewer'
   }
-  return 'edit'
+  // Legacy roles (`edit`, `editor`, `member`) map to a regular editor profile.
+  return 'editor'
 }
 
 export function can(role: Role | null, action: Action): boolean {

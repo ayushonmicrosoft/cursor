@@ -12,6 +12,7 @@ import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
 import { Minimap } from './Minimap'
 import { CanvasActionDock } from './Canvas/CanvasActionDock'
+import { ColorPaletteToolbar } from './Canvas/ColorPaletteToolbar'
 import { CanvasScaleBar } from './Canvas/CanvasScaleBar'
 import { NorthArrow } from './Canvas/NorthArrow'
 import { AlignDistributeToolbar } from './Canvas/AlignDistributeToolbar'
@@ -19,16 +20,17 @@ import { ElementHoverCard } from './Canvas/ElementHoverCard'
 import { FirstRunCoach } from './FirstRunCoach'
 import { AdminStatsToolbar } from './AdminStatsToolbar'
 import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
-import { PanelLeftClose, PanelLeft, LayoutGrid } from 'lucide-react'
+import { PanelLeftClose, PanelLeft } from 'lucide-react'
+import { ToolbarTogglePill } from './ToolbarTogglePill'
+import { DockableToolbar } from './DockableToolbar'
 import { useUIStore } from '../../stores/uiStore'
 import {
   normalizeNorthArrowVisibility,
   normalizeNorthRotation,
   useCanvasStore,
 } from '../../stores/canvasStore'
-import { useFloorStore, useActiveFloor } from '../../stores/floorStore'
+import { useActiveFloor } from '../../stores/floorStore'
 import { useElementsStore } from '../../stores/elementsStore'
-import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
 import { useToastStore } from '../../stores/toastStore'
 
 import { focusOnElement } from '../../lib/canvasFocus'
@@ -71,6 +73,8 @@ export function MapView() {
   const setRightSidebarOpen = useUIStore((s) => s.setRightSidebarOpen)
   const setRightSidebarTab = useUIStore((s) => s.setRightSidebarTab)
   const setDockableToolbarVisible = useUIStore((s) => s.setDockableToolbarVisible)
+  const dockableToolbarLayouts = useUIStore((s) => s.dockableToolbarLayouts)
+  const dockableToolbarVisibility = useUIStore((s) => s.dockableToolbarVisibility)
   const activeWorkspacePreset = useUIStore((s) => s.activeWorkspacePreset)
   const firstRunCoachOpen = useUIStore((s) => s.firstRunCoachOpen)
   const setFirstRunCoachOpen = useUIStore((s) => s.setFirstRunCoachOpen)
@@ -94,6 +98,10 @@ export function MapView() {
 
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
   const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
+  const leftToolsFloating = dockableToolbarLayouts['left-tools'].mode === 'floating'
+  const rightInspectorFloating = dockableToolbarLayouts['right-inspector'].mode === 'floating'
+  const leftToolsVisible = dockableToolbarVisibility['left-tools'] !== false
+  const rightInspectorVisible = dockableToolbarVisibility['right-inspector'] !== false
 
   const showFirstRunCoach =
     firstRunCoachOpen || (selectedIds.length === 0 && !rightSidebarOpen)
@@ -272,7 +280,7 @@ export function MapView() {
           data-editor-min-width={CANVAS_INSPECTION_MIN_WIDTH_PX}
         >
         {/* ── Left sidebar ────────────────────────────────────── */}
-        {!isCompactEditor && (
+        {!isCompactEditor && leftToolsVisible && !leftToolsFloating && (
           <div
             className={`flex flex-shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 transition-[width] duration-200 ${
               leftSidebarOpen ? 'w-[280px] overflow-y-auto overflow-x-hidden' : 'w-10 overflow-hidden'
@@ -309,6 +317,16 @@ export function MapView() {
           className="relative min-w-0 flex-1 overflow-hidden bg-slate-100 dark:bg-gray-950"
           data-canvas-toolbar-host
         >
+          {!isCompactEditor && leftToolsVisible && leftToolsFloating && (
+            <DockableToolbar
+              id="left-tools"
+              title="Tools rail"
+              dockedClassName="left-4 top-4"
+              className="max-h-[calc(100%-2rem)] w-[280px] overflow-y-auto"
+            >
+              <FloatingToolsRail />
+            </DockableToolbar>
+          )}
           {viewMode === '2.5d' ? (
             <div
               className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 p-6 text-center dark:bg-gray-950/90"
@@ -377,6 +395,7 @@ export function MapView() {
                 <AlignDistributeToolbar />
                 <ElementHoverCard />
                 <CanvasActionDock />
+                <ColorPaletteToolbar />
                 <AdminStatsToolbar />
                 <CanvasScaleBar />
                 {showNorthArrow && <NorthArrow />}
@@ -396,7 +415,17 @@ export function MapView() {
               the control belongs to the panel it controls. Only
               renders when the panel is hidden. */}
           {!rightSidebarOpen && <SidebarToggle variant="floating" />}
-          {rightSidebarOpen && isCompactEditor && (
+          {rightSidebarOpen && rightInspectorVisible && rightInspectorFloating && (
+            <DockableToolbar
+              id="right-inspector"
+              title="Inspector"
+              dockedClassName="right-4 top-4"
+              className="max-h-[calc(100%-2rem)] w-[320px] overflow-y-auto"
+            >
+              <RightSidebar />
+            </DockableToolbar>
+          )}
+          {rightSidebarOpen && rightInspectorVisible && !rightInspectorFloating && isCompactEditor && (
             <div
               className={`absolute inset-y-0 right-0 z-20 overflow-y-auto border-l border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-950 ${
                 emptyPropertiesState ? 'w-[min(272px,85vw)]' : 'w-[min(320px,85vw)]'
@@ -407,7 +436,7 @@ export function MapView() {
             </div>
           )}
         </div>
-        {rightSidebarOpen && !isCompactEditor && (
+        {rightSidebarOpen && rightInspectorVisible && !rightInspectorFloating && !isCompactEditor && (
           <div
             className={`flex-shrink-0 overflow-y-auto border-l border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-950 ${
               emptyPropertiesState ? 'w-[272px]' : 'w-[320px]'
@@ -423,40 +452,19 @@ export function MapView() {
   )
 }
 
-/**
- * Small pill at the bottom-left of the canvas that toggles all dockable
- * toolbars visible/hidden at once. Gives users a single click to
- * declutter the canvas or bring everything back.
- */
-function ToolbarTogglePill() {
-  const visibility = useUIStore((s) => s.dockableToolbarVisibility)
-  const setVisible = useUIStore((s) => s.setDockableToolbarVisible)
-  const ids = ['canvas-actions', 'align-distribute', 'admin-stats'] as const
-  const anyVisible = ids.some((id) => visibility[id] !== false)
-
-  const toggleAll = () => {
-    const nextVisible = !anyVisible
-    for (const id of ids) {
-      setVisible(id, nextVisible)
-    }
-  }
-
+function FloatingToolsRail() {
   return (
-    <button
-      type="button"
-      onClick={toggleAll}
-      className={`absolute bottom-12 left-4 z-20 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium shadow-md backdrop-blur transition-all ${
-        anyVisible
-          ? 'border-gray-200 bg-white/90 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/90 dark:text-gray-300 dark:hover:bg-gray-800'
-          : 'border-indigo-200 bg-indigo-50/90 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/60'
-      }`}
-      title={anyVisible ? 'Hide all toolbars' : 'Show all toolbars'}
-      aria-label={anyVisible ? 'Hide all toolbars' : 'Show all toolbars'}
-      aria-pressed={anyVisible}
-    >
-      <LayoutGrid size={14} />
-      <span>{anyVisible ? 'Hide toolbars' : 'Show toolbars'}</span>
-    </button>
+    <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
+      <CollapsibleSection title="Tools" defaultOpen storageKey="floating-tools">
+        <ToolSelector />
+      </CollapsibleSection>
+      <CollapsibleSection title="Layers" defaultOpen={false} storageKey="floating-layers">
+        <LayerVisibilityPanel />
+      </CollapsibleSection>
+      <CollapsibleSection title="Library" defaultOpen storageKey="floating-library">
+        <ElementLibrary />
+      </CollapsibleSection>
+    </div>
   )
 }
 

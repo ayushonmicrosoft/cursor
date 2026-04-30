@@ -17,8 +17,6 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  Minimize2,
-  X as XIcon,
   Ruler,
   Grid3x3,
   Compass,
@@ -31,7 +29,6 @@ import {
   Hash,
   SlidersHorizontal,
   Map as MapIcon,
-  ClipboardList,
   BarChart3,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
@@ -55,6 +52,9 @@ const TOOLBAR_MENU_ITEMS: Array<{
 }> = [
   { id: 'canvas-actions', label: 'Canvas controls' },
   { id: 'align-distribute', label: 'Arrange toolbar' },
+  { id: 'color-palette', label: 'Color palette' },
+  { id: 'left-tools', label: 'Left tools rail' },
+  { id: 'right-inspector', label: 'Right inspector' },
   { id: 'admin-stats', label: 'Admin operations', adminOnly: true },
 ]
 
@@ -65,6 +65,9 @@ const primaryViewLinkClass =
 
 const secondaryMenuButtonClass =
   'inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
+
+const toolbarMenuButtonClass =
+  'inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
 
 const secondaryMenuItemClass =
   'flex min-w-0 items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:text-gray-200 dark:hover:bg-gray-800/50 dark:focus:bg-gray-800/50'
@@ -93,7 +96,6 @@ export function TopBar() {
     toggleDimensions,
     toggleNorthArrow,
     toggleDeskIds,
-    setActiveTool,
   } = useCanvasStore(
     useShallow((s) => ({
       stageScale: s.stageScale,
@@ -106,21 +108,13 @@ export function TopBar() {
       toggleDimensions: s.toggleDimensions,
       toggleNorthArrow: s.toggleNorthArrow,
       toggleDeskIds: s.toggleDeskIds,
-      setActiveTool: s.setActiveTool,
     })),
   )
 
   const {
     setExportDialogOpen,
-    setPresentationMode,
-    presentationMode,
     viewMode,
     setViewMode,
-    selectedIds,
-    clearSelection,
-    setRightSidebarOpen,
-    setRightSidebarTab,
-    setMinimapVisible,
     dockableToolbarLayouts,
     dockableToolbarVisibility,
     activeWorkspacePreset,
@@ -132,15 +126,8 @@ export function TopBar() {
   } = useUIStore(
     useShallow((s) => ({
       setExportDialogOpen: s.setExportDialogOpen,
-      setPresentationMode: s.setPresentationMode,
-      presentationMode: s.presentationMode,
       viewMode: s.viewMode,
       setViewMode: s.setViewMode,
-      selectedIds: s.selectedIds,
-      clearSelection: s.clearSelection,
-      setRightSidebarOpen: s.setRightSidebarOpen,
-      setRightSidebarTab: s.setRightSidebarTab,
-      setMinimapVisible: s.setMinimapVisible,
       dockableToolbarLayouts: s.dockableToolbarLayouts,
       dockableToolbarVisibility: s.dockableToolbarVisibility,
       activeWorkspacePreset: s.activeWorkspacePreset,
@@ -201,6 +188,16 @@ export function TopBar() {
     }
   }, [])
 
+  const resolveActiveFloor = () => {
+    const floorState = useFloorStore.getState()
+    return (
+      floorState.floors.find((candidate) => candidate.id === floorState.activeFloorId) ??
+      floorState.floor ??
+      floorState.floors[0] ??
+      null
+    )
+  }
+
   const [, forceTick] = useState(0)
   useEffect(() => {
     let id: ReturnType<typeof setInterval> | null = null
@@ -232,7 +229,7 @@ export function TopBar() {
 
   const handleExportPng = () => {
     const stage = getActiveStage()
-    const floor = useFloorStore.getState().floor
+    const floor = resolveActiveFloor()
     if (!stage || !project || !floor) return
     const settings = useCanvasStore.getState().settings
     const allNeighborhoods = useNeighborhoodStore.getState().neighborhoods
@@ -262,7 +259,7 @@ export function TopBar() {
 
   const handleExportWayfindingPdf = () => {
     const stage = getActiveStage()
-    const floor = useFloorStore.getState().floor
+    const floor = resolveActiveFloor()
     if (!stage || !project || !floor) return
     const elements = Object.values(useElementsStore.getState().elements)
     const employees = Object.values(useEmployeeStore.getState().employees)
@@ -317,11 +314,11 @@ export function TopBar() {
 
   return (
     <div
-      className="h-12 w-full min-w-0 flex-shrink-0 overflow-hidden overflow-x-auto overflow-y-hidden border-b border-gray-200 bg-white [-ms-overflow-style:none] [scrollbar-width:none] dark:border-gray-800 dark:bg-gray-950 [&::-webkit-scrollbar]:hidden"
+      className="relative h-12 w-full min-w-0 flex-shrink-0 overflow-hidden border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
       data-fixed-toolbar="top-bar"
     >
       <div
-        className="flex h-full w-max min-w-full flex-nowrap items-center gap-1 px-2 sm:gap-1.5 sm:px-3"
+        className="flex h-full min-w-0 flex-nowrap items-center gap-1 overflow-hidden px-2 pr-3 sm:gap-1.5 sm:px-3 sm:pr-4"
         data-testid="topbar-layout-row"
       >
         <TeamSwitcher currentSlug={teamSlug} />
@@ -567,11 +564,12 @@ export function TopBar() {
           <div className="relative" ref={toolbarMenuRef}>
             <button
               onClick={() => setToolbarMenuOpen((o) => !o)}
-              className={secondaryMenuButtonClass}
+              className={toolbarMenuButtonClass}
               title="Workspace controls"
               aria-label="Workspace controls"
             >
               <SlidersHorizontal size={16} aria-hidden="true" />
+              <span className="hidden text-sm font-semibold xl:inline">Toolbars</span>
             </button>
             {toolbarMenuOpen && (
               <div className="absolute left-0 z-30 mt-1 w-80 rounded border border-gray-200 bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40">
@@ -625,6 +623,37 @@ export function TopBar() {
                           className="rounded bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200"
                         >
                           {visible ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+                      <div className="mt-2 flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setDockableToolbarMode(item.id, 'docked')}
+                          className={`rounded px-2 py-1 text-[11px] font-medium ${
+                            mode === 'docked'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200'
+                          }`}
+                        >
+                          Dock
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDockableToolbarMode(item.id, 'floating')}
+                          className={`rounded px-2 py-1 text-[11px] font-medium ${
+                            mode === 'floating'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200'
+                          }`}
+                        >
+                          Float
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => resetDockableToolbarLayout(item.id)}
+                          className="ml-auto rounded px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                        >
+                          Reset
                         </button>
                       </div>
                     </div>
@@ -714,7 +743,7 @@ export function TopBar() {
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex min-w-0 flex-none items-center gap-2 border-l border-gray-200 bg-white/95 pl-2 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
           <PlanHealthPill />
           <UserMenu />
         </div>
@@ -731,7 +760,7 @@ function SaveIndicator({
   lastSavedAt: string | null
 }) {
   return (
-    <div className="flex items-center gap-2 px-2 text-xs text-gray-500 dark:text-gray-400">
+    <div className="hidden items-center gap-2 px-2 text-xs text-gray-500 md:flex dark:text-gray-400">
       {saveState === 'saving' ? (
         <>
           <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />

@@ -17,6 +17,9 @@ export type DockableToolbarId =
   | 'canvas-actions'
   | 'align-distribute'
   | 'admin-stats'
+  | 'left-tools'
+  | 'right-inspector'
+  | 'color-palette'
 
 export interface DockableToolbarLayout {
   mode: 'docked' | 'floating'
@@ -29,12 +32,18 @@ export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, Dockabl
   'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
   'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
   'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
+  'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
+  'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
+  'color-palette': { mode: 'docked', position: { x: 88, y: 112 } },
 }
 
 export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, boolean> = {
   'canvas-actions': true,
   'align-distribute': true,
   'admin-stats': true,
+  'left-tools': true,
+  'right-inspector': true,
+  'color-palette': true,
 }
 
 export const WORKSPACE_PRESET_CONFIGS: Record<
@@ -53,11 +62,17 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
       'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
       'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
+      'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
+      'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
+      'color-palette': { mode: 'docked', position: { x: 88, y: 112 } },
     },
     visibility: {
       'canvas-actions': true,
       'align-distribute': true,
       'admin-stats': false,
+      'left-tools': true,
+      'right-inspector': true,
+      'color-palette': true,
     },
   },
   admin: {
@@ -67,11 +82,17 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
       'align-distribute': { mode: 'floating', position: { x: 232, y: 132 } },
       'admin-stats': { mode: 'floating', position: { x: 24, y: 24 } },
+      'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
+      'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
+      'color-palette': { mode: 'floating', position: { x: 96, y: 176 } },
     },
     visibility: {
       'canvas-actions': true,
       'align-distribute': true,
       'admin-stats': true,
+      'left-tools': true,
+      'right-inspector': true,
+      'color-palette': true,
     },
   },
   review: {
@@ -81,11 +102,17 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
       'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
       'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
+      'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
+      'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
+      'color-palette': { mode: 'docked', position: { x: 88, y: 112 } },
     },
     visibility: {
       'canvas-actions': true,
       'align-distribute': false,
       'admin-stats': false,
+      'left-tools': true,
+      'right-inspector': true,
+      'color-palette': false,
     },
   },
 }
@@ -110,6 +137,18 @@ function cloneToolbarLayouts(
       mode: layouts['admin-stats'].mode,
       position: { ...layouts['admin-stats'].position },
     },
+    'left-tools': {
+      mode: layouts['left-tools'].mode,
+      position: { ...layouts['left-tools'].position },
+    },
+    'right-inspector': {
+      mode: layouts['right-inspector'].mode,
+      position: { ...layouts['right-inspector'].position },
+    },
+    'color-palette': {
+      mode: layouts['color-palette'].mode,
+      position: { ...layouts['color-palette'].position },
+    },
   }
 }
 
@@ -120,6 +159,9 @@ function cloneToolbarVisibility(
     'canvas-actions': visibility['canvas-actions'],
     'align-distribute': visibility['align-distribute'],
     'admin-stats': visibility['admin-stats'],
+    'left-tools': visibility['left-tools'],
+    'right-inspector': visibility['right-inspector'],
+    'color-palette': visibility['color-palette'],
   }
 }
 
@@ -135,6 +177,9 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
       'canvas-actions': sanitizeToolbarLayout('canvas-actions', 'storage-read', parsed['canvas-actions']),
       'align-distribute': sanitizeToolbarLayout('align-distribute', 'storage-read', parsed['align-distribute']),
       'admin-stats': sanitizeToolbarLayout('admin-stats', 'storage-read', parsed['admin-stats']),
+      'left-tools': sanitizeToolbarLayout('left-tools', 'storage-read', parsed['left-tools']),
+      'right-inspector': sanitizeToolbarLayout('right-inspector', 'storage-read', parsed['right-inspector']),
+      'color-palette': sanitizeToolbarLayout('color-palette', 'storage-read', parsed['color-palette']),
     }
   } catch {
     return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
@@ -211,6 +256,18 @@ function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
         typeof parsed['admin-stats'] === 'boolean'
           ? parsed['admin-stats']
           : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['admin-stats'],
+      'left-tools':
+        typeof parsed['left-tools'] === 'boolean'
+          ? parsed['left-tools']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['left-tools'],
+      'right-inspector':
+        typeof parsed['right-inspector'] === 'boolean'
+          ? parsed['right-inspector']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['right-inspector'],
+      'color-palette':
+        typeof parsed['color-palette'] === 'boolean'
+          ? parsed['color-palette']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['color-palette'],
     }
   } catch {
     return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
@@ -286,6 +343,7 @@ interface UIState {
   templatePickerOpen: boolean
   shortcutsOverlayOpen: boolean
   commandPaletteOpen: boolean
+  aiAssistantOpen: boolean
   firstRunCoachOpen: boolean
   csvImportOpen: boolean
   csvImportSummary: CSVImportSummary | null
@@ -366,6 +424,7 @@ interface UIState {
   setTemplatePickerOpen: (open: boolean) => void
   setShortcutsOverlayOpen: (open: boolean) => void
   setCommandPaletteOpen: (open: boolean) => void
+  setAIAssistantOpen: (open: boolean) => void
   setFirstRunCoachOpen: (open: boolean) => void
   setCsvImportOpen: (open: boolean) => void
   setCsvImportSummary: (summary: CSVImportSummary | null) => void
@@ -419,6 +478,7 @@ function createUIStore() {
   templatePickerOpen: false,
   shortcutsOverlayOpen: false,
   commandPaletteOpen: false,
+  aiAssistantOpen: false,
   firstRunCoachOpen: false,
   csvImportOpen: false,
   csvImportSummary: null,
@@ -472,6 +532,7 @@ function createUIStore() {
   setTemplatePickerOpen: (open) => set({ templatePickerOpen: open }),
   setShortcutsOverlayOpen: (open) => set({ shortcutsOverlayOpen: open }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+  setAIAssistantOpen: (open) => set({ aiAssistantOpen: open }),
   setFirstRunCoachOpen: (open) => set({ firstRunCoachOpen: open }),
   setCsvImportOpen: (open) => set({ csvImportOpen: open }),
   setCsvImportSummary: (summary) => set({ csvImportSummary: summary }),

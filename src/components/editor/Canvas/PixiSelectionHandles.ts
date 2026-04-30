@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import { blocksByCategory, isPolylineType } from '../../../blocks/registry'
-import type { CanvasElement, ElementType } from '../../../types/elements'
+import { isCenterAnchoredBlock } from '../../../blocks/rendering'
+import type { CanvasElement } from '../../../types/elements'
 
 /**
  * Phase 5 — Selection handles overlay.
@@ -16,7 +16,6 @@ const HANDLE_STROKE = 0x6366f1
 const BOX_COLOR = 0x6366f1
 const HANDLE_RADIUS = 4
 const HANDLE_SIZE = 8
-const WALL_TYPES = new Set<string>(blocksByCategory('wall'))
 
 export function syncSelectionHandles(
   layer: Container,
@@ -98,7 +97,7 @@ function drawSingleHandles(g: Graphics, el: CanvasElement) {
 function elementBox(el: CanvasElement) {
   const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
   const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
-  if (WALL_TYPES.has(el.type as string) && isPolylineType(el.type as ElementType)) {
+  if (!isCenterAnchoredBlock(el.type)) {
     return { left: el.x, top: el.y, right: el.x + w, bottom: el.y + h }
   }
   return {

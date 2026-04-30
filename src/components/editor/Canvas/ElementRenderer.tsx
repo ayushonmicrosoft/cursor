@@ -51,7 +51,7 @@ import { PrinterRenderer } from './PrinterRenderer'
 import { WhiteboardRenderer } from './WhiteboardRenderer'
 import { useCallback, useState, type ReactNode } from 'react'
 import type Konva from 'konva'
-import { snapToGrid, getSnappedPosition } from '../../../lib/geometry'
+import { SnapEngine } from '../../../lib/snapEngine'
 import { elementBounds } from '../../../lib/elementBounds'
 import { ALIGNMENT_THRESHOLD } from '../../../lib/constants'
 import { useElementSpawnAnimation } from '../../../hooks/useElementSpawnAnimation'
@@ -166,12 +166,12 @@ export function ElementRenderer() {
         if (b) others.push(b)
       }
 
-      const { snapped, guides } = getSnappedPosition(
-        topLeft,
-        others,
-        { width: w, height: h },
-        ALIGNMENT_THRESHOLD,
-      )
+      const { snapped, guides } = SnapEngine.alignment({
+        position: topLeft,
+        references: others,
+        size: { width: w, height: h },
+        alignment: { enabled: true, threshold: ALIGNMENT_THRESHOLD },
+      })
       if (snapped.x !== topLeft.x) e.target.x(snapped.x + w / 2)
       if (snapped.y !== topLeft.y) e.target.y(snapped.y + h / 2)
       setDragAlignmentGuides(guides)
@@ -184,8 +184,12 @@ export function ElementRenderer() {
       let x = e.target.x()
       let y = e.target.y()
       if (showGrid) {
-        x = snapToGrid(x, gridSize)
-        y = snapToGrid(y, gridSize)
+        const snapped = SnapEngine.gridPoint(
+          { x, y },
+          { enabled: true, gridSize },
+        )
+        x = snapped.x
+        y = snapped.y
       }
       updateElement(id, { x, y })
       clearDragAlignmentGuides()
