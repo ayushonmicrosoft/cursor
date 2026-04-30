@@ -47,6 +47,18 @@ const VENDOR_CHUNKS: Array<{ name: string; test: (id: string) => boolean }> = [
 export default defineConfig({
   base: process.env.VITE_APP_BASE_PATH ?? '/',
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    // Restrict dependency scanning to the actual app entry.
+    // This prevents Vite from crawling tooling/artifact folders
+    // (for example `audit/**`) that may contain non-app JS.
+    entries: ['src/main.tsx'],
+  },
+  server: {
+    watch: {
+      // Ignore large non-app artifacts to keep HMR stable.
+      ignored: ['**/audit/**'],
+    },
+  },
   build: {
     rolldownOptions: {
       output: {

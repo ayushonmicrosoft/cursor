@@ -25,7 +25,7 @@ export function PlantRenderer({ element }: Props) {
   const foliageR = Math.min(w, h - potH) / 2
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       {/* Foliage */}
       <Circle
         x={0}
@@ -67,3 +67,4 @@ export function PlantRenderer({ element }: Props) {
     </Group>
   )
 }
+

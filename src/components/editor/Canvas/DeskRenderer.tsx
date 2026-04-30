@@ -381,7 +381,7 @@ function DeskElementRenderer({ element, isSelected, employees, getDepartmentColo
   const contentW = isCard ? element.width : element.width - 8
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -525,7 +525,7 @@ function WorkstationRenderer({ element, isSelected, employees, getDepartmentColo
   const deskIdText = truncateToWidth(element.deskId, Math.max(20, element.width - 8), ID_FONT_SIZE)
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -742,7 +742,7 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
   const deskIdText = truncateToWidth(element.deskId, Math.max(20, element.width - 8), ID_FONT_SIZE)
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -887,3 +887,4 @@ function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentCo
     </Group>
   )
 }
+

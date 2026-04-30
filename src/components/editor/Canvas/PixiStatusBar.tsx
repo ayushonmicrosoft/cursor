@@ -1,26 +1,46 @@
 /**
- * PixiStatusBar — HUD overlay for PixiJS mode.
- * Shown at the bottom of the canvas in pixi viewMode.
- * Features: element count, FPS counter, export PNG, back-to-Konva button.
+ * PixiStatusBar - HUD overlay for PixiJS preview mode.
  */
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useElementsStore } from '../../../stores/elementsStore'
-import { useUIStore } from '../../../stores/uiStore'
 import type { PixiStageHandle } from './PixiStage'
+import { blocksByCategory, isPolylineType } from '../../../blocks/registry'
+import type { CanvasElement, ElementType } from '../../../types/elements'
 
 interface PixiStatusBarProps {
   stageRef: RefObject<PixiStageHandle | null>
+  onBackToMap?: () => void
 }
 
-export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
-  const setViewMode = useUIStore((s) => s.setViewMode)
-  const elementCount = useElementsStore((s) => Object.keys(s.elements).length)
+const DESK_TYPES = new Set<string>(blocksByCategory('desk').filter((t) => t !== 'workstation'))
+const WALL_TYPES = new Set<string>(blocksByCategory('wall'))
+const TABLE_TYPES = new Set<string>(blocksByCategory('table'))
+const ROOM_TYPES = new Set<string>(blocksByCategory('room'))
+
+function isRenderableInPixi(el: CanvasElement): boolean {
+  if (!el.visible) return false
+  const t = el.type as string
+  if (t === 'workstation') return el.width > 0 && el.height > 0
+  if (WALL_TYPES.has(t) && isPolylineType(el.type as ElementType)) {
+    return Array.isArray((el as { points?: unknown }).points)
+  }
+  if (DESK_TYPES.has(t) || TABLE_TYPES.has(t) || ROOM_TYPES.has(t)) {
+    return el.width > 0 && el.height > 0
+  }
+  return el.width > 0 && el.height > 0
+}
+
+export function PixiStatusBar({ stageRef, onBackToMap }: PixiStatusBarProps) {
+  const elements = useElementsStore((s) => s.elements)
+  const renderableCount = useMemo(
+    () => Object.values(elements).filter((el) => isRenderableInPixi(el)).length,
+    [elements],
+  )
   const [fps, setFps] = useState<number>(0)
   const [exporting, setExporting] = useState(false)
   const frameRef = useRef(0)
   const lastRef = useRef(performance.now())
 
-  // FPS via rAF
   useEffect(() => {
     let id: number
     const tick = () => {
@@ -37,8 +57,7 @@ export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
     return () => cancelAnimationFrame(id)
   }, [])
 
-  const fpsColor =
-    fps >= 55 ? '#10b981' : fps >= 30 ? '#f59e0b' : '#ef4444'
+  const fpsColor = fps >= 55 ? '#10b981' : fps >= 30 ? '#f59e0b' : '#ef4444'
 
   async function handleExport() {
     if (!stageRef.current) return
@@ -48,6 +67,10 @@ export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
     } finally {
       setExporting(false)
     }
+  }
+
+  function handleBackToMap() {
+    onBackToMap?.()
   }
 
   return (
@@ -74,7 +97,6 @@ export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
         whiteSpace: 'nowrap',
       }}
     >
-      {/* Mode badge */}
       <span style={{
         background: 'linear-gradient(135deg,#7c3aed,#6366f1)',
         color: '#fff',
@@ -83,11 +105,10 @@ export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
         fontSize: 10,
         fontWeight: 700,
         letterSpacing: '0.05em',
-      }}>⚡ PIXI WebGL</span>
+      }}>PIXI Editor</span>
 
       <Divider />
 
-      {/* FPS */}
       <span style={{ fontVariantNumeric: 'tabular-nums' }}>
         <span style={{ color: fpsColor, fontWeight: 600 }}>{fps}</span>
         <span style={{ color: '#4b5563' }}> fps</span>
@@ -95,16 +116,18 @@ export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
 
       <Divider />
 
-      {/* Element count */}
       <span>
-        <span style={{ color: '#e8eaf0', fontWeight: 600 }}>{elementCount}</span>
-        <span style={{ color: '#4b5563' }}> elements</span>
+        <span style={{ color: '#e8eaf0', fontWeight: 600 }}>{renderableCount}</span>
+        <span style={{ color: '#4b5563' }}> renderable</span>
       </span>
 
       <Divider />
+      <span style={{ color: '#34d399', fontSize: 11, fontWeight: 600 }}>editable</span>
 
-      {/* Export */}
+      <Divider />
+
       <button
+        type="button"
         onClick={handleExport}
         disabled={exporting}
         style={{
@@ -120,26 +143,26 @@ export function PixiStatusBar({ stageRef }: PixiStatusBarProps) {
         }}
         title="Export current view as PNG"
       >
-        {exporting ? 'Exporting…' : '↓ PNG'}
+        {exporting ? 'Exporting...' : 'PNG'}
       </button>
 
-      {/* Back to Konva */}
       <button
-        onClick={() => setViewMode('2d')}
+        type="button"
+        onClick={handleBackToMap}
         style={{
           background: 'transparent',
           border: 'none',
-          color: '#4b5563',
+          color: '#9ba3b8',
           padding: '2px 6px',
           fontSize: 11,
           cursor: 'pointer',
           transition: 'color 0.15s',
         }}
         onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#e8eaf0')}
-        onMouseLeave={(e) => ((e.target as HTMLElement).style.color = '#4b5563')}
-        title="Switch back to Konva 2D renderer"
+        onMouseLeave={(e) => ((e.target as HTMLElement).style.color = '#9ba3b8')}
+        title="Return to the Konva map editor"
       >
-        ← Konva
+        Back to 2D
       </button>
     </div>
   )

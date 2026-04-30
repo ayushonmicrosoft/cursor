@@ -423,7 +423,7 @@ function LibraryTile({
       // and apply a tiny rotation so the user can still see the drag image
       // is the tile they grabbed (Konva canvas swallows the native drag
       // ghost on most browsers, so the source-side affordance matters).
-      className={`group relative flex items-center gap-1.5 px-2 py-1.5 text-xs rounded-md border transition-colors hover:shadow-sm motion-reduce:hover:shadow-none ${
+      className={`group relative flex min-w-0 items-center gap-1.5 px-2 py-1.5 text-xs rounded-md border transition-colors hover:shadow-sm motion-reduce:hover:shadow-none ${
         isDragging
           ? 'opacity-50 cursor-grabbing rotate-[1deg]'
           : 'cursor-grab active:cursor-grabbing'
@@ -436,10 +436,10 @@ function LibraryTile({
       <button
         type="button"
         onClick={() => onClick(item)}
-        className="flex items-center gap-1.5 flex-1 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="flex min-w-0 flex-1 items-center gap-1.5 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       >
         <LibraryPreview item={item} />
-        <span className="truncate">{item.label}</span>
+        <span className="block min-w-0 truncate">{item.label}</span>
       </button>
       {onDelete ? (
         <button
@@ -563,7 +563,7 @@ function LibrarySection({
         {headerAction ? <div className="ml-auto flex items-center">{headerAction}</div> : null}
       </div>
       {!isCollapsed && (
-        <div className="grid grid-cols-2 gap-1">
+        <div className="grid grid-cols-2 gap-1.5">
           {items.map((item) => (
             <LibraryTile
               key={itemKey(item)}

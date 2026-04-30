@@ -34,6 +34,7 @@ import { useOfficeSync } from '../../lib/offices/useOfficeSync'
 import { useSession } from '../../lib/auth/session'
 import { isEmployeeStatus, type Employee } from '../../types/employee'
 import {
+  migrateElements,
   migrateAnnotations,
   migrateEmployees,
 } from '../../lib/offices/loadFromLegacyPayload'
@@ -120,9 +121,7 @@ export function ProjectShell() {
       }
 
       useElementsStore.setState({
-        elements: (p.elements ?? {}) as ReturnType<
-          typeof useElementsStore.getState
-        >['elements'],
+        elements: migrateElements((p.elements ?? {}) as Record<string, unknown>),
       })
       useEmployeeStore.setState({
         employees: nextEmployees,
@@ -173,6 +172,7 @@ export function ProjectShell() {
         lastSavedAt: office.updated_at,
         saveState: 'saved',
         conflict: null,
+        conflictDismissedVersion: null,
         currentOfficeRole: 'edit',
       })
       useProjectStore.setState({
@@ -237,7 +237,10 @@ export function ProjectShell() {
         <ConflictModal
           onReload={() => window.location.reload()}
           onOverwrite={() => void overwrite()}
-          onCancel={() => useProjectStore.setState({ conflict: null })}
+          onCancel={() => {
+            const version = useProjectStore.getState().loadedVersion
+            useProjectStore.getState().dismissConflictForVersion(version)
+          }}
         />
       )}
     </div>

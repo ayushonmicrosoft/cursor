@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
+import { useEffect, useRef, useState, type ComponentType } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ToolSelector } from './LeftSidebar/ToolSelector'
 import { LayerVisibilityPanel } from './LeftSidebar/LayerVisibilityPanel'
@@ -8,8 +8,6 @@ import { RightSidebar } from './RightSidebar/RightSidebar'
 import { SidebarToggle } from './RightSidebar/SidebarToggle'
 import { StatusBar } from './StatusBar'
 import { CanvasStage } from './Canvas/CanvasStage'
-import { PixiStage, type PixiStageHandle } from './Canvas/PixiStage'
-import { PixiStatusBar } from './Canvas/PixiStatusBar'
 import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
 import { Minimap } from './Minimap'
@@ -97,22 +95,6 @@ export function MapView() {
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
   const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
 
-  // ── Pixi stage refs ────────────────────────────────────────────────
-  const pixiStageRef = useRef<PixiStageHandle | null>(null)
-  const [pixiSize, setPixiSize] = useState({ w: 0, h: 0 })
-  const pixiRoRef = useRef<ResizeObserver | null>(null)
-  const pixiContainerRef = useCallback((node: HTMLDivElement | null) => {
-    if (pixiRoRef.current) { pixiRoRef.current.disconnect(); pixiRoRef.current = null }
-    if (!node) return
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect
-      setPixiSize({ w: Math.round(width), h: Math.round(height) })
-    })
-    ro.observe(node)
-    pixiRoRef.current = ro
-    const { width, height } = node.getBoundingClientRect()
-    if (width > 0 && height > 0) setPixiSize({ w: Math.round(width), h: Math.round(height) })
-  }, [])
   const showFirstRunCoach =
     firstRunCoachOpen || (selectedIds.length === 0 && !rightSidebarOpen)
 
@@ -293,7 +275,7 @@ export function MapView() {
         {!isCompactEditor && (
           <div
             className={`flex flex-shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 transition-[width] duration-200 ${
-              leftSidebarOpen ? 'w-[240px] overflow-y-auto' : 'w-10 overflow-hidden'
+              leftSidebarOpen ? 'w-[280px] overflow-y-auto overflow-x-hidden' : 'w-10 overflow-hidden'
             }`}
             data-testid="mapview-left-sidebar"
           >
@@ -388,29 +370,6 @@ export function MapView() {
             </div>
           ) : (
             <>
-              {/* ── Pixi WebGL renderer ─────────────────────── */}
-              {viewMode === 'pixi' && (
-                <div
-                  ref={pixiContainerRef}
-                  className="absolute inset-0"
-                  data-testid="mapview-pixi-stage"
-                  style={{ background: '#f1f5f9', zIndex: 1 }}
-                >
-                  {pixiSize.w > 0 && (
-                    <PixiStage
-                      ref={pixiStageRef}
-                      width={pixiSize.w}
-                      height={pixiSize.h}
-                    />
-                  )}
-                  <ToolSelector />
-                  <StatusBar />
-                  <CanvasActionDock />
-                  <PixiStatusBar stageRef={pixiStageRef as React.RefObject<PixiStageHandle | null>} />
-                </div>
-              )}
-              {/* ── Konva 2D renderer (unmounted in pixi mode) ── */}
-              {viewMode !== 'pixi' && (
               <div className="absolute inset-0">
                 <CanvasStage />
                 <StatusBar />
@@ -428,7 +387,6 @@ export function MapView() {
                   />
                 )}
               </div>
-              )}
               {/* ── Toolbar toggle ─────────────────────────── */}
               <ToolbarTogglePill />
             </>

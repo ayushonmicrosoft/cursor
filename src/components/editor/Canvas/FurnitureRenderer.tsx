@@ -102,7 +102,7 @@ export function FurnitureRenderer({ element }: FurnitureRendererProps) {
   })()
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       {symbol}
       {labelDensity === 'full' && element.width >= 48 && element.height >= 24 && element.label && (
         <Text
@@ -254,3 +254,4 @@ function LockedFurnitureMark({ width, height }: { width: number; height: number 
     />
   )
 }
+

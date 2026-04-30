@@ -29,6 +29,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    img, svg, video, canvas { max-width: 100%; height: auto; }
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
@@ -437,6 +439,26 @@
     .tone-red { color: var(--red); font-weight: 600; }
 
     .hidden-search { display: none !important; }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    .visually-hidden:focus {
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      margin: 0 !important;
+      overflow: visible !important;
+      clip: auto !important;
+      white-space: normal !important;
+    }
 
     .hint {
       margin-top: 10px;
@@ -461,10 +483,23 @@
         padding-bottom: 10px;
       }
     }
+
+    @media (max-width: 480px) {
+      nav { padding: 0 12px; }
+      .hero { padding: 48px 14px 28px; }
+      .toolbar, .md-links, main { padding-left: 14px; padding-right: 14px; }
+      .panel { padding: 14px; }
+      .task { grid-template-columns: auto 1fr; }
+      .task .badge {
+        grid-column: 2;
+        justify-self: start;
+      }
+    }
   </style>
 </head>
 <body>
-  <nav>
+  <a href="#main-content" class="visually-hidden">Skip to main content</a>
+  <nav aria-label="Primary">
     <a class="logo" href="#">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <rect x="2" y="2" width="8" height="8" rx="2" fill="#6366f1"/>
@@ -474,10 +509,10 @@
       </svg>
       OandOcraft
     </a>
-    <button class="nav-link active" data-tab="md">Markdown Spec</button>
-    <button class="nav-link" data-tab="checklist">Checklist</button>
-    <button class="nav-link" data-tab="walkthrough">Walkthrough</button>
-    <button class="nav-link" data-tab="technical">Technical Doc</button>
+    <button class="nav-link active" type="button" data-tab="md" aria-controls="panel-md" aria-selected="true">Markdown Spec</button>
+    <button class="nav-link" type="button" data-tab="checklist" aria-controls="panel-checklist" aria-selected="false">Checklist</button>
+    <button class="nav-link" type="button" data-tab="walkthrough" aria-controls="panel-walkthrough" aria-selected="false">Walkthrough</button>
+    <button class="nav-link" type="button" data-tab="technical" aria-controls="panel-technical" aria-selected="false">Technical Doc</button>
   </nav>
 
   <div class="hero">
@@ -487,7 +522,8 @@
   </div>
 
   <div class="toolbar">
-    <input id="globalSearch" class="search" type="search" placeholder="Search within current section (tasks, APIs, routes, notes)">
+    <label for="globalSearch" class="visually-hidden">Search current section</label>
+    <input id="globalSearch" class="search" type="search" autocomplete="off" aria-label="Search within current section" placeholder="Search within current section (tasks, APIs, routes, notes)">
     <button id="resetAll" class="btn" type="button">Reset Local Progress</button>
   </div>
   <div class="md-links">
@@ -497,7 +533,7 @@
     <a class="md-link" href="OandOcraft_PLAYBOOK_TECHNICAL_REFERENCE.md">MD: Technical</a>
   </div>
 
-  <main>
+  <main id="main-content">
     <section class="stats">
       <article class="stat"><div class="num">4</div><div class="lbl">Modes</div></article>
       <article class="stat"><div class="num">9</div><div class="lbl">Core Tasks</div></article>
@@ -506,7 +542,7 @@
       <article class="stat"><div class="num">100%</div><div class="lbl">Interactive</div></article>
     </section>
 
-    <section class="panel active" data-panel="md">
+    <section class="panel active" id="panel-md" data-panel="md" aria-hidden="false">
       <article data-searchable>
         <div class="section">
           <h2><span class="dot"></span>Project Intent</h2>
@@ -558,45 +594,45 @@
       </article>
     </section>
 
-    <section class="panel" data-panel="checklist">
+    <section class="panel" id="panel-checklist" data-panel="checklist" aria-hidden="true">
       <div class="progress">
         <div class="progress-top">
           <span>Execution Progress</span>
-          <span id="progressText">0 / 0 complete</span>
+          <span id="progressText" aria-live="polite">0 / 0 complete</span>
         </div>
         <div class="track"><div class="bar" id="progressBar"></div></div>
       </div>
 
       <div class="group" data-searchable>
         <h3>Foundation</h3>
-        <div class="task"><input type="checkbox" data-task="f1"><label>Confirm route map, role model, and environment contract.</label><span class="badge badge-blue">P0</span></div>
-        <div class="task"><input type="checkbox" data-task="f2"><label>Capture baseline screenshots and issue notes for changed surfaces.</label><span class="badge badge-amber">UX</span></div>
-        <div class="task"><input type="checkbox" data-task="f3"><label>Lock acceptance criteria before implementation starts.</label><span class="badge badge-blue">Gate</span></div>
+        <div class="task"><input id="task-f1" type="checkbox" data-task="f1"><label for="task-f1">Confirm route map, role model, and environment contract.</label><span class="badge badge-blue">P0</span></div>
+        <div class="task"><input id="task-f2" type="checkbox" data-task="f2"><label for="task-f2">Capture baseline screenshots and issue notes for changed surfaces.</label><span class="badge badge-amber">UX</span></div>
+        <div class="task"><input id="task-f3" type="checkbox" data-task="f3"><label for="task-f3">Lock acceptance criteria before implementation starts.</label><span class="badge badge-blue">Gate</span></div>
       </div>
 
       <div class="group" data-searchable>
         <h3>UX + Accessibility</h3>
-        <div class="task"><input type="checkbox" data-task="u1"><label>Fix contrast/focus issues in high-traffic routes.</label><span class="badge badge-red">A11y</span></div>
-        <div class="task"><input type="checkbox" data-task="u2"><label>Enforce >=48px targets on actionable controls.</label><span class="badge badge-amber">Mobile</span></div>
-        <div class="task"><input type="checkbox" data-task="u3"><label>Eliminate horizontal overflow at 320px in docs and app views.</label><span class="badge badge-amber">Responsive</span></div>
+        <div class="task"><input id="task-u1" type="checkbox" data-task="u1"><label for="task-u1">Fix contrast/focus issues in high-traffic routes.</label><span class="badge badge-red">A11y</span></div>
+        <div class="task"><input id="task-u2" type="checkbox" data-task="u2"><label for="task-u2">Enforce >=48px targets on actionable controls.</label><span class="badge badge-amber">Mobile</span></div>
+        <div class="task"><input id="task-u3" type="checkbox" data-task="u3"><label for="task-u3">Eliminate horizontal overflow at 320px in docs and app views.</label><span class="badge badge-amber">Responsive</span></div>
       </div>
 
       <div class="group" data-searchable>
         <h3>Quality + Release</h3>
-        <div class="task"><input type="checkbox" data-task="q1"><label>Run lint, tests, and build; record failures and fixes.</label><span class="badge badge-green">CI</span></div>
-        <div class="task"><input type="checkbox" data-task="q2"><label>Review audit artifacts and close critical findings.</label><span class="badge badge-green">Audit</span></div>
-        <div class="task"><input type="checkbox" data-task="q3"><label>Complete release/rollback checklist and signoff note.</label><span class="badge badge-green">Ops</span></div>
+        <div class="task"><input id="task-q1" type="checkbox" data-task="q1"><label for="task-q1">Run lint, tests, and build; record failures and fixes.</label><span class="badge badge-green">CI</span></div>
+        <div class="task"><input id="task-q2" type="checkbox" data-task="q2"><label for="task-q2">Review audit artifacts and close critical findings.</label><span class="badge badge-green">Audit</span></div>
+        <div class="task"><input id="task-q3" type="checkbox" data-task="q3"><label for="task-q3">Complete release/rollback checklist and signoff note.</label><span class="badge badge-green">Ops</span></div>
       </div>
     </section>
 
-    <section class="panel" data-panel="walkthrough">
+    <section class="panel" id="panel-walkthrough" data-panel="walkthrough" aria-hidden="true">
       <div class="walk-grid">
         <aside class="steps">
-          <button class="step-btn active" data-step="0">1. Bootstrap</button>
-          <button class="step-btn" data-step="1">2. Analyze</button>
-          <button class="step-btn" data-step="2">3. Implement</button>
-          <button class="step-btn" data-step="3">4. Validate</button>
-          <button class="step-btn" data-step="4">5. Release</button>
+          <button class="step-btn active" type="button" data-step="0">1. Bootstrap</button>
+          <button class="step-btn" type="button" data-step="1">2. Analyze</button>
+          <button class="step-btn" type="button" data-step="2">3. Implement</button>
+          <button class="step-btn" type="button" data-step="3">4. Validate</button>
+          <button class="step-btn" type="button" data-step="4">5. Release</button>
         </aside>
         <article class="step-content" id="stepContent" data-searchable></article>
       </div>
@@ -606,7 +642,7 @@
       </div>
     </section>
 
-    <section class="panel" data-panel="technical">
+    <section class="panel" id="panel-technical" data-panel="technical" aria-hidden="true">
       <article data-searchable>
         <div class="section">
           <h2><span class="dot"></span>Current Engines</h2>
@@ -673,7 +709,7 @@
     </section>
   </main>
 
-  <footer>OandOcraft Project Playbook · Interactive HTML · Local progress is stored in browser storage</footer>
+  <footer>OandOcraft Project Playbook &middot; Interactive HTML &middot; Local progress is stored in browser storage</footer>
 
   <script>
     const tabs = Array.from(document.querySelectorAll(".nav-link"));
@@ -716,39 +752,56 @@
 
     function renderStep() {
       const step = stepData[activeStep];
+      if (!stepContent) return;
       stepContent.innerHTML = `<h3>${step.title}</h3>${step.body}`;
       stepButtons.forEach((btn, idx) => btn.classList.toggle("active", idx === activeStep));
-      prevStep.disabled = activeStep === 0;
-      nextStep.disabled = activeStep === stepData.length - 1;
+      if (prevStep) prevStep.disabled = activeStep === 0;
+      if (nextStep) nextStep.disabled = activeStep === stepData.length - 1;
     }
 
     function updateProgress() {
       const done = tasks.filter((t) => t.checked).length;
       const total = tasks.length;
-      progressText.textContent = `${done} / ${total} complete`;
-      progressBar.style.width = `${total ? (done / total) * 100 : 0}%`;
+      if (progressText) progressText.textContent = `${done} / ${total} complete`;
+      if (progressBar) progressBar.style.width = `${total ? (done / total) * 100 : 0}%`;
     }
 
     function saveTasks() {
       const state = {};
       tasks.forEach((t) => { state[t.dataset.task] = t.checked; });
-      localStorage.setItem(storageKey, JSON.stringify(state));
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (_err) {}
       updateProgress();
     }
 
     function loadTasks() {
-      const state = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      let state = {};
+      try {
+        state = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      } catch (_err) {
+        state = {};
+      }
       tasks.forEach((t) => { t.checked = Boolean(state[t.dataset.task]); });
       updateProgress();
     }
 
     function switchTab(key) {
-      tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === key));
-      panels.forEach((p) => p.classList.toggle("active", p.dataset.panel === key));
+      tabs.forEach((t) => {
+        const isActive = t.dataset.tab === key;
+        t.classList.toggle("active", isActive);
+        t.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+      panels.forEach((p) => {
+        const isActive = p.dataset.panel === key;
+        p.classList.toggle("active", isActive);
+        p.setAttribute("aria-hidden", isActive ? "false" : "true");
+      });
       applySearch();
     }
 
     function applySearch() {
+      if (!searchInput) return;
       const q = searchInput.value.trim().toLowerCase();
       const activePanel = panels.find((p) => p.classList.contains("active"));
       if (!activePanel) return;
@@ -758,35 +811,43 @@
           node.classList.remove("hidden-search");
           return;
         }
-        const text = node.textContent.toLowerCase();
+        const text = (node.textContent || "").toLowerCase();
         node.classList.toggle("hidden-search", !text.includes(q));
       });
     }
 
     tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
-    searchInput.addEventListener("input", applySearch);
+    if (searchInput) searchInput.addEventListener("input", applySearch);
     tasks.forEach((t) => t.addEventListener("change", saveTasks));
-    resetAll.addEventListener("click", () => {
-      localStorage.removeItem(storageKey);
-      loadTasks();
-    });
+    if (resetAll) {
+      resetAll.addEventListener("click", () => {
+        try {
+          localStorage.removeItem(storageKey);
+        } catch (_err) {}
+        loadTasks();
+      });
+    }
 
     stepButtons.forEach((btn) => btn.addEventListener("click", () => {
       activeStep = Number(btn.dataset.step);
       renderStep();
     }));
-    prevStep.addEventListener("click", () => {
-      if (activeStep > 0) {
-        activeStep -= 1;
-        renderStep();
-      }
-    });
-    nextStep.addEventListener("click", () => {
-      if (activeStep < stepData.length - 1) {
-        activeStep += 1;
-        renderStep();
-      }
-    });
+    if (prevStep) {
+      prevStep.addEventListener("click", () => {
+        if (activeStep > 0) {
+          activeStep -= 1;
+          renderStep();
+        }
+      });
+    }
+    if (nextStep) {
+      nextStep.addEventListener("click", () => {
+        if (activeStep < stepData.length - 1) {
+          activeStep += 1;
+          renderStep();
+        }
+      });
+    }
 
     loadTasks();
     renderStep();

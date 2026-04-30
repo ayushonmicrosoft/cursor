@@ -10,7 +10,7 @@ export function EllipseRenderer({ element }: Props) {
   const selectedIds = useUIStore((s) => s.selectedIds)
   const isSelected = selectedIds.includes(element.id)
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Ellipse
         x={0}
         y={0}
@@ -24,3 +24,4 @@ export function EllipseRenderer({ element }: Props) {
     </Group>
   )
 }
+

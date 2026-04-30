@@ -22,6 +22,7 @@ import {
   Ruler,
   Grid3x3,
   Compass,
+  Zap,
   Printer,
   Image as ImageIcon,
   Eye,
@@ -32,7 +33,6 @@ import {
   Map as MapIcon,
   ClipboardList,
   BarChart3,
-  Zap,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -42,7 +42,6 @@ import { buildExportFilename } from '../../lib/exportFilename'
 import { getActiveStage } from '../../lib/stageRegistry'
 import { useState, useRef, useEffect } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
-import { useTemporalState } from '../../hooks/useTemporalState'
 import { useCan } from '../../hooks/useCan'
 import { TeamSwitcher } from '../team/TeamSwitcher'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'
@@ -154,14 +153,16 @@ export function TopBar() {
   )
 
   const undo = () => {
-    useElementsStore.temporal.getState().undo()
-    useNeighborhoodStore.temporal.getState().undo()
+    useElementsStore.temporal?.getState().undo()
+    useNeighborhoodStore.temporal?.getState().undo()
   }
   const redo = () => {
-    useElementsStore.temporal.getState().redo()
-    useNeighborhoodStore.temporal.getState().redo()
+    useElementsStore.temporal?.getState().redo()
+    useNeighborhoodStore.temporal?.getState().redo()
   }
-  const { canUndo, canRedo } = useTemporalState()
+  const temporalState = useElementsStore.temporal?.getState()
+  const canUndo = (temporalState?.pastStates.length ?? 0) > 0
+  const canRedo = (temporalState?.futureStates.length ?? 0) > 0
   const canEditMap = useCan('editMap')
   const canManageWorkspace = useCan('manageWorkspace')
   const canViewReports = useCan('viewReports')
@@ -316,10 +317,13 @@ export function TopBar() {
 
   return (
     <div
-      className="h-12 w-full min-w-0 flex-shrink-0 overflow-x-auto overflow-y-hidden border-b border-gray-200 bg-white [-ms-overflow-style:none] [scrollbar-width:none] dark:border-gray-800 dark:bg-gray-950 [&::-webkit-scrollbar]:hidden"
+      className="h-12 w-full min-w-0 flex-shrink-0 overflow-hidden overflow-x-auto overflow-y-hidden border-b border-gray-200 bg-white [-ms-overflow-style:none] [scrollbar-width:none] dark:border-gray-800 dark:bg-gray-950 [&::-webkit-scrollbar]:hidden"
       data-fixed-toolbar="top-bar"
     >
-      <div className="flex h-full w-max min-w-full flex-nowrap items-center gap-1 px-2 sm:gap-1.5 sm:px-3">
+      <div
+        className="flex h-full w-max min-w-full flex-nowrap items-center gap-1 px-2 sm:gap-1.5 sm:px-3"
+        data-testid="topbar-layout-row"
+      >
         <TeamSwitcher currentSlug={teamSlug} />
 
         {teamSlug && officeSlug && (
@@ -637,31 +641,77 @@ export function TopBar() {
           </div>
         )}
 
-        <div className="flex flex-none items-center rounded-md border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900">
-          <button
-            onClick={() => setViewMode('2d')}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-semibold ${viewMode === '2d' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}
-          >
-            <MapIcon size={14} />
-            2D
-          </button>
-          <button
-            onClick={() => setViewMode('2.5d')}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-semibold ${viewMode === '2.5d' ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950' : 'text-gray-600 dark:text-gray-300'}`}
-          >
-            <Maximize2 size={14} />
-            2.5D
-          </button>
-          <button
-            onClick={() => setViewMode(viewMode === 'pixi' ? '2d' : 'pixi')}
-            className={`inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-sm font-semibold ${viewMode === 'pixi' ? 'bg-violet-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
-          >
-            <Zap size={14} />
-            Pixi{' '}
-            <span className="ml-1 rounded bg-violet-100 px-1 text-[9px] font-bold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
-              β
-            </span>
-          </button>
+        <div className="flex flex-none items-center rounded-xl border border-gray-200 bg-gray-50 p-0.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          {teamSlug && officeSlug ? (
+            <>
+              <NavLink
+                to={`/t/${teamSlug}/o/${officeSlug}/map`}
+                onClick={() => setViewMode('2d')}
+                role="button"
+                aria-label="Switch to 2D view"
+                className={({ isActive }) =>
+                  `inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${
+                    isActive && viewMode === '2d'
+                      ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+                      : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
+                  }`
+                }
+              >
+                <MapIcon size={14} />
+                2D
+              </NavLink>
+              <NavLink
+                to={`/t/${teamSlug}/o/${officeSlug}/map`}
+                onClick={() => setViewMode('2.5d')}
+                role="button"
+                aria-label="Switch to 2.5D view"
+                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${
+                  viewMode === '2.5d'
+                    ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950'
+                    : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
+                }`}
+              >
+                <Maximize2 size={14} />
+                2.5D
+              </NavLink>
+            <NavLink
+              to={`/t/${teamSlug}/o/${officeSlug}/pixi`}
+              role="button"
+              aria-label="Open Pixi editor"
+              className={({ isActive }) =>
+                `inline-flex h-8 min-w-[68px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${
+                  isActive
+                    ? 'bg-violet-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
+                }`
+              }
+            >
+              <Zap size={14} />
+              Pixi
+            </NavLink>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setViewMode('2d')}
+                aria-pressed={viewMode === '2d'}
+                className={`inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${viewMode === '2d' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
+              >
+                <MapIcon size={14} />
+                2D
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('2.5d')}
+                aria-pressed={viewMode === '2.5d'}
+                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${viewMode === '2.5d' ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
+              >
+                <Maximize2 size={14} />
+                2.5D
+              </button>
+            </>
+          )}
         </div>
 
         <div className="ml-auto flex items-center gap-2">

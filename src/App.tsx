@@ -42,6 +42,9 @@ const RosterPage = lazy(() =>
 const EngineChooserPage = lazy(() =>
   import('./components/editor/EngineChooserPage').then((m) => ({ default: m.EngineChooserPage })),
 )
+const PixiPreviewPage = lazy(() =>
+  import('./components/editor/PixiPreviewPage').then((m) => ({ default: m.PixiPreviewPage })),
+)
 const TeamOnboardingPage = lazy(() =>
   import('./components/team/TeamOnboardingPage').then((m) => ({
     default: m.TeamOnboardingPage,
@@ -179,6 +182,7 @@ function App() {
               <Route index element={<Navigate to="engine" replace />} />
               <Route path="engine" element={<EngineChooserPage />} />
               <Route path="map" element={<MapView />} />
+              <Route path="pixi" element={<PixiPreviewPage />} />
               <Route path="roster" element={<RosterPage />} />
 
               <Route path="reports" element={<ReportsPage />} />

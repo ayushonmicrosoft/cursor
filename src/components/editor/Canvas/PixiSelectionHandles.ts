@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import type { CanvasElement } from '../../../types/elements'
+import { blocksByCategory, isPolylineType } from '../../../blocks/registry'
+import type { CanvasElement, ElementType } from '../../../types/elements'
 
 /**
  * Phase 5 — Selection handles overlay.
@@ -15,6 +16,7 @@ const HANDLE_STROKE = 0x6366f1
 const BOX_COLOR = 0x6366f1
 const HANDLE_RADIUS = 4
 const HANDLE_SIZE = 8
+const WALL_TYPES = new Set<string>(blocksByCategory('wall'))
 
 export function syncSelectionHandles(
   layer: Container,
@@ -33,10 +35,11 @@ export function syncSelectionHandles(
     // Multi-select bounding box
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
     for (const el of selectedElements) {
-      minX = Math.min(minX, el.x)
-      minY = Math.min(minY, el.y)
-      maxX = Math.max(maxX, el.x + el.width)
-      maxY = Math.max(maxY, el.y + el.height)
+      const box = elementBox(el)
+      minX = Math.min(minX, box.left)
+      minY = Math.min(minY, box.top)
+      maxX = Math.max(maxX, box.right)
+      maxY = Math.max(maxY, box.bottom)
     }
     g.rect(minX - 4, minY - 4, maxX - minX + 8, maxY - minY + 8)
     g.stroke({ color: BOX_COLOR, width: 1.5, alpha: 0.6 })
@@ -46,16 +49,17 @@ export function syncSelectionHandles(
 }
 
 function drawSingleHandles(g: Graphics, el: CanvasElement) {
-  const { x, y, width: w, height: h, rotation } = el
+  const { rotation } = el
+  const box = elementBox(el)
 
   // Apply rotation transform to the graphics container for rotated elements.
   // For Phase 5 we draw axis-aligned handles (simpler), matching Konva's approach
   // of showing the bounding box un-rotated in practice.
   const pad = 4
-  const left = x - pad
-  const top = y - pad
-  const right = x + w + pad
-  const bottom = y + h + pad
+  const left = box.left - pad
+  const top = box.top - pad
+  const right = box.right + pad
+  const bottom = box.bottom + pad
 
   // Bounding box
   g.rect(left, top, right - left, bottom - top)
@@ -89,4 +93,18 @@ function drawSingleHandles(g: Graphics, el: CanvasElement) {
 
   // Suppress the linter for unused rotation (Phase 6 will apply it)
   void rotation
+}
+
+function elementBox(el: CanvasElement) {
+  const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
+  const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
+  if (WALL_TYPES.has(el.type as string) && isPolylineType(el.type as ElementType)) {
+    return { left: el.x, top: el.y, right: el.x + w, bottom: el.y + h }
+  }
+  return {
+    left: el.x - w / 2,
+    top: el.y - h / 2,
+    right: el.x + w / 2,
+    bottom: el.y + h / 2,
+  }
 }

@@ -25,7 +25,7 @@ export function PrinterRenderer({ element }: Props) {
   const trayY = -h / 2 + h * 0.25
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-w / 2}
         y={-h / 2}
@@ -74,3 +74,4 @@ export function PrinterRenderer({ element }: Props) {
     </Group>
   )
 }
+

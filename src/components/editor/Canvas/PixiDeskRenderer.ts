@@ -1,5 +1,6 @@
 import { Graphics } from 'pixi.js'
 import type { DeskElement, PrivateOfficeElement } from '../../../types/elements'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 /**
  * Phase 2 — Desk / private-office renderer.
@@ -10,8 +11,8 @@ import type { DeskElement, PrivateOfficeElement } from '../../../types/elements'
 type AssignableDesk = DeskElement | PrivateOfficeElement
 
 export function renderDesk(g: Graphics, el: AssignableDesk, selected: boolean): void {
-  const fill = parseInt(el.style.fill.replace('#', ''), 16)
-  const stroke = parseInt(el.style.stroke.replace('#', ''), 16)
+  const fill = parsePixiColor(el.style?.fill, 0xe5e7eb)
+  const stroke = parsePixiColor(el.style?.stroke, 0x6b7280)
   const { width: w, height: h } = el
   const shape = el.shape
 

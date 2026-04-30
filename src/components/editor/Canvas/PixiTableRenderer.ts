@@ -1,5 +1,6 @@
 import { Graphics } from 'pixi.js'
 import type { TableElement } from '../../../types/elements'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 /**
  * Phase 2 — PixiJS table renderer.
@@ -7,11 +8,11 @@ import type { TableElement } from '../../../types/elements'
  */
 export function renderTable(
   g: Graphics,
-  el: TableElement & { seats?: Array<{ x: number; y: number }> },
+  el: TableElement,
   selected: boolean,
 ): void {
-  const fill = parseInt((el.style?.fill ?? '#F3F4F6').replace('#', ''), 16)
-  const stroke = parseInt((el.style?.stroke ?? '#6B7280').replace('#', ''), 16)
+  const fill = parsePixiColor(el.style?.fill, 0xf3f4f6)
+  const stroke = parsePixiColor(el.style?.stroke, 0x6b7280)
   const w = el.width
   const h = el.height
 
@@ -46,7 +47,9 @@ export function renderTable(
   // Seat circles
   const seats = el.seats ?? []
   for (const seat of seats) {
-    g.circle(seat.x, seat.y, 6)
+    const seatX = w / 2 + seat.offsetX
+    const seatY = h / 2 + seat.offsetY
+    g.circle(seatX, seatY, 6)
     g.fill({ color: 0xffffff, alpha: 0.95 })
     g.stroke({ color: stroke, width: 1 })
   }

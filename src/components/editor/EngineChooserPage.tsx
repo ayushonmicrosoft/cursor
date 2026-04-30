@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { useUIStore } from '../../stores/uiStore'
 import { useState } from 'react'
 
 /**
@@ -10,13 +9,11 @@ import { useState } from 'react'
  * renderer for side-by-side evaluation.
  */
 export function EngineChooserPage() {
-  const setViewMode = useUIStore((s) => s.setViewMode)
   const navigate = useNavigate()
   const [hoveredEngine, setHoveredEngine] = useState<'konva' | 'pixi' | null>(null)
 
   function pick(engine: 'konva' | 'pixi') {
-    setViewMode(engine === 'pixi' ? 'pixi' : '2d')
-    navigate('../map', { replace: true })
+    navigate(engine === 'pixi' ? '../pixi' : '../map', { replace: true })
   }
 
   return (
@@ -103,8 +100,8 @@ export function EngineChooserPage() {
             lineHeight: 1.6,
           }}
         >
-          Compare both rendering pipelines side-by-side.
-          You can switch engines anytime from the status bar.
+          Compare both rendering pipelines as separate pages.
+          Konva opens the production editor. Pixi opens an isolated preview.
         </p>
       </div>
 
@@ -300,8 +297,8 @@ export function EngineChooserPage() {
           </div>
 
           <p style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, margin: 0 }}>
-            WebGL hardware-accelerated rendering. Faster for large floor plans
-            with thousands of elements. Some overlays are in progress.
+            Isolated PixiJS rendering. It runs outside the Konva map page so a
+            Pixi issue cannot mount inside the production editor canvas.
           </p>
 
           <div
@@ -312,7 +309,7 @@ export function EngineChooserPage() {
               gap: 6,
             }}
           >
-            {['GPU-accelerated WebGL', '60fps at 10k+ elements', 'Limited overlay support'].map((item, i) => (
+            {['Separate route and lifecycle', 'Editable Pixi canvas', 'Limited overlay support'].map((item, i) => (
               <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#cbd5e1' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={i < 2 ? '#6366f1' : '#f59e0b'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   {i < 2 ? (
@@ -341,14 +338,7 @@ export function EngineChooserPage() {
           color: '#475569',
         }}
       >
-        Press <kbd style={{
-          padding: '2px 6px',
-          borderRadius: 4,
-          background: 'rgba(71,85,105,0.3)',
-          border: '1px solid rgba(71,85,105,0.4)',
-          fontSize: 11,
-          fontFamily: 'monospace',
-        }}>Ctrl+Shift+P</kbd> to switch engines later
+        You can return to this chooser from the office URL root.
       </p>
     </div>
   )

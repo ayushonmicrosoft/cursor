@@ -28,7 +28,7 @@ export function FreeTextRenderer({ element }: Props) {
   return (
     <Group
       rotation={element.rotation}
-      listening={!element.locked}
+      listening={true}
       onDblClick={handleDblClick}
       onDblTap={handleDblClick}
     >
@@ -48,3 +48,4 @@ export function FreeTextRenderer({ element }: Props) {
     </Group>
   )
 }
+

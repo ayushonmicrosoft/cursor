@@ -21,27 +21,36 @@ import { useElementsStore } from '../stores/elementsStore'
  * otherwise force unnecessary re-renders of every subscriber.
  */
 export function useTemporalState(): { canUndo: boolean; canRedo: boolean } {
-  // Seeded to `{ false, false }` which matches the temporal store's actual
-  // initial state on mount (zundo starts with empty past/future arrays). A
-  // real computation happens on the first `getSnapshot` call below; the
-  // seed is only the fallback for `getServerSnapshot` in SSR, so briefly
-  // reading it before subscribe wakes up is not a hazard in practice.
   const cacheRef = useRef<{ canUndo: boolean; canRedo: boolean }>({
     canUndo: false,
     canRedo: false,
   })
+
   return useSyncExternalStore(
-    useElementsStore.temporal.subscribe,
-    () => {
-      const { pastStates, futureStates } = useElementsStore.temporal.getState()
-      const canUndo = pastStates.length > 0
-      const canRedo = futureStates.length > 0
-      const prev = cacheRef.current
-      if (prev.canUndo === canUndo && prev.canRedo === canRedo) return prev
-      const next = { canUndo, canRedo }
-      cacheRef.current = next
-      return next
+    (onStoreChange) => {
+      const temporal = useElementsStore.temporal
+      return temporal?.subscribe(onStoreChange) ?? (() => undefined)
     },
-    () => cacheRef.current,
+    () => readTemporalState(cacheRef),
+    () => cacheRef.current
   )
+}
+
+function readTemporalState(cacheRef: {
+  current: { canUndo: boolean; canRedo: boolean }
+}): { canUndo: boolean; canRedo: boolean } {
+  const temporal = useElementsStore.temporal
+  if (!temporal) return cacheRef.current
+  const { pastStates, futureStates } = temporal.getState()
+  const next = {
+    canUndo: pastStates.length > 0,
+    canRedo: futureStates.length > 0,
+  }
+  if (
+    cacheRef.current.canUndo !== next.canUndo ||
+    cacheRef.current.canRedo !== next.canRedo
+  ) {
+    cacheRef.current = next
+  }
+  return cacheRef.current
 }

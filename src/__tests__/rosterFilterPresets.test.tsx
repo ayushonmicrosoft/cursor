@@ -94,7 +94,7 @@ function openPresetsMenu() {
   act(() => { fireEvent.click(trigger) })
 }
 
-describe('Roster filter presets — save flow', () => {
+describe('Roster filter presets Ã¢â‚¬â€ save flow', () => {
   it('disables the Save option when no filters are active', () => {
     renderAtRoute('/t/acme/o/hq/roster')
     openPresetsMenu()
@@ -103,15 +103,18 @@ describe('Roster filter presets — save flow', () => {
   })
 
   it('saves the current URL query and surfaces the preset in the menu', () => {
-    // `window.prompt` is not implemented in jsdom — stub it so Save has a
-    // name to persist. Real users get a browser dialog; here we just
-    // shortcut the typed text.
-    vi.spyOn(window, 'prompt').mockReturnValue('On-leave engineers')
+    // Name entry is an app modal so it works in the embedded browser.
     renderAtRoute('/t/acme/o/hq/roster?status=on-leave&dept=Sales')
     openPresetsMenu()
     const saveBtn = screen.getByRole('button', { name: /Save current filters/i }) as HTMLButtonElement
     expect(saveBtn.disabled).toBe(false)
     act(() => { fireEvent.click(saveBtn) })
+    act(() => {
+      fireEvent.change(screen.getByLabelText(/Filter name/i), {
+        target: { value: 'On-leave engineers' },
+      })
+    })
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /Save filter/i })) })
     // Menu stays/reopens with the new preset visible.
     openPresetsMenu()
     expect(screen.getByRole('button', { name: /Apply preset On-leave engineers/i })).toBeTruthy()
@@ -139,13 +142,13 @@ describe('Roster filter presets — save flow', () => {
     const loc = screen.getByTestId('loc').textContent ?? ''
     expect(loc).toMatch(/status=on-leave/)
     expect(loc).toMatch(/dept=Sales/)
-    // Bob is on-leave in Sales — he should be the only visible row.
+    // Bob is on-leave in Sales Ã¢â‚¬â€ he should be the only visible row.
     expect(screen.getByText('Bob')).toBeTruthy()
     expect(screen.queryByText('Alice')).toBeNull()
   })
 })
 
-describe('Roster filter presets — delete flow', () => {
+describe('Roster filter presets Ã¢â‚¬â€ delete flow', () => {
   it('removes from both the dropdown and localStorage', () => {
     saveFilterPresets([
       {
@@ -155,7 +158,7 @@ describe('Roster filter presets — delete flow', () => {
         createdAt: '2026-01-01T00:00:00.000Z',
       },
     ])
-    // confirm() is used by the delete button — auto-accept in tests.
+    // confirm() is used by the delete button Ã¢â‚¬â€ auto-accept in tests.
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     renderAtRoute('/t/acme/o/hq/roster')
     openPresetsMenu()
@@ -168,7 +171,7 @@ describe('Roster filter presets — delete flow', () => {
   })
 })
 
-describe('Roster filter presets — cap', () => {
+describe('Roster filter presets Ã¢â‚¬â€ cap', () => {
   it('purges the oldest with a toast when adding the 21st', () => {
     const seed = Array.from({ length: MAX_FILTER_PRESETS }, (_, i) => ({
       id: `p${i}`,
@@ -177,11 +180,16 @@ describe('Roster filter presets — cap', () => {
       createdAt: new Date(2026, 0, i + 1).toISOString(),
     }))
     saveFilterPresets(seed)
-    vi.spyOn(window, 'prompt').mockReturnValue('Brand new')
     renderAtRoute('/t/acme/o/hq/roster?status=active')
     openPresetsMenu()
     const saveBtn = screen.getByRole('button', { name: /Save current filters/i })
     act(() => { fireEvent.click(saveBtn) })
+    act(() => {
+      fireEvent.change(screen.getByLabelText(/Filter name/i), {
+        target: { value: 'Brand new' },
+      })
+    })
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /Save filter/i })) })
     const stored = loadFilterPresets()
     expect(stored).toHaveLength(MAX_FILTER_PRESETS)
     // Oldest (p0) gone, newest present.
@@ -193,10 +201,10 @@ describe('Roster filter presets — cap', () => {
   })
 })
 
-describe('Roster filter presets — storage boot', () => {
+describe('Roster filter presets Ã¢â‚¬â€ storage boot', () => {
   it('ignores corrupt localStorage without crashing the page', () => {
     localStorage.setItem(FILTER_PRESETS_STORAGE_KEY, '{not json')
-    // Should render without throwing — storage helper resets to [].
+    // Should render without throwing Ã¢â‚¬â€ storage helper resets to [].
     renderAtRoute('/t/acme/o/hq/roster')
     openPresetsMenu()
     // Empty-state copy tells the user there's nothing saved yet.

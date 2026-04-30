@@ -1,4 +1,5 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 /**
  * Phase 4 — Neighborhood zone fills.
@@ -34,7 +35,7 @@ export function syncNeighborhoodLayer(
   )
 
   for (const zone of zones) {
-    const fill = parseInt(zone.color.replace('#', ''), 16)
+    const fill = parsePixiColor(zone.color, 0x6366f1)
 
     // Fill rect — draw with low alpha separately from stroke
     const gFill = new Graphics()

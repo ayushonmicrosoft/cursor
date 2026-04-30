@@ -18,7 +18,7 @@ export function WhiteboardRenderer({ element }: Props) {
   const isSelected = selectedIds.includes(element.id)
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -52,3 +52,4 @@ export function WhiteboardRenderer({ element }: Props) {
     </Group>
   )
 }
+

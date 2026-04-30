@@ -41,7 +41,7 @@ export function SofaRenderer({ element }: Props) {
   const seamH = Math.max(2, h * 0.08)
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       {/* Main cushion body */}
       <Rect
         x={-w / 2}
@@ -123,3 +123,4 @@ export function SofaRenderer({ element }: Props) {
     </Group>
   )
 }
+

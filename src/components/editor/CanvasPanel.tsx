@@ -1,7 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import { CanvasStage } from './Canvas/CanvasStage'
-import { PixiStage, type PixiStageHandle } from './Canvas/PixiStage'
-import { PixiStatusBar } from './Canvas/PixiStatusBar'
 import { Minimap } from './Minimap'
 import { CanvasActionDock } from './Canvas/CanvasActionDock'
 import { CanvasScaleBar } from './Canvas/CanvasScaleBar'
@@ -10,7 +8,6 @@ import { AlignDistributeToolbar } from './Canvas/AlignDistributeToolbar'
 import { ElementHoverCard } from './Canvas/ElementHoverCard'
 import { FirstRunCoach } from './FirstRunCoach'
 import { AdminStatsToolbar } from './AdminStatsToolbar'
-import { ToolSelector } from './LeftSidebar/ToolSelector'
 import { StatusBar } from './StatusBar'
 
 import { useUIStore } from '../../stores/uiStore'
@@ -27,10 +24,8 @@ interface ThreeDEntryProps {
 }
 
 /**
- * Dockview Panel component that wraps all map/canvas view modes:
- * - 2D (Konva)
- * - 2.5D (Three.js)
- * - PixiJS (WebGL)
+ * Dockview Panel component for the Konva map engine only.
+ * Pixi is intentionally isolated on its own route/page.
  */
 export function CanvasPanel() {
   const viewMode = useUIStore((s) => s.viewMode)
@@ -52,24 +47,7 @@ export function CanvasPanel() {
   const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<ThreeDEntryProps> | null>(null)
   const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
 
-  const pixiStageRef = useRef<PixiStageHandle | null>(null)
-  const [pixiSize, setPixiSize] = useState({ w: 0, h: 0 })
-  const pixiRoRef = useRef<ResizeObserver | null>(null)
-
   const showFirstRunCoach = firstRunCoachOpen || (selectedIds.length === 0 && !rightSidebarOpen)
-
-  const pixiContainerRef = useCallback((node: HTMLDivElement | null) => {
-    if (pixiRoRef.current) { pixiRoRef.current.disconnect(); pixiRoRef.current = null }
-    if (!node) return
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect
-      setPixiSize({ w: Math.round(width), h: Math.round(height) })
-    })
-    ro.observe(node)
-    pixiRoRef.current = ro
-    const { width, height } = node.getBoundingClientRect()
-    if (width > 0 && height > 0) setPixiSize({ w: Math.round(width), h: Math.round(height) })
-  }, [])
 
   useEffect(() => {
     if (viewMode !== '2.5d' || ThreeDEntry || threeDLoadFailed) return
@@ -160,27 +138,6 @@ export function CanvasPanel() {
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {viewMode === 'pixi' && (
-        <div
-          ref={pixiContainerRef}
-          className="absolute inset-0"
-          data-testid="mapview-pixi-stage"
-          style={{ background: '#f1f5f9', zIndex: 0 }}
-        >
-          {pixiSize.w > 0 && (
-            <PixiStage
-              ref={pixiStageRef}
-              width={pixiSize.w}
-              height={pixiSize.h}
-            />
-          )}
-          <ToolSelector />
-          <StatusBar />
-          <CanvasActionDock />
-          <PixiStatusBar stageRef={pixiStageRef as React.RefObject<PixiStageHandle | null>} />
         </div>
       )}
 

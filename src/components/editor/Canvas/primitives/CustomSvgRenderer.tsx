@@ -61,7 +61,7 @@ export function CustomSvgRenderer({ element }: Props) {
   }, [element.svgSource])
 
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       {img ? (
         <KonvaImage
           image={img}
@@ -96,3 +96,4 @@ export function CustomSvgRenderer({ element }: Props) {
     </Group>
   )
 }
+

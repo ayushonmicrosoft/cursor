@@ -58,7 +58,7 @@ export function syncGrid(
       gMinor.moveTo(originX - MINOR_PX, y)
       gMinor.lineTo(endX, y)
     }
-    gMinor.stroke({ color: 0xc8d3e0, width: 1 / scale })
+    gMinor.stroke({ color: 0xb5c1d1, width: 1 / scale, alpha: 0.75 })
     layer.addChild(gMinor)
   }
 
@@ -77,7 +77,7 @@ export function syncGrid(
       gMajor.moveTo(originX - MAJOR_PX, y)
       gMajor.lineTo(endX, y)
     }
-    gMajor.stroke({ color: 0xa0aec0, width: 1.5 / scale })
+    gMajor.stroke({ color: 0x7f8ea3, width: 1.6 / scale, alpha: 0.95 })
     layer.addChild(gMajor)
   }
 }

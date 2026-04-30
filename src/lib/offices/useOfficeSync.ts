@@ -52,6 +52,8 @@ export function useOfficeSync() {
 
   const officeId = useProjectStore((s) => s.officeId)
   const loadedVersion = useProjectStore((s) => s.loadedVersion)
+  const conflict = useProjectStore((s) => s.conflict)
+  const conflictDismissedVersion = useProjectStore((s) => s.conflictDismissedVersion)
   const setLoadedVersion = useProjectStore((s) => s.setLoadedVersion)
   const setSaveState = useProjectStore((s) => s.setSaveState)
   const setLastSavedAt = useProjectStore((s) => s.setLastSavedAt)
@@ -64,6 +66,8 @@ export function useOfficeSync() {
 
   useEffect(() => {
     if (!officeId || !loadedVersion) return
+    if (conflict) return
+    if (conflictDismissedVersion === loadedVersion) return
     const snapshot = { 
       elements, 
       employees, 
@@ -90,6 +94,9 @@ export function useOfficeSync() {
       const currentVersion = useProjectStore.getState().loadedVersion
       const currentOfficeId = useProjectStore.getState().officeId
       if (!currentOfficeId || !currentVersion) return
+      const projectState = useProjectStore.getState()
+      if (projectState.conflict) return
+      if (projectState.conflictDismissedVersion === currentVersion) return
 
       setSaveState('saving')
       const payload = buildCurrentPayload()
@@ -99,21 +106,15 @@ export function useOfficeSync() {
         setLoadedVersion(res.updated_at)
         setLastSavedAt(res.updated_at)
         setSaveState('saved')
-        lastSavedSnapshotRef.current = JSON.stringify({
-          elements: useElementsStore.getState().elements,
-          employees: useEmployeeStore.getState().employees,
-          departmentColors: useEmployeeStore.getState().departmentColors,
-          floor: useFloorStore.getState().floor,
-          settings: useCanvasStore.getState().settings,
-          seatHistory: useSeatHistoryStore.getState().entries,
-          neighborhoods: useNeighborhoodStore.getState().neighborhoods,
-          annotations: useAnnotationsStore.getState().annotations,
-        })
+        useProjectStore.getState().clearConflictDismissal()
+        lastSavedSnapshotRef.current = JSON.stringify(currentSnapshot())
         return
       }
       if (res.reason === 'conflict') {
         setSaveState('error')
-        useProjectStore.setState({ conflict: { payload } })
+        if (!useProjectStore.getState().conflict) {
+          useProjectStore.setState({ conflict: { payload } })
+        }
         return
       }
       setSaveState('error')
@@ -145,6 +146,8 @@ export function useOfficeSync() {
     setSaveState,
     setLastSavedAt,
     setLoadedVersion,
+    conflict,
+    conflictDismissedVersion,
   ])
 
   useEffect(() => {
@@ -163,11 +166,25 @@ export function useOfficeSync() {
       setLoadedVersion(res.updated_at)
       setLastSavedAt(res.updated_at)
       setSaveState('saved')
-      useProjectStore.setState({ conflict: null })
+      useProjectStore.setState({ conflict: null, conflictDismissedVersion: null })
+      lastSavedSnapshotRef.current = JSON.stringify(currentSnapshot())
     } else {
       setSaveState('error')
     }
   }
 
   return { overwrite }
+}
+
+function currentSnapshot() {
+  return {
+    elements: useElementsStore.getState().elements,
+    employees: useEmployeeStore.getState().employees,
+    departmentColors: useEmployeeStore.getState().departmentColors,
+    floor: useFloorStore.getState().floor,
+    settings: useCanvasStore.getState().settings,
+    seatHistory: useSeatHistoryStore.getState().entries,
+    neighborhoods: useNeighborhoodStore.getState().neighborhoods,
+    annotations: useAnnotationsStore.getState().annotations,
+  }
 }

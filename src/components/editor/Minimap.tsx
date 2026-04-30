@@ -1,7 +1,7 @@
 import { useElementsStore } from '../../stores/elementsStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { useUIStore } from '../../stores/uiStore'
-import { useMemo, useCallback, useRef, useState, memo } from 'react'
+import { useMemo, useCallback, useRef, useState, memo, useEffect } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { Minimize2, Maximize2 } from 'lucide-react'
 import { elementBounds } from '../../lib/elementBounds'
@@ -216,6 +216,21 @@ export function Minimap() {
     clientX: number
     clientY: number
   }>({ active: false, pending: false, clientX: 0, clientY: 0 })
+  const rafIdRef = useRef<number | null>(null)
+  const moveHandlerRef = useRef<((event: PointerEvent) => void) | null>(null)
+  const upHandlerRef = useRef<(() => void) | null>(null)
+
+  const cleanupWindowHandlers = useCallback(() => {
+    if (moveHandlerRef.current) {
+      window.removeEventListener('pointermove', moveHandlerRef.current)
+      moveHandlerRef.current = null
+    }
+    if (upHandlerRef.current) {
+      window.removeEventListener('pointerup', upHandlerRef.current)
+      window.removeEventListener('pointercancel', upHandlerRef.current)
+      upHandlerRef.current = null
+    }
+  }, [])
 
   const applyPan = useCallback(() => {
     const state = dragStateRef.current
@@ -241,8 +256,22 @@ export function Minimap() {
     const state = dragStateRef.current
     if (state.pending) return
     state.pending = true
-    requestAnimationFrame(applyPan)
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null
+      applyPan()
+    })
   }, [applyPan])
+
+  const stopDragging = useCallback(() => {
+    const state = dragStateRef.current
+    state.active = false
+    state.pending = false
+    cleanupWindowHandlers()
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+  }, [cleanupWindowHandlers])
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -255,6 +284,7 @@ export function Minimap() {
       const target = e.target as HTMLElement | null
       if (target && target.closest('[data-minimap-collapse-button]')) return
       const state = dragStateRef.current
+      stopDragging()
       state.active = true
       state.clientX = e.clientX
       state.clientY = e.clientY
@@ -266,12 +296,9 @@ export function Minimap() {
         state.clientY = moveEvent.clientY
         scheduleApply()
       }
-      const onUp = () => {
-        state.active = false
-        window.removeEventListener('pointermove', onMove)
-        window.removeEventListener('pointerup', onUp)
-        window.removeEventListener('pointercancel', onUp)
-      }
+      const onUp = () => stopDragging()
+      moveHandlerRef.current = onMove
+      upHandlerRef.current = onUp
       // Attach to `window` so a drag that overshoots the minimap still
       // tracks — otherwise the view "sticks" the moment the pointer
       // leaves, which feels broken.
@@ -279,8 +306,12 @@ export function Minimap() {
       window.addEventListener('pointerup', onUp)
       window.addEventListener('pointercancel', onUp)
     },
-    [scheduleApply],
+    [scheduleApply, stopDragging],
   )
+
+  useEffect(() => {
+    return () => stopDragging()
+  }, [stopDragging])
 
   if (!minimapVisible) return null
 

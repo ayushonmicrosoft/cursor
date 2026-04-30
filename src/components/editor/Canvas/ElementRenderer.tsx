@@ -284,7 +284,7 @@ export function ElementRenderer() {
           if (VariantRenderer) {
             return (
               <Group rotation={el.rotation}>
-                <Group x={-el.width / 2} y={-el.height / 2} listening={false}>
+                <Group x={-el.width / 2} y={-el.height / 2}>
                   <VariantRenderer element={el} />
                 </Group>
               </Group>

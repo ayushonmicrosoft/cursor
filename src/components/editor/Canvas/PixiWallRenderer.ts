@@ -1,13 +1,14 @@
 import { Graphics } from 'pixi.js'
 import type { WallElement } from '../../../types/elements'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 /**
  * Phase 2 — PixiJS wall renderer.
  * Straight segments + arc-bulge quadratic bezier curves.
  */
 export function renderWall(g: Graphics, el: WallElement, selected: boolean): void {
-  const { points, bulges, thickness = 8, style } = el
-  const strokeColor = parseInt(style.stroke.replace('#', ''), 16)
+  const { points, bulges, thickness = 8 } = el
+  const strokeColor = parsePixiColor(el.style?.stroke, 0x374151)
   const activeColor = selected ? 0x7c3aed : strokeColor
 
   g.clear()

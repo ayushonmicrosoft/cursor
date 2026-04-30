@@ -3,6 +3,8 @@ import { useEmployeeStore } from '../../stores/employeeStore'
 import { useProjectStore } from '../../stores/projectStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { useFloorStore } from '../../stores/floorStore'
+import { getDefaults } from '../constants'
+import { blockMeta } from '../../blocks/registry'
 import {
   isEmployeeStatus,
   isAccommodationType,
@@ -66,15 +68,97 @@ function migrateWorkstationAssignedEmployeeIds(
   return out
 }
 
+function coerceFiniteNumber(raw: unknown, fallback: number): number {
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback
+}
+
+function coerceFiniteInt(raw: unknown, fallback: number): number {
+  const value = coerceFiniteNumber(raw, fallback)
+  return Number.isFinite(value) ? Math.trunc(value) : fallback
+}
+
+function coerceNonNegative(raw: unknown, fallback: number): number {
+  const value = coerceFiniteNumber(raw, fallback)
+  return value >= 0 ? value : fallback
+}
+
+function normalizeElementStyle(el: Record<string, unknown>) {
+  const type = typeof el.type === 'string' ? el.type : 'custom-shape'
+  const shape = typeof el.shape === 'string' ? el.shape : undefined
+  const defaults = getDefaults(type, shape)
+  const meta = blockMeta(type as Parameters<typeof blockMeta>[0])
+  const styleRaw = el.style && typeof el.style === 'object'
+    ? (el.style as Record<string, unknown>)
+    : {}
+
+  const fill =
+    typeof styleRaw.fill === 'string' && styleRaw.fill.trim().length > 0
+      ? styleRaw.fill
+      : defaults?.fill ?? meta?.defaultStyle.fill ?? '#E5E7EB'
+  const stroke =
+    typeof styleRaw.stroke === 'string' && styleRaw.stroke.trim().length > 0
+      ? styleRaw.stroke
+      : defaults?.stroke ?? meta?.defaultStyle.stroke ?? '#6B7280'
+  const strokeWidth = coerceNonNegative(
+    styleRaw.strokeWidth,
+    coerceFiniteNumber(meta?.defaultStyle.strokeWidth, 1),
+  )
+  const opacity = Math.min(
+    1,
+    Math.max(
+      0,
+      coerceFiniteNumber(styleRaw.opacity, coerceFiniteNumber(meta?.defaultStyle.opacity, 1)),
+    ),
+  )
+
+  return { fill, stroke, strokeWidth, opacity }
+}
+
+function normalizeBaseElementShape(
+  el: Record<string, unknown>,
+  fallbackId: string,
+): Record<string, unknown> | null {
+  const type = typeof el.type === 'string' ? el.type : null
+  if (!type) return null
+  const shape = typeof el.shape === 'string' ? el.shape : undefined
+  const defaults = getDefaults(type, shape)
+  const meta = blockMeta(type as Parameters<typeof blockMeta>[0])
+  const defaultWidth = defaults?.width ?? meta?.defaultSize.w ?? 60
+  const defaultHeight = defaults?.height ?? meta?.defaultSize.h ?? 60
+
+  return {
+    ...el,
+    id: typeof el.id === 'string' && el.id.length > 0 ? el.id : fallbackId,
+    type,
+    x: coerceFiniteNumber(el.x, 0),
+    y: coerceFiniteNumber(el.y, 0),
+    width: coerceNonNegative(el.width, defaultWidth),
+    height: coerceNonNegative(el.height, defaultHeight),
+    rotation: coerceFiniteNumber(el.rotation, 0),
+    locked: typeof el.locked === 'boolean' ? el.locked : false,
+    groupId: typeof el.groupId === 'string' ? el.groupId : null,
+    zIndex: coerceFiniteInt(el.zIndex, 0),
+    label: typeof el.label === 'string' ? el.label : type,
+    visible: typeof el.visible === 'boolean' ? el.visible : true,
+    style: normalizeElementStyle(el),
+  }
+}
+
 export function migrateElements(
   elements: Record<string, unknown>,
 ): ReturnType<typeof useElementsStore.getState>['elements'] {
   const out: Record<string, unknown> = {}
   for (const [id, raw] of Object.entries(elements ?? {})) {
     if (!raw || typeof raw !== 'object') continue
-    const el = raw as Record<string, unknown>
+    const rawEl = raw as Record<string, unknown>
+    const el = normalizeBaseElementShape(rawEl, id)
+    if (!el) continue
+
     if (el.type === 'wall' && Array.isArray(el.points)) {
-      const expectedBulges = Math.max(0, el.points.length / 2 - 1)
+      const wallPoints = el.points.filter(
+        (p: unknown): p is number => typeof p === 'number' && Number.isFinite(p),
+      )
+      const expectedBulges = Math.max(0, wallPoints.length / 2 - 1)
       const currentBulges = Array.isArray(el.bulges) ? el.bulges : []
       const bulges: number[] = []
       for (let i = 0; i < expectedBulges; i++) {
@@ -88,9 +172,13 @@ export function migrateElements(
           : 'solid'
       out[id] = {
         ...el,
+        points: wallPoints,
+        thickness: coerceNonNegative(el.thickness, 8),
         bulges,
         connectedWallIds: Array.isArray(el.connectedWallIds)
-          ? el.connectedWallIds
+          ? el.connectedWallIds.filter(
+              (entry: unknown): entry is string => typeof entry === 'string',
+            )
           : [],
         wallType,
       }
@@ -100,10 +188,8 @@ export function migrateElements(
         equipment: migrateEquipment(el.equipment),
       }
       if (el.type === 'workstation') {
-        const positions =
-          typeof el.positions === 'number' && Number.isFinite(el.positions)
-            ? el.positions
-            : 0
+        const positions = Math.max(0, coerceFiniteInt(el.positions, 0))
+        migrated.positions = positions
         migrated.assignedEmployeeIds = migrateWorkstationAssignedEmployeeIds(
           el.assignedEmployeeIds,
           positions,

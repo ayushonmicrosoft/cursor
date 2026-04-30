@@ -1,6 +1,7 @@
 import { Graphics, Text, TextStyle, Container } from 'pixi.js'
 import type { WorkstationElement } from '../../../types/elements'
 import type { Employee } from '../../../types/employee'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 /**
  * Phase 2 — PixiJS workstation bench renderer.
@@ -33,8 +34,8 @@ export function renderWorkstation(
   employees: Record<string, Employee>,
   selected: boolean,
 ): void {
-  const fill = parseInt(el.style.fill.replace('#', ''), 16)
-  const stroke = parseInt(el.style.stroke.replace('#', ''), 16)
+  const fill = parsePixiColor(el.style?.fill, 0xe5e7eb)
+  const stroke = parsePixiColor(el.style?.stroke, 0x6b7280)
   const { width: w, height: h, positions, assignedEmployeeIds } = el
 
   g.clear()

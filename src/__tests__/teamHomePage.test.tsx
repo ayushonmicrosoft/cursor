@@ -75,9 +75,6 @@ describe('TeamHomePage', () => {
       { id: 'o1', slug: 'hq', name: 'HQ', updated_at: '2026-04-20T00:00:00Z', is_private: false },
     ])
     createOffice.mockResolvedValue({ id: 'o2', slug: 'hq-2', name: 'New office 1' })
-    // onNew prompts for a name; stub `window.prompt` to auto-accept the
-    // suggested default so the test doesn't need to interact with a modal.
-    vi.spyOn(window, 'prompt').mockImplementation((_msg, def) => def ?? '')
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/t/acme']}>
@@ -90,6 +87,7 @@ describe('TeamHomePage', () => {
     )
     await screen.findByText('HQ')
     fireEvent.click(screen.getByRole('button', { name: /new office/i }))
+    fireEvent.click(screen.getByRole('button', { name: /create office/i }))
     await waitFor(() => expect(createOffice).toHaveBeenCalled())
     expect(await screen.findByText('engine-view')).toBeInTheDocument()
   })

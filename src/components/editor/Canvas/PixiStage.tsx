@@ -27,9 +27,14 @@ import { syncNeighborhoodLayer } from './PixiNeighborhoodLayer'
 import { syncAlignmentGuides } from './PixiAlignmentGuides'
 import { syncSelectionHandles } from './PixiSelectionHandles'
 import { syncGrid } from './PixiGridLayer'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 export interface PixiStageHandle { exportPng(): Promise<void> }
-interface PixiStageProps { width: number; height: number }
+interface PixiStageProps {
+  width: number
+  height: number
+  onError?: (message: string) => void
+}
 
 // Type sets from registry — typed as Set<string> for runtime .has(el.type)
 const DESK_TYPES  = new Set<string>(blocksByCategory('desk').filter(t => t !== 'workstation'))
@@ -45,14 +50,16 @@ function deptColor(dept: string | null): number {
   return PALETTE[h % PALETTE.length]
 }
 
-export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function PixiStage({ width, height }, ref) {
+export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function PixiStage({ width, height, onError }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const appRef = useRef<Application | null>(null)
   const worldRef = useRef<Container | null>(null)
   const mapRef = useRef<Map<string, Container>>(new Map())
   const gridLayerRef = useRef<Container | null>(null)
-  const dragRef = useRef<{id:string;swx:number;swy:number;sex:number;sey:number}|null>(null)
+  const dragRef = useRef<{ id: string; swx: number; swy: number; sex: number; sey: number } | null>(null)
   const rafRef = useRef<number | null>(null)
+  const buildFailureRef = useRef(0)
+  const drawOverrunRef = useRef(0)
 
   useImperativeHandle(ref, () => ({
     async exportPng() {
@@ -81,6 +88,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
     const app = new Application()
     app.init({
       canvas: canvasRef.current,
+      preference: 'canvas',
       width: w, height: h,
       backgroundColor: 0xf1f5f9,
       antialias: true,
@@ -104,10 +112,11 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       // ── Pan ───────────────────────────────────────────────────────────
       let pan=false, px=0, py=0
       app.stage.eventMode='static'; app.stage.hitArea=app.screen
-      app.stage.on('pointerdown',(e:FederatedPointerEvent)=>{ if(e.button!==0||dragRef.current)return; pan=true;px=e.globalX;py=e.globalY })
+      app.stage.on('pointerdown',(e:FederatedPointerEvent)=>{ if(e.button!==0 || dragRef.current)return; pan=true;px=e.globalX;py=e.globalY })
       app.stage.on('pointermove',(e:FederatedPointerEvent)=>{
         if(dragRef.current){
-          const d=dragRef.current,wp=world.toLocal(e.global)
+          const d=dragRef.current
+          const wp=world.toLocal(e.global)
           useElementsStore.getState().updateElement(d.id,{x:d.sex+(wp.x-d.swx),y:d.sey+(wp.y-d.swy)})
           schedDraw()
           return
@@ -145,6 +154,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
         if(dead)return
         if(rafRef.current)return
         rafRef.current=requestAnimationFrame(()=>{
+          const startedAt = performance.now()
           rafRef.current=null
           if(dead)return
           const els     = useElementsStore.getState().elements
@@ -155,17 +165,48 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
           const floorId = useFloorStore.getState().activeFloorId
           const guides  = useUIStore.getState().dragAlignmentGuides
           syncNeighborhoodLayer(nlLayer, hoods, floorId)
-          syncElLayer(elLayer, map, els, selIds, setSelIds, emps, dragRef)
+          const failures = syncElLayer(elLayer, map, els, selIds, setSelIds, emps, dragRef)
+          if (failures > 0) {
+            buildFailureRef.current += failures
+            if (buildFailureRef.current >= 3) {
+              console.error('[PixiStage] Repeated element build failures')
+              onError?.('Pixi could not draw some elements. The preview is still open so we can inspect it.')
+              buildFailureRef.current = 0
+            }
+          } else {
+            buildFailureRef.current = 0
+          }
           syncAlignmentGuides(glLayer, guides)
           syncSelectionHandles(hlLayer, selIds.map(id=>els[id]).filter(Boolean) as CanvasElement[])
+
+          const elapsed = performance.now() - startedAt
+          if (elapsed > 32) {
+            drawOverrunRef.current += 1
+            if (drawOverrunRef.current >= 6) {
+              console.warn('[PixiStage] Repeated slow frames', { elapsed })
+              onError?.('Pixi is rendering slowly. It will stay open instead of falling back to 2D.')
+              drawOverrunRef.current = 0
+            }
+          } else {
+            drawOverrunRef.current = 0
+          }
         })
       }
 
       // Initial draw + subscriptions
+      fitWorldToElements(world, useElementsStore.getState().elements, w, h)
       drawGrid()
       schedDraw()
       const u1=useElementsStore.subscribe(schedDraw)
-      const u2=useUIStore.subscribe(schedDraw)
+      const u2=useUIStore.subscribe((state, prev) => {
+        if (
+          state.selectedIds !== prev.selectedIds ||
+          state.dragAlignmentGuides !== prev.dragAlignmentGuides ||
+          state.viewMode !== prev.viewMode
+        ) {
+          schedDraw()
+        }
+      })
       const u3=useNeighborhoodStore.subscribe(schedDraw)
       const u4=useFloorStore.subscribe(schedDraw)
       ;(app as Application&{_c?:()=>void})._c=()=>{
@@ -174,6 +215,10 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
         if(rafRef.current){ cancelAnimationFrame(rafRef.current); rafRef.current=null }
         if(gridRaf){ cancelAnimationFrame(gridRaf); gridRaf=null }
       }
+    }).catch((error) => {
+      if (dead) return
+      console.error('[PixiStage] Failed to initialize Pixi', error)
+      onError?.('Pixi failed to initialize in this browser context.')
     })
 
     return ()=>{
@@ -205,16 +250,18 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
 })
 
 // ── Element layer sync ────────────────────────────────────────────────────────
-type DragRef = React.MutableRefObject<{id:string;swx:number;swy:number;sex:number;sey:number}|null>
-
 interface StatefulContainer extends Container {
   _state?: { el: CanvasElement; sel: boolean; empHash: string }
 }
 
 function syncElLayer(
   layer:Container, map:Map<string,Container>, elements:Record<string,CanvasElement>,
-  selIds:string[], setSelIds:(ids:string[])=>void, emps:Record<string,Employee>, dragRef:DragRef
-){
+  selIds:string[],
+  setSelIds:(ids:string[])=>void,
+  emps:Record<string,Employee>,
+  dragRef: { current: { id: string; swx: number; swy: number; sex: number; sey: number } | null },
+): number {
+  let failures = 0
   const cur=new Set(Object.keys(elements))
   for(const [id,c] of map){ if(!cur.has(id)){layer.removeChild(c);c.destroy({children:true});map.delete(id)} }
 
@@ -248,12 +295,26 @@ function syncElLayer(
         // Unchanged, keep c = existing
       } else {
         layer.removeChild(existing);existing.destroy({children:true});map.delete(el.id)
-        c = buildEl(el,selIds,setSelIds,emps,dragRef) as StatefulContainer
+        try {
+          c = buildEl(el,selIds,setSelIds,emps,dragRef) as StatefulContainer
+        } catch (error) {
+          console.error('[PixiStage] Failed to rebuild element', { id: el.id, type: el.type, error })
+          failures += 1
+          c = undefined
+        }
+        if (!c) continue
         c._state = { el, sel, empHash }
         map.set(el.id,c); layer.addChild(c)
       }
     } else {
-      c = buildEl(el,selIds,setSelIds,emps,dragRef) as StatefulContainer
+      try {
+        c = buildEl(el,selIds,setSelIds,emps,dragRef) as StatefulContainer
+      } catch (error) {
+        console.error('[PixiStage] Failed to build element', { id: el.id, type: el.type, error })
+        failures += 1
+        c = undefined
+      }
+      if (!c) continue
       c._state = { el, sel, empHash }
       map.set(el.id,c); layer.addChild(c)
     }
@@ -265,13 +326,22 @@ function syncElLayer(
       childIdx++
     }
   }
+  return failures
 }
 
 function buildEl(
-  el:CanvasElement, selIds:string[], setSelIds:(ids:string[])=>void,
-  emps:Record<string,Employee>, dragRef:DragRef
+  el:CanvasElement, selIds:string[],
+  setSelIds:(ids:string[])=>void,
+  emps:Record<string,Employee>,
+  dragRef: { current: { id: string; swx: number; swy: number; sex: number; sey: number } | null },
 ):Container{
-  const c=new Container(); c.x=el.x; c.y=el.y; c.rotation=(el.rotation*Math.PI)/180
+  const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
+  const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
+  const c=new Container()
+  const centerAnchored = isCenterAnchoredElement(el)
+  c.x = centerAnchored ? el.x - w / 2 : el.x
+  c.y = centerAnchored ? el.y - h / 2 : el.y
+  c.rotation=(el.rotation*Math.PI)/180
   c.alpha=el.style?.opacity??1
   const sel=selIds.includes(el.id); const g=new Graphics()
 
@@ -287,9 +357,11 @@ function buildEl(
   } else if(ROOM_TYPES.has(t)){
     renderRoom(c,el as Parameters<typeof renderRoom>[1],sel)
   } else {
-    const f=parseInt((el.style?.fill??'#9CA3AF').replace('#',''),16)
-    const s=parseInt((el.style?.stroke??'#6B7280').replace('#',''),16)
-    g.roundRect(0,0,el.width,el.height,3).fill({color:f}).stroke({color:sel?0x7c3aed:s,width:sel?2:1})
+    if (w > 0 && h > 0) {
+      const f = parsePixiColor(el.style?.fill, 0x9ca3af)
+      const s = parsePixiColor(el.style?.stroke, 0x6b7280)
+      g.roundRect(0,0,w,h,3).fill({color:f}).stroke({color:sel?0x7c3aed:s,width:sel?2:1})
+    }
   }
   if(!ROOM_TYPES.has(t)) c.addChild(g)
 
@@ -298,24 +370,80 @@ function buildEl(
     const aid=(el as DeskElement).assignedEmployeeId
     if(aid&&emps[aid]){
       const emp=emps[aid]; const dc=deptColor(emp.department)
-      const bw=Math.min(el.width-4,80); const bg=new Graphics()
-      bg.roundRect(el.width/2-bw/2,-18,bw,14,3).fill({color:dc})
+      const bw=Math.min(w-4,80); const bg=new Graphics()
+      bg.roundRect(w/2-bw/2,-18,bw,14,3).fill({color:dc})
       c.addChild(bg)
       const t=new Text({text:emp.name.split(' ')[0],style:SEAT_STYLE})
-      t.x=el.width/2-t.width/2; t.y=-17; c.addChild(t)
+      t.x=w/2-t.width/2; t.y=-17; c.addChild(t)
     }
   }
 
-  // Drag + select
-  c.eventMode='static'; c.cursor='grab'
+  c.eventMode='static'
+  c.cursor=el.locked?'pointer':'grab'
   c.on('pointerdown',(e:FederatedPointerEvent)=>{
     e.stopPropagation()
-    const multi=e.ctrlKey||e.metaKey||e.shiftKey,cur=useUIStore.getState().selectedIds
+    const multi=e.ctrlKey||e.metaKey||e.shiftKey
+    const cur=useUIStore.getState().selectedIds
     setSelIds(multi?(cur.includes(el.id)?cur.filter(i=>i!==el.id):[...cur,el.id]):[el.id])
+    if(el.locked)return
     const wp=c.parent?.toLocal(e.global)
-    if(wp) dragRef.current={id:el.id,swx:wp.x,swy:wp.y,sex:el.x,sey:el.y}
-    c.cursor='grabbing'
+    if(wp){
+      dragRef.current={id:el.id,swx:wp.x,swy:wp.y,sex:el.x,sey:el.y}
+      c.cursor='grabbing'
+    }
   })
-  c.on('pointerup',()=>{ dragRef.current=null; c.cursor='grab' })
+  c.on('pointerup',()=>{ dragRef.current=null; c.cursor=el.locked?'pointer':'grab' })
+  c.on('pointerupoutside',()=>{ dragRef.current=null; c.cursor=el.locked?'pointer':'grab' })
   return c
+}
+
+function fitWorldToElements(
+  world: Container,
+  elements: Record<string, CanvasElement>,
+  viewportW: number,
+  viewportH: number,
+): void {
+  const visible = Object.values(elements).filter((el) => el.visible)
+  if (visible.length === 0 || viewportW <= 0 || viewportH <= 0) return
+
+  let minX = Number.POSITIVE_INFINITY
+  let minY = Number.POSITIVE_INFINITY
+  let maxX = Number.NEGATIVE_INFINITY
+  let maxY = Number.NEGATIVE_INFINITY
+
+  for (const el of visible) {
+    const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
+    const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
+    if (isCenterAnchoredElement(el)) {
+      minX = Math.min(minX, el.x - w / 2)
+      minY = Math.min(minY, el.y - h / 2)
+      maxX = Math.max(maxX, el.x + w / 2)
+      maxY = Math.max(maxY, el.y + h / 2)
+    } else {
+      minX = Math.min(minX, el.x)
+      minY = Math.min(minY, el.y)
+      maxX = Math.max(maxX, el.x + w)
+      maxY = Math.max(maxY, el.y + h)
+    }
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) return
+
+  const contentW = Math.max(1, maxX - minX)
+  const contentH = Math.max(1, maxY - minY)
+  const margin = 48
+  const fitScale = Math.min(
+    (viewportW - margin * 2) / contentW,
+    (viewportH - margin * 2) / contentH,
+    2.5,
+  )
+  const scale = Number.isFinite(fitScale) ? Math.max(0.15, fitScale) : 1
+
+  world.scale.set(scale, scale)
+  world.x = viewportW / 2 - (minX + contentW / 2) * scale
+  world.y = viewportH / 2 - (minY + contentH / 2) * scale
+}
+
+function isCenterAnchoredElement(el: CanvasElement): boolean {
+  return !(WALL_TYPES.has(el.type as string) && isPolylineType(el.type as Parameters<typeof isPolylineType>[0]))
 }

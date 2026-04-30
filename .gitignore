@@ -37,3 +37,7 @@ supabase/.temp
 
 # Claude
 .claude/
+
+# Local automation/debug artifacts
+.codex-logs/
+audit/

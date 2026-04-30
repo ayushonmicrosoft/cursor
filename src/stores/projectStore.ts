@@ -23,6 +23,7 @@ interface ProjectState {
   officeId: string | null
   loadedVersion: string | null
   conflict: ProjectConflict
+  conflictDismissedVersion: string | null
   currentOfficeRole: Role | null
   impersonatedRole: Role | null
   currentTeamId: string | null
@@ -36,6 +37,8 @@ interface ProjectState {
   setOfficeId: (id: string | null) => void
   setLoadedVersion: (v: string | null) => void
   setConflict: (c: ProjectConflict) => void
+  dismissConflictForVersion: (version: string | null) => void
+  clearConflictDismissal: () => void
   setCurrentOfficeRole: (role: Role | null) => void
   setImpersonatedRole: (role: Role | null) => void
   setCurrentTeamId: (id: string | null) => void
@@ -52,6 +55,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
   officeId: null,
   loadedVersion: null,
   conflict: null,
+  conflictDismissedVersion: null,
   currentOfficeRole: null,
   impersonatedRole: null,
   currentTeamId: null,
@@ -73,6 +77,9 @@ export const useProjectStore = create<ProjectState>((set) => ({
   setOfficeId: (id) => set({ officeId: id }),
   setLoadedVersion: (v) => set({ loadedVersion: v }),
   setConflict: (c) => set({ conflict: c }),
+  dismissConflictForVersion: (version) =>
+    set({ conflict: null, conflictDismissedVersion: version }),
+  clearConflictDismissal: () => set({ conflictDismissedVersion: null }),
   setCurrentOfficeRole: (role) => set({ currentOfficeRole: role }),
   setImpersonatedRole: (role) => set({ impersonatedRole: role }),
   setCurrentTeamId: (id) => set({ currentTeamId: id }),

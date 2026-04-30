@@ -54,7 +54,7 @@ function ConferenceRoomRenderer({ element, isSelected, labelDensity }: Conferenc
   const showName = labelDensity !== 'hidden'
   const showMeta = labelDensity === 'full'
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -133,7 +133,7 @@ function PhoneBoothRenderer({ element, isSelected, labelDensity }: PhoneBoothRen
   const stroke = isSelected ? CANVAS_COLORS.selected : CANVAS_COLORS.roomStroke
   const handsetX = -element.width * 0.08
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -205,7 +205,7 @@ function CommonAreaRenderer({ element, isSelected, labelDensity }: CommonAreaRen
   const areaNameWidth = Math.max(24, element.width - 8)
   const areaNameText = truncateToWidth(element.areaName, areaNameWidth, ROOM_NAME_FONT_SIZE)
   return (
-    <Group rotation={element.rotation} listening={!element.locked}>
+    <Group rotation={element.rotation} listening={true}>
       <Rect
         x={-element.width / 2}
         y={-element.height / 2}
@@ -290,3 +290,4 @@ function LockedRoomCorner({ width, height }: { width: number; height: number }) 
     </Group>
   )
 }
+

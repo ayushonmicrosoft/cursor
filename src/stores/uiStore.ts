@@ -292,7 +292,7 @@ interface UIState {
 
   // Presentation
   presentationMode: boolean
-  viewMode: '2d' | '2.5d' | 'pixi'
+  viewMode: '2d' | '2.5d'
 
   // Minimap
   minimapVisible: boolean
@@ -336,7 +336,7 @@ interface UIState {
   setDragAlignmentGuides: (guides: AlignmentGuide[]) => void
   clearDragAlignmentGuides: () => void
 
-  // Multi-seat assignment queue — ordered list of employee ids awaiting a
+  // Multi-seat assignment queue â€” ordered list of employee ids awaiting a
   // click on the map to pop into a seat. Cleared on completion or Esc.
   assignmentQueue: string[] // employee ids in order
   setAssignmentQueue: (ids: string[]) => void
@@ -371,8 +371,6 @@ interface UIState {
   setCsvImportSummary: (summary: CSVImportSummary | null) => void
   setPresentationMode: (mode: boolean) => void
   setViewMode: (mode: UIState['viewMode']) => void
-  /** Convenience: cycle Konva ↔ PixiJS experimental renderer. */
-  togglePixiMode: () => void
   setMinimapVisible: (v: boolean) => void
   toggleMinimap: () => void
   setContextMenu: (menu: UIState['contextMenu']) => void
@@ -479,7 +477,6 @@ function createUIStore() {
   setCsvImportSummary: (summary) => set({ csvImportSummary: summary }),
   setPresentationMode: (mode) => set({ presentationMode: mode }),
   setViewMode: (mode) => set({ viewMode: mode }),
-  togglePixiMode: () => set((s) => ({ viewMode: s.viewMode === 'pixi' ? '2d' : 'pixi' })),
   setMinimapVisible: (v) => set({ minimapVisible: v }),
   toggleMinimap: () => set((s) => ({ minimapVisible: !s.minimapVisible })),
   setContextMenu: (menu) => set({ contextMenu: menu }),

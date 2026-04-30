@@ -1,5 +1,6 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js'
 import type { ConferenceRoomElement, CommonAreaElement, PhoneBoothElement } from '../../../types/elements'
+import { parsePixiColor } from '../../../lib/pixiColor'
 
 /**
  * Phase 2 — Room renderer.
@@ -19,8 +20,8 @@ const CAP_STYLE = new TextStyle({
 export function renderRoom(container: Container, el: RoomElement, selected: boolean): void {
   container.removeChildren()
 
-  const fill = parseInt(el.style.fill.replace('#', ''), 16)
-  const stroke = parseInt(el.style.stroke.replace('#', ''), 16)
+  const fill = parsePixiColor(el.style?.fill, 0xeff6ff)
+  const stroke = parsePixiColor(el.style?.stroke, 0x3b82f6)
   const { width: w, height: h } = el
 
   const g = new Graphics()
@@ -30,7 +31,7 @@ export function renderRoom(container: Container, el: RoomElement, selected: bool
   }
   g.roundRect(0, 0, w, h, 6)
   g.fill({ color: fill })
-  g.alpha = 0.8
+  g.alpha = (el.style?.opacity ?? 1) * 0.8
   g.stroke({ color: stroke, width: 1.5 })
   container.addChild(g)
 

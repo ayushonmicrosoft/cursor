@@ -24,6 +24,7 @@ import {
 import { buildDemoOfficePayload } from '../../lib/demo/createDemoOffice'
 import { ConfirmDialog } from '../editor/ConfirmDialog'
 import { OfficeCard } from './OfficeCard'
+import { Button, Input, Modal, ModalBody, ModalFooter } from '../ui'
 import type { ThumbnailElement } from './OfficeThumbnail'
 import type { Team } from '../../types/team'
 import { getRecents } from '../../lib/recentOffices'
@@ -214,6 +215,12 @@ function nextOfficeName(existing: { name: string }[]): string {
 
 type SortMode = 'name' | 'recent' | 'employees' | 'occupancy'
 type FilterMode = 'all' | 'unassigned' | 'empty'
+type OfficeNameDialogMode = 'new' | 'import'
+
+interface OfficeNameDialogState {
+  mode: OfficeNameDialogMode
+  suggested: string
+}
 
 const SORT_OPTIONS: Array<{ value: SortMode; label: string }> = [
   { value: 'name', label: 'Name (A–Z)' },
@@ -290,6 +297,8 @@ export function TeamHomePage() {
   const [creating, setCreating] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<OfficeListItem | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [officeNameDialog, setOfficeNameDialog] = useState<OfficeNameDialogState | null>(null)
+  const [officeNameDraft, setOfficeNameDraft] = useState('')
   const [recentSlugs] = useState<string[]>(() => getRecents())
   const searchRef = useRef<HTMLInputElement>(null)
   const session = useSession()
@@ -408,17 +417,37 @@ export function TeamHomePage() {
     return { floors, desks, assigned, employees, occupancyPct }
   }, [officeStats])
 
-  async function onNew() {
-    if (!team || session.status !== 'authenticated') return
+  function openOfficeNameDialog(mode: OfficeNameDialogMode) {
     const suggested = nextOfficeName(offices)
-    const input = window.prompt('Name this office:', suggested)
-    if (input === null) return
-    const name = input.trim() || suggested
+    setOfficeNameDialog({ mode, suggested })
+    setOfficeNameDraft(suggested)
+  }
+
+  function closeOfficeNameDialog() {
+    if (creating) return
+    setOfficeNameDialog(null)
+    setOfficeNameDraft('')
+  }
+
+  function onNew() {
+    if (!team || session.status !== 'authenticated') return
+    openOfficeNameDialog('new')
+  }
+
+  async function createNamedOffice(mode: OfficeNameDialogMode, suggested: string) {
+    if (!team || session.status !== 'authenticated') return
+    const name = officeNameDraft.trim() || suggested
     setCreating(true)
     try {
       const created = await createOffice(team.id, name)
       await queryClient.invalidateQueries({ queryKey: ['offices', team.id] })
-      navigate(`/t/${team.slug}/o/${created.slug}/engine`)
+      setOfficeNameDialog(null)
+      setOfficeNameDraft('')
+      navigate(
+        mode === 'import'
+          ? `/t/${team.slug}/o/${created.slug}/roster?import=csv`
+          : `/t/${team.slug}/o/${created.slug}/engine`,
+      )
     } finally {
       setCreating(false)
     }
@@ -439,23 +468,9 @@ export function TeamHomePage() {
    * (backup format) — for now a "blank office + people CSV" is the
    * common case and ships the button as a real working action.
    */
-  async function onImport() {
+  function onImport() {
     if (!team || session.status !== 'authenticated') return
-    const suggested = nextOfficeName(offices)
-    const input = window.prompt(
-      "Name this office. We'll open the CSV import dialog after it's created so you can paste or drop your employee list.",
-      suggested,
-    )
-    if (input === null) return
-    const name = input.trim() || suggested
-    setCreating(true)
-    try {
-      const created = await createOffice(team.id, name)
-      await queryClient.invalidateQueries({ queryKey: ['offices', team.id] })
-      navigate(`/t/${team.slug}/o/${created.slug}/roster?import=csv`)
-    } finally {
-      setCreating(false)
-    }
+    openOfficeNameDialog('import')
   }
 
   async function onNewDemo() {
@@ -919,6 +934,20 @@ export function TeamHomePage() {
             }}
           />
         )}
+
+        {officeNameDialog && (
+          <OfficeNameDialog
+            mode={officeNameDialog.mode}
+            suggested={officeNameDialog.suggested}
+            value={officeNameDraft}
+            creating={creating}
+            onChange={setOfficeNameDraft}
+            onCancel={closeOfficeNameDialog}
+            onSubmit={() =>
+              void createNamedOffice(officeNameDialog.mode, officeNameDialog.suggested)
+            }
+          />
+        )}
       </main>
     </div>
   )
@@ -1022,6 +1051,73 @@ function PreviewStat({
       </div>
       <div className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</div>
     </div>
+  )
+}
+
+function OfficeNameDialog({
+  mode,
+  suggested,
+  value,
+  creating,
+  onChange,
+  onCancel,
+  onSubmit,
+}: {
+  mode: OfficeNameDialogMode
+  suggested: string
+  value: string
+  creating: boolean
+  onChange: (value: string) => void
+  onCancel: () => void
+  onSubmit: () => void
+}) {
+  const isImport = mode === 'import'
+
+  return (
+    <Modal
+      open
+      onClose={onCancel}
+      title={isImport ? 'Create office for import' : 'Create office'}
+      preventBackdropClose={creating}
+    >
+      <form
+        id="office-name-form"
+        onSubmit={(event) => {
+          event.preventDefault()
+          if (!creating) onSubmit()
+        }}
+      >
+        <ModalBody className="space-y-3">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {isImport
+              ? 'Name the office first. After it is created, the CSV import dialog will open.'
+              : 'Name the office before opening the editor.'}
+          </p>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+            Office name
+            <Input
+              className="mt-1"
+              value={value}
+              placeholder={suggested}
+              disabled={creating}
+              autoFocus
+              onChange={(event) => onChange(event.target.value)}
+            />
+          </label>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Leaving this blank uses "{suggested}".
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={creating}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" disabled={creating}>
+            {creating ? 'Creating...' : isImport ? 'Create and import' : 'Create office'}
+          </Button>
+        </ModalFooter>
+      </form>
+    </Modal>
   )
 }
 
