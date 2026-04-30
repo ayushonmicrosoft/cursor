@@ -1,0 +1,8 @@
+{
+    "workbench.editor.autoLockGroups": {
+        "default": true,
+        "workbench.editor.processExplorer": false,
+        "terminalEditor": false,
+        "mainThreadWebview-simpleBrowser.view": false
+    }
+}
