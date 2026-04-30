@@ -166,19 +166,20 @@ export function InviteMemberModal({
             >
               Invite link
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 min-w-0 max-w-full">
               <Input
                 id="invite-fallback-link"
                 readOnly
                 value={screen.url}
                 onFocus={(e) => e.currentTarget.select()}
-                className="flex-1 font-mono text-xs"
+                className="flex-1 min-w-0 font-mono text-xs"
               />
               <Button
                 type="button"
                 variant="primary"
                 onClick={() => copyLink(screen.url)}
                 leftIcon={copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+                className="shrink-0"
               >
                 {copied ? 'Copied' : 'Copy link'}
               </Button>

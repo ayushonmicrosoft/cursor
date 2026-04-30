@@ -12,6 +12,10 @@ type TabId = 'properties' | 'reports' | 'insights'
 export function RightSidebar() {
   const tab = useUIStore((s) => s.rightSidebarTab)
   const setTab = useUIStore((s) => s.setRightSidebarTab)
+  const safeTab: TabId =
+    tab === 'properties' || tab === 'reports' || tab === 'insights'
+      ? tab
+      : 'properties'
 
   const insights = useInsightsStore((s) => s.insights)
   const badgeCount = useMemo(() => {
@@ -52,7 +56,7 @@ export function RightSidebar() {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return
     e.preventDefault()
-    const idx = tabs.findIndex((t) => t.id === tab)
+    const idx = tabs.findIndex((t) => t.id === safeTab)
     let next = idx
     if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length
     else if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length
@@ -77,7 +81,7 @@ export function RightSidebar() {
           onKeyDown={onKeyDown}
         >
         {tabs.map((t) => {
-          const selected = tab === t.id
+          const selected = safeTab === t.id
           const baseButtonClass =
             'relative flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset'
           const selectedClass = t.secondary
@@ -115,13 +119,13 @@ export function RightSidebar() {
       </div>
       <div
         role="tabpanel"
-        id={panelId(tab)}
-        aria-labelledby={tabId(tab)}
+        id={panelId(safeTab)}
+        aria-labelledby={tabId(safeTab)}
         className="flex-1 overflow-y-auto bg-gray-50/60 p-2.5 dark:bg-gray-950"
       >
-        {tab === 'properties' && <PropertiesPanel />}
-        {tab === 'reports' && <ReportsPanel />}
-        {tab === 'insights' && <InsightsPanel />}
+        {safeTab === 'properties' && <PropertiesPanel />}
+        {safeTab === 'reports' && <ReportsPanel />}
+        {safeTab === 'insights' && <InsightsPanel />}
       </div>
     </div>
   )

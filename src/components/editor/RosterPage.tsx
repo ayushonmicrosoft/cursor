@@ -968,7 +968,7 @@ export function RosterPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+    <div className="flex-1 min-w-0 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
       {/* Redacted-mode notice. Explains why names read as initials and
           why email/office-days columns are empty — without it the UI
           looks broken to a viewer-role user seeing a colleague's roster
@@ -1013,12 +1013,14 @@ export function RosterPage() {
           menu persists its list to localStorage and re-applies by
           rewriting the URL search, which the filter bar is already
           URL-synced against. */}
-      <div className="flex items-center gap-2 px-5 pt-2 flex-shrink-0">
-        <RosterFilterPresetsMenu
-          currentSearch={searchParams.toString()}
-          hasAnyFilter={hasAnyFilter}
-          onApplyPreset={applyPreset}
-        />
+      <div className="flex items-center gap-2 px-5 pt-2 flex-shrink-0 overflow-x-auto min-w-0">
+        <div className="min-w-max">
+          <RosterFilterPresetsMenu
+            currentSearch={searchParams.toString()}
+            hasAnyFilter={hasAnyFilter}
+            onApplyPreset={applyPreset}
+          />
+        </div>
       </div>
 
       {/*
@@ -1030,267 +1032,269 @@ export function RosterPage() {
         Everything else collapses behind a "More filters" popover, and a
         row of active-filter pills below makes narrowing explicit.
       */}
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-        <div className="relative flex-1 max-w-md">
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search name, email, dept, team, title, tag…  (press /)"
-            value={q}
-            onChange={(e) => setFilter('q', e.target.value)}
-            onKeyDown={(e) => {
-              // Escape while in search = clear the query AND return focus
-              // to the page body, so `/` works again without a second press.
-              if (e.key === 'Escape' && q) {
-                e.preventDefault()
-                setFilter('q', '')
-              } else if (e.key === 'Escape') {
-                ;(e.target as HTMLInputElement).blur()
-              }
-            }}
-            className={`w-full px-3 py-1.5 ${q ? 'pr-8' : ''} text-sm border border-gray-200 dark:border-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-blue-500`}
-          />
-          {q && (
+      <div className="px-5 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 overflow-x-auto min-w-0">
+        <div className="flex min-w-max items-center gap-2">
+          <div className="relative flex-1 min-w-[220px] max-w-md">
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search name, email, dept, team, title, tag…  (press /)"
+              value={q}
+              onChange={(e) => setFilter('q', e.target.value)}
+              onKeyDown={(e) => {
+                // Escape while in search = clear the query AND return focus
+                // to the page body, so `/` works again without a second press.
+                if (e.key === 'Escape' && q) {
+                  e.preventDefault()
+                  setFilter('q', '')
+                } else if (e.key === 'Escape') {
+                  ;(e.target as HTMLInputElement).blur()
+                }
+              }}
+              className={`w-full px-3 py-1.5 ${q ? 'pr-8' : ''} text-sm border border-gray-200 dark:border-gray-800 rounded focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+            {q && (
+              <button
+                type="button"
+                onClick={() => {
+                  // Clearing returns focus so `/` keeps working and users can
+                  // start typing a new query immediately.
+                  setFilter('q', '')
+                  searchInputRef.current?.focus()
+                }}
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200"
+                aria-label="Clear search"
+                title="Clear search (Esc)"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setFilter('status', e.target.value)}
+            className="px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+            aria-label="Filter by status"
+          >
+            <option value="">All statuses</option>
+            {EMPLOYEE_STATUSES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+
+          <select
+            value={deptFilter}
+            onChange={(e) => setFilter('dept', e.target.value)}
+            className="px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+            aria-label="Filter by department"
+          >
+            <option value="">All depts</option>
+            {allDepartments.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+
+          {/*
+            "More filters" popover. Hosts the secondary axes so the primary
+            bar stays calm. Badge in the label surfaces how many secondary
+            filters are live, so a narrowed list never feels mysterious when
+            the popover is closed.
+          */}
+          <div className="relative flex-shrink-0" ref={moreFiltersRef}>
             <button
               type="button"
-              onClick={() => {
-                // Clearing returns focus so `/` keeps working and users can
-                // start typing a new query immediately.
-                setFilter('q', '')
-                searchInputRef.current?.focus()
-              }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200"
-              aria-label="Clear search"
-              title="Clear search (Esc)"
+              onClick={() => setMoreFiltersOpen((o) => !o)}
+              className={`flex items-center gap-1.5 px-2 py-1.5 text-sm border rounded ${
+                secondaryFilterCount > 0
+                  ? 'border-blue-300 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                  : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+              }`}
+              aria-haspopup="dialog"
+              aria-expanded={moreFiltersOpen}
+              title="More filters"
             >
-              <X size={12} />
+              <SlidersHorizontal size={14} />
+              More filters
+              {secondaryFilterCount > 0 ? ` (${secondaryFilterCount})` : ''}
+            </button>
+            {moreFiltersOpen && (
+              <div
+                role="dialog"
+                aria-label="More filters"
+                className="fixed sm:absolute left-auto mt-1 w-[280px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded shadow-lg z-30 p-3"
+                style={{ top: 'auto' }}
+              >
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <span className="w-20 flex-shrink-0">Preset</span>
+                    <select
+                      value={presetFilter}
+                      onChange={(e) => setFilter('preset', e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Preset view"
+                      title={
+                        presetFilter
+                          ? ROSTER_PRESETS.find((p) => p.id === presetFilter)?.hint
+                          : 'Pre-baked roster views'
+                      }
+                    >
+                      <option value="">All people</option>
+                      {ROSTER_PRESETS.map((p) => (
+                        <option key={p.id} value={p.id} title={p.hint}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <span className="w-20 flex-shrink-0">Floor</span>
+                    <select
+                      value={floorFilter}
+                      onChange={(e) => setFilter('floor', e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Filter by floor"
+                    >
+                      <option value="">All floors</option>
+                      {floors.map((f) => (
+                        <option key={f.id} value={f.id}>{f.name}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <span className="w-20 flex-shrink-0">Seat</span>
+                    <select
+                      value={seatFilter}
+                      onChange={(e) => setFilter('seat', e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Filter by seat assignment"
+                    >
+                      <option value="">All seats</option>
+                      <option value="assigned">Assigned</option>
+                      <option value="unassigned">Unassigned</option>
+                    </select>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <span className="w-20 flex-shrink-0">Day</span>
+                    <select
+                      value={dayFilter}
+                      onChange={(e) => setFilter('day', e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Filter by office day"
+                    >
+                      <option value="">All days</option>
+                      {OFFICE_DAYS_ORDER.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <span className="w-20 flex-shrink-0">Equipment</span>
+                    <select
+                      value={equipFilter}
+                      onChange={(e) => setFilter('equip', e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      aria-label="Filter by equipment status"
+                    >
+                      <option value="">All equipment</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-end pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
+                  <button
+                    type="button"
+                    onClick={resetSecondaryFilters}
+                    disabled={secondaryFilterCount === 0}
+                    className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded disabled:text-gray-300 disabled:hover:bg-transparent"
+                    title="Reset secondary filters"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-4" />
+
+          {/*
+            List/Cards toggle — a segmented pair of icon buttons. The active
+            segment flips to a solid fill so the current mode is obvious
+            without reading a label.
+          */}
+          <div
+            className="inline-flex items-center border border-gray-200 dark:border-gray-800 rounded overflow-hidden flex-shrink-0"
+            role="group"
+            aria-label="View mode"
+          >
+            <button
+              onClick={() => setFilter('view', '')}
+              className={`flex items-center gap-1 px-2 py-1.5 text-xs font-medium ${
+                viewMode === 'list'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+              }`}
+              aria-pressed={viewMode === 'list'}
+              aria-label="List view"
+              title="List view"
+            >
+              <List size={14} />
+              List
+            </button>
+            <button
+              onClick={() => setFilter('view', 'cards')}
+              className={`flex items-center gap-1 px-2 py-1.5 text-xs font-medium border-l border-gray-200 dark:border-gray-800 ${
+                viewMode === 'cards'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+              }`}
+              aria-pressed={viewMode === 'cards'}
+              aria-label="Card view"
+              title="Card view"
+            >
+              <LayoutGrid size={14} />
+              Cards
+            </button>
+          </div>
+
+          {canEdit && (
+            <button
+              onClick={handleAdd}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded flex-shrink-0"
+              title="Add person (N)"
+            >
+              <Plus size={14} /> Add person
             </button>
           )}
-        </div>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setFilter('status', e.target.value)}
-          className="px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label="Filter by status"
-        >
-          <option value="">All statuses</option>
-          {EMPLOYEE_STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-
-        <select
-          value={deptFilter}
-          onChange={(e) => setFilter('dept', e.target.value)}
-          className="px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label="Filter by department"
-        >
-          <option value="">All depts</option>
-          {allDepartments.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
-
-        {/*
-          "More filters" popover. Hosts the secondary axes so the primary
-          bar stays calm. Badge in the label surfaces how many secondary
-          filters are live, so a narrowed list never feels mysterious when
-          the popover is closed.
-        */}
-        <div className="relative" ref={moreFiltersRef}>
-          <button
-            type="button"
-            onClick={() => setMoreFiltersOpen((o) => !o)}
-            className={`flex items-center gap-1.5 px-2 py-1.5 text-sm border rounded ${
-              secondaryFilterCount > 0
-                ? 'border-blue-300 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-                : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-            }`}
-            aria-haspopup="dialog"
-            aria-expanded={moreFiltersOpen}
-            title="More filters"
-          >
-            <SlidersHorizontal size={14} />
-            More filters
-            {secondaryFilterCount > 0 ? ` (${secondaryFilterCount})` : ''}
-          </button>
-          {moreFiltersOpen && (
-            <div
-              role="dialog"
-              aria-label="More filters"
-              className="fixed sm:absolute left-auto mt-1 w-[280px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded shadow-lg z-30 p-3"
-              style={{ top: 'auto' }}
+          {canEdit && (
+            <button
+              onClick={() => setCsvImportOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded flex-shrink-0"
             >
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                  <span className="w-20 flex-shrink-0">Preset</span>
-                  <select
-                    value={presetFilter}
-                    onChange={(e) => setFilter('preset', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Preset view"
-                    title={
-                      presetFilter
-                        ? ROSTER_PRESETS.find((p) => p.id === presetFilter)?.hint
-                        : 'Pre-baked roster views'
-                    }
-                  >
-                    <option value="">All people</option>
-                    {ROSTER_PRESETS.map((p) => (
-                      <option key={p.id} value={p.id} title={p.hint}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                  <span className="w-20 flex-shrink-0">Floor</span>
-                  <select
-                    value={floorFilter}
-                    onChange={(e) => setFilter('floor', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Filter by floor"
-                  >
-                    <option value="">All floors</option>
-                    {floors.map((f) => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                  <span className="w-20 flex-shrink-0">Seat</span>
-                  <select
-                    value={seatFilter}
-                    onChange={(e) => setFilter('seat', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Filter by seat assignment"
-                  >
-                    <option value="">All seats</option>
-                    <option value="assigned">Assigned</option>
-                    <option value="unassigned">Unassigned</option>
-                  </select>
-                </label>
-
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                  <span className="w-20 flex-shrink-0">Day</span>
-                  <select
-                    value={dayFilter}
-                    onChange={(e) => setFilter('day', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Filter by office day"
-                  >
-                    <option value="">All days</option>
-                    {OFFICE_DAYS_ORDER.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                  <span className="w-20 flex-shrink-0">Equipment</span>
-                  <select
-                    value={equipFilter}
-                    onChange={(e) => setFilter('equip', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-800 rounded bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Filter by equipment status"
-                  >
-                    <option value="">All equipment</option>
-                    <option value="pending">Pending</option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-end pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
-                <button
-                  type="button"
-                  onClick={resetSecondaryFilters}
-                  disabled={secondaryFilterCount === 0}
-                  className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded disabled:text-gray-300 disabled:hover:bg-transparent"
-                  title="Reset secondary filters"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
+              <Upload size={14} /> Import
+            </button>
           )}
-        </div>
-
-        <div className="flex-1" />
-
-        {/*
-          List/Cards toggle — a segmented pair of icon buttons. The active
-          segment flips to a solid fill so the current mode is obvious
-          without reading a label.
-        */}
-        <div
-          className="inline-flex items-center border border-gray-200 dark:border-gray-800 rounded overflow-hidden"
-          role="group"
-          aria-label="View mode"
-        >
           <button
-            onClick={() => setFilter('view', '')}
-            className={`flex items-center gap-1 px-2 py-1.5 text-xs font-medium ${
-              viewMode === 'list'
-                ? 'bg-gray-800 text-white'
-                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-            }`}
-            aria-pressed={viewMode === 'list'}
-            aria-label="List view"
-            title="List view"
+            onClick={handleExportAll}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded flex-shrink-0"
           >
-            <List size={14} />
-            List
+            <Download size={14} /> Export CSV
           </button>
           <button
-            onClick={() => setFilter('view', 'cards')}
-            className={`flex items-center gap-1 px-2 py-1.5 text-xs font-medium border-l border-gray-200 dark:border-gray-800 ${
-              viewMode === 'cards'
-                ? 'bg-gray-800 text-white'
-                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-            }`}
-            aria-pressed={viewMode === 'cards'}
-            aria-label="Card view"
-            title="Card view"
+            onClick={() => setHelpOpen(true)}
+            className="flex items-center justify-center p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded flex-shrink-0"
+            aria-label="Show keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
           >
-            <LayoutGrid size={14} />
-            Cards
+            <Keyboard size={14} />
           </button>
         </div>
-
-        {canEdit && (
-          <button
-            onClick={handleAdd}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded"
-            title="Add person (N)"
-          >
-            <Plus size={14} /> Add person
-          </button>
-        )}
-        {canEdit && (
-          <button
-            onClick={() => setCsvImportOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded"
-          >
-            <Upload size={14} /> Import
-          </button>
-        )}
-        <button
-          onClick={handleExportAll}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded"
-        >
-          <Download size={14} /> Export CSV
-        </button>
-        <button
-          onClick={() => setHelpOpen(true)}
-          className="flex items-center justify-center p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded"
-          aria-label="Show keyboard shortcuts"
-          title="Keyboard shortcuts (?)"
-        >
-          <Keyboard size={14} />
-        </button>
       </div>
 
       {/*
@@ -1536,7 +1540,7 @@ export function RosterPage() {
           )}
         </div>
       ) : (
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-w-0 overflow-x-auto overflow-y-auto">
         <table className="w-full min-w-[860px] text-sm">
           <thead className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-10">
             <tr>
@@ -2098,7 +2102,7 @@ function ActiveFilterPills({
   if (pills.length === 0) return null
   return (
     <div
-      className="flex items-center gap-1.5 px-5 py-2 flex-shrink-0 overflow-x-auto whitespace-nowrap"
+      className="flex items-center gap-1.5 px-5 py-2 flex-shrink-0 overflow-x-auto whitespace-nowrap min-w-0"
       aria-label="Active filters"
     >
       {pills.map((p) => (
@@ -2231,7 +2235,7 @@ function StatsBar({
     !active.presetFilter
 
   return (
-    <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50 flex-shrink-0 overflow-x-auto whitespace-nowrap">
+    <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/50 flex-shrink-0 overflow-x-auto whitespace-nowrap min-w-0">
       {actionChip('Total', stats.total, noChipFilter, onClearChipAxes, 'gray', 'All people (clears chip filters; leaves search/dept/floor alone)', Users)}
       {actionChip(
         'Active',
@@ -2291,7 +2295,7 @@ function WeeklyCapacity({
   onSetFilter: (key: string, value: string) => void
 }) {
   return (
-    <div className="flex items-center gap-3 px-5 py-2 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex-shrink-0 overflow-x-auto">
+    <div className="flex items-center gap-3 px-5 py-2 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 flex-shrink-0 overflow-x-auto min-w-0 whitespace-nowrap">
       <div className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider flex-shrink-0">
         Week in office
       </div>
@@ -3088,7 +3092,7 @@ function QuickFilterPills({
     <div
       role="group"
       aria-label="Quick filters"
-      className="flex items-center gap-1.5 px-5 py-2 flex-shrink-0 overflow-x-auto whitespace-nowrap border-b border-gray-100 dark:border-gray-800"
+      className="flex items-center gap-1.5 px-5 py-2 flex-shrink-0 overflow-x-auto whitespace-nowrap border-b border-gray-100 dark:border-gray-800 min-w-0"
     >
       {pills.map((p) => {
         const cls = p.isActive
@@ -3179,7 +3183,7 @@ function BulkActionToolbar({
         role="region"
         aria-label="Bulk actions"
         data-testid="roster-bulk-toolbar"
-        className={`roster-bulk-anim sticky top-0 z-20 flex items-center gap-3 px-5 py-2 bg-blue-50/90 dark:bg-blue-950/80 backdrop-blur border-b border-blue-200/80 dark:border-blue-800/60 shadow-sm flex-shrink-0 text-sm overflow-x-auto whitespace-nowrap ${animClass}`}
+        className={`roster-bulk-anim sticky top-0 z-20 flex items-center gap-3 px-5 py-2 bg-blue-50/90 dark:bg-blue-950/80 backdrop-blur border-b border-blue-200/80 dark:border-blue-800/60 shadow-sm flex-shrink-0 text-sm overflow-x-auto whitespace-nowrap min-w-0 ${animClass}`}
       >
         <button
           type="button"

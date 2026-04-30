@@ -159,7 +159,7 @@ export function OfficeSwitcher({
 
   function onSelectOffice(slug: string) {
     if (!teamSlug) return
-    activate(() => navigate(`/t/${teamSlug}/o/${slug}/map`))
+    activate(() => navigate(`/t/${teamSlug}/o/${slug}/engine`))
   }
 
   // Row indices for arrow-key roving. Order must match the render

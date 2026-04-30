@@ -32,8 +32,8 @@ export function AuthShell({ children }: { children: ReactNode }) {
         </Link>
       </header>
       <main className="flex-1 flex items-start justify-center px-6 pt-10 pb-12 sm:pt-16">
-        <div className="w-full max-w-md">
-          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900/80">
+        <div className="w-full max-w-md min-w-0">
+          <div className="max-w-full rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900/80">
             {children}
           </div>
         </div>
@@ -95,7 +95,11 @@ export function AuthErrorBanner({ id, message }: { id: string; message: string }
 }
 
 export function AuthLinks({ children }: { children: ReactNode }) {
-  return <div className="mt-6 flex items-center justify-between text-xs">{children}</div>
+  return (
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-xs min-w-0">
+      {children}
+    </div>
+  )
 }
 
 function SkeletonBar({ className }: { className: string }) {

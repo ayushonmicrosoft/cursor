@@ -155,26 +155,27 @@ export function TeamSettingsGeneral({ team, isAdmin }: { team: Team; isAdmin: bo
             <div className="mb-1 text-gray-700 dark:text-gray-300">
               Team link
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0 max-w-full">
               <Input
                 readOnly
                 aria-label="Team link"
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/t/${team.slug}`}
                 onFocus={(e) => e.currentTarget.select()}
-                className="flex-1 font-mono text-xs"
+                className="flex-1 min-w-0 font-mono text-xs"
               />
               <Button
                 type="button"
                 variant="secondary"
                 onClick={copyTeamLink}
                 leftIcon={linkCopied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+                className="shrink-0"
               >
                 {linkCopied ? 'Copied' : 'Copy link'}
               </Button>
             </div>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Members with an account can visit this URL directly. Use
-              the Members tab to invite new teammates.
+              this link for direct workspace access.
             </p>
           </div>
 

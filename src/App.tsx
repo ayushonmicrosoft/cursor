@@ -30,9 +30,6 @@ const AuthVerifyPage = lazy(() =>
 const AuthResetPage = lazy(() =>
   import('./components/auth/AuthResetPage').then((m) => ({ default: m.AuthResetPage })),
 )
-const InvitePage = lazy(() =>
-  import('./components/team/InvitePage').then((m) => ({ default: m.InvitePage })),
-)
 const ProjectShell = lazy(() =>
   import('./components/editor/ProjectShell').then((m) => ({ default: m.ProjectShell })),
 )
@@ -59,11 +56,6 @@ const TeamSettingsPage = lazy(() =>
 const TeamSettingsGeneral = lazy(() =>
   import('./components/team/TeamSettingsGeneral').then((m) => ({
     default: m.TeamSettingsGeneral,
-  })),
-)
-const TeamSettingsMembers = lazy(() =>
-  import('./components/team/TeamSettingsMembers').then((m) => ({
-    default: m.TeamSettingsMembers,
   })),
 )
 const DashboardRedirect = lazy(() =>
@@ -104,11 +96,6 @@ function TeamSettingsGeneralBridge() {
   return <TeamSettingsGeneral team={team} isAdmin={isAdmin} />
 }
 
-function TeamSettingsMembersBridge() {
-  const { team, isAdmin } = useOutletContext<{ team: Team; isAdmin: boolean }>()
-  return <TeamSettingsMembers team={team} isAdmin={isAdmin} />
-}
-
 function App() {
   return (
     <ThemeProvider>
@@ -123,7 +110,6 @@ function App() {
             <Route path="/forgot" element={<ForgotPasswordPage />} />
             <Route path="/auth/verify" element={<AuthVerifyPage />} />
             <Route path="/auth/reset" element={<AuthResetPage />} />
-            <Route path="/invite/:token" element={<InvitePage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/docs" element={<ProjectDocsPage />} />
 
@@ -177,7 +163,6 @@ function App() {
               }
             >
               <Route index element={<TeamSettingsGeneralBridge />} />
-              <Route path="members" element={<TeamSettingsMembersBridge />} />
             </Route>
 
             {/* Office editor */}

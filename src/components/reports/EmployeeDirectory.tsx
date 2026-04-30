@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, type KeyboardEvent } from 'react'
 import { X, ArrowUpDown } from 'lucide-react'
 import { useVisibleEmployees } from '../../hooks/useVisibleEmployees'
 import { useFloorStore } from '../../stores/floorStore'
@@ -27,13 +27,14 @@ export function EmployeeDirectory() {
   // as initials and email/manager/office-days empty out.
   const employees = useVisibleEmployees()
   const floors = useFloorStore((s) => s.floors)
-  const { setEmployeeDirectoryOpen, setSelectedIds, setActiveReport } = useUIStore(
-    useShallow((s) => ({
-      setEmployeeDirectoryOpen: s.setEmployeeDirectoryOpen,
-      setSelectedIds: s.setSelectedIds,
-      setActiveReport: s.setActiveReport,
-    }))
-  )
+  const { setEmployeeDirectoryOpen, setSelectedIds, setActiveReport } =
+    useUIStore(
+      useShallow((s) => ({
+        setEmployeeDirectoryOpen: s.setEmployeeDirectoryOpen,
+        setSelectedIds: s.setSelectedIds,
+        setActiveReport: s.setActiveReport,
+      })),
+    )
   const [search, setSearch] = useState('')
   const [sortColumn, setSortColumn] = useState<SortColumn>('name')
   const [sortDir, setSortDir] = useState<SortDirection>('asc')
@@ -61,7 +62,7 @@ export function EmployeeDirectory() {
           (e.team && e.team.toLowerCase().includes(q)) ||
           (e.title && e.title.toLowerCase().includes(q)) ||
           (e.email && e.email.toLowerCase().includes(q)) ||
-          e.tags.some((t) => t.toLowerCase().includes(q))
+          e.tags.some((t) => t.toLowerCase().includes(q)),
       )
     }
     return list
@@ -75,29 +76,45 @@ export function EmployeeDirectory() {
       let bv = ''
       switch (sortColumn) {
         case 'name':
-          av = a.name; bv = b.name; break
+          av = a.name
+          bv = b.name
+          break
         case 'department':
-          av = a.department || ''; bv = b.department || ''; break
+          av = a.department || ''
+          bv = b.department || ''
+          break
         case 'team':
-          av = a.team || ''; bv = b.team || ''; break
+          av = a.team || ''
+          bv = b.team || ''
+          break
         case 'title':
-          av = a.title || ''; bv = b.title || ''; break
+          av = a.title || ''
+          bv = b.title || ''
+          break
         case 'floor':
-          av = a.floorId ? (floorMap[a.floorId] || '') : ''
-          bv = b.floorId ? (floorMap[b.floorId] || '') : ''
+          av = a.floorId ? floorMap[a.floorId] || '' : ''
+          bv = b.floorId ? floorMap[b.floorId] || '' : ''
           break
         case 'desk':
-          av = a.seatId || ''; bv = b.seatId || ''; break
+          av = a.seatId || ''
+          bv = b.seatId || ''
+          break
         case 'manager':
-          av = a.managerId ? (employeeMap[a.managerId]?.name || '') : ''
-          bv = b.managerId ? (employeeMap[b.managerId]?.name || '') : ''
+          av = a.managerId ? employeeMap[a.managerId]?.name || '' : ''
+          bv = b.managerId ? employeeMap[b.managerId]?.name || '' : ''
           break
         case 'type':
-          av = a.employmentType; bv = b.employmentType; break
+          av = a.employmentType
+          bv = b.employmentType
+          break
         case 'officeDays':
-          av = a.officeDays.join(','); bv = b.officeDays.join(','); break
+          av = a.officeDays.join(',')
+          bv = b.officeDays.join(',')
+          break
         case 'tags':
-          av = a.tags.join(','); bv = b.tags.join(','); break
+          av = a.tags.join(',')
+          bv = b.tags.join(',')
+          break
       }
       return av.localeCompare(bv) * dir
     })
@@ -128,7 +145,17 @@ export function EmployeeDirectory() {
       setEmployeeDirectoryOpen(false)
       setActiveReport(null)
     },
-    [setSelectedIds, setEmployeeDirectoryOpen, setActiveReport]
+    [setSelectedIds, setEmployeeDirectoryOpen, setActiveReport],
+  )
+
+  const handleRowKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLTableRowElement>, emp: Employee) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        handleRowClick(emp)
+      }
+    },
+    [handleRowClick],
   )
 
   const handleClose = useCallback(() => {
@@ -150,52 +177,70 @@ export function EmployeeDirectory() {
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={handleClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={handleClose}
+    >
       <div className="absolute inset-0 bg-black/40" />
       <div
-        className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-6xl w-full mx-4 max-h-[85vh] flex flex-col"
+        className="relative mx-4 flex max-h-[85vh] w-full max-w-6xl min-w-0 flex-col rounded-xl bg-white shadow-2xl dark:bg-gray-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Employee Directory</h2>
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-800">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            Employee Directory
+          </h2>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="border-b border-gray-100 px-6 py-3 dark:border-gray-800">
           <input
             type="text"
             placeholder="Search by name, department, team, title, email, or tags..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-800"
             autoFocus
           />
         </div>
 
         {/* Table */}
-        <div className="flex-1 overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+        <div className="min-w-0 flex-1 overflow-x-auto overflow-y-auto">
+          <table className="w-full min-w-[980px] text-sm">
+            <thead className="sticky top-0 border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={col.key}
-                    onClick={() => handleSort(col.key)}
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap select-none"
+                    aria-sort={
+                      sortColumn === col.key
+                        ? sortDir === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                    className="px-3 py-2 text-left text-xs font-medium tracking-wider whitespace-nowrap text-gray-500 uppercase select-none dark:text-gray-400"
                   >
-                    <span className="inline-flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSort(col.key)}
+                      className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:hover:bg-gray-800"
+                    >
                       {col.label}
                       {sortColumn === col.key && (
-                        <ArrowUpDown size={12} className="text-blue-500 dark:text-blue-400" />
+                        <ArrowUpDown
+                          size={12}
+                          className="text-blue-500 dark:text-blue-400"
+                        />
                       )}
-                    </span>
+                    </button>
                   </th>
                 ))}
               </tr>
@@ -205,32 +250,56 @@ export function EmployeeDirectory() {
                 <tr
                   key={emp.id}
                   onClick={() => handleRowClick(emp)}
-                  className="hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer transition-colors"
+                  onKeyDown={(event) => handleRowKeyDown(event, emp)}
+                  tabIndex={0}
+                  aria-label={`Open ${emp.name} in map view`}
+                  className="cursor-pointer transition-colors hover:bg-blue-50 dark:hover:bg-blue-950/40"
                 >
-                  <td className="px-3 py-2 font-medium text-gray-800 dark:text-gray-100 whitespace-nowrap">{emp.name}</td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">{emp.department || '—'}</td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">{emp.team || '—'}</td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">{emp.title || '—'}</td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                    {emp.floorId ? (floorMap[emp.floorId] || '—') : '—'}
+                  <td className="px-3 py-2 font-medium whitespace-nowrap text-gray-800 dark:text-gray-100">
+                    {emp.name}
                   </td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">{emp.seatId || '—'}</td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                    {emp.managerId ? (employeeMap[emp.managerId]?.name || '—') : '—'}
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.department || '—'}
                   </td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">{emp.employmentType}</td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                    {emp.officeDays.length > 0 ? emp.officeDays.join(', ') : '—'}
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.team || '—'}
                   </td>
-                  <td className="px-3 py-2 text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.title || '—'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.floorId ? floorMap[emp.floorId] || '—' : '—'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.seatId || '—'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.managerId
+                      ? employeeMap[emp.managerId]?.name || '—'
+                      : '—'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.employmentType}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                    {emp.officeDays.length > 0
+                      ? emp.officeDays.join(', ')
+                      : '—'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-600 dark:text-gray-300">
                     {emp.tags.length > 0 ? emp.tags.join(', ') : '—'}
                   </td>
                 </tr>
               ))}
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-8 text-center text-gray-400 dark:text-gray-500 text-sm">
-                    {search ? 'No employees match your search.' : 'No employees added yet.'}
+                  <td
+                    colSpan={10}
+                    className="px-3 py-8 text-center text-sm text-gray-400 dark:text-gray-500"
+                  >
+                    {search
+                      ? 'No employees match your search.'
+                      : 'No employees added yet.'}
                   </td>
                 </tr>
               )}
@@ -239,7 +308,7 @@ export function EmployeeDirectory() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
+        <div className="border-t border-gray-200 px-6 py-3 text-xs text-gray-500 dark:border-gray-800 dark:text-gray-400">
           {sorted.length} employee{sorted.length !== 1 ? 's' : ''} shown
         </div>
       </div>

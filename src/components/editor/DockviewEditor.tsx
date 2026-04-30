@@ -45,7 +45,7 @@ export function DockviewEditor() {
       id: 'tools',
       component: 'tools',
       title: 'Tools',
-      position: { referencePanel: canvasPanel, direction: 'left' }
+      position: { referencePanel: canvasPanel, direction: 'left' } as any,
     })
 
     // Add Layers below Tools
@@ -53,7 +53,7 @@ export function DockviewEditor() {
       id: 'layers',
       component: 'layers',
       title: 'Layers',
-      position: { referencePanel: toolsPanel, direction: 'bottom' }
+      position: { referencePanel: toolsPanel, direction: 'bottom' } as any,
     })
 
     // Add Library below Layers
@@ -61,7 +61,7 @@ export function DockviewEditor() {
       id: 'library',
       component: 'library',
       title: 'Library',
-      position: { referencePanel: 'layers', direction: 'bottom' }
+      position: { referencePanel: 'layers', direction: 'bottom' } as any,
     })
 
     // Add Properties to the right of Canvas
@@ -69,7 +69,7 @@ export function DockviewEditor() {
       id: 'rightSidebar',
       component: 'rightSidebar',
       title: 'Properties',
-      position: { referencePanel: canvasPanel, direction: 'right' }
+      position: { referencePanel: canvasPanel, direction: 'right' } as any,
     })
   }, [])
 

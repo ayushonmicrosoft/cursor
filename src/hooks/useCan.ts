@@ -1,10 +1,11 @@
-import { type Action } from '../lib/permissions'
+import { can, type Action } from '../lib/permissions'
+import { useProjectStore } from '../stores/projectStore'
 
 /**
  * Returns whether the current viewer can perform `action`.
- *
- * In the new Admin-only architecture, this is unconditionally true.
  */
 export function useCan(action: Action): boolean {
-  return true
+  const currentOfficeRole = useProjectStore((s) => s.currentOfficeRole)
+  const impersonatedRole = useProjectStore((s) => s.impersonatedRole)
+  return can(impersonatedRole ?? currentOfficeRole, action)
 }

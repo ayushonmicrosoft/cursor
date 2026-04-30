@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { TeamHomePage } from '../components/team/TeamHomePage'
 
 const { listOffices, createOffice } = vi.hoisted(() => ({
@@ -67,6 +68,9 @@ vi.mock('../lib/auth/session', () => ({
 
 describe('TeamHomePage', () => {
   it('lists offices and creates a new one', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    })
     listOffices.mockResolvedValue([
       { id: 'o1', slug: 'hq', name: 'HQ', updated_at: '2026-04-20T00:00:00Z', is_private: false },
     ])
@@ -75,16 +79,18 @@ describe('TeamHomePage', () => {
     // suggested default so the test doesn't need to interact with a modal.
     vi.spyOn(window, 'prompt').mockImplementation((_msg, def) => def ?? '')
     render(
-      <MemoryRouter initialEntries={['/t/acme']}>
-        <Routes>
-          <Route path="/t/:teamSlug" element={<TeamHomePage />} />
-          <Route path="/t/:teamSlug/o/:officeSlug/map" element={<div>map-view</div>} />
-        </Routes>
-      </MemoryRouter>,
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/t/acme']}>
+          <Routes>
+            <Route path="/t/:teamSlug" element={<TeamHomePage />} />
+            <Route path="/t/:teamSlug/o/:officeSlug/engine" element={<div>engine-view</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
     )
     await screen.findByText('HQ')
     fireEvent.click(screen.getByRole('button', { name: /new office/i }))
     await waitFor(() => expect(createOffice).toHaveBeenCalled())
-    expect(await screen.findByText('map-view')).toBeInTheDocument()
+    expect(await screen.findByText('engine-view')).toBeInTheDocument()
   })
 })

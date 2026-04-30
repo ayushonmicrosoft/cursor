@@ -46,7 +46,10 @@ import { DEFAULT_CANVAS_SETTINGS, isSeatLabelStyle } from '../../types/project'
 type ShellState = 'loading' | 'not_found' | 'ready'
 
 export function ProjectShell() {
-  const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
+  const { teamSlug, officeSlug } = useParams<{
+    teamSlug: string
+    officeSlug: string
+  }>()
   const [shellState, setShellState] = useState<ShellState>('loading')
 
   const employeeDirectoryOpen = useUIStore((s) => s.employeeDirectoryOpen)
@@ -68,7 +71,9 @@ export function ProjectShell() {
         ? 'Map'
         : ''
     const prev = document.title
-    document.title = view ? `${view} · ${name} — OandOcraft` : `${name} — OandOcraft`
+    document.title = view
+      ? `${view} · ${name} — OandOcraft`
+      : `${name} — OandOcraft`
     return () => {
       document.title = prev
     }
@@ -79,7 +84,11 @@ export function ProjectShell() {
     async function load() {
       if (!teamSlug || !officeSlug) return
       setShellState('loading')
-      const { data: team } = await supabase.from('teams').select('id').eq('slug', teamSlug).single()
+      const { data: team } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('slug', teamSlug)
+        .single()
       if (!team) {
         if (!cancelled) setShellState('not_found')
         return
@@ -94,11 +103,11 @@ export function ProjectShell() {
 
       const p = office.payload as Record<string, unknown>
       const rawEmployees = (p.employees ?? {}) as Record<string, Employee>
-      
+
       const migratedEmployees = migrateEmployees(
         rawEmployees as unknown as Record<string, unknown>,
       ) as Record<string, Employee>
-      
+
       const { nextEmployees } = commitDueStatusChanges(
         migratedEmployees,
         todayIsoDate(),
@@ -111,7 +120,9 @@ export function ProjectShell() {
       }
 
       useElementsStore.setState({
-        elements: (p.elements ?? {}) as ReturnType<typeof useElementsStore.getState>['elements'],
+        elements: (p.elements ?? {}) as ReturnType<
+          typeof useElementsStore.getState
+        >['elements'],
       })
       useEmployeeStore.setState({
         employees: nextEmployees,
@@ -120,7 +131,7 @@ export function ProjectShell() {
 
       const floors = (p.floors ?? []) as any[]
       if (floors.length > 0) {
-        useFloorStore.setState({ floor: floors[0] })
+        useFloorStore.getState().setFloor(floors[0])
       }
 
       if (p.settings) {
@@ -135,7 +146,9 @@ export function ProjectShell() {
         useCanvasStore.setState({ settings })
       }
 
-      useSeatHistoryStore.setState({ entries: coerceSeatHistoryEntries(p.seatHistory) })
+      useSeatHistoryStore.setState({
+        entries: coerceSeatHistoryEntries(p.seatHistory),
+      })
 
       useNeighborhoodStore.setState({
         neighborhoods:
@@ -160,11 +173,12 @@ export function ProjectShell() {
         lastSavedAt: office.updated_at,
         saveState: 'saved',
         conflict: null,
-        currentOfficeRole: 'admin',
+        currentOfficeRole: 'edit',
       })
       useProjectStore.setState({
         currentTeamId: office.team_id,
-        currentUserId: session.status === 'authenticated' ? session.user.id : null,
+        currentUserId:
+          session.status === 'authenticated' ? session.user.id : null,
       })
       useInsightsStore.getState().setCurrentProjectId(office.id)
 
@@ -177,23 +191,35 @@ export function ProjectShell() {
   }, [teamSlug, officeSlug])
 
   if (shellState === 'loading') {
-    return <div className="p-6 text-sm text-gray-500 dark:text-gray-400">Loading office…</div>
+    return (
+      <div className="p-6 text-sm text-gray-500 dark:text-gray-400">
+        Loading office…
+      </div>
+    )
   }
   if (shellState === 'not_found') {
-    return <div className="p-6 text-sm text-red-600 dark:text-red-400">Office not found.</div>
+    return (
+      <div className="p-6 text-sm text-red-600 dark:text-red-400">
+        Office not found.
+      </div>
+    )
   }
 
   return (
-    <div className="flex min-w-0 flex-col h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-800/50">
+    <div className="flex h-screen w-full max-w-full min-w-0 flex-col overflow-hidden bg-gray-50 dark:bg-gray-800/50">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:px-3 focus:py-2 focus:shadow-lg focus:rounded"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:shadow-lg"
       >
         Skip to main content
       </a>
       <NarrowScreenBanner />
       <TopBar />
-      <main id="main-content" tabIndex={-1} className="contents">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex min-h-0 min-w-0 flex-1"
+      >
         <Outlet />
       </main>
       <ContextMenu />

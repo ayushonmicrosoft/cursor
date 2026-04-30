@@ -9,7 +9,7 @@ export interface Team {
 export interface TeamMember {
   team_id: string
   user_id: string
-  role: 'admin' | 'member'
+  role: 'edit' | 'view' | 'admin' | 'member'
   joined_at: string
   email?: string
   name?: string

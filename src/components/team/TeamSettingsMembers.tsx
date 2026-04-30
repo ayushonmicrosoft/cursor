@@ -196,9 +196,10 @@ function MemberRow({
 
   return (
     <li
-      className="rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40"
+      className="rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40 max-w-full"
     >
-      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_100px_80px_110px_auto] md:items-center">
+      <div className="max-w-full overflow-x-auto">
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_100px_80px_110px_auto] md:items-center md:min-w-[40rem]">
         <div className="min-w-0 flex items-center gap-3">
           <Avatar seed={member.user_id} label={label} />
           <div className="min-w-0">
@@ -276,6 +277,7 @@ function MemberRow({
             )}
           </div>
         ) : null}
+        </div>
       </div>
     </li>
   )
@@ -324,11 +326,12 @@ function InviteRow({
     <li
       className={
         expired
-          ? 'rounded-md px-3 py-2 opacity-60'
-          : 'rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40'
+          ? 'rounded-md px-3 py-2 opacity-60 max-w-full'
+          : 'rounded-md px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40 max-w-full'
       }
     >
-      <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_100px_90px_auto] md:items-center">
+      <div className="max-w-full overflow-x-auto">
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_100px_90px_auto] md:items-center md:min-w-[42rem]">
         <div className="min-w-0 flex items-center gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
             <Mail size={14} aria-hidden="true" />
@@ -385,6 +388,7 @@ function InviteRow({
               </Button>
             </>
           )}
+        </div>
         </div>
       </div>
     </li>
@@ -597,7 +601,8 @@ export function TeamSettingsMembers({
           right. Keeps the "what is this page" summary + primary action
           visible at all times. */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+        <div className="min-w-0 max-w-full overflow-x-auto">
+          <div className="inline-flex items-center gap-2 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 tabular-nums">
           <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
             {memberCount} {memberCount === 1 ? 'member' : 'members'}
           </span>
@@ -617,6 +622,7 @@ export function TeamSettingsMembers({
               </span>
             </>
           )}
+          </div>
         </div>
         {isAdmin && (
           <Button
@@ -640,7 +646,7 @@ export function TeamSettingsMembers({
         >
           Members ({memberCount})
         </h2>
-        <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/60">
+        <div className="max-w-full overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/60">
           {hasMembers ? (
             <ul className="divide-y divide-gray-100 dark:divide-gray-800/60 p-1">
               {members.map((m) => (
@@ -690,7 +696,7 @@ export function TeamSettingsMembers({
           >
             Pending invites ({invites.length})
           </h2>
-          <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/60">
+          <div className="max-w-full overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900/60">
             {invites.length > 0 ? (
               <ul className="divide-y divide-gray-100 dark:divide-gray-800/60 p-1">
               {invites.map((inv) => (

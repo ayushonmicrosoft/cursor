@@ -339,7 +339,7 @@ export function TeamHomePage() {
       ])
       const role = (roleRes.data as { role?: string } | null)?.role
       return {
-        canCreate: role === 'admin' || role === 'member',
+        canCreate: role !== 'view' && role !== 'viewer',
         memberCount: countRes.count ?? 0,
       }
     },
@@ -627,7 +627,7 @@ export function TeamHomePage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-end gap-2 shrink-0 max-w-full">
             {canCreateOffices && (
               <>
                 <button
@@ -961,7 +961,7 @@ function EmptyTeamState({
             Create an office, open a sample office with a full floor plan and roster, or import data from a file.
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left sm:min-w-[24rem]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left sm:w-full lg:min-w-[24rem]">
           <PreviewStat icon={<Layers3 size={16} aria-hidden="true" />} label="Floors" value="3" />
           <PreviewStat icon={<Grid3x3 size={16} aria-hidden="true" />} label="Seats" value="48+" />
           <PreviewStat icon={<Users size={16} aria-hidden="true" />} label="Employees" value="45+" />

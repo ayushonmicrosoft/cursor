@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BarChart2, Download, Users } from 'lucide-react'
-import { useFloorStore, useActiveFloor } from '../../stores/floorStore'
+import { Download, Users } from 'lucide-react'
+import { useActiveFloor } from '../../stores/floorStore'
 import { useVisibleEmployees } from '../../hooks/useVisibleEmployees'
-import { useElementsStore } from '../../stores/elementsStore'
 import { useCan } from '../../hooks/useCan'
+import { useAllFloorElements } from '../../hooks/useActiveFloorElements'
 import {
   floorUtilization,
   departmentHeadcount,
@@ -41,15 +41,15 @@ export function ReportsPage() {
   const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
   
   const floor = useActiveFloor()
-  const elements = useElementsStore((s) => s.elements)
+  const elementsByFloor = useAllFloorElements()
   const employees = useVisibleEmployees()
 
   const utilRows = useMemo(() => floorUtilization([floor]), [floor])
   const deptRows = useMemo(() => departmentHeadcount(employees), [employees])
   const unassignedRows = useMemo(() => unassignedEmployees(employees), [employees])
   const stats = useMemo(
-    () => computeReportsStats(employees, elements),
-    [employees, elements],
+    () => computeReportsStats(employees, elementsByFloor),
+    [employees, elementsByFloor],
   )
 
   const [activeTab, setActiveTab] = useState<ReportTab>('occupancy')
@@ -135,37 +135,39 @@ export function ReportsPage() {
         </nav>
       )}
 
-      <div
-        role="tablist"
-        aria-label="Reports sections"
-        onKeyDown={onTablistKeyDown}
-        className="sticky top-0 z-10 flex items-center gap-1 mt-5 mb-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
-      >
-        {TABS.map((tab) => {
-          const selected = tab.id === activeTab
-          return (
-            <button
-              key={tab.id}
-              ref={(el) => {
-                tabRefs.current[tab.id] = el
-              }}
-              type="button"
-              role="tab"
-              id={`reports-tab-${tab.id}`}
-              aria-controls={`reports-panel-${tab.id}`}
-              aria-selected={selected}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-2 text-sm font-medium transition-colors ${
-                selected
-                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
-                  : 'text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-100'
-              }`}
-            >
-              {tab.label}
-            </button>
-          )
-        })}
+      <div className="sticky top-0 z-10 mt-5 mb-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div
+          role="tablist"
+          aria-label="Reports sections"
+          onKeyDown={onTablistKeyDown}
+          className="flex min-w-max items-center gap-1 overflow-x-auto"
+        >
+          {TABS.map((tab) => {
+            const selected = tab.id === activeTab
+            return (
+              <button
+                key={tab.id}
+                ref={(el) => {
+                  tabRefs.current[tab.id] = el
+                }}
+                type="button"
+                role="tab"
+                id={`reports-tab-${tab.id}`}
+                aria-controls={`reports-panel-${tab.id}`}
+                aria-selected={selected}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-2 text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
+                  selected
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
+                    : 'text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-100'
+                }`}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <div
@@ -184,33 +186,35 @@ export function ReportsPage() {
             title="Floor utilization"
             onExport={() => downloadCsv('floor-utilization.csv', utilizationCsv(utilRows))}
           >
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left border-b border-gray-200 dark:border-gray-800">
-                  <th className="py-2">Floor</th>
-                  <th>Assigned</th>
-                  <th>Capacity</th>
-                  <th className="w-1/3">Utilization</th>
-                </tr>
-              </thead>
-              <tbody>
-                {utilRows.map((r) => (
-                  <tr key={r.floorId} className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-2">{r.floorName}</td>
-                    <td className="tabular-nums">{r.assigned}</td>
-                    <td className="tabular-nums">{r.capacity}</td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <UtilizationBar percent={r.percent} />
-                        <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums w-12 text-right">
-                          {r.percent.toFixed(1)}%
-                        </span>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto min-w-0">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="text-left border-b border-gray-200 dark:border-gray-800">
+                    <th className="py-2 whitespace-nowrap">Floor</th>
+                    <th className="whitespace-nowrap">Assigned</th>
+                    <th className="whitespace-nowrap">Capacity</th>
+                    <th className="w-1/3 whitespace-nowrap">Utilization</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {utilRows.map((r) => (
+                    <tr key={r.floorId} className="border-b border-gray-100 dark:border-gray-800">
+                      <td className="py-2 whitespace-nowrap">{r.floorName}</td>
+                      <td className="tabular-nums whitespace-nowrap">{r.assigned}</td>
+                      <td className="tabular-nums whitespace-nowrap">{r.capacity}</td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <UtilizationBar percent={r.percent} />
+                          <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums w-12 text-right whitespace-nowrap">
+                            {r.percent.toFixed(1)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
         )}
 
@@ -219,26 +223,28 @@ export function ReportsPage() {
             title="Department headcount"
             onExport={() => downloadCsv('department-headcount.csv', headcountCsv(deptRows))}
           >
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left border-b border-gray-200 dark:border-gray-800">
-                  <th className="py-2">Department</th>
-                  <th>Count</th>
-                  <th>Assigned</th>
-                  <th>Assignment rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deptRows.map((r) => (
-                  <tr key={r.department} className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-2">{r.department}</td>
-                    <td className="tabular-nums">{r.count}</td>
-                    <td className="tabular-nums">{r.assigned}</td>
-                    <td className="tabular-nums">{r.assignmentRate.toFixed(1)}%</td>
+            <div className="overflow-x-auto min-w-0">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="text-left border-b border-gray-200 dark:border-gray-800">
+                    <th className="py-2 whitespace-nowrap">Department</th>
+                    <th className="whitespace-nowrap">Count</th>
+                    <th className="whitespace-nowrap">Assigned</th>
+                    <th className="whitespace-nowrap">Assignment rate</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {deptRows.map((r) => (
+                    <tr key={r.department} className="border-b border-gray-100 dark:border-gray-800">
+                      <td className="py-2 whitespace-nowrap">{r.department}</td>
+                      <td className="tabular-nums whitespace-nowrap">{r.count}</td>
+                      <td className="tabular-nums whitespace-nowrap">{r.assigned}</td>
+                      <td className="tabular-nums whitespace-nowrap">{r.assignmentRate.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
         )}
 

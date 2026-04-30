@@ -12,12 +12,27 @@ import { useFloorStore } from '../../stores/floorStore'
 import { useNeighborhoodStore } from '../../stores/neighborhoodStore'
 import { useShallow } from 'zustand/react/shallow'
 import {
-  Undo2, Redo2, ZoomIn, ZoomOut,
-  Maximize2, Minimize2,
+  Undo2,
+  Redo2,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Minimize2,
   X as XIcon,
-  Ruler, Grid3x3, Compass, Printer, Image as ImageIcon,
-  Eye, Check, Download, Hash, SlidersHorizontal,
-  Map as MapIcon, ClipboardList, BarChart3, Zap,
+  Ruler,
+  Grid3x3,
+  Compass,
+  Printer,
+  Image as ImageIcon,
+  Eye,
+  Check,
+  Download,
+  Hash,
+  SlidersHorizontal,
+  Map as MapIcon,
+  ClipboardList,
+  BarChart3,
+  Zap,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -63,21 +78,38 @@ export function TopBar() {
   const project = useProjectStore((s) => s.currentProject)
   const saveState = useProjectStore((s) => s.saveState)
   const lastSavedAt = useProjectStore((s) => s.lastSavedAt)
-  const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
-  
-  const { stageScale, zoomIn, zoomOut, resetZoom, settings, setSettings, toggleGrid, toggleDimensions, toggleNorthArrow, toggleDeskIds, setActiveTool } = useCanvasStore(useShallow((s) => ({
-    stageScale: s.stageScale,
-    zoomIn: s.zoomIn,
-    zoomOut: s.zoomOut,
-    resetZoom: s.resetZoom,
-    settings: s.settings,
-    setSettings: s.setSettings,
-    toggleGrid: s.toggleGrid,
-    toggleDimensions: s.toggleDimensions,
-    toggleNorthArrow: s.toggleNorthArrow,
-    toggleDeskIds: s.toggleDeskIds,
-    setActiveTool: s.setActiveTool,
-  })))
+  const { teamSlug, officeSlug } = useParams<{
+    teamSlug: string
+    officeSlug: string
+  }>()
+
+  const {
+    stageScale,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    settings,
+    setSettings,
+    toggleGrid,
+    toggleDimensions,
+    toggleNorthArrow,
+    toggleDeskIds,
+    setActiveTool,
+  } = useCanvasStore(
+    useShallow((s) => ({
+      stageScale: s.stageScale,
+      zoomIn: s.zoomIn,
+      zoomOut: s.zoomOut,
+      resetZoom: s.resetZoom,
+      settings: s.settings,
+      setSettings: s.setSettings,
+      toggleGrid: s.toggleGrid,
+      toggleDimensions: s.toggleDimensions,
+      toggleNorthArrow: s.toggleNorthArrow,
+      toggleDeskIds: s.toggleDeskIds,
+      setActiveTool: s.setActiveTool,
+    })),
+  )
 
   const {
     setExportDialogOpen,
@@ -98,26 +130,28 @@ export function TopBar() {
     applyWorkspacePreset,
     resetDockableToolbarLayout,
     resetDockableWorkspace,
-  } = useUIStore(useShallow((s) => ({
-    setExportDialogOpen: s.setExportDialogOpen,
-    setPresentationMode: s.setPresentationMode,
-    presentationMode: s.presentationMode,
-    viewMode: s.viewMode,
-    setViewMode: s.setViewMode,
-    selectedIds: s.selectedIds,
-    clearSelection: s.clearSelection,
-    setRightSidebarOpen: s.setRightSidebarOpen,
-    setRightSidebarTab: s.setRightSidebarTab,
-    setMinimapVisible: s.setMinimapVisible,
-    dockableToolbarLayouts: s.dockableToolbarLayouts,
-    dockableToolbarVisibility: s.dockableToolbarVisibility,
-    activeWorkspacePreset: s.activeWorkspacePreset,
-    setDockableToolbarMode: s.setDockableToolbarMode,
-    setDockableToolbarVisible: s.setDockableToolbarVisible,
-    applyWorkspacePreset: s.applyWorkspacePreset,
-    resetDockableToolbarLayout: s.resetDockableToolbarLayout,
-    resetDockableWorkspace: s.resetDockableWorkspace,
-  })))
+  } = useUIStore(
+    useShallow((s) => ({
+      setExportDialogOpen: s.setExportDialogOpen,
+      setPresentationMode: s.setPresentationMode,
+      presentationMode: s.presentationMode,
+      viewMode: s.viewMode,
+      setViewMode: s.setViewMode,
+      selectedIds: s.selectedIds,
+      clearSelection: s.clearSelection,
+      setRightSidebarOpen: s.setRightSidebarOpen,
+      setRightSidebarTab: s.setRightSidebarTab,
+      setMinimapVisible: s.setMinimapVisible,
+      dockableToolbarLayouts: s.dockableToolbarLayouts,
+      dockableToolbarVisibility: s.dockableToolbarVisibility,
+      activeWorkspacePreset: s.activeWorkspacePreset,
+      setDockableToolbarMode: s.setDockableToolbarMode,
+      setDockableToolbarVisible: s.setDockableToolbarVisible,
+      applyWorkspacePreset: s.applyWorkspacePreset,
+      resetDockableToolbarLayout: s.resetDockableToolbarLayout,
+      resetDockableWorkspace: s.resetDockableWorkspace,
+    })),
+  )
 
   const undo = () => {
     useElementsStore.temporal.getState().undo()
@@ -139,10 +173,16 @@ export function TopBar() {
 
   useEffect(() => {
     function onPointer(e: MouseEvent) {
-      if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) {
+      if (
+        viewMenuRef.current &&
+        !viewMenuRef.current.contains(e.target as Node)
+      ) {
         setViewMenuOpen(false)
       }
-      if (toolbarMenuRef.current && !toolbarMenuRef.current.contains(e.target as Node)) {
+      if (
+        toolbarMenuRef.current &&
+        !toolbarMenuRef.current.contains(e.target as Node)
+      ) {
         setToolbarMenuOpen(false)
       }
     }
@@ -276,12 +316,10 @@ export function TopBar() {
 
   return (
     <div
-      className="h-12 w-full min-w-0 flex-shrink-0 overflow-hidden bg-white border-b border-gray-200 dark:bg-gray-950 dark:border-gray-800"
+      className="h-12 w-full min-w-0 flex-shrink-0 overflow-x-auto overflow-y-hidden border-b border-gray-200 bg-white [-ms-overflow-style:none] [scrollbar-width:none] dark:border-gray-800 dark:bg-gray-950 [&::-webkit-scrollbar]:hidden"
       data-fixed-toolbar="top-bar"
     >
-      <div
-        className="flex h-full w-full min-w-0 flex-nowrap items-center gap-1 px-2 sm:gap-1.5 sm:px-3"
-      >
+      <div className="flex h-full w-max min-w-full flex-nowrap items-center gap-1 px-2 sm:gap-1.5 sm:px-3">
         <TeamSwitcher currentSlug={teamSlug} />
 
         {teamSlug && officeSlug && (
@@ -301,7 +339,7 @@ export function TopBar() {
               }
             >
               <MapIcon size={16} aria-hidden="true" />
-              <span className="hidden lg:inline truncate">Map</span>
+              <span className="hidden truncate lg:inline">Map</span>
             </NavLink>
             {canViewReports && (
               <NavLink
@@ -316,7 +354,7 @@ export function TopBar() {
                 }
               >
                 <BarChart3 size={16} aria-hidden="true" />
-                <span className="hidden sm:inline truncate">Reports</span>
+                <span className="hidden truncate sm:inline">Reports</span>
               </NavLink>
             )}
           </nav>
@@ -334,6 +372,7 @@ export function TopBar() {
             disabled={!canUndo}
             className={iconActionButtonClass}
             title={canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo'}
+            aria-label={canUndo ? 'Undo' : 'Nothing to undo'}
           >
             <Undo2 size={16} aria-hidden="true" />
           </button>
@@ -342,6 +381,7 @@ export function TopBar() {
             disabled={!canRedo}
             className={iconActionButtonClass}
             title={canRedo ? 'Redo (Ctrl+Shift+Z)' : 'Nothing to redo'}
+            aria-label={canRedo ? 'Redo' : 'Nothing to redo'}
           >
             <Redo2 size={16} aria-hidden="true" />
           </button>
@@ -356,80 +396,130 @@ export function TopBar() {
             aria-haspopup="menu"
             aria-expanded={viewMenuOpen}
             title="View options"
+            aria-label="View options"
           >
             <Eye size={16} aria-hidden="true" />
           </button>
           {viewMenuOpen && (
             <div
               role="menu"
-              className="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow dark:bg-gray-900 dark:border-gray-700 dark:shadow-black/40 z-30 py-1"
+              className="absolute left-0 z-30 mt-1 w-64 rounded-md border border-gray-200 bg-white py-1 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40"
             >
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); zoomIn(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  zoomIn()
+                }}
                 className={secondaryMenuItemClass}
               >
                 <ZoomIn size={14} aria-hidden="true" />
                 Zoom in
-                <kbd className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">+</kbd>
+                <kbd className="ml-auto font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                  +
+                </kbd>
               </button>
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); zoomOut(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  zoomOut()
+                }}
                 className={secondaryMenuItemClass}
               >
                 <ZoomOut size={14} aria-hidden="true" />
                 Zoom out
-                <kbd className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">−</kbd>
+                <kbd className="ml-auto font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                  −
+                </kbd>
               </button>
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); resetZoom(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  resetZoom()
+                }}
                 className={secondaryMenuItemClass}
               >
-                <span className="inline-block w-[14px] text-center text-xs font-mono">
+                <span className="inline-block w-[14px] text-center font-mono text-xs">
                   {Math.round(stageScale * 100)}
                 </span>
                 Reset zoom
-                <kbd className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">0</kbd>
+                <kbd className="ml-auto font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                  0
+                </kbd>
               </button>
               <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); toggleGrid(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  toggleGrid()
+                }}
                 className={secondaryMenuItemClass}
               >
-                {settings.showGrid ? <Check size={14} aria-hidden="true" /> : <span className="inline-block w-[14px]" />}
+                {settings.showGrid ? (
+                  <Check size={14} aria-hidden="true" />
+                ) : (
+                  <span className="inline-block w-[14px]" />
+                )}
                 <Grid3x3 size={14} aria-hidden="true" />
                 Toggle grid
-                <kbd className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">G</kbd>
+                <kbd className="ml-auto font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                  G
+                </kbd>
               </button>
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); toggleDimensions(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  toggleDimensions()
+                }}
                 className={secondaryMenuItemClass}
               >
-                {settings.showDimensions ? <Check size={14} aria-hidden="true" /> : <span className="inline-block w-[14px]" />}
+                {settings.showDimensions ? (
+                  <Check size={14} aria-hidden="true" />
+                ) : (
+                  <span className="inline-block w-[14px]" />
+                )}
                 <Ruler size={14} aria-hidden="true" />
                 Toggle dimensions
-                <kbd className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">D</kbd>
+                <kbd className="ml-auto font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                  D
+                </kbd>
               </button>
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); toggleNorthArrow(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  toggleNorthArrow()
+                }}
                 className={secondaryMenuItemClass}
               >
-                {(settings.showNorthArrow ?? true) ? <Check size={14} aria-hidden="true" /> : <span className="inline-block w-[14px]" />}
+                {(settings.showNorthArrow ?? true) ? (
+                  <Check size={14} aria-hidden="true" />
+                ) : (
+                  <span className="inline-block w-[14px]" />
+                )}
                 <Compass size={14} aria-hidden="true" />
                 Toggle compass
-                <kbd className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">N</kbd>
+                <kbd className="ml-auto font-mono text-[10px] text-gray-400 dark:text-gray-500">
+                  N
+                </kbd>
               </button>
               <button
                 role="menuitem"
-                onClick={() => { setViewMenuOpen(false); toggleDeskIds(); }}
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  toggleDeskIds()
+                }}
                 className={secondaryMenuItemClass}
               >
-                {(settings.showDeskIds ?? false) ? <Check size={14} aria-hidden="true" /> : <span className="inline-block w-[14px]" />}
+                {(settings.showDeskIds ?? false) ? (
+                  <Check size={14} aria-hidden="true" />
+                ) : (
+                  <span className="inline-block w-[14px]" />
+                )}
                 <Hash size={14} aria-hidden="true" />
                 Show desk IDs
               </button>
@@ -440,7 +530,10 @@ export function TopBar() {
               />
               <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
               <div className="px-3 py-2">
-                <label htmlFor="topbar-grid-size" className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                <label
+                  htmlFor="topbar-grid-size"
+                  className="mb-1 block text-[10px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500"
+                >
                   Grid size
                 </label>
                 <input
@@ -450,12 +543,16 @@ export function TopBar() {
                   max={200}
                   step={2}
                   value={settings.gridSize}
-                  onChange={(e) => setSettings({ gridSize: Number(e.target.value) })}
-                  className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700"
+                  onChange={(e) =>
+                    setSettings({ gridSize: Number(e.target.value) })
+                  }
+                  className="w-full rounded border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
               <div className="px-3 pb-2">
-                <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Scale</div>
+                <div className="mb-1 text-[10px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500">
+                  Scale
+                </div>
                 <ScaleSettingsPopover />
               </div>
             </div>
@@ -468,22 +565,25 @@ export function TopBar() {
               onClick={() => setToolbarMenuOpen((o) => !o)}
               className={secondaryMenuButtonClass}
               title="Workspace controls"
+              aria-label="Workspace controls"
             >
               <SlidersHorizontal size={16} aria-hidden="true" />
             </button>
             {toolbarMenuOpen && (
-              <div className="absolute left-0 mt-1 w-80 rounded border border-gray-200 bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40 z-30">
-                <div className="rounded border border-gray-200 dark:border-gray-700 px-2 py-2 mb-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-600 dark:text-gray-300">Workspace presets</p>
+              <div className="absolute left-0 z-30 mt-1 w-80 rounded border border-gray-200 bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40">
+                <div className="mb-2 rounded border border-gray-200 px-2 py-2 dark:border-gray-700">
+                  <p className="text-xs font-semibold tracking-[0.15em] text-gray-600 uppercase dark:text-gray-300">
+                    Workspace presets
+                  </p>
                   <div className="mt-2 grid grid-cols-3 gap-1">
                     {WORKSPACE_PRESET_IDS.map((presetId) => {
                       const preset = WORKSPACE_PRESET_CONFIGS[presetId]
                       const active = activeWorkspacePreset === presetId
                       return (
                         <button
-                           key={presetId}
-                           onClick={() => applyWorkspacePreset(presetId)}
-                           className={`rounded px-2 py-1 text-[11px] font-medium ${active ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'}`}
+                          key={presetId}
+                          onClick={() => applyWorkspacePreset(presetId)}
+                          className={`rounded px-2 py-1 text-[11px] font-medium ${active ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'}`}
                         >
                           {preset.label}
                         </button>
@@ -491,24 +591,45 @@ export function TopBar() {
                     })}
                   </div>
                 </div>
-                {TOOLBAR_MENU_ITEMS.filter((item) => !item.adminOnly || canManageWorkspace).map((item) => {
+                {TOOLBAR_MENU_ITEMS.filter(
+                  (item) => !item.adminOnly || canManageWorkspace,
+                ).map((item) => {
                   const visible = dockableToolbarVisibility[item.id] ?? true
                   const mode = dockableToolbarLayouts[item.id].mode
                   return (
-                    <div key={item.id} className="rounded border border-gray-200 dark:border-gray-700 px-2 py-2 mb-2 last:mb-0">
+                    <div
+                      key={item.id}
+                      className="mb-2 rounded border border-gray-200 px-2 py-2 last:mb-0 dark:border-gray-700"
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-600 dark:text-gray-300">{item.label}</p>
-                          <p className="text-[11px] text-gray-500 dark:text-gray-400">{visible ? (mode === 'floating' ? 'Visible · floating' : 'Visible · docked') : 'Hidden'}</p>
+                          <p className="text-xs font-semibold tracking-[0.15em] text-gray-600 uppercase dark:text-gray-300">
+                            {item.label}
+                          </p>
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                            {visible
+                              ? mode === 'floating'
+                                ? 'Visible · floating'
+                                : 'Visible · docked'
+                              : 'Hidden'}
+                          </p>
                         </div>
-                        <button onClick={() => setDockableToolbarVisible(item.id, !visible)} className="rounded px-2 py-1 text-[11px] font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200">
+                        <button
+                          onClick={() =>
+                            setDockableToolbarVisible(item.id, !visible)
+                          }
+                          className="rounded bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200"
+                        >
                           {visible ? 'Hide' : 'Show'}
                         </button>
                       </div>
                     </div>
                   )
                 })}
-                <button onClick={() => resetDockableWorkspace()} className="mt-2 w-full rounded border border-gray-200 dark:border-gray-700 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200">
+                <button
+                  onClick={() => resetDockableWorkspace()}
+                  className="mt-2 w-full rounded border border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200"
+                >
                   Reset all toolbars
                 </button>
               </div>
@@ -536,7 +657,10 @@ export function TopBar() {
             className={`inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-sm font-semibold ${viewMode === 'pixi' ? 'bg-violet-600 text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'}`}
           >
             <Zap size={14} />
-            Pixi <span className="ml-1 rounded bg-violet-100 dark:bg-violet-900/40 px-1 text-[9px] font-bold text-violet-700 dark:text-violet-300">β</span>
+            Pixi{' '}
+            <span className="ml-1 rounded bg-violet-100 px-1 text-[9px] font-bold text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+              β
+            </span>
           </button>
         </div>
 
@@ -549,7 +673,13 @@ export function TopBar() {
   )
 }
 
-function SaveIndicator({ saveState, lastSavedAt }: { saveState: string, lastSavedAt: number | null }) {
+function SaveIndicator({
+  saveState,
+  lastSavedAt,
+}: {
+  saveState: string
+  lastSavedAt: string | null
+}) {
   return (
     <div className="flex items-center gap-2 px-2 text-xs text-gray-500 dark:text-gray-400">
       {saveState === 'saving' ? (

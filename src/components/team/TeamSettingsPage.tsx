@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Building2, Settings2, Users2 } from 'lucide-react'
+import { ArrowLeft, Building2, Settings2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useSession } from '../../lib/auth/session'
 import type { Team } from '../../types/team'
@@ -21,7 +21,6 @@ interface TeamWithOptionalLogo extends Team {
 export function TeamSettingsPage() {
   const { teamSlug } = useParams<{ teamSlug: string }>()
   const [team, setTeam] = useState<TeamWithOptionalLogo | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const session = useSession()
 
   // Depend on a stable identity pair (user id + status), not the whole
@@ -37,15 +36,6 @@ export function TeamSettingsPage() {
       const { data: t } = await supabase.from('teams').select('*').eq('slug', teamSlug).single()
       if (!t) return
       setTeam(t as TeamWithOptionalLogo)
-      if (sessionStatus === 'authenticated' && sessionUserId) {
-        const { data: m } = await supabase
-          .from('team_members')
-          .select('role')
-          .eq('team_id', (t as Team).id)
-          .eq('user_id', sessionUserId)
-          .single()
-        setIsAdmin((m as { role?: string } | null)?.role === 'admin')
-      }
     }
     load()
   }, [teamSlug, sessionStatus, sessionUserId])
@@ -91,7 +81,7 @@ export function TeamSettingsPage() {
         {/* Team identity header — mirror TeamHomePage so the user
             doesn't feel teleported into a different app when they
             click Settings. Logo-or-placeholder chip + name + subtitle. */}
-        <header className="flex items-center gap-3 mb-6">
+        <header className="flex items-center gap-3 mb-6 min-w-0 max-w-full">
           {team.logo_url ? (
             <img
               src={team.logo_url}
@@ -112,7 +102,7 @@ export function TeamSettingsPage() {
               {team.name}
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Team settings and member management
+              Team settings and workspace controls
             </p>
           </div>
         </header>
@@ -121,11 +111,10 @@ export function TeamSettingsPage() {
             feel grouped and the active pill reads naturally as
             elevated rather than floating in whitespace. */}
         <nav
-          role="tablist"
-          aria-label="Team settings"
-          className="mb-6 grid gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2 sm:grid-cols-2 dark:border-gray-800 dark:bg-gray-900/60"
+          aria-label="Team settings navigation"
+          className="mb-6 grid gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2 sm:grid-cols-1 dark:border-gray-800 dark:bg-gray-900/60"
         >
-          <NavLink end to="." className={tabClass} role="tab">
+          <NavLink end to="." className={tabClass}>
             <div className="flex items-center gap-2 text-sm font-medium">
               <Settings2 size={14} aria-hidden="true" />
               <span>General</span>
@@ -134,18 +123,9 @@ export function TeamSettingsPage() {
               Team identity and high-impact controls
             </p>
           </NavLink>
-          <NavLink to="members" className={tabClass} role="tab">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Users2 size={14} aria-hidden="true" />
-              <span>Members</span>
-            </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Roles, invites, and access changes
-            </p>
-          </NavLink>
         </nav>
 
-        <Outlet context={{ team, isAdmin }} />
+        <Outlet context={{ team, isAdmin: true }} />
       </main>
     </div>
   )

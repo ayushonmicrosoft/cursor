@@ -1,390 +1,896 @@
+﻿import {
+  ArrowLeft,
+  BookOpenText,
+  Building2,
+  Database,
+  GitBranch,
+  History,
+  Layers,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Workflow,
+} from 'lucide-react'
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import type { LucideIcon } from 'lucide-react'
 
-type Section = 'overview' | 'workflow' | 'architecture' | 'admin' | 'removed' | 'engines' | 'stores' | 'changelog'
+type Section =
+  | 'overview'
+  | 'workflow'
+  | 'architecture'
+  | 'admin'
+  | 'engines'
+  | 'stores'
+  | 'removed'
+  | 'changelog'
 
-const NAV: { id: Section; label: string; icon: string }[] = [
-  { id: 'overview', label: 'Overview', icon: '📋' },
-  { id: 'workflow', label: 'Workflow', icon: '🔄' },
-  { id: 'architecture', label: 'Architecture', icon: '🏗️' },
-  { id: 'admin', label: 'Admin System', icon: '🔐' },
-  { id: 'engines', label: 'Render Engines', icon: '⚙️' },
-  { id: 'stores', label: 'State Stores', icon: '💾' },
-  { id: 'removed', label: 'Removed Features', icon: '🗑️' },
-  { id: 'changelog', label: 'Changelog', icon: '📝' },
+interface NavItem {
+  id: Section
+  label: string
+  summary: string
+  icon: LucideIcon
+}
+
+const NAV: NavItem[] = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    summary: 'What this project is and how it is built.',
+    icon: BookOpenText,
+  },
+  {
+    id: 'workflow',
+    label: 'Workflow',
+    summary: 'End-to-end flow from onboarding to reports.',
+    icon: Workflow,
+  },
+  {
+    id: 'architecture',
+    label: 'Architecture',
+    summary: 'Directory structure, data flow, and render pipeline.',
+    icon: Building2,
+  },
+  {
+    id: 'admin',
+    label: 'Admin System',
+    summary: 'Permissions, tools, and control center.',
+    icon: ShieldCheck,
+  },
+  {
+    id: 'engines',
+    label: 'Render Engines',
+    summary: 'Konva and PixiJS capabilities and tradeoffs.',
+    icon: Layers,
+  },
+  {
+    id: 'stores',
+    label: 'State Stores',
+    summary: 'Zustand stores and key state ownership.',
+    icon: Database,
+  },
+  {
+    id: 'removed',
+    label: 'Removed Features',
+    summary: 'Archived capabilities from the simplification phase.',
+    icon: Trash2,
+  },
+  {
+    id: 'changelog',
+    label: 'Changelog',
+    summary: 'Recent changes across architecture and UX.',
+    icon: History,
+  },
 ]
+
+const CODE_BADGE =
+  'rounded-md border border-slate-700/80 bg-slate-900/70 px-2 py-0.5 font-mono text-[11px] text-slate-200'
+
+type Tone = 'blue' | 'green' | 'red' | 'amber'
+
+const TONE_CLASS: Record<Tone, string> = {
+  blue: 'border-sky-400/40 bg-sky-400/15 text-sky-200',
+  green: 'border-emerald-400/40 bg-emerald-400/15 text-emerald-200',
+  red: 'border-rose-400/40 bg-rose-400/15 text-rose-200',
+  amber: 'border-amber-400/40 bg-amber-400/15 text-amber-200',
+}
+
+interface Step {
+  title: string
+  desc: string
+}
+
+interface TableProps {
+  headers: string[]
+  rows: string[][]
+}
+
+interface CardProps {
+  title: string
+  children: ReactNode
+  tone?: Tone
+}
+
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <h2 className="bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-3xl leading-tight font-semibold text-transparent sm:text-4xl">
+      {children}
+    </h2>
+  )
+}
+
+function SubTitle({ children }: { children: string }) {
+  return (
+    <h3 className="mt-8 border-b border-slate-700/80 pb-3 text-lg font-semibold tracking-tight text-slate-100 sm:text-xl">
+      {children}
+    </h3>
+  )
+}
+
+function P({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-sm leading-7 text-slate-300 sm:text-[15px]">
+      {children}
+    </p>
+  )
+}
+
+function Badge({ children, tone = 'blue' }: { children: string; tone?: Tone }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] uppercase ${TONE_CLASS[tone]}`}
+    >
+      {children}
+    </span>
+  )
+}
+
+function Card({ title, children, tone = 'blue' }: CardProps) {
+  return (
+    <section
+      className={`rounded-2xl border bg-slate-900/55 p-4 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.85)] sm:p-5 ${TONE_CLASS[tone]}`}
+    >
+      <h4 className="mb-2 text-sm font-semibold text-slate-100 sm:text-base">
+        {title}
+      </h4>
+      <div className="space-y-3 text-sm leading-7 text-slate-300">
+        {children}
+      </div>
+    </section>
+  )
+}
+
+function StepList({ steps }: { steps: Step[] }) {
+  return (
+    <ol className="space-y-4">
+      {steps.map((step, index) => (
+        <li key={step.title} className="grid grid-cols-[auto_1fr] gap-3">
+          <span className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-sky-300/35 bg-sky-300/15 text-xs font-semibold text-sky-200">
+            {index + 1}
+          </span>
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-slate-100 sm:text-[15px]">
+              {step.title}
+            </h4>
+            <p className="text-sm leading-6 text-slate-300">{step.desc}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+function Table({ headers, rows }: TableProps) {
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-slate-700/80 bg-slate-950/55">
+      <table className="w-full min-w-[640px] border-collapse text-left">
+        <thead className="bg-slate-900/70">
+          <tr>
+            {headers.map((header) => (
+              <th
+                key={header}
+                className="px-4 py-3 text-xs font-semibold tracking-[0.08em] text-slate-200 uppercase"
+              >
+                {header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.join('|')} className="border-t border-slate-800/90">
+              {row.map((cell) => (
+                <td
+                  key={cell}
+                  className="px-4 py-3 align-top text-sm leading-6 text-slate-300"
+                >
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function Hero() {
+  return (
+    <section className="relative overflow-hidden rounded-3xl border border-slate-700/90 bg-slate-900/75 shadow-[0_30px_60px_-36px_rgba(8,47,73,0.95)]">
+      <div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(244,239,232,0.2),transparent_45%)]"
+        aria-hidden="true"
+      />
+      <div className="relative grid gap-6 p-5 sm:p-7 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-8">
+        <div className="min-w-0 space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-300/35 bg-sky-300/15 px-3 py-1 text-xs font-semibold tracking-[0.08em] text-sky-100 uppercase">
+            <Sparkles className="h-3.5 w-3.5" />
+            Project Documentation Surface
+          </div>
+          <h1 className="text-2xl leading-tight font-semibold text-slate-50 sm:text-[2rem]">
+            Floorcraft internal docs, rebuilt for fast scanning and deeper
+            context.
+          </h1>
+          <p className="max-w-2xl text-sm leading-7 text-slate-300 sm:text-[15px]">
+            This page is now optimized for operational usage: stronger
+            information hierarchy, clearer section landmarks, and visuals
+            aligned to the planning domain.
+          </p>
+          <div className="flex flex-wrap gap-2 text-xs text-slate-200">
+            <Badge tone="blue">Responsive</Badge>
+            <Badge tone="green">Production-ready Tailwind</Badge>
+            <Badge tone="amber">No overflow regressions</Badge>
+          </div>
+        </div>
+        <div className="min-w-0">
+          <img
+            src="/assets/docs/project-docs-hero-v1.png"
+            alt="Abstract office floorplan blueprint illustration"
+            className="w-full rounded-2xl border border-slate-600/60 object-cover shadow-[0_24px_54px_-34px_rgba(15,23,42,1)]"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </section>
+  )
+}
 
 export function ProjectDocsPage() {
   const [active, setActive] = useState<Section>('overview')
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", background: '#0f172a', color: '#e2e8f0' }}>
-      {/* Sidebar */}
-      <nav style={{ width: 240, borderRight: '1px solid #1e293b', padding: '24px 0', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflow: 'auto', background: '#0c1222' }}>
-        <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #1e293b' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: '#3b82f6', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>← Back to app</Link>
-          <h1 style={{ fontSize: 18, fontWeight: 700, margin: '12px 0 4px', background: 'linear-gradient(135deg,#60a5fa,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Floorcraft Docs</h1>
-          <p style={{ fontSize: 11, color: '#64748b', margin: 0 }}>Internal Project Reference</p>
-        </div>
-        <div style={{ padding: '12px 8px' }}>
-          {NAV.map((n) => (
-            <button key={n.id} onClick={() => setActive(n.id)} style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '8px 12px', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: active === n.id ? 600 : 400, background: active === n.id ? 'rgba(59,130,246,0.15)' : 'transparent', color: active === n.id ? '#60a5fa' : '#94a3b8', fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s' }}>
-              <span>{n.icon}</span>{n.label}
-            </button>
-          ))}
-        </div>
-      </nav>
+    <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,#1e2a44_0%,#0a1020_38%,#050812_100%)] text-slate-100">
+      <div className="mx-auto w-full max-w-[1420px] px-4 pt-5 pb-10 sm:px-6 lg:px-8 lg:pt-6 lg:pb-12">
+        <header className="mb-4 flex flex-wrap items-center justify-between gap-3 sm:mb-5">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-600/90 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold tracking-[0.08em] text-slate-100 uppercase hover:border-sky-300/60 hover:text-sky-100"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to app
+          </Link>
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#9d876c]/45 bg-[#9d876c]/15 px-3 py-1 text-xs font-semibold tracking-[0.08em] text-[#f4efe8] uppercase">
+            <GitBranch className="h-3.5 w-3.5" />
+            Internal Project Reference
+          </div>
+        </header>
 
-      {/* Main content */}
-      <main style={{ flex: 1, padding: '40px 60px', maxWidth: 860, overflow: 'auto' }}>
-        {active === 'overview' && <OverviewSection />}
-        {active === 'workflow' && <WorkflowSection />}
-        {active === 'architecture' && <ArchitectureSection />}
-        {active === 'admin' && <AdminSection />}
-        {active === 'engines' && <EnginesSection />}
-        {active === 'stores' && <StoresSection />}
-        {active === 'removed' && <RemovedSection />}
-        {active === 'changelog' && <ChangelogSection />}
-      </main>
+        <Hero />
+
+        <div className="mt-6 grid min-w-0 gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <aside className="min-w-0 lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]">
+            <nav className="h-full overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-700/80 bg-slate-900/60 p-3">
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                {NAV.map((item) => {
+                  const Icon = item.icon
+                  const isActive = active === item.id
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => setActive(item.id)}
+                        className={`w-full rounded-xl border px-3 py-2.5 text-left transition-all ${
+                          isActive
+                            ? 'border-sky-300/45 bg-sky-300/15'
+                            : 'border-slate-700/80 bg-slate-950/45 hover:border-slate-500/70 hover:bg-slate-900/80'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 text-sm font-semibold text-slate-100">
+                          <Icon className="h-4 w-4 text-sky-200" />
+                          {item.label}
+                        </span>
+                        <span className="mt-1 block text-xs leading-5 text-slate-300">
+                          {item.summary}
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
+          </aside>
+
+          <main className="min-w-0 rounded-3xl border border-slate-700/80 bg-slate-900/60 p-4 sm:p-6 lg:p-7">
+            <div className="mb-6 overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/40">
+              <img
+                src="/assets/docs/project-docs-strip-v1.png"
+                alt="Layered floorplan linework strip"
+                className="h-20 w-full object-cover object-center sm:h-24"
+                loading="lazy"
+              />
+            </div>
+            <section className="space-y-4" aria-live="polite">
+              {active === 'overview' && <OverviewSection />}
+              {active === 'workflow' && <WorkflowSection />}
+              {active === 'architecture' && <ArchitectureSection />}
+              {active === 'admin' && <AdminSection />}
+              {active === 'engines' && <EnginesSection />}
+              {active === 'stores' && <StoresSection />}
+              {active === 'removed' && <RemovedSection />}
+              {active === 'changelog' && <ChangelogSection />}
+            </section>
+          </main>
+        </div>
+      </div>
     </div>
   )
 }
 
-/* ── Reusable UI ─────────────────────────────────────────── */
-function SectionTitle({ children }: { children: string }) {
-  return <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, background: 'linear-gradient(135deg,#e2e8f0,#94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{children}</h2>
-}
-function SubTitle({ children }: { children: string }) {
-  return <h3 style={{ fontSize: 18, fontWeight: 600, color: '#cbd5e1', margin: '28px 0 10px', borderBottom: '1px solid #1e293b', paddingBottom: 8 }}>{children}</h3>
-}
-function P({ children }: { children: React.ReactNode }) {
-  return <p style={{ fontSize: 14, lineHeight: 1.75, color: '#94a3b8', margin: '8px 0' }}>{children}</p>
-}
-function Badge({ children, tone = 'blue' }: { children: string; tone?: 'blue' | 'green' | 'red' | 'amber' | 'purple' }) {
-  const colors = { blue: '#3b82f6', green: '#22c55e', red: '#ef4444', amber: '#f59e0b', purple: '#a78bfa' }
-  const c = colors[tone]
-  return <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const, background: `${c}22`, color: c, padding: '3px 8px', borderRadius: 6, marginLeft: 8 }}>{children}</span>
-}
-function Card({ title, children, accent = '#1e293b' }: { title: string; children: React.ReactNode; accent?: string }) {
-  return (
-    <div style={{ background: '#1e293b', border: `1px solid ${accent}44`, borderRadius: 12, padding: '20px 24px', marginBottom: 16 }}>
-      <h4 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', margin: '0 0 8px' }}>{title}</h4>
-      <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.7 }}>{children}</div>
-    </div>
-  )
-}
-function StepList({ steps }: { steps: { title: string; desc: string }[] }) {
-  return (
-    <div style={{ position: 'relative', paddingLeft: 28 }}>
-      <div style={{ position: 'absolute', left: 10, top: 8, bottom: 8, width: 2, background: 'linear-gradient(to bottom,#3b82f6,#a78bfa)' }} />
-      {steps.map((s, i) => (
-        <div key={i} style={{ marginBottom: 20, position: 'relative' }}>
-          <div style={{ position: 'absolute', left: -22, top: 4, width: 16, height: 16, borderRadius: '50%', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff' }}>{i + 1}</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{s.title}</div>
-          <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 2 }}>{s.desc}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-function TableRow({ cells, header }: { cells: string[]; header?: boolean }) {
-  const Tag = header ? 'th' : 'td'
-  return (
-    <tr>
-      {cells.map((c, i) => (
-        <Tag key={i} style={{ padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid #1e293b', fontSize: 13, fontWeight: header ? 600 : 400, color: header ? '#cbd5e1' : '#94a3b8', background: header ? '#0f172a' : 'transparent' }}>{c}</Tag>
-      ))}
-    </tr>
-  )
-}
-
-/* ── Sections ────────────────────────────────────────────── */
 function OverviewSection() {
-  return (<>
-    <SectionTitle>Floorcraft — Project Overview</SectionTitle>
-    <P>Floorcraft (OandOcraft) is a browser-based office floor plan editor built with React, TypeScript, Zustand, and dual Canvas rendering engines (Konva + PixiJS). It allows administrators to design floor plans, assign employees to seats, manage departments and neighborhoods, and generate reports.</P>
-    <SubTitle>Tech Stack</SubTitle>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-      <Card title="Frontend"><strong>React 18</strong> + TypeScript, Vite 8, React Router 6</Card>
-      <Card title="State"><strong>Zustand</strong> — 18 stores with selectors &amp; useShallow</Card>
-      <Card title="Rendering"><strong>Konva</strong> (Canvas 2D, stable) + <strong>PixiJS</strong> (WebGL, experimental)</Card>
-      <Card title="Backend"><strong>Supabase</strong> — Auth, Postgres, Row-Level Security</Card>
-      <Card title="Styling"><strong>Tailwind CSS</strong> utility classes, dark mode first</Card>
-      <Card title="Testing"><strong>Vitest</strong> + React Testing Library, 236 test files</Card>
-    </div>
-    <SubTitle>Key Routes</SubTitle>
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-      <thead><TableRow cells={['Path', 'Component', 'Purpose']} header /></thead>
-      <tbody>
-        <TableRow cells={['/', 'LandingPage', 'Public marketing page']} />
-        <TableRow cells={['/t/:team', 'TeamHomePage', 'Dashboard — offices list, stats, create/delete']} />
-        <TableRow cells={['/t/:team/o/:office/engine', 'EngineChooserPage', 'Pick Konva vs PixiJS before editing']} />
-        <TableRow cells={['/t/:team/o/:office/map', 'MapView', 'Main canvas editor']} />
-        <TableRow cells={['/t/:team/o/:office/roster', 'RosterPage', 'Employee table — assign, bulk edit, CSV import']} />
-        <TableRow cells={['/t/:team/o/:office/reports', 'ReportsPage', 'Analytics — occupancy, utilization, heatmaps']} />
-        <TableRow cells={['/t/:team/settings', 'TeamSettingsPage', 'Team config, members, billing']} />
-        <TableRow cells={['/docs', 'ProjectDocsPage', 'This documentation page']} />
-      </tbody>
-    </table>
-  </>)
+  return (
+    <>
+      <SectionTitle>Floorcraft project overview</SectionTitle>
+      <P>
+        Floorcraft (OandOcraft) is a browser-based office floor plan editor
+        built with React, TypeScript, Zustand, and dual canvas rendering engines
+        (Konva + PixiJS). It lets administrators design plans, assign employees
+        to seats, manage neighborhoods, and generate reports.
+      </P>
+
+      <SubTitle>Tech stack</SubTitle>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Card title="Frontend" tone="blue">
+          <p>
+            <strong>React 18</strong> with TypeScript, Vite 8, and React Router.
+          </p>
+        </Card>
+        <Card title="State" tone="blue">
+          <p>
+            <strong>Zustand</strong> with selectors and{' '}
+            <code className={CODE_BADGE}>useShallow</code>.
+          </p>
+        </Card>
+        <Card title="Rendering" tone="green">
+          <p>
+            <strong>Konva</strong> for stable 2D rendering and{' '}
+            <strong>PixiJS</strong> as the experimental WebGL path.
+          </p>
+        </Card>
+        <Card title="Backend" tone="blue">
+          <p>
+            <strong>Supabase</strong> for auth, Postgres, and row-level
+            security.
+          </p>
+        </Card>
+        <Card title="Styling" tone="amber">
+          <p>
+            <strong>Tailwind CSS</strong> utility classes and dark mode support.
+          </p>
+        </Card>
+        <Card title="Testing" tone="green">
+          <p>
+            <strong>Vitest</strong> and React Testing Library across 236 test
+            files.
+          </p>
+        </Card>
+      </div>
+
+      <SubTitle>Key routes</SubTitle>
+      <Table
+        headers={['Path', 'Component', 'Purpose']}
+        rows={[
+          ['/', 'LandingPage', 'Public marketing page'],
+          [
+            '/t/:team',
+            'TeamHomePage',
+            'Dashboard with office list, stats, and management actions',
+          ],
+          [
+            '/t/:team/o/:office/engine',
+            'EngineChooserPage',
+            'Choose Konva or PixiJS before editing',
+          ],
+          [
+            '/t/:team/o/:office/map',
+            'MapView',
+            'Primary floor plan editor canvas',
+          ],
+          [
+            '/t/:team/o/:office/roster',
+            'RosterPage',
+            'Employee roster, assignment, and CSV import',
+          ],
+          [
+            '/t/:team/o/:office/reports',
+            'ReportsPage',
+            'Occupancy, utilization, and heatmap analytics',
+          ],
+          [
+            '/t/:team/settings',
+            'TeamSettingsPage',
+            'Team members, configuration, and billing',
+          ],
+          ['/docs', 'ProjectDocsPage', 'This project documentation experience'],
+        ]}
+      />
+    </>
+  )
 }
 
 function WorkflowSection() {
-  return (<>
-    <SectionTitle>User Workflow</SectionTitle>
-    <P>The complete end-to-end workflow from account creation to floor plan management.</P>
-    <SubTitle>1. Onboarding</SubTitle>
-    <StepList steps={[
-      { title: 'Sign Up / Login', desc: 'Email+password via Supabase Auth. Email verification required.' },
-      { title: 'Create or Join Team', desc: 'Team onboarding page lets you name your workspace. Invite link for existing teams.' },
-      { title: 'Land on Dashboard', desc: 'TeamHomePage shows all offices, stats strip, search/sort/filter controls.' },
-    ]} />
-    <SubTitle>2. Office Creation</SubTitle>
-    <StepList steps={[
-      { title: 'Click "+ New office"', desc: 'Browser prompt asks for a name. Auto-suggests "New office N".' },
-      { title: 'Engine Chooser', desc: 'Pick Konva (stable, Canvas 2D) or PixiJS (experimental, WebGL). Persisted in uiStore.' },
-      { title: 'Empty Canvas', desc: 'MapView loads with FirstRunCoach tour — pan, zoom, draw walls, place desks.' },
-    ]} />
-    <SubTitle>3. Floor Plan Design</SubTitle>
-    <StepList steps={[
-      { title: 'Draw Walls', desc: 'Wall tool with click-to-place points. Supports curved walls, wall styles, door/window attachments.' },
-      { title: 'Place Elements', desc: 'Drag from Library sidebar: desks, tables, rooms, furniture. Each has configurable properties.' },
-      { title: 'Create Neighborhoods', desc: 'Draw neighborhood zones — groups of desks by department or team. Color-coded on canvas.' },
-      { title: 'Assign Employees', desc: 'Drag employee from roster → drop on desk. Or use bulk assign in roster page.' },
-    ]} />
-    <SubTitle>4. Reports & Analytics</SubTitle>
-    <StepList steps={[
-      { title: 'Occupancy Metrics', desc: 'Real-time desk utilization %, unassigned employees, open seats.' },
-      { title: 'Department Breakdown', desc: 'Per-department seating distribution, neighborhood alignment scores.' },
-      { title: 'Org Chart', desc: 'Hierarchical view from employee manager chains. Overlays on canvas.' },
-      { title: 'Scenarios', desc: 'What-if planning — clone state, try rearrangements, compare outcomes.' },
-    ]} />
-  </>)
+  return (
+    <>
+      <SectionTitle>User workflow</SectionTitle>
+      <P>
+        The full path from account creation through design operations and
+        reporting.
+      </P>
+
+      <SubTitle>1. Onboarding</SubTitle>
+      <StepList
+        steps={[
+          {
+            title: 'Sign up or login',
+            desc: 'Email and password via Supabase Auth with verification required.',
+          },
+          {
+            title: 'Create or join team',
+            desc: 'Name your workspace or join from an invite link.',
+          },
+          {
+            title: 'Open dashboard',
+            desc: 'TeamHomePage exposes offices, stats, and create/delete actions.',
+          },
+        ]}
+      />
+
+      <SubTitle>2. Office creation</SubTitle>
+      <StepList
+        steps={[
+          {
+            title: 'Create office',
+            desc: 'Use New office and name the space from the prompt flow.',
+          },
+          {
+            title: 'Pick render engine',
+            desc: 'Choose Konva (stable) or PixiJS (experimental). Selection persists in uiStore.',
+          },
+          {
+            title: 'Open empty canvas',
+            desc: 'MapView loads with guidance for pan, zoom, and wall drawing.',
+          },
+        ]}
+      />
+
+      <SubTitle>3. Floor plan design</SubTitle>
+      <StepList
+        steps={[
+          {
+            title: 'Draw walls',
+            desc: 'Click to place points with support for curves, doors, and windows.',
+          },
+          {
+            title: 'Place elements',
+            desc: 'Drag desks, rooms, and furniture from the left library.',
+          },
+          {
+            title: 'Create neighborhoods',
+            desc: 'Define team zones and color-code areas for department-level planning.',
+          },
+          {
+            title: 'Assign employees',
+            desc: 'Drag roster members to desks or use bulk assignment tools.',
+          },
+        ]}
+      />
+
+      <SubTitle>4. Reports and analytics</SubTitle>
+      <StepList
+        steps={[
+          {
+            title: 'Occupancy metrics',
+            desc: 'Track utilization, unassigned employees, and open seats.',
+          },
+          {
+            title: 'Department breakdown',
+            desc: 'Review seat distribution by team and neighborhood alignment.',
+          },
+          {
+            title: 'Org chart overlays',
+            desc: 'Map manager chains directly onto seat layout context.',
+          },
+          {
+            title: 'Scenarios',
+            desc: 'Clone and compare alternate layout decisions.',
+          },
+        ]}
+      />
+    </>
+  )
 }
 
 function ArchitectureSection() {
-  return (<>
-    <SectionTitle>Architecture</SectionTitle>
-    <P>The app follows a clean separation: React components for UI, Zustand stores for state, and a lib/ layer for business logic and persistence.</P>
-    <SubTitle>Directory Structure</SubTitle>
-    <Card title="src/">
-      <pre style={{ margin: 0, fontSize: 12, lineHeight: 1.8, color: '#cbd5e1' }}>{`├── components/
-│   ├── auth/          # Login, Signup, Forgot, Verify, Reset
-│   ├── editor/        # MapView, RosterPage, ProjectShell, TopBar
-│   │   ├── Canvas/    # Konva renderers: elements, rooms, walls, overlays
-│   │   ├── RightSidebar/  # Properties, Insights, Layer panels
-│   │   └── reports/   # ScenariosPage, OrgChart
-│   ├── team/          # TeamHomePage, Settings, Account, Invite
-│   ├── reports/       # ReportsPage, OrgChartOverlay, MovePlanner
-│   ├── help/          # HelpPage, ProjectDocsPage (this)
-│   ├── landing/       # Public landing page
-│   └── ui/            # Button, Input, Modal, ThemeToggle
-├── stores/            # 18 Zustand stores
-├── hooks/             # useCan, useWallDrawing, usePresentationShortcuts
-├── lib/               # Business logic, persistence, utilities
-│   ├── auth/          # AuthProvider, session management
-│   ├── offices/       # CRUD, sync, permissions, CSV import
-│   └── theme/         # ThemeProvider, dark mode
-├── types/             # TypeScript interfaces (floor, elements, team)
-└── __tests__/         # 236 test files (Vitest)`}</pre>
-    </Card>
-    <SubTitle>Data Flow</SubTitle>
-    <Card title="Load → Edit → Save cycle">
-      <strong>1. Load:</strong> ProjectShell fetches office payload from Supabase → hydrates elementsStore, employeeStore, floorStore, neighborhoodStore.<br />
-      <strong>2. Edit:</strong> User interactions update Zustand stores. Canvas re-renders via React subscriptions.<br />
-      <strong>3. Save:</strong> useOfficeSync debounces changes, serializes stores → PATCH to Supabase. Conflict detection via updated_at versioning.
-    </Card>
-    <SubTitle>Canvas Rendering Pipeline</SubTitle>
-    <Card title="Dual-Engine System">
-      The editor supports two rendering backends selectable at the Engine Chooser page:<br /><br />
-      <strong>Konva (default):</strong> Canvas 2D via react-konva. Full feature parity — selection, multi-select, alignment guides, snap-to-grid, hover outlines, minimap, overlays.<br /><br />
-      <strong>PixiJS (experimental):</strong> WebGL via @pixi/react. GPU-accelerated for 10k+ elements. Limited overlay support.
-    </Card>
-  </>)
+  return (
+    <>
+      <SectionTitle>Architecture</SectionTitle>
+      <P>
+        The app separates React UI composition, Zustand state, and lib-level
+        persistence/business logic. This keeps the editor path maintainable
+        while supporting both rendering engines.
+      </P>
+
+      <SubTitle>Directory structure</SubTitle>
+      <Card title="src/ layout" tone="blue">
+        <pre className="overflow-x-auto text-xs leading-6 whitespace-pre text-slate-200">{`src/
++-- components/
+¦   +-- auth/
+¦   +-- editor/
+¦   ¦   +-- Canvas/
+¦   ¦   +-- RightSidebar/
+¦   ¦   +-- reports/
+¦   +-- team/
+¦   +-- reports/
+¦   +-- help/
+¦   +-- landing/
+¦   +-- ui/
++-- stores/
++-- hooks/
++-- lib/
++-- types/
++-- __tests__/`}</pre>
+      </Card>
+
+      <SubTitle>Data flow</SubTitle>
+      <Card title="Load -> Edit -> Save cycle" tone="green">
+        <p>
+          <strong>1. Load:</strong> ProjectShell fetches office payload and
+          hydrates floor, employee, element, and neighborhood stores.
+        </p>
+        <p>
+          <strong>2. Edit:</strong> User interactions mutate Zustand state, then
+          canvas rendering updates through React subscriptions.
+        </p>
+        <p>
+          <strong>3. Save:</strong> Office sync debounces changes and writes
+          serialized data to Supabase with version checks.
+        </p>
+      </Card>
+
+      <SubTitle>Canvas rendering pipeline</SubTitle>
+      <Card title="Dual-engine model" tone="amber">
+        <p>
+          <strong>Konva (default):</strong> Canvas 2D with full feature parity
+          and production stability.
+        </p>
+        <p>
+          <strong>PixiJS (experimental):</strong> WebGL path optimized for high
+          object counts with partial overlay support.
+        </p>
+      </Card>
+    </>
+  )
 }
 
 function AdminSection() {
-  return (<>
-    <SectionTitle>Admin System</SectionTitle>
-    <P>Floorcraft uses an <strong>admin-first single-role architecture</strong>. Every authenticated user has full admin access.</P>
-    <SubTitle>Permission Model</SubTitle>
-    <Card title="Simplified Permissions">
-      The <code style={{ background: '#334155', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>useCan(action)</code> hook unconditionally returns <code style={{ background: '#334155', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>true</code> for all actions.<br /><br />
-      <strong>Available actions:</strong> editRoster, editMap, manageTeam, viewReports, viewSeatHistory, manageWorkspace, viewMap, viewPII<br /><br />
-      <strong>Rationale:</strong> During the admin-only phase, all features are unlocked. A future "viewer" role will restrict write operations.
-    </Card>
-    <SubTitle>Admin Control Center</SubTitle>
-    <Card title="AdminStatsToolbar">
-      A dockable floating toolbar visible to admins with two tabs:<br /><br />
-      <strong>Live Stats:</strong> Real-time neighborhood count, employee count, occupancy %, object count, assigned seats, health status, payload size.<br /><br />
-      <strong>Maintenance:</strong> Force-overwrite remote, clear canvas (destructive), triage conflicts.
-    </Card>
-    <SubTitle>12 Canvas Tools</SubTitle>
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-      <thead><TableRow cells={['Tool', 'Shortcut', 'Description']} header /></thead>
-      <tbody>
-        <TableRow cells={['Select', 'V', 'Click/marquee select elements']} />
-        <TableRow cells={['Pan', 'Space', 'Drag canvas to pan']} />
-        <TableRow cells={['Wall', 'W', 'Click-to-place wall segments']} />
-        <TableRow cells={['Door', '⇧D', 'Attach door to wall']} />
-        <TableRow cells={['Window', '⇧N', 'Attach window to wall']} />
-        <TableRow cells={['Rectangle', '⇧R', 'Draw rectangular rooms/zones']} />
-        <TableRow cells={['Ellipse', 'E', 'Draw elliptical shapes']} />
-        <TableRow cells={['Line', 'L', 'Freeform line tool']} />
-        <TableRow cells={['Arrow', 'A', 'Directional arrow annotations']} />
-        <TableRow cells={['Text', 'T', 'Place text labels']} />
-        <TableRow cells={['Measure', '⇧M', 'Distance measurement overlay']} />
-        <TableRow cells={['Neighborhood', '⇧G', 'Department/team zone boundaries']} />
-      </tbody>
-    </table>
-  </>)
+  return (
+    <>
+      <SectionTitle>Admin system</SectionTitle>
+      <P>
+        Floorcraft currently runs an admin-first single-role architecture where
+        all authenticated users receive full write access.
+      </P>
+
+      <SubTitle>Permission model</SubTitle>
+      <Card title="Simplified permissions" tone="blue">
+        <p>
+          The <code className={CODE_BADGE}>useCan(action)</code> hook returns{' '}
+          <code className={CODE_BADGE}>true</code> for all actions during this
+          phase.
+        </p>
+        <p>
+          Available action groups include roster editing, map editing, team
+          management, report visibility, and workspace controls.
+        </p>
+      </Card>
+
+      <SubTitle>Admin control center</SubTitle>
+      <Card title="AdminStatsToolbar" tone="green">
+        <p>
+          Dockable toolbar for live health statistics and maintenance
+          operations, including conflict handling and force overwrite actions.
+        </p>
+      </Card>
+
+      <SubTitle>Canvas tools</SubTitle>
+      <Table
+        headers={['Tool', 'Shortcut', 'Description']}
+        rows={[
+          ['Select', 'V', 'Select individual or multiple elements'],
+          ['Pan', 'Space', 'Move viewport while maintaining context'],
+          ['Wall', 'W', 'Create wall segments point by point'],
+          ['Door', 'Shift + D', 'Attach door objects to walls'],
+          ['Window', 'Shift + N', 'Attach windows to walls'],
+          ['Rectangle', 'Shift + R', 'Draw rectangular zones and rooms'],
+          ['Ellipse', 'E', 'Draw elliptical shapes'],
+          ['Line', 'L', 'Create freeform lines'],
+          ['Arrow', 'A', 'Add directional annotations'],
+          ['Text', 'T', 'Place labels directly on canvas'],
+          ['Measure', 'Shift + M', 'Measure distance overlay'],
+          ['Neighborhood', 'Shift + G', 'Define department boundaries'],
+        ]}
+      />
+    </>
+  )
 }
 
 function EnginesSection() {
-  return (<>
-    <SectionTitle>Rendering Engines</SectionTitle>
-    <P>The dual-engine architecture allows side-by-side comparison of Canvas 2D (Konva) and WebGL (PixiJS).</P>
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-      <Card title="Konva" accent="#0ea5e9">
-        <Badge tone="green">STABLE</Badge><br /><br />
-        Canvas 2D rendering via <code style={{ background: '#334155', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>react-konva</code>.<br /><br />
-        ✅ Full feature parity<br />
-        ✅ Selection, multi-select, marquee<br />
-        ✅ Alignment guides &amp; snap-to-grid<br />
-        ✅ Hover outlines &amp; hover cards<br />
-        ✅ Minimap with drag-pan<br />
-        ✅ All overlay layers<br />
-        ✅ Stable for production
-      </Card>
-      <Card title="PixiJS" accent="#6366f1">
-        <Badge tone="amber">EXPERIMENTAL</Badge><br /><br />
-        WebGL hardware-accelerated via <code style={{ background: '#334155', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>@pixi/react</code>.<br /><br />
-        ✅ GPU-accelerated rendering<br />
-        ✅ 60fps at 10k+ elements<br />
-        ✅ Smoother zoom/pan<br />
-        ⚠️ Limited overlay support<br />
-        ⚠️ Some tools in progress<br />
-        ⚠️ Not production-ready
-      </Card>
-    </div>
-    <SubTitle>Engine Selection Flow</SubTitle>
-    <StepList steps={[
-      { title: 'New Office / Navigate', desc: 'Office index route redirects to /engine chooser page.' },
-      { title: 'Pick Engine', desc: 'Click Konva or PixiJS card. Choice persisted in uiStore.viewMode ("2d" or "pixi").' },
-      { title: 'Editor Loads', desc: 'MapView reads viewMode from uiStore to initialize the correct rendering backend.' },
-      { title: 'Switch Later', desc: 'Use Ctrl+Shift+P or click engine indicator in status bar to toggle anytime.' },
-    ]} />
-  </>)
+  return (
+    <>
+      <SectionTitle>Rendering engines</SectionTitle>
+      <P>
+        Floorcraft supports both Canvas 2D and WebGL workflows through an
+        explicit engine selection step.
+      </P>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Card title="Konva" tone="green">
+          <Badge tone="green">Stable</Badge>
+          <p>
+            Based on <code className={CODE_BADGE}>react-konva</code>, with full
+            parity for selection, overlays, alignment guides, and minimap
+            behavior.
+          </p>
+        </Card>
+        <Card title="PixiJS" tone="amber">
+          <Badge tone="amber">Experimental</Badge>
+          <p>
+            Powered by <code className={CODE_BADGE}>@pixi/react</code> for GPU
+            acceleration and high object-count rendering.
+          </p>
+          <p>
+            Overlay coverage is partial and several tools remain in progress.
+          </p>
+        </Card>
+      </div>
+
+      <SubTitle>Engine selection flow</SubTitle>
+      <StepList
+        steps={[
+          {
+            title: 'Navigate to chooser',
+            desc: 'Office index redirects to the engine chooser screen.',
+          },
+          {
+            title: 'Select engine',
+            desc: 'Choice persists in uiStore viewMode as 2d or pixi.',
+          },
+          {
+            title: 'Load editor',
+            desc: 'MapView initializes the matching render backend.',
+          },
+          {
+            title: 'Switch later',
+            desc: 'Engine can be toggled from the status controls when needed.',
+          },
+        ]}
+      />
+    </>
+  )
 }
 
 function StoresSection() {
-  return (<>
-    <SectionTitle>State Management</SectionTitle>
-    <P>All state is managed via <strong>Zustand</strong> stores with React subscriptions. The <code style={{ background: '#334155', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>useShallow</code> wrapper prevents infinite re-render loops when selecting objects.</P>
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-      <thead><TableRow cells={['Store', 'Purpose', 'Key State']} header /></thead>
-      <tbody>
-        <TableRow cells={['elementsStore', 'Canvas elements (desks, walls, rooms)', 'elements: Record<id, CanvasElement>']} />
-        <TableRow cells={['employeeStore', 'Employee roster data', 'employees: Record<id, Employee>']} />
-        <TableRow cells={['floorStore', 'Single-floor context', 'floor: Floor (id, name, elements)']} />
-        <TableRow cells={['canvasStore', 'Canvas interaction state', 'tool, zoom, pan, selection, grid']} />
-        <TableRow cells={['uiStore', 'UI preferences & panels', 'viewMode, sidebar, overlays, theme']} />
-        <TableRow cells={['projectStore', 'Save state & sync', 'saveState, lastSavedAt, conflict']} />
-        <TableRow cells={['neighborhoodStore', 'Department zones', 'neighborhoods: Record<id, Neighborhood>']} />
-        <TableRow cells={['insightsStore', 'Plan health issues', 'insights: Insight[]']} />
-        <TableRow cells={['scenariosStore', 'What-if planning', 'scenarios, activeId, diffs']} />
-        <TableRow cells={['seatHistoryStore', 'Seat assignment log', 'history entries per seat']} />
-        <TableRow cells={['layerVisibilityStore', 'Toggle canvas layers', 'visible layers bitmask']} />
-        <TableRow cells={['overlaysStore', 'Heatmap/org overlays', 'active overlay type']} />
-        <TableRow cells={['toastStore', 'Notification toasts', 'queue of toast messages']} />
-        <TableRow cells={['cursorStore', 'Cursor coordinates', 'x, y for status bar display']} />
-        <TableRow cells={['annotationsStore', 'Map pins & notes', 'annotations: Annotation[]']} />
-        <TableRow cells={['calibrateScaleStore', 'Real-world scale setup', 'calibration state & factor']} />
-        <TableRow cells={['canvasFinderStore', '"Find on Map" feature', 'search query & highlighted elements']} />
-        <TableRow cells={['seatDragStore', 'Drag-to-assign UX', 'dragging employee & target seat']} />
-      </tbody>
-    </table>
-  </>)
+  return (
+    <>
+      <SectionTitle>State management</SectionTitle>
+      <P>
+        Zustand owns all runtime state. Selective subscriptions and shallow
+        selectors are used to prevent unnecessary rerenders during heavy canvas
+        interaction.
+      </P>
+
+      <Table
+        headers={['Store', 'Purpose', 'Key state']}
+        rows={[
+          [
+            'elementsStore',
+            'Canvas elements and geometry',
+            'elements: Record<id, CanvasElement>',
+          ],
+          [
+            'employeeStore',
+            'Employee roster and metadata',
+            'employees: Record<id, Employee>',
+          ],
+          [
+            'floorStore',
+            'Single floor editing context',
+            'floor model and identifiers',
+          ],
+          [
+            'canvasStore',
+            'Tooling and viewport',
+            'tool, zoom, pan, selection, grid',
+          ],
+          [
+            'uiStore',
+            'UI preferences and panel state',
+            'viewMode, overlays, sidebar',
+          ],
+          [
+            'projectStore',
+            'Save lifecycle',
+            'saveState, lastSavedAt, conflict',
+          ],
+          ['neighborhoodStore', 'Zone boundaries', 'neighborhood maps'],
+          ['insightsStore', 'Plan health insights', 'issues list and severity'],
+          [
+            'scenariosStore',
+            'What-if planning',
+            'scenario lists and active diff',
+          ],
+          ['seatHistoryStore', 'Seat assignment timeline', 'history entries'],
+          ['layerVisibilityStore', 'Layer toggles', 'visibility bitmask'],
+          ['overlaysStore', 'Heatmap and overlay mode', 'active overlay type'],
+          ['toastStore', 'Notification queue', 'transient message queue'],
+          ['cursorStore', 'Pointer readout', 'x and y coordinates'],
+          ['annotationsStore', 'Map notes and pins', 'annotation collection'],
+          [
+            'calibrateScaleStore',
+            'Real-world calibration',
+            'scale factor and calibration state',
+          ],
+          [
+            'canvasFinderStore',
+            'Find on map workflow',
+            'search and highlight state',
+          ],
+          [
+            'seatDragStore',
+            'Drag-to-assign state',
+            'active employee and seat target',
+          ],
+        ]}
+      />
+    </>
+  )
 }
 
 function RemovedSection() {
-  return (<>
-    <SectionTitle>Removed Features</SectionTitle>
-    <P>The following features were decommissioned during the admin-first simplification. Source files are archived in <code style={{ background: '#334155', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>c:\Floorcraft\deleted\</code>.</P>
-    <SubTitle>Multi-Floor System</SubTitle>
-    <Card title="FloorSwitcher, FloorCompare*">
-      <Badge tone="red">REMOVED</Badge><br />
-      Previously supported multiple floors per office with tab-based switching, floor comparison sparklines, and cross-floor analytics. Replaced by single-floor architecture (floorStore.floor).
-    </Card>
-    <SubTitle>Room Bookings</SubTitle>
-    <Card title="RoomBookingBadge, RoomBookingDialog, RoomBookingsPanel">
-      <Badge tone="red">REMOVED</Badge><br />
-      Conference room reservation system with conflict detection, calendar integration, and real-time badges on room elements. Stores: roomBookingsStore, roomBookingDialogStore.
-    </Card>
-    <SubTitle>Seat Swap Requests</SubTitle>
-    <Card title="SeatSwapRequestDialog, seatSwapsStore">
-      <Badge tone="red">REMOVED</Badge><br />
-      Employee-initiated seat swap workflow with manager approval. Panel in InsightsPanel showed pending swaps.
-    </Card>
-    <SubTitle>Reservations</SubTitle>
-    <Card title="ReservationsPage, reservationsStore">
-      <Badge tone="red">REMOVED</Badge><br />
-      Hot desk reservation system with time slots, persistence layer, and dedicated page.
-    </Card>
-    <SubTitle>Share Links</SubTitle>
-    <Card title="ShareModal, ShareView, ShareLinkDialog, shareLinksStore">
-      <Badge tone="red">REMOVED</Badge><br />
-      Public/private share link generation with token-based access, viewer permissions, and embedded read-only views.
-    </Card>
-    <SubTitle>Audit Logging</SubTitle>
-    <Card title="audit.ts, auditRepository.ts, AuditLogPage">
-      <Badge tone="red">REMOVED</Badge><br />
-      Event-sourced audit trail recording every employee assignment, element change, and admin action. Dedicated log viewer page.
-    </Card>
-    <SubTitle>Other Removed Items</SubTitle>
-    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-      <thead><TableRow cells={['Component', 'Category', 'Reason']} header /></thead>
-      <tbody>
-        <TableRow cells={['ImpersonationBanner', 'Auth', 'View-as-user feature removed in admin-first mode']} />
-        <TableRow cells={['ViewAsMenu', 'Auth', 'Role-switching UI removed']} />
-        <TableRow cells={['SharedProjectView', 'Share', 'Public embed removed with share links']} />
-        <TableRow cells={['collaborationStore', 'Collab', 'Real-time collaboration prototype removed']} />
-        <TableRow cells={['floorSparklineSeries', 'Analytics', 'Multi-floor comparison data removed']} />
-      </tbody>
-    </table>
-  </>)
+  return (
+    <>
+      <SectionTitle>Removed features</SectionTitle>
+      <P>
+        The following capabilities were decommissioned during admin-first
+        simplification. Archived source is stored in
+        <code className={CODE_BADGE}>c:\Floorcraft\deleted\</code>.
+      </P>
+
+      <SubTitle>Major removals</SubTitle>
+      <div className="space-y-3">
+        <Card title="Multi-floor system" tone="red">
+          <Badge tone="red">Removed</Badge>
+          <p>
+            Floor switching, floor comparison views, and cross-floor analytics
+            were retired.
+          </p>
+        </Card>
+        <Card title="Room bookings" tone="red">
+          <Badge tone="red">Removed</Badge>
+          <p>
+            Reservation dialogs, booking badges, and room booking stores were
+            removed.
+          </p>
+        </Card>
+        <Card title="Seat swap requests" tone="red">
+          <Badge tone="red">Removed</Badge>
+          <p>
+            Employee-initiated seat swap flow with manager approval was removed.
+          </p>
+        </Card>
+        <Card title="Share links and audit logging" tone="red">
+          <Badge tone="red">Removed</Badge>
+          <p>
+            Public/private share links and full audit trail pages were retired
+            from active routes.
+          </p>
+        </Card>
+      </div>
+
+      <SubTitle>Other removed items</SubTitle>
+      <Table
+        headers={['Component', 'Category', 'Reason']}
+        rows={[
+          [
+            'ImpersonationBanner',
+            'Auth',
+            'View-as-user mode removed for admin-first architecture',
+          ],
+          ['ViewAsMenu', 'Auth', 'Role switching UI removed'],
+          [
+            'SharedProjectView',
+            'Share',
+            'Public embed removed with share links',
+          ],
+          [
+            'collaborationStore',
+            'Collaboration',
+            'Prototype collaboration state retired',
+          ],
+          [
+            'floorSparklineSeries',
+            'Analytics',
+            'Multi-floor comparison removed',
+          ],
+        ]}
+      />
+    </>
+  )
 }
 
 function ChangelogSection() {
-  return (<>
-    <SectionTitle>Changelog</SectionTitle>
-    <P>Recent changes to the Floorcraft codebase.</P>
-    <Card title="April 2026 — Admin-First Simplification">
-      • Transitioned to single-role admin architecture — useCan() always returns true<br />
-      • Decommissioned multi-floor system → single-floor floorStore<br />
-      • Removed room bookings, seat swaps, reservations, share links, audit log<br />
-      • 37 dead source files archived to c:\Floorcraft\deleted\<br />
-      • Fixed AdminStatsToolbar infinite render loop (useShallow)<br />
-      • Fixed RosterPage: floors→floor migration, removed SeatSwapRequestDialog<br />
-      • Fixed OrgChartOverlay: useActiveFloor returns Floor object, not string<br />
-      • Cleaned orphaned imports from employeeStore, CSVImportDialog, FirstRunCoach, InsightsPanel<br />
-      • Restored 236 test files + AuditLogPage + usePresentationShortcuts
-    </Card>
-    <Card title="April 2026 — Dual Engine System">
-      • Created EngineChooserPage — premium dark-themed gateway<br />
-      • Added /engine route, office index redirects to engine chooser<br />
-      • New office flow: Dashboard → Engine Chooser → Map (was: Dashboard → Map)<br />
-      • Engine choice persisted in uiStore.viewMode<br />
-      • Konva: full feature parity, stable<br />
-      • PixiJS: WebGL experimental, GPU-accelerated
-    </Card>
-    <Card title="April 2026 — UI Polish">
-      • Dockable toolbar system for floating panels<br />
-      • North Arrow compass with interactive rotation<br />
-      • Status bar with cursor coords, zoom, occupancy<br />
-      • Plan Health pill with issue count badge<br />
-      • FirstRunCoach 5-step onboarding tour<br />
-      • Keyboard shortcuts overlay (? key)
-    </Card>
-  </>)
+  return (
+    <>
+      <SectionTitle>Changelog</SectionTitle>
+      <P>Recent updates to Floorcraft architecture and product behavior.</P>
+
+      <div className="space-y-3">
+        <Card title="April 2026 - Admin-first simplification" tone="amber">
+          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-6 text-slate-300">
+            <li>
+              Permission model moved to full admin access with useCan() always
+              true.
+            </li>
+            <li>
+              Single-floor architecture replaced prior multi-floor workflows.
+            </li>
+            <li>
+              Room bookings, seat swaps, reservations, share links, and audit
+              log were removed.
+            </li>
+            <li>
+              Dozens of dead files were archived and orphaned imports cleaned.
+            </li>
+          </ul>
+        </Card>
+
+        <Card title="April 2026 - Dual engine system" tone="green">
+          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-6 text-slate-300">
+            <li>
+              Added EngineChooserPage and office route redirection to the engine
+              selector.
+            </li>
+            <li>Engine preferences now persist in uiStore viewMode.</li>
+            <li>
+              Konva path remains stable while PixiJS remains experimental.
+            </li>
+          </ul>
+        </Card>
+
+        <Card title="April 2026 - UI polish" tone="blue">
+          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-6 text-slate-300">
+            <li>Dockable toolbar and status indicators were introduced.</li>
+            <li>
+              First run onboarding tour and keyboard shortcut overlay were
+              improved.
+            </li>
+            <li>
+              Plan health and navigation overlays were made more actionable.
+            </li>
+          </ul>
+        </Card>
+      </div>
+    </>
+  )
 }

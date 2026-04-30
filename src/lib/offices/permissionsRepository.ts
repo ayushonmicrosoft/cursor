@@ -1,6 +1,6 @@
 import { supabase } from '../supabase'
 
-export type OfficeRole = 'admin'
+export type OfficeRole = 'edit' | 'view'
 
 export interface OfficePermEntry {
   user_id: string
@@ -12,27 +12,32 @@ export interface OfficePermEntry {
 
 /**
  * Returns one row per team member of the office's team.
- * In the single-role model, everyone is an 'admin'.
+ * Roles are normalized to `edit` / `view`.
  */
 export async function listPermissions(
-  officeId: string,
+  _officeId: string,
   selfId: string,
   teamId: string,
 ): Promise<OfficePermEntry[]> {
   const { data: members, error } = await supabase
     .from('team_members')
-    .select('user_id, profiles!inner(email, name)')
+    .select('user_id, role, profiles!inner(email, name)')
     .eq('team_id', teamId)
   
   if (error) throw error
 
   return (members ?? []).map((m: any) => {
     const prof = m.profiles as { email: string; name: string | null }
+    const memberRole = (m.role as string | undefined) ?? null
+    const normalizedRole: OfficeRole =
+      memberRole === 'view' || memberRole === 'viewer'
+        ? 'view'
+        : 'edit'
     return {
       user_id: m.user_id,
       email: prof.email,
       name: prof.name,
-      role: 'admin' as const,
+      role: normalizedRole,
       isSelf: m.user_id === selfId,
     }
   })
@@ -43,10 +48,9 @@ export async function upsertPermission(
   userId: string,
   role: OfficeRole,
 ): Promise<void> {
-  // Always 'admin' in this model
   const { error } = await supabase
     .from('office_permissions')
-    .upsert({ office_id: officeId, user_id: userId, role: 'admin' }, { onConflict: 'office_id,user_id' })
+    .upsert({ office_id: officeId, user_id: userId, role }, { onConflict: 'office_id,user_id' })
   if (error) throw error
 }
 

@@ -27,7 +27,7 @@ interface Props {
 
 /**
  * Dense office card for the team home dashboard. The whole tile is a
- * `Link` to the office map; the kebab menu is a sibling button so its
+ * `Link` to the engine chooser; the kebab menu is a sibling button so its
  * click doesn't navigate. Stats are precomputed by the parent so the
  * card stays a pure presentational component.
  */
@@ -44,7 +44,7 @@ export function OfficeCard({ office, teamSlug, thumbnailElements, stats, avatars
   return (
     <div className="relative group">
       <Link
-        to={`/t/${teamSlug}/o/${office.slug}/map`}
+        to={`/t/${teamSlug}/o/${office.slug}/engine`}
         className="block bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       >
         <div className="w-full h-40 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">

@@ -157,7 +157,7 @@ describe('OfficeSwitcher', () => {
     const labRow = await screen.findByTestId('office-switcher-office-lab')
     fireEvent.click(labRow)
     await waitFor(() => {
-      expect(lastPath).toBe('/t/acme/o/lab/map')
+      expect(lastPath).toBe('/t/acme/o/lab/engine')
     })
   })
 

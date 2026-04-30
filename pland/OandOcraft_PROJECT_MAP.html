@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive project playbook for OandOcraft with Markdown spec, checklist, walkthrough, and technical reference.">
+  <title>OandOcraft Project Playbook</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg: #0a0b0f;
+      --bg2: #111318;
+      --bg3: #181b22;
+      --line: #1e2230;
+      --line2: #252a38;
+      --ink: #e8eaf0;
+      --muted: #9ba3b8;
+      --muted2: #5c6478;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --card-r: 12px;
+      --nav-h: 60px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: var(--nav-h);
+      background: rgba(10, 11, 15, 0.9);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 22px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 18px;
+      flex-shrink: 0;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 11px;
+      border-radius: 8px;
+      transition: all .15s;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: transparent;
+      font-family: inherit;
+    }
+
+    .nav-link:hover { color: var(--ink); background: var(--bg3); }
+    .nav-link.active {
+      color: var(--accent2);
+      background: var(--accent-glow);
+      border-color: rgba(99, 102, 241, 0.28);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 68px 24px 42px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      background: var(--accent-glow);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 800;
+      line-height: 1.08;
+      background: linear-gradient(135deg, #fff 28%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 760px;
+      margin: 0 auto 24px;
+    }
+
+    .toolbar {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .md-links {
+      max-width: 1080px;
+      margin: 10px auto 0;
+      padding: 0 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .md-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line2);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--bg2);
+    }
+
+    .md-link:hover {
+      color: var(--accent2);
+      border-color: rgba(99, 102, 241, 0.45);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .search, .btn {
+      min-height: 38px;
+      border: 1px solid var(--line2);
+      border-radius: 10px;
+      background: var(--bg2);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .search {
+      width: 100%;
+      padding: 0 12px;
+    }
+
+    .btn {
+      padding: 0 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .btn:hover, .search:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+      color: var(--ink);
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 26px auto 74px;
+      padding: 0 24px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat .num {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--accent2);
+      line-height: 1.1;
+    }
+
+    .stat .lbl {
+      font-size: 11px;
+      color: var(--muted2);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-top: 4px;
+    }
+
+    .panel {
+      display: none;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: var(--card-r);
+      padding: 20px;
+    }
+
+    .panel.active { display: block; }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section:last-child { margin-bottom: 0; }
+
+    .section h2 {
+      font-size: 19px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      flex-shrink: 0;
+    }
+
+    .section h3 {
+      font-size: 14px;
+      margin: 12px 0 8px;
+      color: var(--ink);
+    }
+
+    p, li { color: var(--muted); font-size: 14px; }
+    ul, ol { margin-left: 20px; }
+    li + li { margin-top: 4px; }
+
+    code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      background: var(--bg3);
+      border: 1px solid var(--line2);
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
+
+    .progress {
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid var(--line2);
+      border-radius: 10px;
+      background: var(--bg3);
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .track {
+      height: 10px;
+      border-radius: 999px;
+      background: #202533;
+      overflow: hidden;
+    }
+
+    .bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width .2s ease;
+    }
+
+    .group {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .group h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted2);
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .task:last-child { border-bottom: 0; }
+    .task label { color: var(--muted); font-size: 14px; }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      letter-spacing: .04em;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .badge-blue { background: rgba(99, 102, 241, .15); color: var(--accent2); border-color: rgba(99, 102, 241, .3); }
+    .badge-green { background: rgba(16, 185, 129, .12); color: var(--green); border-color: rgba(16, 185, 129, .25); }
+    .badge-amber { background: rgba(245, 158, 11, .12); color: var(--amber); border-color: rgba(245, 158, 11, .25); }
+    .badge-red { background: rgba(239, 68, 68, .12); color: var(--red); border-color: rgba(239, 68, 68, .25); }
+
+    .walk-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 14px;
+    }
+
+    .steps {
+      border-right: 1px solid var(--line);
+      padding-right: 12px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .step-btn {
+      border: 1px solid var(--line2);
+      background: var(--bg3);
+      color: var(--muted);
+      border-radius: 8px;
+      text-align: left;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      min-height: 38px;
+    }
+
+    .step-btn.active {
+      color: var(--accent2);
+      border-color: rgba(99, 102, 241, .45);
+      background: rgba(99, 102, 241, .12);
+    }
+
+    .step-content h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .step-controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line2);
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--bg3);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+
+    .tone-green { color: var(--green); font-weight: 600; }
+    .tone-amber { color: var(--amber); font-weight: 600; }
+    .tone-red { color: var(--red); font-weight: 600; }
+
+    .hidden-search { display: none !important; }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted2);
+    }
+
+    @media (max-width: 860px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .walk-grid { grid-template-columns: 1fr; }
+      .steps {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="logo" href="#">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="8" height="8" rx="2" fill="#6366f1"/>
+        <rect x="12" y="2" width="8" height="8" rx="2" fill="#818cf8" opacity=".6"/>
+        <rect x="2" y="12" width="8" height="8" rx="2" fill="#818cf8" opacity=".6"/>
+        <rect x="12" y="12" width="8" height="8" rx="2" fill="#6366f1" opacity=".3"/>
+      </svg>
+      OandOcraft
+    </a>
+    <button class="nav-link active" data-tab="md">Markdown Spec</button>
+    <button class="nav-link" data-tab="checklist">Checklist</button>
+    <button class="nav-link" data-tab="walkthrough">Walkthrough</button>
+    <button class="nav-link" data-tab="technical">Technical Doc</button>
+  </nav>
+
+  <div class="hero">
+    <div class="tag">Interactive Project Playbook</div>
+    <h1>Plan, Execute,<br>Ship with Clarity</h1>
+    <p>A revised, docs-site-quality operational document combining structured spec, live checklist tracking, guided execution flow, and technical reference in one interactive page.</p>
+  </div>
+
+  <div class="toolbar">
+    <input id="globalSearch" class="search" type="search" placeholder="Search within current section (tasks, APIs, routes, notes)">
+    <button id="resetAll" class="btn" type="button">Reset Local Progress</button>
+  </div>
+  <div class="md-links">
+    <a class="md-link" href="OandOcraft_PLAYBOOK_SPEC.md">MD: Spec</a>
+    <a class="md-link" href="OandOcraft_PLAYBOOK_CHECKLIST.md">MD: Checklist</a>
+    <a class="md-link" href="OandOcraft_PLAYBOOK_WALKTHROUGH.md">MD: Walkthrough</a>
+    <a class="md-link" href="OandOcraft_PLAYBOOK_TECHNICAL_REFERENCE.md">MD: Technical</a>
+  </div>
+
+  <main>
+    <section class="stats">
+      <article class="stat"><div class="num">4</div><div class="lbl">Modes</div></article>
+      <article class="stat"><div class="num">9</div><div class="lbl">Core Tasks</div></article>
+      <article class="stat"><div class="num">5</div><div class="lbl">Walk Steps</div></article>
+      <article class="stat"><div class="num">2</div><div class="lbl">Tech Tables</div></article>
+      <article class="stat"><div class="num">100%</div><div class="lbl">Interactive</div></article>
+    </section>
+
+    <section class="panel active" data-panel="md">
+      <article data-searchable>
+        <div class="section">
+          <h2><span class="dot"></span>Project Intent</h2>
+          <p>OandOcraft is a floor planning and seating operations product where map editing, team assignment, and office-level governance must remain predictable, readable, and production-safe.</p>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>Current Routing Snapshot</h2>
+          <ul>
+            <li>Public: <code>/</code>, <code>/login</code>, <code>/signup</code>, <code>/forgot</code>, <code>/auth/verify</code>, <code>/auth/reset</code>, <code>/invite/:token</code>, <code>/help</code>, <code>/docs</code>.</li>
+            <li>Team: <code>/dashboard</code>, <code>/t/:teamSlug</code>, <code>/t/:teamSlug/settings</code>.</li>
+            <li>Office: <code>/t/:teamSlug/o/:officeSlug/engine</code>, <code>/map</code>, <code>/roster</code>, <code>/reports</code>, <code>/reports/scenarios</code>, <code>/org-chart</code>.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>Current Engine Snapshot</h2>
+          <ul>
+            <li><code>PixiStage (PixiJS)</code>: primary planner engine.</li>
+            <li><code>Konva (react-konva)</code>: secondary planner engine (still available).</li>
+            <li><code>2.5D view3d (three-based)</code>: shared review mode used with both planner engines.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>Scope and Boundaries</h2>
+          <h3>In Scope</h3>
+          <ul>
+            <li>Map editing workflow in <code>/t/:teamSlug/o/:officeSlug/map</code>.</li>
+            <li>Roster assignment workflow in <code>/roster</code>.</li>
+            <li>Team/admin surfaces, export/share controls, and quality gates.</li>
+          </ul>
+          <h3>Out of Scope</h3>
+          <ul>
+            <li>Backend model rewrites that break payload compatibility.</li>
+            <li>Unbounded refactors unrelated to operator experience.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>Definition of Done</h2>
+          <ul>
+            <li>Primary user flows complete with no blocker UX regressions.</li>
+            <li>Accessibility baseline passes for focus, contrast, and touch targets.</li>
+            <li><code>npm run lint</code>, <code>npm run test</code>, and <code>npm run build</code> pass.</li>
+            <li>Release note + rollback instructions are recorded.</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel" data-panel="checklist">
+      <div class="progress">
+        <div class="progress-top">
+          <span>Execution Progress</span>
+          <span id="progressText">0 / 0 complete</span>
+        </div>
+        <div class="track"><div class="bar" id="progressBar"></div></div>
+      </div>
+
+      <div class="group" data-searchable>
+        <h3>Foundation</h3>
+        <div class="task"><input type="checkbox" data-task="f1"><label>Confirm route map, role model, and environment contract.</label><span class="badge badge-blue">P0</span></div>
+        <div class="task"><input type="checkbox" data-task="f2"><label>Capture baseline screenshots and issue notes for changed surfaces.</label><span class="badge badge-amber">UX</span></div>
+        <div class="task"><input type="checkbox" data-task="f3"><label>Lock acceptance criteria before implementation starts.</label><span class="badge badge-blue">Gate</span></div>
+      </div>
+
+      <div class="group" data-searchable>
+        <h3>UX + Accessibility</h3>
+        <div class="task"><input type="checkbox" data-task="u1"><label>Fix contrast/focus issues in high-traffic routes.</label><span class="badge badge-red">A11y</span></div>
+        <div class="task"><input type="checkbox" data-task="u2"><label>Enforce >=48px targets on actionable controls.</label><span class="badge badge-amber">Mobile</span></div>
+        <div class="task"><input type="checkbox" data-task="u3"><label>Eliminate horizontal overflow at 320px in docs and app views.</label><span class="badge badge-amber">Responsive</span></div>
+      </div>
+
+      <div class="group" data-searchable>
+        <h3>Quality + Release</h3>
+        <div class="task"><input type="checkbox" data-task="q1"><label>Run lint, tests, and build; record failures and fixes.</label><span class="badge badge-green">CI</span></div>
+        <div class="task"><input type="checkbox" data-task="q2"><label>Review audit artifacts and close critical findings.</label><span class="badge badge-green">Audit</span></div>
+        <div class="task"><input type="checkbox" data-task="q3"><label>Complete release/rollback checklist and signoff note.</label><span class="badge badge-green">Ops</span></div>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="walkthrough">
+      <div class="walk-grid">
+        <aside class="steps">
+          <button class="step-btn active" data-step="0">1. Bootstrap</button>
+          <button class="step-btn" data-step="1">2. Analyze</button>
+          <button class="step-btn" data-step="2">3. Implement</button>
+          <button class="step-btn" data-step="3">4. Validate</button>
+          <button class="step-btn" data-step="4">5. Release</button>
+        </aside>
+        <article class="step-content" id="stepContent" data-searchable></article>
+      </div>
+      <div class="step-controls">
+        <button id="prevStep" class="btn" type="button">Previous</button>
+        <button id="nextStep" class="btn" type="button">Next</button>
+      </div>
+    </section>
+
+    <section class="panel" data-panel="technical">
+      <article data-searchable>
+        <div class="section">
+          <h2><span class="dot"></span>Current Engines</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Engine</th><th>Current State</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>PixiJS (<code>PixiStage</code>)</td><td class="tone-green">Primary</td><td>Default primary planner path via <code>viewMode = pixi</code>.</td></tr>
+                <tr><td>Konva (<code>react-konva</code>)</td><td class="tone-amber">Secondary</td><td>Second planner path via <code>viewMode = 2d</code>.</td></tr>
+                <tr><td>2.5D <code>view3d</code> (three-based)</td><td class="tone-green">Shared</td><td>Shared review mode loaded with both planners (<code>viewMode = 2.5d</code>).</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>Planner Runtime Model</h2>
+          <ul>
+            <li>The website has two planners: Pixi planner (primary) and Konva planner (secondary).</li>
+            <li>2.5D review mode is shared and must work with both planners.</li>
+            <li>Engine switches should preserve selection, viewport state, and active floor context.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>System Topology</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Layer</th><th>Primary Modules</th><th>Responsibilities</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Routing</td><td><code>src/App.tsx</code></td><td>Public/auth/team/editor route graph with guards.</td><td class="tone-green">Stable</td></tr>
+                <tr><td>Editor Surface</td><td><code>ProjectShell</code>, <code>MapView</code>, <code>RightSidebar</code></td><td>Canvas workflow, toolbars, panels, overlays.</td><td class="tone-amber">Active tuning</td></tr>
+                <tr><td>State</td><td>Zustand stores</td><td>Elements, UI, floors, people, insights, project sync.</td><td class="tone-green">Stable</td></tr>
+                <tr><td>Data</td><td><code>officeRepository</code> + Supabase</td><td>CRUD, optimistic save, conflict handling, RBAC.</td><td class="tone-green">Stable</td></tr>
+                <tr><td>Quality</td><td>Vitest + ESLint + Vite build</td><td>Regression prevention and release gating.</td><td class="tone-amber">Continuous</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2><span class="dot"></span>Current Routes</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Route</th><th>Purpose</th><th>Guard</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>/</code></td><td>Landing and session-aware entry points.</td><td>Public</td></tr>
+                <tr><td><code>/dashboard</code></td><td>Auth team redirect and workspace start.</td><td>Auth + Team</td></tr>
+                <tr><td><code>/t/:teamSlug</code></td><td>Office listing and workspace summary.</td><td>Auth + Team</td></tr>
+                <tr><td><code>/t/:teamSlug/o/:officeSlug/map</code></td><td>Primary planning editor.</td><td>Auth + Team</td></tr>
+                <tr><td><code>/t/:teamSlug/o/:officeSlug/roster</code></td><td>People assignment and roster ops.</td><td>Auth + Team</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="hint">This playbook is designed to align with the docs-site quality and interaction model while staying focused on execution.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>OandOcraft Project Playbook · Interactive HTML · Local progress is stored in browser storage</footer>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll(".nav-link"));
+    const panels = Array.from(document.querySelectorAll(".panel"));
+    const searchInput = document.getElementById("globalSearch");
+    const resetAll = document.getElementById("resetAll");
+    const tasks = Array.from(document.querySelectorAll("[data-task]"));
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+    const storageKey = "oandocraft.playbook.progress.v2";
+
+    const stepData = [
+      {
+        title: "Step 1 - Bootstrap",
+        body: "<p>Start from confirmed context, not assumptions.</p><ul><li>Confirm branch/worktree status.</li><li>Load current docs and active issues.</li><li>Lock immediate acceptance criteria.</li></ul>"
+      },
+      {
+        title: "Step 2 - Analyze",
+        body: "<p>Trace behavior before touching code.</p><ul><li>Read route/component/store/repository chain.</li><li>Identify where state is authoritative.</li><li>List risks and invariants.</li></ul>"
+      },
+      {
+        title: "Step 3 - Implement",
+        body: "<p>Keep changes scoped and intentional.</p><ul><li>Follow existing patterns unless replacing them is explicit scope.</li><li>Preserve permissions and sync behavior.</li><li>Add clear empty/error/loading states.</li></ul>"
+      },
+      {
+        title: "Step 4 - Validate",
+        body: "<p>Prove behavior with technical and UX checks.</p><ul><li>Run lint, tests, and build.</li><li>Verify desktop + mobile breakpoints on touched screens.</li><li>Check keyboard/focus/accessibility for changed controls.</li></ul>"
+      },
+      {
+        title: "Step 5 - Release",
+        body: "<p>Ship with accountability and rollback confidence.</p><ul><li>Record change summary and residual risk.</li><li>Keep rollback reference ready.</li><li>Close checklist items with owner/date.</li></ul>"
+      }
+    ];
+
+    const stepButtons = Array.from(document.querySelectorAll(".step-btn"));
+    const stepContent = document.getElementById("stepContent");
+    const prevStep = document.getElementById("prevStep");
+    const nextStep = document.getElementById("nextStep");
+    let activeStep = 0;
+
+    function renderStep() {
+      const step = stepData[activeStep];
+      stepContent.innerHTML = `<h3>${step.title}</h3>${step.body}`;
+      stepButtons.forEach((btn, idx) => btn.classList.toggle("active", idx === activeStep));
+      prevStep.disabled = activeStep === 0;
+      nextStep.disabled = activeStep === stepData.length - 1;
+    }
+
+    function updateProgress() {
+      const done = tasks.filter((t) => t.checked).length;
+      const total = tasks.length;
+      progressText.textContent = `${done} / ${total} complete`;
+      progressBar.style.width = `${total ? (done / total) * 100 : 0}%`;
+    }
+
+    function saveTasks() {
+      const state = {};
+      tasks.forEach((t) => { state[t.dataset.task] = t.checked; });
+      localStorage.setItem(storageKey, JSON.stringify(state));
+      updateProgress();
+    }
+
+    function loadTasks() {
+      const state = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      tasks.forEach((t) => { t.checked = Boolean(state[t.dataset.task]); });
+      updateProgress();
+    }
+
+    function switchTab(key) {
+      tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === key));
+      panels.forEach((p) => p.classList.toggle("active", p.dataset.panel === key));
+      applySearch();
+    }
+
+    function applySearch() {
+      const q = searchInput.value.trim().toLowerCase();
+      const activePanel = panels.find((p) => p.classList.contains("active"));
+      if (!activePanel) return;
+      const nodes = Array.from(activePanel.querySelectorAll("[data-searchable], .task"));
+      nodes.forEach((node) => {
+        if (!q) {
+          node.classList.remove("hidden-search");
+          return;
+        }
+        const text = node.textContent.toLowerCase();
+        node.classList.toggle("hidden-search", !text.includes(q));
+      });
+    }
+
+    tabs.forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
+    searchInput.addEventListener("input", applySearch);
+    tasks.forEach((t) => t.addEventListener("change", saveTasks));
+    resetAll.addEventListener("click", () => {
+      localStorage.removeItem(storageKey);
+      loadTasks();
+    });
+
+    stepButtons.forEach((btn) => btn.addEventListener("click", () => {
+      activeStep = Number(btn.dataset.step);
+      renderStep();
+    }));
+    prevStep.addEventListener("click", () => {
+      if (activeStep > 0) {
+        activeStep -= 1;
+        renderStep();
+      }
+    });
+    nextStep.addEventListener("click", () => {
+      if (activeStep < stepData.length - 1) {
+        activeStep += 1;
+        renderStep();
+      }
+    });
+
+    loadTasks();
+    renderStep();
+    applySearch();
+  </script>
+</body>
+</html>

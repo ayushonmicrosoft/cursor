@@ -70,7 +70,7 @@ export function ForgotPasswordPage() {
           </h1>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             We sent a reset link to{' '}
-            <span className="font-medium text-gray-700 dark:text-gray-200">{email}</span>.
+            <span className="font-medium text-gray-700 dark:text-gray-200 break-all">{email}</span>.
           </p>
           <ol className="mt-5 w-full space-y-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-300">
             <li>1. Open the email from Floorcraft.</li>

@@ -3,7 +3,7 @@ import type { OfficeRole } from './permissionsRepository'
 
 /**
  * Resolve the current viewer's effective role.
- * In the single-role model, any team member is an 'admin'.
+ * In the simplified model, any team member is granted `edit`.
  */
 export async function currentUserOfficeRole(
   officeId: string,
@@ -29,6 +29,5 @@ export async function currentUserOfficeRole(
   
   if (membershipError) return null
 
-  // If they are in the team at all, they get full admin access in this model.
-  return membership ? 'admin' : null
+  return membership ? 'edit' : null
 }

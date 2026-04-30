@@ -1,6 +1,14 @@
 import { supabase } from '../supabase'
 import type { Team, TeamMember, Invite } from '../../types/team'
 
+function normalizeTeamRole(value: unknown): TeamMember['role'] {
+  const role = typeof value === 'string' ? value : ''
+  if (role === 'view' || role === 'viewer') return 'view'
+  if (role === 'edit') return 'edit'
+  if (role === 'admin' || role === 'member') return role
+  return 'edit'
+}
+
 export async function createTeam(name: string): Promise<Team> {
   // Route team creation through the SECURITY DEFINER `create_team` RPC
   // rather than a plain INSERT. The direct insert was failing on
@@ -37,7 +45,7 @@ export async function listTeamMembers(teamId: string): Promise<TeamMember[]> {
     return {
       team_id: row.team_id as string,
       user_id: row.user_id as string,
-      role: row.role as 'admin' | 'member',
+      role: normalizeTeamRole(row.role),
       joined_at: row.joined_at as string,
       email: profile?.email as string,
       name: (profile?.name as string | null) ?? undefined,
@@ -77,7 +85,7 @@ export async function removeMember(teamId: string, userId: string): Promise<void
 export async function updateMemberRole(
   teamId: string,
   userId: string,
-  role: 'admin' | 'member',
+  role: TeamMember['role'],
 ): Promise<void> {
   const { error } = await supabase
     .from('team_members')

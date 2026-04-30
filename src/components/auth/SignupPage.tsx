@@ -37,7 +37,6 @@ function PasswordHintRow({
 export function SignupPage() {
   const [params] = useSearchParams()
   const next = resolveAuthNext(params.get('next'))
-  const legacyInvite = params.get('invite')
   const presetEmail = params.get('email') ?? ''
 
   const [name, setName] = useState('')
@@ -50,18 +49,6 @@ export function SignupPage() {
   useEffect(() => {
     rememberAuthNext(next)
   }, [next])
-
-  useEffect(() => {
-    if (!legacyInvite) return
-    sessionStorage.setItem('pending_invite_token', legacyInvite)
-    const cleanUrl = new URL(window.location.href)
-    cleanUrl.searchParams.delete('invite')
-    window.history.replaceState(
-      window.history.state,
-      '',
-      cleanUrl.pathname + cleanUrl.search + cleanUrl.hash,
-    )
-  }, [legacyInvite])
 
   const hasMinLength = password.length >= 8
   const hasLetterAndNumber = /[a-z]/i.test(password) && /\d/.test(password)
@@ -122,7 +109,7 @@ export function SignupPage() {
           </h1>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             We sent a verification link to{' '}
-            <span className="font-medium text-gray-700 dark:text-gray-200">{email}</span>.
+            <span className="font-medium text-gray-700 dark:text-gray-200 break-all">{email}</span>.
           </p>
           <ol className="mt-5 w-full space-y-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-left text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-300">
             <li>1. Open the email and click Verify account.</li>
