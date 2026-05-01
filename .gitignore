@@ -43,3 +43,4 @@ supabase/.temp
 audit/
 
 .vercel
+CHANGELOG.md
