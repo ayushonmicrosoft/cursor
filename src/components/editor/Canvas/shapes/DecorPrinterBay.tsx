@@ -1,25 +1,43 @@
-import { Rect } from 'react-konva'
+import { Group, Rect } from 'react-konva'
 import type { DecorElement } from '../../../../types/elements'
+import { useUIStore } from '../../../../stores/uiStore'
+import { CANVAS_COLORS, interactionStrokeWidth } from '../visualStyle'
 
 export function DecorPrinterBay({ element }: { element: DecorElement }) {
+  const selectedIds = useUIStore((s) => s.selectedIds)
+  const isSelected = selectedIds.includes(element.id)
   const w = element.width, h = element.height
+  const stroke = isSelected ? CANVAS_COLORS.selected : (element.locked ? CANVAS_COLORS.locked : element.style.stroke)
+  const strokeWidth = interactionStrokeWidth(isSelected)
+  const detailWidth = Math.max(0.75, strokeWidth * 0.6)
+
   return (
-    <>
-      <Rect x={0} y={0} width={w} height={h} cornerRadius={2}
+    <Group opacity={element.style.opacity}>
+      <Rect x={0} y={0} width={w} height={h} cornerRadius={1}
         fill={element.style.fill}
-        stroke={element.style.stroke}
-        strokeWidth={element.style.strokeWidth}
+        stroke={stroke}
+        strokeWidth={strokeWidth}
       />
-      <Rect x={w * 0.1} y={h * 0.2} width={w * 0.8} height={h * 0.6} cornerRadius={2}
+      {/* Internal printer body */}
+      <Rect x={w * 0.15} y={h * 0.25} width={w * 0.7} height={h * 0.5} cornerRadius={1}
         fill="#FFFFFF"
-        stroke={element.style.stroke}
-        strokeWidth={element.style.strokeWidth * 0.5}
-        opacity={0.7}
+        stroke={stroke}
+        strokeWidth={detailWidth}
+        opacity={0.6}
+        listening={false}
       />
-      <Rect x={w * 0.4} y={h * 0.45} width={w * 0.2} height={h * 0.1} cornerRadius={1}
-        fill={element.style.stroke}
-        opacity={0.5}
+      {/* Control panel hint */}
+      <Rect x={w * 0.2} y={h * 0.35} width={w * 0.15} height={h * 0.1} cornerRadius={1}
+        fill={stroke}
+        opacity={0.25}
+        listening={false}
       />
-    </>
+      {/* Paper exit tray hint */}
+      <Rect x={w * 0.4} y={h * 0.5} width={w * 0.4} height={h * 0.15} cornerRadius={1}
+        fill={stroke}
+        opacity={0.15}
+        listening={false}
+      />
+    </Group>
   )
 }

@@ -313,11 +313,12 @@ export function TeamHomePage() {
   const { data: team, isLoading: loadingTeam } = useQuery({
     queryKey: ['team', teamSlug],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('teams')
         .select('*')
         .eq('slug', teamSlug)
         .single()
+      if (error) throw error
       return (data as TeamWithOptionalLogo) ?? null
     },
     enabled: !!teamSlug,
@@ -346,9 +347,11 @@ export function TeamHomePage() {
           .select('user_id', { count: 'exact', head: true })
           .eq('team_id', (team as Team).id),
       ])
+      if (roleRes.error) throw roleRes.error
+      if (countRes.error) throw countRes.error
       const role = (roleRes.data as { role?: string } | null)?.role
       return {
-        canCreate: role !== 'view' && role !== 'viewer',
+        canCreate: role === 'owner' || role === 'admin' || role === 'editor' || role === 'edit',
         memberCount: countRes.count ?? 0,
       }
     },

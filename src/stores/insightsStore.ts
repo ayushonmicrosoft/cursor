@@ -74,45 +74,49 @@ export const useInsightsStore = create<InsightsState>((set, get) => ({
 
   runAnalysis: (elements, employees, neighborhoods) => {
     set({ isAnalyzing: true })
-    const raw = runAllAnalyzers(elements, employees)
-    // Append the neighborhood-department analyzer if a caller threaded
-    // neighborhoods through. The pipeline itself doesn't know about
-    // neighborhoods (they live in a sibling store); we run this check
-    // here and merge its output into the same insights array so the
-    // panel renders one unified list.
-    if (neighborhoods && neighborhoods.length > 0) {
-      const employeeById = new Map(
-        employees.map((e) => [e.id, { department: e.department }] as const),
-      )
-      const input = buildAnalyzerInput(elements, employees)
-      const nbInsights = analyzeNeighborhoodDepartments(
-        input,
-        neighborhoods,
-        employeeById,
-      )
-      raw.push(...nbInsights)
+    try {
+      const raw = runAllAnalyzers(elements, employees)
+      // Append the neighborhood-department analyzer if a caller threaded
+      // neighborhoods through. The pipeline itself doesn't know about
+      // neighborhoods (they live in a sibling store); we run this check
+      // here and merge its output into the same insights array so the
+      // panel renders one unified list.
+      if (neighborhoods && neighborhoods.length > 0) {
+        const employeeById = new Map(
+          employees.map((e) => [e.id, { department: e.department }] as const),
+        )
+        const input = buildAnalyzerInput(elements, employees)
+        const nbInsights = analyzeNeighborhoodDepartments(
+          input,
+          neighborhoods,
+          employeeById,
+        )
+        raw.push(...nbInsights)
 
-      // Neighborhood capacity (over/under-occupied pods). Same
-      // standalone-analyzer pattern as above — needs the neighborhood
-      // list plus the element / employee maps, not the flattened
-      // `AnalyzerInput`.
-      const elementsMap: Record<string, CanvasElement> = {}
-      for (const el of elements) elementsMap[el.id] = el
-      const employeesMap: Record<string, Employee> = {}
-      for (const e of employees) employeesMap[e.id] = e
-      const capacityInsights = analyzeNeighborhoodUtilization(
-        neighborhoods,
-        elementsMap,
-        employeesMap,
-      )
-      raw.push(...capacityInsights)
+        // Neighborhood capacity (over/under-occupied pods). Same
+        // standalone-analyzer pattern as above — needs the neighborhood
+        // list plus the element / employee maps, not the flattened
+        // `AnalyzerInput`.
+        const elementsMap: Record<string, CanvasElement> = {}
+        for (const el of elements) elementsMap[el.id] = el
+        const employeesMap: Record<string, Employee> = {}
+        for (const e of employees) employeesMap[e.id] = e
+        const capacityInsights = analyzeNeighborhoodUtilization(
+          neighborhoods,
+          elementsMap,
+          employeesMap,
+        )
+        raw.push(...capacityInsights)
+      }
+      const dismissed = get().dismissedIds
+      const insights = raw.map((insight) => ({
+        ...insight,
+        dismissed: dismissed.has(insight.id),
+      }))
+      set({ insights, lastAnalyzedAt: Date.now() })
+    } finally {
+      set({ isAnalyzing: false })
     }
-    const dismissed = get().dismissedIds
-    const insights = raw.map((insight) => ({
-      ...insight,
-      dismissed: dismissed.has(insight.id),
-    }))
-    set({ insights, lastAnalyzedAt: Date.now(), isAnalyzing: false })
   },
 
   dismissInsight: (id) => {

@@ -28,8 +28,9 @@ export function useMyTeams() {
           return
         }
         console.error('[useMyTeams] Failed to load teams', error)
-        // Keep `null` to avoid a false "no teams" redirect when the fetch
-        // failed for a transient/RLS/network reason.
+        // Resolve loading state after max retries to avoid an indefinite
+        // skeleton when bootstrapping fails repeatedly.
+        setTeams([])
         return
       }
 

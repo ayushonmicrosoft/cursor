@@ -231,7 +231,7 @@ export function buildLibraryElement(
     zIndex,
     label: item.label,
     visible: true,
-    style: { fill: defaults.fill, stroke: defaults.stroke, strokeWidth: 2, opacity: 1 },
+    style: { fill: defaults.fill, stroke: defaults.stroke, strokeWidth: 1.4, opacity: 1 },
   } as const
 
   if (isTableType(item.type)) {

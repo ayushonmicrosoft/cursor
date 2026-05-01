@@ -128,25 +128,27 @@ export function ProjectShell() {
     async function load() {
       if (!teamSlug || !officeSlug) return
       setShellState('loading')
-      const { data: team } = await supabase
-        .from('teams')
-        .select('id')
-        .eq('slug', teamSlug)
-        .single()
-      if (!team) {
-        if (!cancelled) setShellState('not_found')
-        return
-      }
-      const teamId = (team as { id: string }).id
-      const office = await loadOffice(teamId, officeSlug)
-      if (!office) {
-        if (!cancelled) setShellState('not_found')
-        return
-      }
-      if (cancelled) return
+      try {
+        const { data: team, error: teamError } = await supabase
+          .from('teams')
+          .select('id')
+          .eq('slug', teamSlug)
+          .single()
+        if (teamError) throw teamError
+        if (!team) {
+          if (!cancelled) setShellState('not_found')
+          return
+        }
+        const teamId = (team as { id: string }).id
+        const office = await loadOffice(teamId, officeSlug)
+        if (!office) {
+          if (!cancelled) setShellState('not_found')
+          return
+        }
+        if (cancelled) return
 
-      const p = office.payload as Record<string, unknown>
-      const rawEmployees = (p.employees ?? {}) as Record<string, Employee>
+        const p = office.payload as Record<string, unknown>
+        const rawEmployees = (p.employees ?? {}) as Record<string, Employee>
 
       const migratedEmployees = migrateEmployees(
         rawEmployees as unknown as Record<string, unknown>,
@@ -224,7 +226,11 @@ export function ProjectShell() {
       })
       useInsightsStore.getState().setCurrentProjectId(office.id)
 
-      setShellState('ready')
+        setShellState('ready')
+      } catch (error) {
+        console.error('[ProjectShell] Failed to load office shell', error)
+        if (!cancelled) setShellState('not_found')
+      }
     }
     void load()
     return () => {

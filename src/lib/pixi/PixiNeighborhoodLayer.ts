@@ -27,14 +27,24 @@ interface StatefulZone extends Container {
   _state?: { name: string; x: number; y: number; w: number; h: number; color: string }
 }
 
-const zoneMap = new Map<string, StatefulZone>()
+const zoneMapByLayer = new WeakMap<Container, Map<string, StatefulZone>>()
+
+function getZoneMap(layer: Container): Map<string, StatefulZone> {
+  let zoneMap = zoneMapByLayer.get(layer)
+  if (!zoneMap) {
+    zoneMap = new Map<string, StatefulZone>()
+    zoneMapByLayer.set(layer, zoneMap)
+  }
+  return zoneMap
+}
 
 export function syncNeighborhoodLayer(
   layer: Container,
   neighborhoods: Record<string, Neighborhood>,
   activeFloorId: string | null,
 ): void {
-  const curIds = new Set<string>()
+  if (layer.destroyed) return
+  const zoneMap = getZoneMap(layer)
   const zones = Object.values(neighborhoods).filter(
     (n) => !activeFloorId || n.floorId === activeFloorId,
   )
@@ -43,13 +53,22 @@ export function syncNeighborhoodLayer(
   for (const [id, c] of zoneMap) {
     let found = false
     for(const z of zones) if(z.id === id) { found = true; break }
-    if (!found) { layer.removeChild(c); c.destroy({ children: true }); zoneMap.delete(id) }
+    if (!found) {
+      if (c.parent === layer) layer.removeChild(c)
+      if (!c.destroyed) c.destroy({ children: true })
+      zoneMap.delete(id)
+    }
   }
 
   for (const zone of zones) {
-    curIds.add(zone.id)
     const { id, name, x, y, width: w, height: h, color } = zone
     let c = zoneMap.get(id)
+    if (c && (c.destroyed || c.parent !== layer)) {
+      if (c.parent) c.parent.removeChild(c)
+      if (!c.destroyed) c.destroy({ children: true })
+      zoneMap.delete(id)
+      c = undefined
+    }
 
     if (c) {
       const s = c._state

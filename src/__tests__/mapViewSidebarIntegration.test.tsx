@@ -109,7 +109,7 @@ describe('MapView first-load sidebar integration', () => {
     })
 
     expect(screen.queryByTestId('right-sidebar')).not.toBeInTheDocument()
-    expect(screen.getByTestId('sidebar-toggle-floating')).toBeInTheDocument()
+    expect(screen.getByTestId('sidebar-toggle-docked')).toBeInTheDocument()
     expect(screen.getByTestId('first-run-coach')).toBeInTheDocument()
     expect(useUIStore.getState().dockableToolbarVisibility['admin-stats']).toBe(false)
   })

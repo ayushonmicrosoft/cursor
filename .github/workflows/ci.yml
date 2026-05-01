@@ -32,3 +32,14 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run Supabase SQL/RLS tests
+        run: |
+          supabase db start
+          supabase test db
+          supabase db stop

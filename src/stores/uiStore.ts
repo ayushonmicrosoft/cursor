@@ -20,6 +20,7 @@ export type DockableToolbarId =
   | 'left-tools'
   | 'right-inspector'
   | 'minimap'
+  | 'color-palette'
 
 export interface DockableToolbarLayout {
   mode: 'docked' | 'floating'
@@ -29,12 +30,13 @@ export interface DockableToolbarLayout {
 export type WorkspacePresetId = 'design' | 'admin' | 'review'
 
 export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, DockableToolbarLayout> = {
-  'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } }, // Docked bottom-right
-  'align-distribute': { mode: 'docked', position: { x: 0, y: 0 } }, // Docked top-centerish
+  'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } },
+  'align-distribute': { mode: 'docked', position: { x: 0, y: 0 } },
   'admin-stats': { mode: 'docked', position: { x: 0, y: 0 } },
   'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
   'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
   'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
+  'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
 }
 
 export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, boolean> = {
@@ -44,6 +46,7 @@ export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, bool
   'left-tools': true,
   'right-inspector': true,
   'minimap': true,
+  'color-palette': true,
 }
 
 export const WORKSPACE_PRESET_CONFIGS: Record<
@@ -65,6 +68,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
       'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
       'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
+      'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -73,6 +77,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'left-tools': true,
       'right-inspector': true,
       'minimap': true,
+      'color-palette': true,
     },
   },
   admin: {
@@ -85,6 +90,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
       'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
       'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
+      'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -93,6 +99,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'left-tools': true,
       'right-inspector': true,
       'minimap': true,
+      'color-palette': true,
     },
   },
   review: {
@@ -105,6 +112,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
       'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
       'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
+      'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -113,6 +121,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'left-tools': true,
       'right-inspector': true,
       'minimap': true,
+      'color-palette': false,
     },
   },
 }
@@ -149,6 +158,10 @@ function cloneToolbarLayouts(
       mode: layouts['minimap']?.mode ?? 'docked',
       position: { ...(layouts['minimap']?.position ?? {x:0,y:0}) },
     },
+    'color-palette': {
+      mode: layouts['color-palette']?.mode ?? 'docked',
+      position: { ...(layouts['color-palette']?.position ?? {x:0,y:0}) },
+    },
   }
 }
 
@@ -162,6 +175,7 @@ function cloneToolbarVisibility(
     'left-tools': visibility['left-tools'],
     'right-inspector': visibility['right-inspector'],
     'minimap': visibility['minimap'],
+    'color-palette': visibility['color-palette'] ?? true,
   }
 }
 
@@ -180,6 +194,7 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
       'left-tools': sanitizeToolbarLayout('left-tools', 'storage-read', parsed['left-tools']),
       'right-inspector': sanitizeToolbarLayout('right-inspector', 'storage-read', parsed['right-inspector']),
       'minimap': sanitizeToolbarLayout('minimap', 'storage-read', parsed['minimap']),
+      'color-palette': sanitizeToolbarLayout('color-palette', 'storage-read', parsed['color-palette']),
     }
   } catch {
     return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
@@ -268,6 +283,10 @@ function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
         typeof parsed['minimap'] === 'boolean'
           ? parsed['minimap']
           : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['minimap'],
+      'color-palette':
+        typeof parsed['color-palette'] === 'boolean'
+          ? parsed['color-palette']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['color-palette'],
     }
   } catch {
     return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)

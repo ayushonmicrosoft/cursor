@@ -31,7 +31,7 @@ interface SidebarToggleProps {
    * tab on the right edge of the canvas — only used when the panel
    * is closed.
    */
-  variant: 'inline' | 'floating'
+  variant: 'inline' | 'floating' | 'docked'
 }
 
 export function SidebarToggle({ variant }: SidebarToggleProps) {
@@ -56,6 +56,24 @@ export function SidebarToggle({ variant }: SidebarToggleProps) {
       >
         <PanelRightOpen size={14} aria-hidden="true" />
         <span className="sr-only sm:not-sr-only">Panel</span>
+      </button>
+    )
+  }
+
+  if (variant === 'docked') {
+    // Closed-state docked trigger rendered in layout flow (MapView path).
+    // This stays visually attached to the collapsed sidebar edge while
+    // preserving the "open" action semantics.
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Open right sidebar"
+        title="Open right sidebar"
+        className="flex items-center justify-center w-8 px-2 py-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 border-l border-gray-200 dark:border-gray-800 transition-colors flex-shrink-0 bg-white dark:bg-gray-950"
+        data-testid="sidebar-toggle-docked"
+      >
+        <PanelRightOpen size={14} aria-hidden="true" />
       </button>
     )
   }

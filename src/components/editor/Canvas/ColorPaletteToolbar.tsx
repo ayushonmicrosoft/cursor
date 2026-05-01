@@ -3,6 +3,7 @@ import { DockableToolbar } from '../DockableToolbar'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useUIStore } from '../../../stores/uiStore'
 import { isStrokeOnlyBlock } from '../../../blocks/rendering'
+import { useCan } from '../../../hooks/useCan'
 
 const PALETTE = [
   '#111827',
@@ -21,6 +22,7 @@ export function ColorPaletteToolbar() {
   const selectedIds = useUIStore((s) => s.selectedIds)
   const elements = useElementsStore((s) => s.elements)
   const setElements = useElementsStore((s) => s.setElements)
+  const canEdit = useCan('editMap')
   const hasSelection = selectedIds.some((id) => Boolean(elements[id]))
 
   const applyColor = (color: string) => {
@@ -40,6 +42,8 @@ export function ColorPaletteToolbar() {
       setElements(nextElements)
     }
   }
+
+  if (!canEdit) return null
 
   return (
     <DockableToolbar

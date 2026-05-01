@@ -12,6 +12,7 @@ import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
 import { Minimap } from './Minimap'
 import { CanvasActionDock } from './Canvas/CanvasActionDock'
+import { ColorPaletteToolbar } from './Canvas/ColorPaletteToolbar'
 import { CanvasScaleBar } from './Canvas/CanvasScaleBar'
 import { NorthArrow } from './Canvas/NorthArrow'
 import { AlignDistributeToolbar } from './Canvas/AlignDistributeToolbar'
@@ -375,6 +376,7 @@ export function MapView() {
               {/* Canvas action dock lives at host level so bottom/right are
                   relative to the host, not the inset-0 canvas overlay */}
               <CanvasActionDock />
+              <ColorPaletteToolbar />
             </>
           )}
         </div>

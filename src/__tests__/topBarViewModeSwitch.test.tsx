@@ -15,9 +15,9 @@ import {
   useUIStore,
 } from '../stores/uiStore'
 
-const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts'
-const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
-const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset'
+const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts-v3'
+const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility-v3'
+const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset-v3'
 
 function renderTopBar() {
   return render(
@@ -98,7 +98,7 @@ describe('TopBar view mode switch', () => {
 
     const toolbar = document.querySelector('[data-fixed-toolbar="top-bar"]')
     const layoutRow = screen.getByTestId('topbar-layout-row')
-    expect(toolbar).toHaveClass('overflow-hidden')
+    expect(toolbar).toHaveClass('flex-nowrap')
     expect(layoutRow).toHaveClass('flex-nowrap')
     expect(layoutRow).not.toHaveAttribute('data-editor-min-width')
   })
@@ -106,7 +106,7 @@ describe('TopBar view mode switch', () => {
   it('applies a workspace preset from the Toolbars menu and persists it', () => {
     renderTopBar()
 
-    fireEvent.click(screen.getByRole('button', { name: /workspace controls/i }))
+    fireEvent.click(screen.getByRole('button', { name: /workspace layout settings/i }))
     fireEvent.click(screen.getByRole('button', { name: 'Admin' }))
 
     const state = useUIStore.getState()

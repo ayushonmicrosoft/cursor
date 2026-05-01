@@ -13,7 +13,9 @@ export function syncAlignmentGuides(
   layer: Container,
   guides: AlignmentGuide[],
 ): void {
-  layer.removeChildren()
+  for (const child of layer.removeChildren()) {
+    child.destroy({ children: true })
+  }
   if (guides.length === 0) return
 
   const g = new Graphics()
