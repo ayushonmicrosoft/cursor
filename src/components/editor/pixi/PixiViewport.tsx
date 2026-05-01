@@ -76,8 +76,13 @@ export function PixiViewport({
   }, [])
 
   const handleStageReady = useCallback((stage: PixiStageEventBridge | null) => {
-    if (!stage) return
-    adapterRef.current?.bindStage(stage)
+    const adapter = adapterRef.current
+    if (!adapter) return
+    if (!stage) {
+      adapter.unbindStage()
+      return
+    }
+    adapter.bindStage(stage)
   }, [])
 
   return (

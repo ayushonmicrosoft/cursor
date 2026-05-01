@@ -57,13 +57,23 @@ describe('EngineHost switch + fallback', () => {
     expect(useToastStore.getState().items.length).toBe(1)
   })
 
-  it('forces Konva on preferred map route even when store persists pixi', async () => {
+  it('forces Konva on map route policy even when store persists pixi', async () => {
     useUIStore.setState({ renderEngine: 'pixi' })
-    render(<EngineHost preferredEngine="konva" />)
+    render(<EngineHost routePolicyId="map" />)
 
     expect(screen.getByTestId('engine-konva-view')).toBeInTheDocument()
     await waitFor(() => {
       expect(useUIStore.getState().renderEngine).toBe('konva')
+    })
+  })
+
+  it('forces Pixi on pixi route policy even when store persists konva', async () => {
+    useUIStore.setState({ renderEngine: 'konva' })
+    render(<EngineHost routePolicyId="pixi" />)
+
+    expect(screen.getByTestId('engine-pixi-view')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(useUIStore.getState().renderEngine).toBe('pixi')
     })
   })
 })

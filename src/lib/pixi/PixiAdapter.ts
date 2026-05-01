@@ -259,6 +259,10 @@ export class PixiAdapter implements EngineAdapter {
     }
   }
 
+  unbindStage(): void {
+    this.detachStage()
+  }
+
   getLifecycleHistory(): string[] {
     return this.lifecycle.getHistory()
   }

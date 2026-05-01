@@ -10,9 +10,7 @@ export function useView3DEntry(viewMode: '2d' | '2.5d') {
     let active = true
     ;(async () => {
       try {
-        const mod = await import(
-          /* @vite-ignore */ './index'
-        )
+        const mod = await import('./index')
         const entry =
           (mod as { default?: ComponentType<ThreeDEntryProps>; View3DCanvas?: ComponentType<ThreeDEntryProps> })
             .default ??

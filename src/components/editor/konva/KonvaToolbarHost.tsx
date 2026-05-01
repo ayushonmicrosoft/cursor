@@ -7,6 +7,7 @@ import { RightSidebar } from '../RightSidebar/RightSidebar'
 import { SidebarToggle } from '../RightSidebar/SidebarToggle'
 
 interface KonvaToolbarHostProps {
+  isCompactEditor: boolean
   leftToolsVisible: boolean
   rightInspectorVisible: boolean
   rightSidebarOpen: boolean
@@ -14,15 +15,19 @@ interface KonvaToolbarHostProps {
 }
 
 export function KonvaToolbarHost({
+  isCompactEditor,
   leftToolsVisible,
   rightInspectorVisible,
   rightSidebarOpen,
   children,
 }: KonvaToolbarHostProps) {
   return (
-    <div className="flex min-w-0 flex-1 overflow-hidden">
-      {leftToolsVisible && (
-        <div className="flex w-[280px] flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 z-30">
+    <div className="relative flex min-w-0 flex-1 overflow-hidden">
+      {leftToolsVisible && !isCompactEditor && (
+        <div
+          className="flex w-[280px] flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 z-30"
+          data-testid="mapview-left-sidebar"
+        >
           <div className="flex h-8 shrink-0 items-center border-b border-gray-200 dark:border-gray-800 px-3 bg-white dark:bg-gray-950">
             <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-500 dark:text-gray-400">Tools Rail</span>
           </div>
@@ -35,14 +40,22 @@ export function KonvaToolbarHost({
       {children}
 
       {!rightSidebarOpen && <SidebarToggle variant="docked" />}
-      {rightSidebarOpen && rightInspectorVisible && (
-        <div className="flex w-[320px] flex-col border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 z-30">
+      {rightSidebarOpen && rightInspectorVisible && !isCompactEditor && (
+        <div className="flex w-[320px] flex-col border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 z-30" data-testid="mapview-right-sidebar-docked">
           <div className="flex h-8 shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-800 px-3 bg-white dark:bg-gray-950">
             <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-500 dark:text-gray-400">Inspector</span>
           </div>
           <div className="flex-1 overflow-y-auto">
             <RightSidebar />
           </div>
+        </div>
+      )}
+      {rightSidebarOpen && rightInspectorVisible && isCompactEditor && (
+        <div
+          className="absolute inset-y-0 right-0 z-30 w-[min(320px,85vw)] overflow-y-auto border-l border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-950"
+          data-testid="mapview-right-sidebar-overlay"
+        >
+          <RightSidebar />
         </div>
       )}
     </div>

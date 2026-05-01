@@ -147,4 +147,19 @@ describe('PixiAdapter', () => {
     expect(stage.listenerCount('rightdown')).toBe(0)
     expect(stage.listenerCount('wheel')).toBe(0)
   })
+
+  it('can explicitly unbind stage listeners before dispose', () => {
+    const { adapter } = createHarness()
+    const stage = new MockPixiStage()
+    adapter.bindStage(stage)
+
+    adapter.unbindStage()
+
+    expect(stage.listenerCount('pointerdown')).toBe(0)
+    expect(stage.listenerCount('pointermove')).toBe(0)
+    expect(stage.listenerCount('pointerup')).toBe(0)
+    expect(stage.listenerCount('pointerupoutside')).toBe(0)
+    expect(stage.listenerCount('rightdown')).toBe(0)
+    expect(stage.listenerCount('wheel')).toBe(0)
+  })
 })

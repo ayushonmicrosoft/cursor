@@ -64,8 +64,13 @@ export function KonvaViewport({
   }, [])
 
   const handleStageReady = useCallback((stage: Konva.Stage | null) => {
-    if (!stage) return
-    adapterRef.current?.bindStage(stage)
+    const adapter = adapterRef.current
+    if (!adapter) return
+    if (!stage) {
+      adapter.unbindStage()
+      return
+    }
+    adapter.bindStage(stage)
   }, [])
 
   return (

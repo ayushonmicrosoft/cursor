@@ -6,6 +6,7 @@ import { renameTeam, deleteTeam } from '../../lib/teams/teamRepository'
 import { humanizeError } from '../../lib/errorMessages'
 import { useToastStore } from '../../stores/toastStore'
 import { Button, Input } from '../ui'
+import { AdminWorkspaceDesigner } from './AdminWorkspaceDesigner'
 
 /**
  * Wave 17C: polished general-settings tab.
@@ -198,6 +199,8 @@ export function TeamSettingsGeneral({ team, isAdmin }: { team: Team; isAdmin: bo
           )}
         </div>
       </section>
+
+      {isAdmin && <AdminWorkspaceDesigner />}
 
       {/* -------------------------------------------------------------
           Danger zone. Red-tinted card with a single row per destructive

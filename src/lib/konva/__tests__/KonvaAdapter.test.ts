@@ -157,4 +157,16 @@ describe('KonvaAdapter', () => {
     expect(stage.listenerCount('contextmenu')).toBe(0)
     expect(stage.listenerCount('wheel')).toBe(0)
   })
+
+  it('can explicitly unbind stage listeners before dispose', () => {
+    const { adapter } = createHarness()
+    const stage = new MockStage()
+    adapter.bindStage(stage)
+
+    adapter.unbindStage()
+
+    expect(stage.listenerCount('pointerdown')).toBe(0)
+    expect(stage.listenerCount('contextmenu')).toBe(0)
+    expect(stage.listenerCount('wheel')).toBe(0)
+  })
 })

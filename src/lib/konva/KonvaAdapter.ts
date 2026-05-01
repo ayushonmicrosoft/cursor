@@ -133,6 +133,10 @@ export class KonvaAdapter implements EngineAdapter {
     this.handlers = { pointerdown, contextmenu, wheel }
   }
 
+  unbindStage(): void {
+    this.detachStage()
+  }
+
   getLifecycleHistory(): string[] {
     return this.lifecycle.getHistory()
   }

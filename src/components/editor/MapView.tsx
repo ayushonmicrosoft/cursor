@@ -202,6 +202,7 @@ export function MapView() {
           data-editor-min-width={CANVAS_INSPECTION_MIN_WIDTH_PX}
         >
           <KonvaToolbarHost
+            isCompactEditor={isCompactEditor}
             leftToolsVisible={leftToolsVisible}
             rightInspectorVisible={rightInspectorVisible}
             rightSidebarOpen={rightSidebarOpen}

@@ -7,9 +7,6 @@ import { useUIStore } from '../stores/uiStore'
 vi.mock('../components/editor/RightSidebar/PropertiesPanel', () => ({
   PropertiesPanel: () => <div>Properties panel</div>,
 }))
-vi.mock('../components/editor/RightSidebar/PeoplePanel', () => ({
-  PeoplePanel: () => <div>People panel</div>,
-}))
 vi.mock('../components/editor/RightSidebar/ReportsPanel', () => ({
   ReportsPanel: () => <div>Reports panel</div>,
 }))
@@ -32,9 +29,9 @@ describe('RightSidebar keyboard and toggle flow', () => {
     expect(screen.getByRole('tab', { name: /properties/i })).toHaveAttribute('aria-selected', 'true')
 
     fireEvent.keyDown(tablist, { key: 'ArrowRight' })
-    expect(useUIStore.getState().rightSidebarTab).toBe('people')
-    expect(screen.getByRole('tab', { name: /people/i })).toHaveFocus()
-    expect(screen.getByText('People panel')).toBeInTheDocument()
+    expect(useUIStore.getState().rightSidebarTab).toBe('reports')
+    expect(screen.getByRole('tab', { name: /reports/i })).toHaveFocus()
+    expect(screen.getByText('Reports panel')).toBeInTheDocument()
 
     fireEvent.keyDown(tablist, { key: 'End' })
     expect(useUIStore.getState().rightSidebarTab).toBe('insights')
