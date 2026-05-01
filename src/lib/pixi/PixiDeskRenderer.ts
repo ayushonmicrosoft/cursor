@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
-import type { DeskElement, PrivateOfficeElement } from '../../../../types/elements'
-import { parsePixiColor } from '../../../../lib/pixiColor'
+import type { DeskElement, PrivateOfficeElement } from '../../types/elements'
+import { parsePixiColor } from '../pixiColor'
 
 /**
  * Phase 2 — Desk / private-office renderer.

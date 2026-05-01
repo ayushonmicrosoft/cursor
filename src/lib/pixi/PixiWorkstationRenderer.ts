@@ -1,7 +1,7 @@
 import { Graphics, Text, TextStyle, Container } from 'pixi.js'
-import type { WorkstationElement } from '../../../../types/elements'
-import type { Employee } from '../../../../types/employee'
-import { parsePixiColor } from '../../../../lib/pixiColor'
+import type { WorkstationElement } from '../../types/elements'
+import type { Employee } from '../../types/employee'
+import { parsePixiColor } from '../pixiColor'
 
 /**
  * Phase 2 — PixiJS workstation bench renderer.

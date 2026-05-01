@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import { isCenterAnchoredBlock } from '../../../../blocks/rendering'
-import type { CanvasElement } from '../../../../types/elements'
+import { isCenterAnchoredBlock } from '../../blocks/rendering'
+import type { CanvasElement } from '../../types/elements'
 
 /**
  * Phase 5 — Selection handles overlay.

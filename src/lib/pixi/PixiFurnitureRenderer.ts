@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
-import type { CanvasElement, LineShapeElement, DecorElement } from '../../../../types/elements'
-import { parsePixiColor } from '../../../../lib/pixiColor'
+import type { CanvasElement, LineShapeElement, DecorElement } from '../../types/elements'
+import { parsePixiColor } from '../pixiColor'
 
 export function renderFurniture(g: Graphics, el: CanvasElement, selected: boolean): void {
   const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0

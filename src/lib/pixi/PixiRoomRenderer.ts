@@ -1,6 +1,6 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js'
-import type { ConferenceRoomElement, CommonAreaElement, PhoneBoothElement } from '../../../../types/elements'
-import { parsePixiColor } from '../../../../lib/pixiColor'
+import type { ConferenceRoomElement, CommonAreaElement, PhoneBoothElement } from '../../types/elements'
+import { parsePixiColor } from '../pixiColor'
 
 /**
  * Phase 2 — Room renderer.
