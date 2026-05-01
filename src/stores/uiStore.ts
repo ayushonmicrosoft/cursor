@@ -19,7 +19,7 @@ export type DockableToolbarId =
   | 'admin-stats'
   | 'left-tools'
   | 'right-inspector'
-  | 'color-palette'
+  | 'minimap'
 
 export interface DockableToolbarLayout {
   mode: 'docked' | 'floating'
@@ -29,12 +29,12 @@ export interface DockableToolbarLayout {
 export type WorkspacePresetId = 'design' | 'admin' | 'review'
 
 export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, DockableToolbarLayout> = {
-  'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
-  'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
-  'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
-  'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
-  'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
-  'color-palette': { mode: 'docked', position: { x: 88, y: 112 } },
+  'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } }, // Docked bottom-right
+  'align-distribute': { mode: 'docked', position: { x: 0, y: 0 } }, // Docked top-centerish
+  'admin-stats': { mode: 'docked', position: { x: 0, y: 0 } },
+  'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
+  'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
+  'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
 }
 
 export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, boolean> = {
@@ -43,7 +43,7 @@ export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, bool
   'admin-stats': true,
   'left-tools': true,
   'right-inspector': true,
-  'color-palette': true,
+  'minimap': true,
 }
 
 export const WORKSPACE_PRESET_CONFIGS: Record<
@@ -59,12 +59,12 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
     label: 'Design',
     description: 'Layout tools up front for daily plan editing.',
     layouts: {
-      'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
-      'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
-      'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
-      'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
-      'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
-      'color-palette': { mode: 'docked', position: { x: 88, y: 112 } },
+      'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } },
+      'align-distribute': { mode: 'docked', position: { x: 0, y: 0 } },
+      'admin-stats': { mode: 'docked', position: { x: 0, y: 0 } },
+      'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
+      'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
+      'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -72,19 +72,19 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'admin-stats': false,
       'left-tools': true,
       'right-inspector': true,
-      'color-palette': true,
+      'minimap': true,
     },
   },
   admin: {
     label: 'Admin',
     description: 'Keep reporting tools visible for operational checks.',
     layouts: {
-      'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
-      'align-distribute': { mode: 'floating', position: { x: 232, y: 132 } },
-      'admin-stats': { mode: 'floating', position: { x: 24, y: 24 } },
-      'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
-      'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
-      'color-palette': { mode: 'floating', position: { x: 96, y: 176 } },
+      'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } },
+      'align-distribute': { mode: 'docked', position: { x: 0, y: 0 } },
+      'admin-stats': { mode: 'docked', position: { x: 0, y: 0 } },
+      'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
+      'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
+      'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -92,19 +92,19 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'admin-stats': true,
       'left-tools': true,
       'right-inspector': true,
-      'color-palette': true,
+      'minimap': true,
     },
   },
   review: {
     label: 'Review',
     description: 'A quiet canvas with only core controls visible.',
     layouts: {
-      'canvas-actions': { mode: 'docked', position: { x: 24, y: 96 } },
-      'align-distribute': { mode: 'docked', position: { x: 160, y: 120 } },
-      'admin-stats': { mode: 'docked', position: { x: 24, y: 24 } },
-      'left-tools': { mode: 'docked', position: { x: 16, y: 16 } },
-      'right-inspector': { mode: 'docked', position: { x: 920, y: 16 } },
-      'color-palette': { mode: 'docked', position: { x: 88, y: 112 } },
+      'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } },
+      'align-distribute': { mode: 'docked', position: { x: 0, y: 0 } },
+      'admin-stats': { mode: 'docked', position: { x: 0, y: 0 } },
+      'left-tools': { mode: 'docked', position: { x: 0, y: 0 } },
+      'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
+      'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -112,42 +112,42 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'admin-stats': false,
       'left-tools': true,
       'right-inspector': true,
-      'color-palette': false,
+      'minimap': true,
     },
   },
 }
 
-const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts'
-const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
-const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset'
+const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts-v3'
+const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility-v3'
+const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset-v3'
 
 function cloneToolbarLayouts(
   layouts: Record<DockableToolbarId, DockableToolbarLayout>,
 ): Record<DockableToolbarId, DockableToolbarLayout> {
   return {
     'canvas-actions': {
-      mode: layouts['canvas-actions'].mode,
-      position: { ...layouts['canvas-actions'].position },
+      mode: layouts['canvas-actions']?.mode ?? 'docked',
+      position: { ...(layouts['canvas-actions']?.position ?? {x:0,y:0}) },
     },
     'align-distribute': {
-      mode: layouts['align-distribute'].mode,
-      position: { ...layouts['align-distribute'].position },
+      mode: layouts['align-distribute']?.mode ?? 'docked',
+      position: { ...(layouts['align-distribute']?.position ?? {x:0,y:0}) },
     },
     'admin-stats': {
-      mode: layouts['admin-stats'].mode,
-      position: { ...layouts['admin-stats'].position },
+      mode: layouts['admin-stats']?.mode ?? 'docked',
+      position: { ...(layouts['admin-stats']?.position ?? {x:0,y:0}) },
     },
     'left-tools': {
-      mode: layouts['left-tools'].mode,
-      position: { ...layouts['left-tools'].position },
+      mode: layouts['left-tools']?.mode ?? 'docked',
+      position: { ...(layouts['left-tools']?.position ?? {x:0,y:0}) },
     },
     'right-inspector': {
-      mode: layouts['right-inspector'].mode,
-      position: { ...layouts['right-inspector'].position },
+      mode: layouts['right-inspector']?.mode ?? 'docked',
+      position: { ...(layouts['right-inspector']?.position ?? {x:0,y:0}) },
     },
-    'color-palette': {
-      mode: layouts['color-palette'].mode,
-      position: { ...layouts['color-palette'].position },
+    'minimap': {
+      mode: layouts['minimap']?.mode ?? 'docked',
+      position: { ...(layouts['minimap']?.position ?? {x:0,y:0}) },
     },
   }
 }
@@ -161,7 +161,7 @@ function cloneToolbarVisibility(
     'admin-stats': visibility['admin-stats'],
     'left-tools': visibility['left-tools'],
     'right-inspector': visibility['right-inspector'],
-    'color-palette': visibility['color-palette'],
+    'minimap': visibility['minimap'],
   }
 }
 
@@ -179,7 +179,7 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
       'admin-stats': sanitizeToolbarLayout('admin-stats', 'storage-read', parsed['admin-stats']),
       'left-tools': sanitizeToolbarLayout('left-tools', 'storage-read', parsed['left-tools']),
       'right-inspector': sanitizeToolbarLayout('right-inspector', 'storage-read', parsed['right-inspector']),
-      'color-palette': sanitizeToolbarLayout('color-palette', 'storage-read', parsed['color-palette']),
+      'minimap': sanitizeToolbarLayout('minimap', 'storage-read', parsed['minimap']),
     }
   } catch {
     return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
@@ -264,10 +264,10 @@ function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
         typeof parsed['right-inspector'] === 'boolean'
           ? parsed['right-inspector']
           : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['right-inspector'],
-      'color-palette':
-        typeof parsed['color-palette'] === 'boolean'
-          ? parsed['color-palette']
-          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['color-palette'],
+      'minimap':
+        typeof parsed['minimap'] === 'boolean'
+          ? parsed['minimap']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['minimap'],
     }
   } catch {
     return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
@@ -551,7 +551,7 @@ function createUIStore() {
     set((s) => {
       const next = {
         ...s.dockableToolbarLayouts,
-        [id]: { ...s.dockableToolbarLayouts[id], mode },
+        [id]: { ...(s.dockableToolbarLayouts[id] ?? { mode: 'docked', position: { x: 0, y: 0 } }), mode },
       }
       persistToolbarLayouts(next)
       persistWorkspacePreset(null)
@@ -565,7 +565,7 @@ function createUIStore() {
       const sanitized = sanitizeToolbarLayout(
         id,
         'state-write',
-        { mode: s.dockableToolbarLayouts[id].mode, position },
+        { mode: s.dockableToolbarLayouts[id]?.mode ?? 'docked', position },
       )
       const next = {
         ...s.dockableToolbarLayouts,

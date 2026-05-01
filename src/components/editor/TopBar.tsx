@@ -30,6 +30,11 @@ import {
   SlidersHorizontal,
   Map as MapIcon,
   BarChart3,
+  Settings2,
+  PanelLeft,
+  PanelRight,
+  Maximize,
+  PlaySquare,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -49,32 +54,25 @@ const TOOLBAR_MENU_ITEMS: Array<{
   id: DockableToolbarId
   label: string
   adminOnly?: boolean
+  icon?: React.ElementType
 }> = [
-  { id: 'canvas-actions', label: 'Canvas controls' },
-  { id: 'align-distribute', label: 'Arrange toolbar' },
-  { id: 'color-palette', label: 'Color palette' },
-  { id: 'left-tools', label: 'Left tools rail' },
-  { id: 'right-inspector', label: 'Right inspector' },
-  { id: 'admin-stats', label: 'Admin operations', adminOnly: true },
+  { id: 'canvas-actions', label: 'Canvas controls', icon: Settings2 },
+  { id: 'left-tools', label: 'Left tools rail', icon: PanelLeft },
+  { id: 'right-inspector', label: 'Right inspector', icon: PanelRight },
+  { id: 'minimap', label: 'Minimap', icon: MapIcon },
+  { id: 'admin-stats', label: 'Admin operations', adminOnly: true, icon: BarChart3 },
 ]
 
 const WORKSPACE_PRESET_IDS: WorkspacePresetId[] = ['design', 'admin', 'review']
 
-const primaryViewLinkClass =
-  'inline-flex h-8 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
-
-const secondaryMenuButtonClass =
-  'inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
-
-const toolbarMenuButtonClass =
-  'inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
-
+const primaryViewLinkClass = 'topbar-nav-link'
+const secondaryMenuButtonClass = 'topbar-btn'
+const toolbarMenuButtonClass = 'topbar-btn'
 const secondaryMenuItemClass =
   'flex min-w-0 items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:text-gray-200 dark:hover:bg-gray-800/50 dark:focus:bg-gray-800/50'
 
-const dividerClass = 'h-6 w-px flex-none bg-gray-200 dark:bg-gray-700'
-const iconActionButtonClass =
-  'inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
+const dividerClass = 'topbar-divider'
+const iconActionButtonClass = 'topbar-btn-icon'
 
 export function TopBar() {
   const project = useProjectStore((s) => s.currentProject)
@@ -115,6 +113,8 @@ export function TopBar() {
     setExportDialogOpen,
     viewMode,
     setViewMode,
+    presentationMode,
+    setPresentationMode,
     dockableToolbarLayouts,
     dockableToolbarVisibility,
     activeWorkspacePreset,
@@ -128,6 +128,8 @@ export function TopBar() {
       setExportDialogOpen: s.setExportDialogOpen,
       viewMode: s.viewMode,
       setViewMode: s.setViewMode,
+      presentationMode: s.presentationMode,
+      setPresentationMode: s.setPresentationMode,
       dockableToolbarLayouts: s.dockableToolbarLayouts,
       dockableToolbarVisibility: s.dockableToolbarVisibility,
       activeWorkspacePreset: s.activeWorkspacePreset,
@@ -187,6 +189,21 @@ export function TopBar() {
       document.removeEventListener('keydown', onKey)
     }
   }, [])
+
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  useEffect(() => {
+    const h = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', h)
+    return () => document.removeEventListener('fullscreenchange', h)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    } else {
+      document.exitFullscreen().catch(() => {})
+    }
+  }
 
   const resolveActiveFloor = () => {
     const floorState = useFloorStore.getState()
@@ -314,11 +331,12 @@ export function TopBar() {
 
   return (
     <div
-      className="relative h-12 w-full min-w-0 flex-shrink-0 overflow-hidden border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
+      className="relative z-[60] flex h-12 max-h-12 w-full min-w-0 flex-shrink-0 flex-nowrap items-center border-b border-gray-200/80 bg-white/95 backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-950/95"
       data-fixed-toolbar="top-bar"
+      data-fixed-toolbar-reason="Top bar owns team switching, file actions, save state, undo/redo, view menu, route links, and user identity outside the canvas dock host."
     >
       <div
-        className="flex h-full min-w-0 flex-nowrap items-center gap-1 overflow-hidden px-2 pr-3 sm:gap-1.5 sm:px-3 sm:pr-4"
+        className="flex h-full min-w-0 w-full flex-nowrap items-center gap-1 touch-none px-2 pr-3 sm:gap-1.5 sm:px-3 sm:pr-4"
         data-testid="topbar-layout-row"
       >
         <TeamSwitcher currentSlug={teamSlug} />
@@ -326,16 +344,14 @@ export function TopBar() {
         {teamSlug && officeSlug && (
           <nav
             aria-label="Primary office views"
-            className="flex min-w-0 flex-none items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
+            className="flex min-w-0 flex-none items-center gap-1  border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
           >
             <NavLink
               to={`/t/${teamSlug}/o/${officeSlug}/map`}
               title="Map"
               className={({ isActive }) =>
                 `${primaryViewLinkClass} ${
-                  isActive
-                    ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
-                    : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+                  isActive ? 'topbar-nav-link-active' : 'topbar-nav-link-inactive'
                 }`
               }
             >
@@ -348,9 +364,7 @@ export function TopBar() {
                 title="Reports"
                 className={({ isActive }) =>
                   `${primaryViewLinkClass} ${
-                    isActive
-                      ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
-                      : 'text-gray-600 hover:bg-white hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+                    isActive ? 'topbar-nav-link-active' : 'topbar-nav-link-inactive'
                   }`
                 }
               >
@@ -390,21 +404,58 @@ export function TopBar() {
 
         <div className={dividerClass} />
 
+        {/* Quick-access toolbar toggles */}
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={() => toggleGrid()}
+            className={`${iconActionButtonClass} ${settings.showGrid ? 'topbar-btn-active' : ''}`}
+            title={settings.showGrid ? 'Hide grid (G)' : 'Show grid (G)'}
+            aria-label="Toggle grid"
+            aria-pressed={settings.showGrid}
+          >
+            <Grid3x3 size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setDockableToolbarVisible('minimap', !(dockableToolbarVisibility['minimap'] ?? true))}
+            className={`${iconActionButtonClass} ${(dockableToolbarVisibility['minimap'] ?? true) ? 'topbar-btn-active' : ''}`}
+            title={(dockableToolbarVisibility['minimap'] ?? true) ? 'Hide minimap' : 'Show minimap'}
+            aria-label="Toggle minimap"
+            aria-pressed={dockableToolbarVisibility['minimap'] ?? true}
+          >
+            <MapIcon size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPresentationMode(!presentationMode)}
+            className={`${iconActionButtonClass} ${presentationMode ? 'topbar-btn-active-violet' : ''}`}
+            title={presentationMode ? 'Exit presentation mode' : 'Enter presentation mode'}
+            aria-label="Toggle presentation mode"
+            aria-pressed={presentationMode}
+          >
+            <PlaySquare size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className={dividerClass} />
+
         <div className="relative" ref={viewMenuRef}>
           <button
             onClick={() => setViewMenuOpen((o) => !o)}
-            className={secondaryMenuButtonClass}
+            className="topbar-btn"
             aria-haspopup="menu"
             aria-expanded={viewMenuOpen}
             title="View options"
             aria-label="View options"
           >
             <Eye size={16} aria-hidden="true" />
+            <span>View</span>
           </button>
           {viewMenuOpen && (
             <div
               role="menu"
-              className="absolute left-0 z-30 mt-1 w-64 rounded-md border border-gray-200 bg-white py-1 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40"
+              className="absolute left-0 z-[100] mt-1 w-64  border border-gray-200 bg-white py-1 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40"
             >
               <button
                 role="menuitem"
@@ -561,116 +612,135 @@ export function TopBar() {
         </div>
 
         {canEditMap && (
-          <div className="relative" ref={toolbarMenuRef}>
-            <button
-              onClick={() => setToolbarMenuOpen((o) => !o)}
-              className={toolbarMenuButtonClass}
-              title="Workspace controls"
-              aria-label="Workspace controls"
-            >
-              <SlidersHorizontal size={16} aria-hidden="true" />
-              <span className="hidden text-sm font-semibold xl:inline">Toolbars</span>
-            </button>
-            {toolbarMenuOpen && (
-              <div className="absolute left-0 z-30 mt-1 w-80 rounded border border-gray-200 bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40">
-                <div className="mb-2 rounded border border-gray-200 px-2 py-2 dark:border-gray-700">
-                  <p className="text-xs font-semibold tracking-[0.15em] text-gray-600 uppercase dark:text-gray-300">
-                    Workspace presets
-                  </p>
-                  <div className="mt-2 grid grid-cols-3 gap-1">
-                    {WORKSPACE_PRESET_IDS.map((presetId) => {
-                      const preset = WORKSPACE_PRESET_CONFIGS[presetId]
-                      const active = activeWorkspacePreset === presetId
+          <div className="flex items-center gap-1">
+            <div className={dividerClass} />
+
+            {/* Layout Menu */}
+            <div className="relative" ref={toolbarMenuRef}>
+              <button
+                type="button"
+                onClick={() => setToolbarMenuOpen((o) => !o)}
+                className="topbar-btn"
+                title="Workspace layout settings"
+                aria-label="Workspace layout settings"
+                aria-haspopup="menu"
+                aria-expanded={toolbarMenuOpen}
+              >
+                <SlidersHorizontal size={16} aria-hidden="true" />
+                <span>Layout</span>
+              </button>
+              {toolbarMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-[100] mt-1 w-72 border border-black/[0.06] bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-white/[0.06] dark:bg-gray-950/95"
+                >
+                  <div className="mb-3 px-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                      Visibility
+                    </p>
+                    <div className="mt-1.5 space-y-1">
+                      {TOOLBAR_MENU_ITEMS.filter(
+                        (item) => !item.adminOnly || canManageWorkspace,
+                      ).map((item) => {
+                        const visible = dockableToolbarVisibility[item.id] ?? true
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setDockableToolbarVisible(item.id, !visible)}
+                            className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[11px] hover:bg-black/[0.05] dark:hover:bg-white/[0.05]"
+                          >
+                            <div className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${visible ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
+                              {visible && <Check size={10} />}
+                            </div>
+                            <span className="flex-1 font-medium text-gray-700 dark:text-gray-200">{item.label}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
+
+                  <div className="mb-3 px-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                      Presets
+                    </p>
+                    <div className="mt-1.5 flex gap-1">
+                      {WORKSPACE_PRESET_IDS.map((presetId) => {
+                        const preset = WORKSPACE_PRESET_CONFIGS[presetId]
+                        const active = activeWorkspacePreset === presetId
+                        return (
+                          <button
+                            key={presetId}
+                            type="button"
+                            onClick={() => { applyWorkspacePreset(presetId); setToolbarMenuOpen(false) }}
+                            className={`flex-1 px-2 py-1.5 text-[11px] font-semibold transition-all ${active ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'bg-black/[0.04] text-gray-600 hover:bg-black/[0.07] dark:bg-white/[0.04] dark:text-gray-300'}`}
+                          >
+                            {preset.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
+
+                  <div className="px-1 space-y-1">
+                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                      Configuration
+                    </p>
+                    {TOOLBAR_MENU_ITEMS.filter(
+                      (item) => !item.adminOnly || canManageWorkspace,
+                    ).map((item) => {
+                      const mode = dockableToolbarLayouts[item.id]?.mode ?? 'docked'
+                      const visible = dockableToolbarVisibility[item.id] ?? true
+                      if (!visible) return null
                       return (
-                        <button
-                          key={presetId}
-                          onClick={() => applyWorkspacePreset(presetId)}
-                          className={`rounded px-2 py-1 text-[11px] font-medium ${active ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'}`}
-                        >
-                          {preset.label}
-                        </button>
+                        <div key={item.id} className="flex items-center gap-2 px-1 py-1">
+                          <span className="min-w-0 flex-1 text-[11px] font-medium text-gray-600 dark:text-gray-400 truncate">{item.label}</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setDockableToolbarMode(item.id, 'docked')}
+                              className={`px-1.5 py-0.5 text-[10px] font-semibold transition-all ${mode === 'docked' ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'text-gray-500 hover:bg-black/[0.05]'}`}
+                            >Dock</button>
+                            <button
+                              type="button"
+                              onClick={() => setDockableToolbarMode(item.id, 'floating')}
+                              className={`px-1.5 py-0.5 text-[10px] font-semibold transition-all ${mode === 'floating' ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'text-gray-500 hover:bg-black/[0.05]'}`}
+                            >Float</button>
+                          </div>
+                        </div>
                       )
                     })}
                   </div>
+
+                  <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
+                  <button
+                    type="button"
+                    onClick={() => { resetDockableWorkspace(); setToolbarMenuOpen(false) }}
+                    className="w-full px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-black/[0.04] hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    Reset defaults
+                  </button>
                 </div>
-                {TOOLBAR_MENU_ITEMS.filter(
-                  (item) => !item.adminOnly || canManageWorkspace,
-                ).map((item) => {
-                  const visible = dockableToolbarVisibility[item.id] ?? true
-                  const mode = dockableToolbarLayouts[item.id].mode
-                  return (
-                    <div
-                      key={item.id}
-                      className="mb-2 rounded border border-gray-200 px-2 py-2 last:mb-0 dark:border-gray-700"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-xs font-semibold tracking-[0.15em] text-gray-600 uppercase dark:text-gray-300">
-                            {item.label}
-                          </p>
-                          <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                            {visible
-                              ? mode === 'floating'
-                                ? 'Visible · floating'
-                                : 'Visible · docked'
-                              : 'Hidden'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() =>
-                            setDockableToolbarVisible(item.id, !visible)
-                          }
-                          className="rounded bg-gray-100 px-2 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200"
-                        >
-                          {visible ? 'Hide' : 'Show'}
-                        </button>
-                      </div>
-                      <div className="mt-2 flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => setDockableToolbarMode(item.id, 'docked')}
-                          className={`rounded px-2 py-1 text-[11px] font-medium ${
-                            mode === 'docked'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200'
-                          }`}
-                        >
-                          Dock
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDockableToolbarMode(item.id, 'floating')}
-                          className={`rounded px-2 py-1 text-[11px] font-medium ${
-                            mode === 'floating'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-100'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200'
-                          }`}
-                        >
-                          Float
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => resetDockableToolbarLayout(item.id)}
-                          className="ml-auto rounded px-2 py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                          Reset
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-                <button
-                  onClick={() => resetDockableWorkspace()}
-                  className="mt-2 w-full rounded border border-gray-200 px-2 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200"
-                >
-                  Reset all toolbars
-                </button>
-              </div>
-            )}
+              )}
+            </div>
+
+            <div className={dividerClass} />
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className={`${secondaryMenuButtonClass} ${isFullscreen ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : ''}`}
+              title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+            >
+              <Maximize size={14} aria-hidden="true" />
+            </button>
           </div>
         )}
 
-        <div className="flex flex-none items-center rounded-xl border border-gray-200 bg-gray-50 p-0.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div className="flex flex-none items-center border border-gray-200 bg-gray-50 p-0.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           {teamSlug && officeSlug ? (
             <>
               <NavLink
@@ -679,7 +749,7 @@ export function TopBar() {
                 role="button"
                 aria-label="Switch to 2D view"
                 className={({ isActive }) =>
-                  `inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${
+                  `inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
                     isActive && viewMode === '2d'
                       ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
                       : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
@@ -694,7 +764,7 @@ export function TopBar() {
                 onClick={() => setViewMode('2.5d')}
                 role="button"
                 aria-label="Switch to 2.5D view"
-                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${
+                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
                   viewMode === '2.5d'
                     ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950'
                     : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
@@ -708,7 +778,7 @@ export function TopBar() {
               role="button"
               aria-label="Open Pixi editor"
               className={({ isActive }) =>
-                `inline-flex h-8 min-w-[68px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${
+                `inline-flex h-8 min-w-[68px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
                   isActive
                     ? 'bg-violet-600 text-white shadow-sm'
                     : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
@@ -725,7 +795,7 @@ export function TopBar() {
                 type="button"
                 onClick={() => setViewMode('2d')}
                 aria-pressed={viewMode === '2d'}
-                className={`inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${viewMode === '2d' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
+                className={`inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${viewMode === '2d' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
               >
                 <MapIcon size={14} />
                 2D
@@ -734,7 +804,7 @@ export function TopBar() {
                 type="button"
                 onClick={() => setViewMode('2.5d')}
                 aria-pressed={viewMode === '2.5d'}
-                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold transition ${viewMode === '2.5d' ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
+                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${viewMode === '2.5d' ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
               >
                 <Maximize2 size={14} />
                 2.5D
