@@ -1,14 +1,6 @@
-import { GripVertical, Pin, PinOff, RotateCcw, X } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
-  type ReactNode,
-} from 'react'
+import { GripVertical, Pin, Undo2, X } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useCallback, useEffect, useRef, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import {
   DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
   useUIStore,
@@ -22,19 +14,21 @@ interface DockableToolbarProps {
   dockedStyle?: CSSProperties
   className?: string
   children: ReactNode
-  hidePin?: boolean
 }
 
 /**
- * World-class dockable toolbar shell.
+ * Shared chrome for the editor's floating toolbars. A toolbar has two
+ * states:
  *
- * Two states:
- *  - docked  : anchored to a canonical edge via `dockedClassName`
- *  - floating : freely draggable via the grip handle in the header
+ *  - docked: the component chooses its canonical anchor point via
+ *    `dockedClassName` / `dockedStyle`
+ *  - floating: the user drags it around the canvas chrome area using the
+ *    grip in the header
  *
- * Supports: drag-to-move, pin/unpin, hide, reset, resize (native CSS).
- * Position persists in the UI store + localStorage across reloads.
+ * Position persists in UI store + localStorage, so operators can arrange
+ * the editor once and keep that layout on refresh.
  */
+
 export function DockableToolbar({
   id,
   title,
@@ -42,19 +36,15 @@ export function DockableToolbar({
   dockedStyle,
   className = '',
   children,
-  hidePin,
 }: DockableToolbarProps) {
-  const FALLBACK_LAYOUT = { mode: 'docked' as const, position: { x: 0, y: 0 } }
-  const layout = useUIStore((s) => s.dockableToolbarLayouts[id]) ?? DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS[id] ?? FALLBACK_LAYOUT
+  const layout = useUIStore((s) => s.dockableToolbarLayouts[id])
   const visible = useUIStore((s) => s.dockableToolbarVisibility[id] ?? true)
   const setMode = useUIStore((s) => s.setDockableToolbarMode)
   const setPosition = useUIStore((s) => s.setDockableToolbarPosition)
   const resetLayout = useUIStore((s) => s.resetDockableToolbarLayout)
   const setVisible = useUIStore((s) => s.setDockableToolbarVisible)
-
   const rootRef = useRef<HTMLDivElement | null>(null)
   const pointerUpListenerRef = useRef<(e: PointerEvent) => void>(() => {})
-  const [isDragging, setIsDragging] = useState(false)
 
   const dragStateRef = useRef<{
     pointerId: number | null
@@ -74,6 +64,7 @@ export function DockableToolbar({
     const root = rootRef.current
     const host = root?.closest('[data-canvas-toolbar-host]') as HTMLElement | null
     if (!root || !host) return { x: nextX, y: nextY }
+
     const hostRect = host.getBoundingClientRect()
     const rootRect = root.getBoundingClientRect()
     const maxX = Math.max(0, hostRect.width - rootRect.width)
@@ -84,29 +75,22 @@ export function DockableToolbar({
     }
   }, [])
 
-  const handleWindowPointerMove = useCallback(
-    (e: PointerEvent) => {
-      const drag = dragStateRef.current
-      if (drag.pointerId !== e.pointerId) return
-      const deltaX = e.clientX - drag.startPointerX
-      const deltaY = e.clientY - drag.startPointerY
-      const next = clampToHost(drag.startX + deltaX, drag.startY + deltaY)
-      setPosition(id, next)
-    },
-    [clampToHost, id, setPosition],
-  )
+  const handleWindowPointerMove = useCallback((e: PointerEvent) => {
+    const drag = dragStateRef.current
+    if (drag.pointerId !== e.pointerId) return
+    const deltaX = e.clientX - drag.startPointerX
+    const deltaY = e.clientY - drag.startPointerY
+    const next = clampToHost(drag.startX + deltaX, drag.startY + deltaY)
+    setPosition(id, next)
+  }, [clampToHost, id, setPosition])
 
-  const handleWindowPointerUp = useCallback(
-    (e: PointerEvent) => {
-      const drag = dragStateRef.current
-      if (drag.pointerId !== e.pointerId) return
-      drag.pointerId = null
-      setIsDragging(false)
-      window.removeEventListener('pointermove', handleWindowPointerMove)
-      window.removeEventListener('pointerup', pointerUpListenerRef.current)
-    },
-    [handleWindowPointerMove],
-  )
+  const handleWindowPointerUp = useCallback((e: PointerEvent) => {
+    const drag = dragStateRef.current
+    if (drag.pointerId !== e.pointerId) return
+    drag.pointerId = null
+    window.removeEventListener('pointermove', handleWindowPointerMove)
+    window.removeEventListener('pointerup', pointerUpListenerRef.current)
+  }, [handleWindowPointerMove])
 
   useEffect(() => {
     pointerUpListenerRef.current = handleWindowPointerUp
@@ -135,7 +119,6 @@ export function DockableToolbar({
 
   const handleDragStart = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (layout.mode !== 'floating') return
-    setIsDragging(true)
     dragStateRef.current = {
       pointerId: e.pointerId,
       startPointerX: e.clientX,
@@ -147,160 +130,95 @@ export function DockableToolbar({
     window.addEventListener('pointerup', pointerUpListenerRef.current)
   }
 
-  const isFloating = layout.mode === 'floating'
+  const containerClassName =
+    `absolute z-20 max-w-[calc(100%-1rem)] overflow-hidden rounded-xl border border-gray-300 bg-white/96 shadow-lg backdrop-blur dark:border-gray-800 dark:bg-gray-900/96 ${className}`.trim()
 
-  const positioning = isFloating
-    ? {
-        className: '',
-        style: { left: layout.position.x, top: layout.position.y } as CSSProperties,
-      }
-    : { className: dockedClassName, style: dockedStyle }
+  const positioning =
+    layout.mode === 'docked'
+      ? { className: dockedClassName, style: dockedStyle }
+      : {
+          className: '',
+          style: { left: layout.position.x, top: layout.position.y } as CSSProperties,
+        }
 
   if (!visible) return null
 
   return (
-    <AnimatePresence>
-      <motion.div
-        ref={rootRef}
-        className={[
-          'absolute z-20 flex flex-col',
-          'min-w-[180px] max-h-[calc(100%-2.5rem)] max-w-[calc(100%-1rem)]',
-          'overflow-hidden',
-          // Surface — sharp edges per design spec
-          'border border-gray-200 dark:border-gray-800',
-          'bg-white dark:bg-gray-950',
-          // Drag cursor
-          isDragging ? 'cursor-grabbing select-none' : '',
-          // Elevated shadow when floating
-          isFloating
-            ? 'shadow-[0_4px_24px_rgba(0,0,0,0.12),0_24px_64px_rgba(0,0,0,0.16)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4),0_24px_64px_rgba(0,0,0,0.6)]'
-            : 'shadow-sm',
-          // Docked position classes (e.g. right-4 top-4)
-          positioning.className,
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        style={positioning.style}
-        data-toolbar-mode={layout.mode}
-        data-toolbar-id={id}
-        initial={{ opacity: 0, scale: 0.96, y: 6 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 6 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30, mass: 0.8 }}
-      >
-        {/* ── Header ── */}
-        <div
-          className={[
-            'flex flex-shrink-0 items-center gap-px px-1 py-0.5',
-            'border-b border-gray-200 dark:border-gray-800',
-            'bg-white dark:bg-gray-950',
-          ].join(' ')}
+    <motion.div
+      ref={rootRef}
+      className={`${containerClassName} ${positioning.className}`.trim()}
+      style={positioning.style}
+      data-toolbar-mode={layout.mode}
+      data-toolbar-id={id}
+      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+    >
+      <div className="flex items-center gap-1 border-b border-gray-200/80 dark:border-gray-800/80 bg-gray-50/90 dark:bg-gray-950/50 px-2 py-1">
+        <button
+          type="button"
+          aria-label={
+            layout.mode === 'floating'
+              ? `Move ${title}`
+              : `${title} is docked`
+          }
+          title={
+            layout.mode === 'floating'
+              ? `Drag to move ${title}`
+              : `${title} is docked`
+          }
+          onPointerDown={handleDragStart}
+          disabled={layout.mode !== 'floating'}
+          className={`inline-flex h-6 w-6 items-center justify-center rounded ${
+            layout.mode === 'floating'
+              ? 'cursor-grab text-gray-500 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:bg-gray-800'
+              : 'cursor-default text-gray-300 dark:text-gray-700'
+          }`}
         >
-          {/* Drag grip */}
+          <GripVertical size={14} aria-hidden="true" />
+        </button>
+        <span className="min-w-0 flex-1 truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
+          {title}
+        </span>
+        {layout.mode === 'floating' && (
           <button
             type="button"
-            aria-label={isFloating ? `Drag to move ${title}` : `${title} is docked`}
-            title={isFloating ? `Drag to move ${title}` : `${title} is docked`}
-            onPointerDown={handleDragStart}
-            disabled={!isFloating}
-            className={[
-              'inline-flex h-5 w-5 items-center justify-center',
-              'transition-colors duration-100',
-              isFloating
-                ? 'cursor-grab text-gray-400 hover:text-gray-700 active:cursor-grabbing dark:text-gray-500 dark:hover:text-gray-200'
-                : 'cursor-default text-gray-300/50 dark:text-gray-700/50',
-            ].join(' ')}
+            onClick={() => resetLayout(id)}
+            aria-label={`Reset ${title} position`}
+            title="Reset floating position"
+            className="inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:bg-gray-800"
           >
-            <GripVertical size={13} aria-hidden="true" strokeWidth={2} />
+            <Undo2 size={14} aria-hidden="true" />
           </button>
-
-          {/* Title */}
-          <span className="min-w-0 flex-1 truncate px-0.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 select-none">
-            {title}
-          </span>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-px">
-            {/* Reset (only in floating mode) */}
-            {isFloating && (
-              <HeaderButton
-                onClick={() => resetLayout(id)}
-                label={`Reset ${title} position`}
-                title="Reset to default position"
-              >
-                <RotateCcw size={11} strokeWidth={2.5} aria-hidden="true" />
-              </HeaderButton>
-            )}
-
-            {/* Pin / Unpin */}
-            {!hidePin && (
-              <HeaderButton
-                onClick={() =>
-                  isFloating ? setMode(id, 'docked') : startFloatingFromCurrentPosition()
-                }
-                label={isFloating ? `Dock ${title}` : `Undock ${title}`}
-                title={isFloating ? 'Dock to edge' : 'Float freely'}
-                active={!isFloating}
-              >
-                {isFloating ? (
-                  <Pin size={11} strokeWidth={2.5} aria-hidden="true" />
-                ) : (
-                  <PinOff size={11} strokeWidth={2.5} aria-hidden="true" />
-                )}
-              </HeaderButton>
-            )}
-
-            {/* Close */}
-            <HeaderButton
-              onClick={() => setVisible(id, false)}
-              label={`Hide ${title}`}
-              title={`Hide ${title}`}
-              danger
-            >
-              <X size={11} strokeWidth={2.5} aria-hidden="true" />
-            </HeaderButton>
-          </div>
-        </div>
-
-        {/* ── Content ── */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar">
-          {children}
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  )
-}
-
-// ── Header icon button ─────────────────────────────────────────────────────
-
-interface HeaderButtonProps {
-  onClick: () => void
-  label: string
-  title: string
-  active?: boolean
-  danger?: boolean
-  children: ReactNode
-}
-
-function HeaderButton({ onClick, label, title, active, danger, children }: HeaderButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      title={title}
-      className={[
-        'inline-flex h-5 w-5 items-center justify-center',
-        'transition-colors duration-100',
-        active
-          ? 'bg-[#1f3653]/10 text-[#1f3653] dark:bg-[#d6c2a6]/10 dark:text-[#d6c2a6]'
-          : danger
-            ? 'text-gray-400 hover:bg-red-50 hover:text-red-500 dark:text-gray-500 dark:hover:bg-red-500/10 dark:hover:text-red-400'
-            : 'text-gray-400 hover:bg-black/[0.05] hover:text-gray-700 dark:text-gray-500 dark:hover:bg-white/[0.06] dark:hover:text-gray-200',
-      ].join(' ')}
-    >
+        )}
+        <button
+          type="button"
+          onClick={() =>
+            layout.mode === 'docked'
+              ? startFloatingFromCurrentPosition()
+              : setMode(id, 'docked')
+          }
+          aria-label={
+            layout.mode === 'docked'
+              ? `Undock ${title}`
+              : `Dock ${title}`
+          }
+          title={layout.mode === 'docked' ? 'Undock toolbar' : 'Dock toolbar'}
+          className="inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:bg-gray-800"
+        >
+          <Pin size={14} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setVisible(id, false)}
+          aria-label={`Hide ${title}`}
+          title={`Hide ${title}`}
+          className="inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:bg-gray-200/70 dark:text-gray-400 dark:hover:bg-gray-800"
+        >
+          <X size={14} aria-hidden="true" />
+        </button>
+      </div>
       {children}
-    </button>
+    </motion.div>
   )
 }

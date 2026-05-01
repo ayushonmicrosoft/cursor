@@ -121,7 +121,7 @@ export function RightSidebar() {
         role="tabpanel"
         id={panelId(safeTab)}
         aria-labelledby={tabId(safeTab)}
-        className="flex-1 overflow-x-hidden bg-gray-50/60 p-2 dark:bg-gray-950"
+        className="flex-1 overflow-y-auto bg-gray-50/60 p-2.5 dark:bg-gray-950"
       >
         {safeTab === 'properties' && <PropertiesPanel />}
         {safeTab === 'reports' && <ReportsPanel />}

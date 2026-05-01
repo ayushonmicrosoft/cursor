@@ -1,4 +1,3 @@
-import { DockableToolbar } from './DockableToolbar'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useCanvasStore } from '../../stores/canvasStore'
 import { useUIStore } from '../../stores/uiStore'
@@ -187,7 +186,7 @@ export function Minimap() {
   // Toggle from the floating CanvasActionDock. When the operator hides the
   // minimap, render nothing — the dock keeps its own toggle button visible
   // so the user can bring it back without hunting through a menu.
-  const minimapVisible = useUIStore((s) => s.dockableToolbarVisibility['minimap'] ?? true)
+  const minimapVisible = useUIStore((s) => s.minimapVisible)
   const { setStagePosition } = useCanvasStore(
     useShallow((s) => ({ setStagePosition: s.setStagePosition })),
   )
@@ -314,7 +313,7 @@ export function Minimap() {
     return () => stopDragging()
   }, [stopDragging])
 
-  // if (!minimapVisible) return null
+  if (!minimapVisible) return null
 
   // When collapsed we render a tight 40x40 handle that just holds the
   // expand button — no SVG, no pointer-pan plumbing to worry about. The
@@ -322,18 +321,12 @@ export function Minimap() {
   // dock; this is the interim "park it" affordance.
   if (collapsed) {
     return (
-    <DockableToolbar
-      id="minimap"
-      title="Minimap"
-      dockedClassName="bottom-12 right-24"
-      className="w-auto"
-    >
       <div
         ref={ref}
         role="region"
         aria-label="Canvas overview"
         data-minimap-anchor="bottom-right-offset"
-        className="cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900"
+        className={`${MINIMAP_ANCHOR_CLASS} flex items-center justify-center overflow-hidden rounded border border-gray-300 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900`}
         style={{ width: COLLAPSED_SIZE, height: COLLAPSED_SIZE }}
       >
         <button
@@ -347,23 +340,16 @@ export function Minimap() {
           <Maximize2 size={16} />
         </button>
       </div>
-    </DockableToolbar>
-  )
-}
+    )
+  }
 
   return (
-    <DockableToolbar
-      id="minimap"
-      title="Minimap"
-      dockedClassName="bottom-8 right-8"
-      className="w-auto"
-    >
-      <div
-        ref={ref}
-        role="region"
+    <div
+      ref={ref}
+      role="region"
       aria-label="Canvas overview"
       data-minimap-anchor="bottom-right-offset"
-      className="cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900"
+      className={`${MINIMAP_ANCHOR_CLASS} cursor-grab select-none overflow-hidden rounded border border-gray-300 bg-white shadow-md touch-none active:cursor-grabbing dark:border-gray-800 dark:bg-gray-900`}
       style={{ width: MINIMAP_WIDTH, height: MINIMAP_HEIGHT }}
       onPointerDown={handlePointerDown}
     >
@@ -392,7 +378,6 @@ export function Minimap() {
       >
         <Minimize2 size={12} />
       </button>
-      </div>
-    </DockableToolbar>
+    </div>
   )
 }

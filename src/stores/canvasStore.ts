@@ -176,17 +176,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // stable, and Zustand would otherwise notify subscribers every time.
     const prev = get()
     if (prev.stageWidth === width && prev.stageHeight === height) return
-    
-    // If the canvas host is resizing (e.g. sidebars opening/closing),
-    // shift the stage offset so the content stays anchored to the visual center.
-    let newX = prev.stageX
-    let newY = prev.stageY
-    if (prev.stageWidth > 0 && prev.stageHeight > 0) {
-      newX += (width - prev.stageWidth) / 2
-      newY += (height - prev.stageHeight) / 2
-    }
-    
-    set({ stageWidth: width, stageHeight: height, stageX: newX, stageY: newY })
+    set({ stageWidth: width, stageHeight: height })
   },
 
   // Toolbar / keyboard zoom. Multiplicative so the perceived step stays

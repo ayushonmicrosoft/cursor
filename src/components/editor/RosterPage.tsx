@@ -3183,8 +3183,6 @@ function BulkActionToolbar({
         role="region"
         aria-label="Bulk actions"
         data-testid="roster-bulk-toolbar"
-        data-fixed-toolbar="roster-bulk"
-        data-fixed-toolbar-reason="Roster bulk toolbar is fixed inside the roster table because it is tied to the selected row set and table scroll context, not to the canvas."
         className={`roster-bulk-anim sticky top-0 z-20 flex items-center gap-3 px-5 py-2 bg-blue-50/90 dark:bg-blue-950/80 backdrop-blur border-b border-blue-200/80 dark:border-blue-800/60 shadow-sm flex-shrink-0 text-sm overflow-x-auto whitespace-nowrap min-w-0 ${animClass}`}
       >
         <button

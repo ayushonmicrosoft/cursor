@@ -113,7 +113,7 @@ export function TeamSwitcher({ currentSlug }: { currentSlug: string | undefined 
         {...triggerProps}
         type="button"
         onClick={toggle}
-        className="flex items-center gap-1 px-2 py-1 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="flex items-center gap-1 px-2 py-1 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
         data-testid="team-switcher-trigger"
       >
         {current?.name ?? 'Teams'}
@@ -125,7 +125,7 @@ export function TeamSwitcher({ currentSlug }: { currentSlug: string | undefined 
           role="menu"
           aria-label="Team switcher"
           className={cn(
-            'absolute left-0 mt-1 w-64 bg-white border border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-800 dark:shadow-black/40 z-30 py-1 origin-top-left',
+            'absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded shadow dark:bg-gray-900 dark:border-gray-800 dark:shadow-black/40 z-30 py-1 origin-top-left',
             !reduceMotion && 'dropdown-enter',
           )}
           data-testid="team-switcher-panel"

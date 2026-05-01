@@ -16,8 +16,7 @@ export function ToolbarTogglePill({
     'canvas-actions',
     'align-distribute',
     'admin-stats',
-    'left-tools',
-    'right-inspector',
+    'color-palette',
   ] as const
   const anyVisible = ids.some((id) => visibility[id] !== false)
 
@@ -32,10 +31,10 @@ export function ToolbarTogglePill({
     <button
       type="button"
       onClick={toggleAll}
-      className={`absolute z-20 flex max-w-[calc(100%-2rem)] items-center gap-1.5 border px-3 py-1.5 text-[11px] font-semibold shadow-md backdrop-blur transition-all ${className} ${
+      className={`absolute z-20 flex max-w-[calc(100%-2rem)] items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold shadow-md backdrop-blur transition-all ${className} ${
         anyVisible
-          ? 'border-black/10 bg-white/90 text-gray-600 hover:bg-gray-100 dark:border-white/10 dark:bg-gray-900/90 dark:text-gray-300 dark:hover:bg-gray-800'
-          : 'border-[#1f3653]/30 bg-[#1f3653]/5 text-[#1f3653] hover:bg-[#1f3653]/10 dark:border-[#d6c2a6]/30 dark:bg-[#d6c2a6]/5 dark:text-[#d6c2a6] dark:hover:bg-[#d6c2a6]/10'
+          ? 'border-gray-200 bg-white/90 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/90 dark:text-gray-300 dark:hover:bg-gray-800'
+          : 'border-blue-200 bg-blue-50/95 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:bg-blue-900/70'
       }`}
       title={anyVisible ? 'Hide all toolbars' : 'Show all toolbars'}
       aria-label={anyVisible ? 'Hide all toolbars' : 'Show all toolbars'}

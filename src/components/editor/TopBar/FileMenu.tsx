@@ -158,7 +158,7 @@ export function FileMenu({ groups, triggerId }: FileMenuProps) {
           }
         }}
         onKeyDown={handleTriggerKey}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 rounded"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
@@ -174,7 +174,7 @@ export function FileMenu({ groups, triggerId }: FileMenuProps) {
           role="menu"
           aria-label="File"
           onKeyDown={handleMenuKey}
-          className="absolute left-0 mt-1 w-64 bg-white border border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-800 dark:shadow-black/40 z-30 py-1"
+          className="absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded shadow dark:bg-gray-900 dark:border-gray-800 dark:shadow-black/40 z-30 py-1"
           data-testid="file-menu-panel"
         >
           {groups.map((group, gi) => (

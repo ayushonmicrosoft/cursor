@@ -151,73 +151,81 @@ export function ToolSelector() {
   }
 
   return (
-    <div className="flex flex-col">
-      {visibleTools.map((tool) => {
-        const isRich = hoveredToolId === tool.id && showRichTooltip(tool.id)
-        const tooltipId = `first-use-tooltip-${tool.id}`
-        const isActive = activeTool === tool.id
-        return (
-          <div key={tool.id} className="relative">
-            <button
-              onClick={() => handleToolClick(tool)}
-              onMouseEnter={() => setHoveredToolId(tool.id)}
-              onMouseLeave={() => setHoveredToolId((prev) => (prev === tool.id ? null : prev))}
-              onFocus={() => setHoveredToolId(tool.id)}
-              onBlur={() => setHoveredToolId((prev) => (prev === tool.id ? null : prev))}
-              className={`group flex w-full items-center gap-2 px-3 py-1.5 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-blue-500 ${
-                isActive
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-medium'
-                  : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/80'
-              }`}
-              title={isRich ? undefined : tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}
-              aria-describedby={isRich ? tooltipId : undefined}
-            >
-              <div className={`flex items-center justify-center w-5 h-5 opacity-80 group-hover:opacity-100 ${isActive ? 'opacity-100' : ''}`}>
-                {tool.icon}
-              </div>
-              <span className="truncate">{tool.label}</span>
-              {tool.shortcut && (
-                <span className={`ml-auto text-[10px] tracking-widest font-medium ${isActive ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-gray-400 dark:text-gray-500'}`}>
-                  {tool.shortcut}
-                </span>
-              )}
-            </button>
-            {isRich && (
-              <FirstUseTooltip
-                id={tooltipId}
-                name={tool.label}
-                description={tool.description}
-                shortcut={tool.shortcut}
-                icon={tool.icon}
-              />
-            )}
-            {/* Wall-style presets. */}
-            {tool.id === 'wall' && isActive && (
-              <div
-                role="radiogroup"
-                aria-label="Wall line style"
-                className="flex gap-px px-3 pb-2 pt-1 bg-blue-50 dark:bg-blue-900/30"
+    <div className="p-3">
+      <div className="flex flex-col gap-0.5">
+        {visibleTools.map((tool) => {
+          const isRich = hoveredToolId === tool.id && showRichTooltip(tool.id)
+          const tooltipId = `first-use-tooltip-${tool.id}`
+          return (
+            <div key={tool.id} className="relative">
+              <button
+                onClick={() => handleToolClick(tool)}
+                onMouseEnter={() => setHoveredToolId(tool.id)}
+                onMouseLeave={() =>
+                  setHoveredToolId((prev) => (prev === tool.id ? null : prev))
+                }
+                onFocus={() => setHoveredToolId(tool.id)}
+                onBlur={() =>
+                  setHoveredToolId((prev) => (prev === tool.id ? null : prev))
+                }
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl border text-sm transition-colors ${
+                  activeTool === tool.id
+                    ? 'border-[#e3d8cb] bg-gradient-to-r from-[#f7f1ea] to-white text-[#1f3653] dark:border-[#294161] dark:bg-gradient-to-r dark:from-[#12233a] dark:to-[#0b1628] dark:text-[#d6c2a6] font-medium shadow-sm'
+                    : 'border-transparent text-gray-700 dark:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-900/60 hover:border-gray-200 dark:hover:border-gray-800'
+                }`}
+                title={
+                  isRich
+                    ? undefined
+                    : tool.shortcut
+                      ? `${tool.label} (${tool.shortcut})`
+                      : tool.label
+                }
+                aria-describedby={isRich ? tooltipId : undefined}
               >
-                {WALL_STYLES.map((s) => (
-                  <button
-                    key={s.id}
-                    role="radio"
-                    aria-checked={wallDrawStyle === s.id}
-                    onClick={() => setWallDrawStyle(s.id)}
-                    className={`flex-1 px-1 py-1 text-[10px] font-medium transition-colors border border-transparent ${
-                      wallDrawStyle === s.id
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
+                {tool.icon}
+                <span>{tool.label}</span>
+                {tool.shortcut && (
+                  <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 font-mono">{tool.shortcut}</span>
+                )}
+              </button>
+              {isRich && (
+                <FirstUseTooltip
+                  id={tooltipId}
+                  name={tool.label}
+                  description={tool.description}
+                  shortcut={tool.shortcut}
+                  icon={tool.icon}
+                />
+              )}
+              {/* Wall-style presets. Only visible with the wall tool active so
+                  the sidebar doesn't get noisy with options for inactive tools. */}
+              {tool.id === 'wall' && activeTool === 'wall' && (
+                <div
+                  role="radiogroup"
+                  aria-label="Wall line style"
+                  className="flex gap-1 px-2.5 pb-1 pt-0.5"
+                >
+                  {WALL_STYLES.map((s) => (
+                    <button
+                      key={s.id}
+                      role="radio"
+                      aria-checked={wallDrawStyle === s.id}
+                      onClick={() => setWallDrawStyle(s.id)}
+                      className={`flex-1 px-2 py-0.5 text-[11px] rounded-full border transition-colors ${
+                        wallDrawStyle === s.id
+                          ? 'bg-[#1f3653] text-white border-[#1f3653]'
+                          : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-[#9d876c]'
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
