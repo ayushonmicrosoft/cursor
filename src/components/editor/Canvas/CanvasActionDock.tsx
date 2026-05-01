@@ -8,39 +8,33 @@ import {
   Map,
   PlaySquare,
   Maximize,
-  Paintbrush,
 } from 'lucide-react'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useUIStore } from '../../../stores/uiStore'
-import { useElementsStore } from '../../../stores/elementsStore'
-import { isStrokeOnlyBlock } from '../../../blocks/rendering'
 import { DockableToolbar } from '../DockableToolbar'
 
-const PALETTE = [
-  { color: '#111827', label: 'Black' },
-  { color: '#6B7280', label: 'Gray' },
-  { color: '#FFFFFF', label: 'White' },
-  { color: '#F59E0B', label: 'Amber' },
-  { color: '#D97706', label: 'Orange' },
-  { color: '#2563EB', label: 'Blue' },
-  { color: '#10B981', label: 'Green' },
-  { color: '#7C3AED', label: 'Purple' },
-  { color: '#EF4444', label: 'Red' },
-  { color: '#06B6D4', label: 'Cyan' },
-] as const
-
+/**
+ * Floating bottom-right action dock for the canvas, modeled after the
+ * JSON Crack control cluster: a translucent vertical pill of icon
+ * buttons that consolidates zoom, fit, grid, minimap, presentation, and
+ * fullscreen toggles in one place.
+ *
+ * The dock is intentionally hidden in presentation mode — that mode's
+ * existing Exit overlay is the only canvas-affordance we want visible
+ * while presenting.
+ *
+ * Positioned at `bottom-12` to clear the 32px StatusBar (`h-8`,
+ * `bottom-0`); `z-20` keeps it above the canvas but below modals and
+ * the presentation-mode overlay.
+ */
 export function CanvasActionDock() {
   const presentationMode = useUIStore((s) => s.presentationMode)
-  const visible = useUIStore((s) => s.dockableToolbarVisibility['canvas-actions'] ?? true)
-  const minimapVisible = useUIStore((s) => s.dockableToolbarVisibility['minimap'] ?? true)
   const stageScale = useCanvasStore((s) => s.stageScale)
   const showGrid = useCanvasStore((s) => s.settings.showGrid)
-  const selectedIds = useUIStore((s) => s.selectedIds)
-  const elements = useElementsStore((s) => s.elements)
-  const setElements = useElementsStore((s) => s.setElements)
+  const minimapVisible = useUIStore((s) => s.minimapVisible)
 
-  const hasSelection = selectedIds.some((id) => Boolean(elements[id]))
-
+  // Track browser fullscreen state so the icon stays in sync if the
+  // user exits via Escape (no click on our button).
   const [isFullscreen, setIsFullscreen] = useState<boolean>(
     typeof document !== 'undefined' ? !!document.fullscreenElement : false,
   )
@@ -51,113 +45,120 @@ export function CanvasActionDock() {
     return () => document.removeEventListener('fullscreenchange', handler)
   }, [])
 
-  if (presentationMode || !visible) return null
+  if (presentationMode) return null
 
   const onZoomIn = () => useCanvasStore.getState().zoomIn()
   const onZoomOut = () => useCanvasStore.getState().zoomOut()
   const onFit = () => useCanvasStore.getState().zoomToContent()
   const onReset = () => useCanvasStore.getState().resetZoom()
   const onToggleGrid = () => useCanvasStore.getState().toggleGrid()
-  const onToggleMinimap = () => useUIStore.getState().setDockableToolbarVisible('minimap', !minimapVisible)
+  const onToggleMinimap = () => useUIStore.getState().toggleMinimap()
   const onPresentation = () => useUIStore.getState().setPresentationMode(true)
   const onFullscreen = () => {
     if (typeof document === 'undefined') return
-    if (document.fullscreenElement) void document.exitFullscreen?.()
-    else void document.documentElement.requestFullscreen?.()
-  }
-
-  const applyColor = (color: string) => {
-    let changed = false
-    const nextElements = { ...elements }
-    for (const id of selectedIds) {
-      const el = elements[id]
-      if (!el || el.locked) continue
-      const style = {
-        ...el.style,
-        ...(isStrokeOnlyBlock(el.type) ? { stroke: color } : { fill: color }),
-      }
-      nextElements[id] = { ...el, style }
-      changed = true
+    if (document.fullscreenElement) {
+      void document.exitFullscreen?.()
+    } else {
+      void document.documentElement.requestFullscreen?.()
     }
-    if (changed) setElements(nextElements)
   }
 
   return (
     <DockableToolbar
       id="canvas-actions"
       title="Canvas controls"
-      dockedClassName="bottom-8 left-1/2 -translate-x-1/2"
-      dockedStyle={{}}
-      className="w-auto"
+      dockedClassName="bottom-12 right-4"
+      className="w-[60px]"
     >
       <div
         data-testid="canvas-action-dock"
         role="toolbar"
         aria-label="Canvas controls"
-        className="flex flex-col"
+        className="flex flex-col gap-0.5 p-1"
       >
-        {/* ── Row 1: Canvas controls ── */}
-        <div className="flex items-center justify-center px-1 py-1">
-          {/* Zoom */}
-          <Btn label="Zoom in" title="Zoom in (+)" onClick={onZoomIn}><Plus size={13} /></Btn>
-          <Btn label="Zoom out" title="Zoom out (-)" onClick={onZoomOut}><Minus size={13} /></Btn>
+      <DockButton
+        label="Zoom in"
+        title="Zoom in (+ or =)"
+        onClick={onZoomIn}
+      >
+        <Plus className="w-4 h-4" />
+      </DockButton>
+      <DockButton
+        label="Zoom out"
+        title="Zoom out (-)"
+        onClick={onZoomOut}
+      >
+        <Minus className="w-4 h-4" />
+      </DockButton>
+      <div
+        className="mx-1 rounded border border-gray-200/80 bg-gradient-to-b from-white to-[#f4efe8] px-1.5 py-1 text-center text-[10px] font-semibold tabular-nums text-gray-600 select-none dark:border-gray-800 dark:from-gray-900 dark:to-[#1b2940] dark:text-gray-300"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {Math.round(stageScale * 100)}%
+      </div>
 
-          {/* Zoom readout */}
-          <div
-            className="px-1.5 text-[10px] font-semibold tabular-nums text-gray-500 dark:text-gray-400 select-none"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {Math.round(stageScale * 100)}%
-          </div>
+      <DockDivider />
 
-          <Sep />
+      <DockButton
+        label="Fit to content"
+        title="Fit to content (1)"
+        onClick={onFit}
+      >
+        <Maximize2 className="w-4 h-4" />
+      </DockButton>
+      <DockButton
+        label="Reset view"
+        title="Reset view (0)"
+        onClick={onReset}
+      >
+        <LocateFixed className="w-4 h-4" />
+      </DockButton>
 
-          {/* Fit / Reset */}
-          <Btn label="Fit to content" title="Fit (1)" onClick={onFit}><Maximize2 size={13} /></Btn>
-          <Btn label="Reset view" title="Reset (0)" onClick={onReset}><LocateFixed size={13} /></Btn>
+      <DockDivider />
 
-          <Sep />
+      <DockButton
+        label="Toggle grid"
+        title="Toggle grid (G)"
+        onClick={onToggleGrid}
+        pressed={showGrid}
+      >
+        <Grid3x3 className="w-4 h-4" />
+      </DockButton>
+      <DockButton
+        label="Toggle minimap"
+        // M is the global Map nav shortcut and Shift+M is the ruler — no
+        // free keybind for minimap visibility, so the title omits a hint.
+        title="Toggle minimap"
+        onClick={onToggleMinimap}
+        pressed={minimapVisible}
+      >
+        <Map className="w-4 h-4" />
+      </DockButton>
 
-          {/* Toggles */}
-          <Btn label="Toggle grid" title="Grid (G)" onClick={onToggleGrid} pressed={showGrid}><Grid3x3 size={13} /></Btn>
-          <Btn label="Toggle minimap" title="Minimap" onClick={onToggleMinimap} pressed={minimapVisible}><Map size={13} /></Btn>
+      <DockDivider />
 
-          <Sep />
-
-          {/* Present / Fullscreen */}
-          <Btn label="Presentation" title="Present (P)" onClick={onPresentation}><PlaySquare size={13} /></Btn>
-        </div>
-
-        {/* ── Row 2: Color palette ── */}
-        <div className="flex items-center justify-center px-1 py-1 border-t border-gray-200 dark:border-gray-800">
-          <div
-            className={`flex h-6 w-6 items-center justify-center flex-shrink-0 transition-colors ${hasSelection ? 'text-gray-500 dark:text-gray-400' : 'text-gray-300 dark:text-gray-600'}`}
-            title={hasSelection ? 'Apply color' : 'Select an element first'}
-          >
-            <Paintbrush size={11} />
-          </div>
-          {PALETTE.map(({ color, label }) => (
-            <button
-              key={color}
-              type="button"
-              aria-label={`Apply ${label}`}
-              title={hasSelection ? `Apply ${label}` : 'Select an element first'}
-              disabled={!hasSelection}
-              onClick={() => applyColor(color)}
-              className="h-4 w-4 flex-shrink-0 border border-black/10 dark:border-white/10 transition-transform duration-100 hover:scale-110 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-30"
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
+      <DockButton
+        label="Presentation mode"
+        title="Presentation mode (P)"
+        onClick={onPresentation}
+      >
+        <PlaySquare className="w-4 h-4" />
+      </DockButton>
+      <DockButton
+        label="Fullscreen"
+        title="Fullscreen (F11)"
+        onClick={onFullscreen}
+        pressed={isFullscreen}
+      >
+        <Maximize className="w-4 h-4" />
+      </DockButton>
       </div>
     </DockableToolbar>
   )
 }
 
-// ── Primitives ────────────────────────────────────────────────────────────────
-
-interface BtnProps {
+interface DockButtonProps {
   label: string
   title: string
   onClick: () => void
@@ -165,7 +166,13 @@ interface BtnProps {
   children: React.ReactNode
 }
 
-function Btn({ label, title, onClick, pressed, children }: BtnProps) {
+function DockButton({ label, title, onClick, pressed, children }: DockButtonProps) {
+  const base =
+    'inline-flex h-10 w-10 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500'
+  const idle =
+    'text-gray-600 dark:text-gray-300 hover:bg-[#f4efe8] dark:hover:bg-[#16263d] active:bg-[#eadfce] dark:active:bg-[#203552]'
+  const active =
+    'bg-[#f4efe8] dark:bg-[#16263d] text-[#1f3653] dark:text-[#d6c2a6] ring-1 ring-[#e3d8cb] dark:ring-[#294161]'
   return (
     <button
       type="button"
@@ -173,25 +180,18 @@ function Btn({ label, title, onClick, pressed, children }: BtnProps) {
       aria-label={label}
       title={title}
       {...(pressed !== undefined ? { 'aria-pressed': pressed } : {})}
-      className={[
-        'inline-flex h-6 w-6 flex-shrink-0 items-center justify-center',
-        'transition-colors duration-100',
-        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500',
-        pressed
-          ? 'bg-[#1f3653]/10 text-[#1f3653] dark:bg-[#d6c2a6]/10 dark:text-[#d6c2a6]'
-          : 'text-gray-500 dark:text-gray-400 hover:bg-black/[0.05] hover:text-gray-800 dark:hover:bg-white/[0.06] dark:hover:text-gray-100',
-      ].join(' ')}
+      className={`${base} ${pressed ? active : idle}`}
     >
       {children}
     </button>
   )
 }
 
-function Sep() {
+function DockDivider() {
   return (
     <div
       role="separator"
-      className="mx-0.5 h-3.5 w-px flex-shrink-0 bg-black/[0.08] dark:bg-white/[0.08]"
+      className="h-px bg-gray-200 dark:bg-gray-800 mx-1.5 my-1"
     />
   )
 }
