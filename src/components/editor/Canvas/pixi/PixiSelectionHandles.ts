@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
-import { isCenterAnchoredBlock } from '../../../blocks/rendering'
-import type { CanvasElement } from '../../../types/elements'
+import { isCenterAnchoredBlock } from '../../../../blocks/rendering'
+import type { CanvasElement } from '../../../../types/elements'
 
 /**
  * Phase 5 — Selection handles overlay.
@@ -20,18 +20,17 @@ const HANDLE_SIZE = 8
 export function syncSelectionHandles(
   layer: Container,
   selectedElements: CanvasElement[],
+  dragRef?: { current: any }
 ): void {
-  layer.removeChildren()
+  layer.removeChildren().forEach(c => c.destroy())
 
   if (selectedElements.length === 0) return
 
-  const g = new Graphics()
-
   if (selectedElements.length === 1) {
     const el = selectedElements[0]
-    drawSingleHandles(g, el)
+    drawSingleHandles(layer, el, dragRef)
   } else {
-    // Multi-select bounding box
+    const g = new Graphics()
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
     for (const el of selectedElements) {
       const box = elementBox(el)
@@ -42,55 +41,68 @@ export function syncSelectionHandles(
     }
     g.rect(minX - 4, minY - 4, maxX - minX + 8, maxY - minY + 8)
     g.stroke({ color: BOX_COLOR, width: 1.5, alpha: 0.6 })
+    layer.addChild(g)
   }
-
-  layer.addChild(g)
 }
 
-function drawSingleHandles(g: Graphics, el: CanvasElement) {
+function drawSingleHandles(layer: Container, el: CanvasElement, dragRef?: { current: any }) {
   const { rotation } = el
   const box = elementBox(el)
-
-  // Apply rotation transform to the graphics container for rotated elements.
-  // For Phase 5 we draw axis-aligned handles (simpler), matching Konva's approach
-  // of showing the bounding box un-rotated in practice.
   const pad = 4
   const left = box.left - pad
   const top = box.top - pad
   const right = box.right + pad
   const bottom = box.bottom + pad
 
-  // Bounding box
+  const g = new Graphics()
   g.rect(left, top, right - left, bottom - top)
   g.stroke({ color: BOX_COLOR, width: 1.5 })
 
-  // Rotation indicator (dashed line from top-centre upward)
   g.moveTo((left + right) / 2, top)
   g.lineTo((left + right) / 2, top - 16)
   g.stroke({ color: BOX_COLOR, width: 1, alpha: 0.5 })
   g.circle((left + right) / 2, top - 16, 4)
   g.fill({ color: HANDLE_FILL })
   g.stroke({ color: BOX_COLOR, width: 1 })
+  layer.addChild(g)
 
-  // 8 resize handles
   const handles = [
-    [left, top],
-    [(left + right) / 2, top],
-    [right, top],
-    [right, (top + bottom) / 2],
-    [right, bottom],
-    [(left + right) / 2, bottom],
-    [left, bottom],
-    [left, (top + bottom) / 2],
+    { x: left, y: top, cursor: 'nwse-resize' },
+    { x: (left + right) / 2, y: top, cursor: 'ns-resize' },
+    { x: right, y: top, cursor: 'nesw-resize' },
+    { x: right, y: (top + bottom) / 2, cursor: 'ew-resize' },
+    { x: right, y: bottom, cursor: 'nwse-resize' },
+    { x: (left + right) / 2, y: bottom, cursor: 'ns-resize' },
+    { x: left, y: bottom, cursor: 'nesw-resize' },
+    { x: left, y: (top + bottom) / 2, cursor: 'ew-resize' },
   ]
 
-  for (const [hx, hy] of handles) {
-    g.roundRect(hx - HANDLE_SIZE / 2, hy - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE, HANDLE_RADIUS)
-    g.fill({ color: HANDLE_FILL })
-    g.stroke({ color: HANDLE_STROKE, width: 1.5 })
-  }
+  handles.forEach((h, i) => {
+    const hg = new Graphics()
+    hg.roundRect(h.x - HANDLE_SIZE / 2, h.y - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE, HANDLE_RADIUS)
+    hg.fill({ color: HANDLE_FILL })
+    hg.stroke({ color: HANDLE_STROKE, width: 1.5 })
+    hg.eventMode = 'static'
+    hg.cursor = h.cursor
+    hg.on('pointerdown', (e) => {
+      e.stopPropagation()
+      if (dragRef && !el.locked) {
+        const wp = hg.parent?.toLocal(e.global)
+        if (wp) {
+          dragRef.current = {
+            id: el.id,
+            action: 'resize',
+            handleIndex: i,
+            swx: wp.x, swy: wp.y,
+            sex: el.x, sey: el.y,
+            sw: el.width, sh: el.height
+          }
+        }
+      }
+    })
+    layer.addChild(hg)
+  })
 
-  // Suppress the linter for unused rotation (Phase 6 will apply it)
   void rotation
 }
 

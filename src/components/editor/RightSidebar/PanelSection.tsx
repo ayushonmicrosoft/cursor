@@ -85,7 +85,7 @@ export function PanelSection({
 
   const sectionClass = card
     ? `flex flex-col gap-2 ${className ?? ''}`
-    : `flex min-w-0 flex-col gap-2 rounded-md border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900 ${className ?? ''}`
+    : `flex min-w-0 flex-col gap-2 rounded-md border border-gray-200 bg-white p-2.5 dark:border-gray-800 dark:bg-gray-900 ${className ?? ''}`
 
   return (
     <section

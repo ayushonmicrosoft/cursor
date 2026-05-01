@@ -127,6 +127,10 @@ export const SHAPE_DEFAULTS: Record<string, { width: number; height: number; fil
   'decor/column':           { width: 40,  height: 40,  fill: '#94A3B8', stroke: '#334155' },
   'decor/stairs':           { width: 120, height: 80,  fill: '#E2E8F0', stroke: '#475569' },
   'decor/elevator':         { width: 100, height: 100, fill: '#E2E8F0', stroke: '#475569' },
+  'decor/storage':          { width: 80,  height: 40,  fill: '#E2E8F0', stroke: '#475569' },
+  'decor/locker':           { width: 120, height: 30,  fill: '#E2E8F0', stroke: '#475569' },
+  'decor/credenza':         { width: 120, height: 40,  fill: '#D4C5B0', stroke: '#6B4423' },
+  'decor/printer-bay':      { width: 100, height: 60,  fill: '#E2E8F0', stroke: '#475569' },
 }
 
 /** Resolve the effective default for a type + optional shape. */

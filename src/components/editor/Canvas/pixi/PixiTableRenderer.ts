@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
-import type { TableElement } from '../../../types/elements'
-import { parsePixiColor } from '../../../lib/pixiColor'
+import type { TableElement } from '../../../../types/elements'
+import { parsePixiColor } from '../../../../lib/pixiColor'
 
 /**
  * Phase 2 — PixiJS table renderer.

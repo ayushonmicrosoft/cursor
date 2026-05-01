@@ -232,6 +232,10 @@ export type DecorShape =
   | 'column'
   | 'stairs'
   | 'elevator'
+  | 'storage'
+  | 'locker'
+  | 'credenza'
+  | 'printer-bay'
 
 export interface DecorElement extends BaseElement {
   type: 'decor'

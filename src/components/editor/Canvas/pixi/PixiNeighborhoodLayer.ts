@@ -1,5 +1,5 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js'
-import { parsePixiColor } from '../../../lib/pixiColor'
+import { parsePixiColor } from '../../../../lib/pixiColor'
 
 /**
  * Phase 4 — Neighborhood zone fills.

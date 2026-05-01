@@ -108,6 +108,10 @@ const TILE_DESCRIPTIONS: Record<string, string> = {
   whiteboard: 'Whiteboard footprint.',
   'custom-shape': 'Generic custom outline — resize freely.',
   'text-label': 'Free-form text label.',
+  'decor/storage': 'General purpose storage cabinet or shelving.',
+  'decor/locker': 'Bank of personal lockers.',
+  'decor/credenza': 'Low storage credenza.',
+  'decor/printer-bay': 'Dedicated area for printers and copiers.',
 }
 
 /** Same key shape as the recents helper so descriptions follow shape variants. */
@@ -154,6 +158,12 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   { type: 'decor',             label: 'Fridge',          category: 'Facilities', shape: 'fridge' },
   { type: 'decor',             label: 'Whiteboard',      category: 'Facilities', shape: 'whiteboard' },
   { type: 'counter',           label: 'Counter',         category: 'Facilities' },
+
+  // Storage
+  { type: 'decor',             label: 'Storage Cabinet', category: 'Storage', shape: 'storage' },
+  { type: 'decor',             label: 'Lockers',         category: 'Storage', shape: 'locker' },
+  { type: 'decor',             label: 'Credenza',        category: 'Storage', shape: 'credenza' },
+  { type: 'decor',             label: 'Printer Bay',     category: 'Storage', shape: 'printer-bay' },
 
   // Furniture — decorative/context props (non-assignable). See
   // `src/types/elements.ts` for the discriminated-union members.

@@ -436,7 +436,7 @@ function Section({
 }) {
   return (
     <PanelSection title={title} subtitle={subtitle} ariaLabel={title}>
-      <div className="flex flex-col gap-3">{children}</div>
+      <div className="flex flex-col gap-2">{children}</div>
     </PanelSection>
   )
 }
@@ -1074,7 +1074,7 @@ export function PropertiesPanel() {
     )
 
     return (
-      <div className="flex flex-col gap-5" data-testid="properties-multi-select">
+      <div className="flex flex-col gap-3" data-testid="properties-multi-select">
         {/* Header row mirrors the single-select header so the visual
             rhythm doesn't shift when the user changes selection size. */}
         <div className="sticky top-0 z-10 -mx-3 px-3 py-2.5 bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 flex items-center gap-2.5">

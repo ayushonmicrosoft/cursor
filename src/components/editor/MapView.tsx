@@ -12,7 +12,6 @@ import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
 import { Minimap } from './Minimap'
 import { CanvasActionDock } from './Canvas/CanvasActionDock'
-import { ColorPaletteToolbar } from './Canvas/ColorPaletteToolbar'
 import { CanvasScaleBar } from './Canvas/CanvasScaleBar'
 import { NorthArrow } from './Canvas/NorthArrow'
 import { AlignDistributeToolbar } from './Canvas/AlignDistributeToolbar'
@@ -98,8 +97,8 @@ export function MapView() {
 
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
   const emptyPropertiesState = rightSidebarTab === 'properties' && selectedIds.length === 0
-  const leftToolsFloating = dockableToolbarLayouts['left-tools'].mode === 'floating'
-  const rightInspectorFloating = dockableToolbarLayouts['right-inspector'].mode === 'floating'
+  const leftToolsFloating = dockableToolbarLayouts['left-tools']?.mode === 'floating'
+  const rightInspectorFloating = dockableToolbarLayouts['right-inspector']?.mode === 'floating'
   const leftToolsVisible = dockableToolbarVisibility['left-tools'] !== false
   const rightInspectorVisible = dockableToolbarVisibility['right-inspector'] !== false
 
@@ -280,53 +279,22 @@ export function MapView() {
           data-editor-min-width={CANVAS_INSPECTION_MIN_WIDTH_PX}
         >
         {/* ── Left sidebar ────────────────────────────────────── */}
-        {!isCompactEditor && leftToolsVisible && !leftToolsFloating && (
-          <div
-            className={`flex flex-shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 transition-[width] duration-200 ${
-              leftSidebarOpen ? 'w-[280px] overflow-y-auto overflow-x-hidden' : 'w-10 overflow-hidden'
-            }`}
-            data-testid="mapview-left-sidebar"
-          >
-            {/* Toggle button */}
-            <button
-              type="button"
-              onClick={() => setLeftSidebarOpen((v) => !v)}
-              className="flex h-9 w-full items-center justify-center gap-1.5 border-b border-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-200 transition-colors"
-              title={leftSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-              aria-label={leftSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-            >
-              {leftSidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
-              {leftSidebarOpen && <span className="text-[11px] font-medium">Collapse</span>}
-            </button>
-            {leftSidebarOpen && (
-              <>
-                <CollapsibleSection title="Tools" defaultOpen storageKey="tools">
-                  <ToolSelector />
-                </CollapsibleSection>
-                <CollapsibleSection title="Layers" defaultOpen={false} storageKey="layers">
-                  <LayerVisibilityPanel />
-                </CollapsibleSection>
-                <CollapsibleSection title="Library" defaultOpen storageKey="library">
-                  <ElementLibrary />
-                </CollapsibleSection>
-              </>
-            )}
+        {leftToolsVisible && (
+          <div className="flex w-[280px] flex-col border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 z-30">
+            <div className="flex h-8 shrink-0 items-center border-b border-gray-200 dark:border-gray-800 px-3 bg-white dark:bg-gray-950">
+              <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-500 dark:text-gray-400">Tools Rail</span>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <FloatingToolsRail />
+            </div>
           </div>
         )}
+
+        {/* ── Center Canvas Host ──────────────────────────────── */}
         <div
-          className="relative min-w-0 flex-1 overflow-hidden bg-slate-100 dark:bg-gray-950"
+          className="relative min-w-0 flex-1 overflow-hidden bg-[#f0f0f0] dark:bg-gray-900"
           data-canvas-toolbar-host
         >
-          {!isCompactEditor && leftToolsVisible && leftToolsFloating && (
-            <DockableToolbar
-              id="left-tools"
-              title="Tools rail"
-              dockedClassName="left-4 top-4"
-              className="max-h-[calc(100%-2rem)] w-[280px] overflow-y-auto"
-            >
-              <FloatingToolsRail />
-            </DockableToolbar>
-          )}
           {viewMode === '2.5d' ? (
             <div
               className="absolute inset-0 z-10 flex items-center justify-center bg-white/90 p-6 text-center dark:bg-gray-950/90"
@@ -394,8 +362,6 @@ export function MapView() {
                 <Minimap />
                 <AlignDistributeToolbar />
                 <ElementHoverCard />
-                <CanvasActionDock />
-                <ColorPaletteToolbar />
                 <AdminStatsToolbar />
                 <CanvasScaleBar />
                 {showNorthArrow && <NorthArrow />}
@@ -406,44 +372,23 @@ export function MapView() {
                   />
                 )}
               </div>
-              {/* ── Toolbar toggle ─────────────────────────── */}
-              <ToolbarTogglePill />
+              {/* Canvas action dock lives at host level so bottom/right are
+                  relative to the host, not the inset-0 canvas overlay */}
+              <CanvasActionDock />
             </>
           )}
-          {/* Closed-state pull-tab to expand the right sidebar.
-              Replaces the toggle that used to live in the TopBar so
-              the control belongs to the panel it controls. Only
-              renders when the panel is hidden. */}
-          {!rightSidebarOpen && <SidebarToggle variant="floating" />}
-          {rightSidebarOpen && rightInspectorVisible && rightInspectorFloating && (
-            <DockableToolbar
-              id="right-inspector"
-              title="Inspector"
-              dockedClassName="right-4 top-4"
-              className="max-h-[calc(100%-2rem)] w-[320px] overflow-y-auto"
-            >
-              <RightSidebar />
-            </DockableToolbar>
-          )}
-          {rightSidebarOpen && rightInspectorVisible && !rightInspectorFloating && isCompactEditor && (
-            <div
-              className={`absolute inset-y-0 right-0 z-20 overflow-y-auto border-l border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-950 ${
-                emptyPropertiesState ? 'w-[min(272px,85vw)]' : 'w-[min(320px,85vw)]'
-              }`}
-              data-testid="mapview-right-sidebar-overlay"
-            >
+        </div>
+
+        {/* ── Right sidebar ────────────────────────────────────── */}
+        {!rightSidebarOpen && <SidebarToggle variant="docked" />}
+        {rightSidebarOpen && rightInspectorVisible && (
+          <div className="flex w-[320px] flex-col border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 z-30">
+            <div className="flex h-8 shrink-0 items-center justify-between border-b border-gray-200 dark:border-gray-800 px-3 bg-white dark:bg-gray-950">
+              <span className="text-[11px] font-semibold tracking-wide uppercase text-gray-500 dark:text-gray-400">Inspector</span>
+            </div>
+            <div className="flex-1 overflow-y-auto">
               <RightSidebar />
             </div>
-          )}
-        </div>
-        {rightSidebarOpen && rightInspectorVisible && !rightInspectorFloating && !isCompactEditor && (
-          <div
-            className={`flex-shrink-0 overflow-y-auto border-l border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-950 ${
-              emptyPropertiesState ? 'w-[272px]' : 'w-[320px]'
-            }`}
-            data-testid="mapview-right-sidebar-docked"
-          >
-            <RightSidebar />
           </div>
         )}
       </div>
@@ -454,7 +399,7 @@ export function MapView() {
 
 function FloatingToolsRail() {
   return (
-    <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
+    <div className="flex flex-col">
       <CollapsibleSection title="Tools" defaultOpen storageKey="floating-tools">
         <ToolSelector />
       </CollapsibleSection>

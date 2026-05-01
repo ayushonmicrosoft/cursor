@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js'
-import type { AlignmentGuide } from '../../../lib/geometry'
+import type { AlignmentGuide } from '../../../../lib/geometry'
 
 /**
  * Phase 4 — Alignment guide overlay.

@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js'
-import type { WallElement } from '../../../types/elements'
-import { parsePixiColor } from '../../../lib/pixiColor'
+import type { WallElement } from '../../../../types/elements'
+import { parsePixiColor } from '../../../../lib/pixiColor'
 
 /**
  * Phase 2 — PixiJS wall renderer.

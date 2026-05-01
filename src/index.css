@@ -195,3 +195,64 @@
 .dropdown-enter {
   animation: dropdown-enter 120ms ease-out;
 }
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.8);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.8);
+}
+
+/* Custom Resizer */
+.custom-resizer::-webkit-resizer {
+  background-color: transparent;
+  background-image: radial-gradient(rgba(156, 163, 175, 0.4) 1px, transparent 1px);
+  background-size: 4px 4px;
+  background-position: bottom 2px right 2px;
+}
+
+@layer components {
+  /* Primary view navigation links */
+  .topbar-nav-link {
+    @apply inline-flex h-8 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500;
+  }
+  
+  .topbar-nav-link-active {
+    @apply bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white;
+  }
+
+  /* TopBar standard button */
+  .topbar-btn {
+    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100;
+  }
+  
+  /* TopBar icon-only button */
+  .topbar-btn-icon {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100;
+  }
+
+  /* Active state for toggle buttons */
+  .topbar-btn-active {
+    @apply bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50;
+  }
+
+  /* Vertical divider in TopBar */
+  .topbar-divider {
+    @apply mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700;
+  }
+}

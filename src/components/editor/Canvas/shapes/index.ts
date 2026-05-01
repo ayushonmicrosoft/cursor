@@ -14,6 +14,10 @@ import { DecorWhiteboard } from './DecorWhiteboard'
 import { DecorColumn } from './DecorColumn'
 import { DecorStairs } from './DecorStairs'
 import { DecorElevator } from './DecorElevator'
+import { DecorStorage } from './DecorStorage'
+import { DecorLocker } from './DecorLocker'
+import { DecorCredenza } from './DecorCredenza'
+import { DecorPrinterBay } from './DecorPrinterBay'
 
 /**
  * Returns a shape-variant renderer when a custom silhouette exists for this
@@ -48,6 +52,10 @@ export function getShapeRenderer(el: CanvasElement): React.FC<{ element: CanvasE
       case 'column':          return DecorColumn          as unknown as React.FC<{ element: CanvasElement }>
       case 'stairs':          return DecorStairs          as unknown as React.FC<{ element: CanvasElement }>
       case 'elevator':        return DecorElevator        as unknown as React.FC<{ element: CanvasElement }>
+      case 'storage':         return DecorStorage         as unknown as React.FC<{ element: CanvasElement }>
+      case 'locker':          return DecorLocker          as unknown as React.FC<{ element: CanvasElement }>
+      case 'credenza':        return DecorCredenza        as unknown as React.FC<{ element: CanvasElement }>
+      case 'printer-bay':     return DecorPrinterBay      as unknown as React.FC<{ element: CanvasElement }>
     }
   }
 

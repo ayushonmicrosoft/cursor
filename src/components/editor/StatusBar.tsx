@@ -77,7 +77,8 @@ export function StatusBar() {
     <div
       role="status"
       aria-label="Canvas status"
-      className="absolute bottom-0 left-0 right-0 h-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 flex items-center px-4 text-[11px] text-gray-500 dark:text-gray-400 overflow-x-auto whitespace-nowrap"
+      className="absolute bottom-0 left-0 right-0 z-30 flex h-[30px] items-center justify-between border-t border-gray-200 bg-white px-3 dark:border-gray-800 dark:bg-gray-950 transition-colors duration-200 overflow-x-auto whitespace-nowrap"
+      data-testid="status-bar"
       data-fixed-toolbar="canvas-status"
       data-fixed-toolbar-reason="Status telemetry reserves the bottom edge and protects dockable controls from overlapping readouts."
     >
@@ -164,10 +165,10 @@ export function StatusBar() {
         }
         aria-pressed={activeTool === 'calibrate-scale'}
         title="Set canvas scale by clicking two points of a known distance"
-        className={`text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded transition-colors ${
+        className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 transition-colors border ${
           activeTool === 'calibrate-scale'
-            ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300'
-            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'bg-[#1f3653]/10 border-[#1f3653]/20 text-[#1f3653] dark:bg-[#d6c2a6]/10 dark:border-[#d6c2a6]/20 dark:text-[#d6c2a6]'
+            : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
         }`}
       >
         Set scale

@@ -18,6 +18,7 @@ import { useUIStore } from '../../stores/uiStore'
 import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 import { ToolbarTogglePill } from './ToolbarTogglePill'
 import { DockableToolbar } from './DockableToolbar'
+import { Minimap } from './Minimap'
 
 const PIXI_INSPECTION_MIN_WIDTH_PX = 375
 
@@ -41,8 +42,8 @@ export function PixiPreviewPage() {
   const [viewport, setViewport] = useState<PixiViewportState>({ scale: 1, x: 0, y: 0 })
   const compactCollapseRef = useRef(false)
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
-  const leftToolsFloating = dockableToolbarLayouts['left-tools'].mode === 'floating'
-  const rightInspectorFloating = dockableToolbarLayouts['right-inspector'].mode === 'floating'
+  const leftToolsFloating = dockableToolbarLayouts['left-tools']?.mode === 'floating'
+  const rightInspectorFloating = dockableToolbarLayouts['right-inspector']?.mode === 'floating'
   const leftToolsVisible = dockableToolbarVisibility['left-tools'] !== false
   const rightInspectorVisible = dockableToolbarVisibility['right-inspector'] !== false
 
@@ -53,10 +54,9 @@ export function PixiPreviewPage() {
 
     const measure = () => {
       const { width, height } = node.getBoundingClientRect()
-      setSize({
-        w: Math.max(0, Math.round(width)),
-        h: Math.max(0, Math.round(height)),
-      })
+      const newW = Math.max(0, Math.round(width))
+      const newH = Math.max(0, Math.round(height))
+      setSize(prev => prev.w === newW && prev.h === newH ? prev : { w: newW, h: newH })
     }
 
     const ro = new ResizeObserver(measure)
@@ -165,13 +165,13 @@ export function PixiPreviewPage() {
             <div className="mt-1 text-xs leading-5">{error}</div>
           </div>
         )}
+        <Minimap />
         <StatusBar />
         <AlignDistributeToolbar />
         <PixiActionDock
           stageRef={pixiStageRef as RefObject<PixiStageHandle | null>}
           viewport={viewport}
         />
-        <ColorPaletteToolbar />
         <AdminStatsToolbar />
         <ToolbarTogglePill />
         <PixiStatusBar

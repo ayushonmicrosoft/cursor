@@ -26,15 +26,16 @@ import {
   isCenterAnchoredBlock,
   isStrokeOnlyBlock,
 } from '../../../blocks/rendering'
-import { renderDesk } from './PixiDeskRenderer'
-import { renderWorkstation } from './PixiWorkstationRenderer'
-import { renderWall } from './PixiWallRenderer'
-import { renderTable } from './PixiTableRenderer'
-import { renderRoom } from './PixiRoomRenderer'
-import { syncNeighborhoodLayer } from './PixiNeighborhoodLayer'
-import { syncAlignmentGuides } from './PixiAlignmentGuides'
-import { syncSelectionHandles } from './PixiSelectionHandles'
-import { syncGrid } from './PixiGridLayer'
+import { renderDesk } from './pixi/PixiDeskRenderer'
+import { renderWorkstation } from './pixi/PixiWorkstationRenderer'
+import { renderWall } from './pixi/PixiWallRenderer'
+import { renderTable } from './pixi/PixiTableRenderer'
+import { renderRoom } from './pixi/PixiRoomRenderer'
+import { renderFurniture } from './pixi/PixiFurnitureRenderer'
+import { syncNeighborhoodLayer } from './pixi/PixiNeighborhoodLayer'
+import { syncAlignmentGuides } from './pixi/PixiAlignmentGuides'
+import { syncSelectionHandles } from './pixi/PixiSelectionHandles'
+import { syncGrid } from './pixi/PixiGridLayer'
 import { parsePixiColor } from '../../../lib/pixiColor'
 import { ZOOM_FACTOR, ZOOM_MAX, ZOOM_MIN } from '../../../lib/constants'
 
@@ -61,10 +62,10 @@ interface PixiStageProps {
 }
 
 const SEAT_STYLE = new TextStyle({ fontSize: 9, fill: '#1F2937', fontFamily: 'Inter,sans-serif', fontWeight: '600' })
-const PALETTE = [0x6366f1,0x10b981,0xf59e0b,0xef4444,0x8b5cf6,0x06b6d4,0xf97316,0x84cc16]
+const PALETTE = [0x6366f1, 0x10b981, 0xf59e0b, 0xef4444, 0x8b5cf6, 0x06b6d4, 0xf97316, 0x84cc16]
 function deptColor(dept: string | null): number {
   if (!dept) return 0x6366f1
-  let h = 0; for (let i=0;i<dept.length;i++) h=(h*31+dept.charCodeAt(i))>>>0
+  let h = 0; for (let i = 0; i < dept.length; i++) h = (h * 31 + dept.charCodeAt(i)) >>> 0
   return PALETTE[h % PALETTE.length]
 }
 
@@ -74,7 +75,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
   const worldRef = useRef<Viewport | null>(null)
   const mapRef = useRef<Map<string, Container>>(new Map())
   const gridLayerRef = useRef<Container | null>(null)
-  const dragRef = useRef<{ id: string; swx: number; swy: number; sex: number; sey: number } | null>(null)
+  const dragRef = useRef<{ id: string; action?: 'move' | 'resize'; handleIndex?: number; swx: number; swy: number; sex: number; sey: number; sw?: number; sh?: number } | null>(null)
   const rafRef = useRef<number | null>(null)
   const viewportPublishRafRef = useRef<number | null>(null)
   const buildFailureRef = useRef(0)
@@ -146,14 +147,14 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       const { useProjectStore } = await import('../../../stores/projectStore')
       const { useFloorStore: uFS } = await import('../../../stores/floorStore')
       const p = useProjectStore.getState().currentProject
-      const fl = uFS.getState().floors.find(f=>f.id===uFS.getState().activeFloorId)
+      const fl = uFS.getState().floors.find(f => f.id === uFS.getState().activeFloorId)
       const cv = app.renderer.extract.canvas(app.stage) as HTMLCanvasElement
-      cv.toBlob(blob=>{
-        if(!blob)return; const a=document.createElement('a')
-        a.href=URL.createObjectURL(blob)
-        a.download=`${p?.name??'office'}-${fl?.name??'floor'}-pixi.png`.toLowerCase().replace(/[^a-z0-9-]/g,'-')
+      cv.toBlob(blob => {
+        if (!blob) return; const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `${p?.name ?? 'office'}-${fl?.name ?? 'floor'}-pixi.png`.toLowerCase().replace(/[^a-z0-9-]/g, '-')
         a.click(); URL.revokeObjectURL(a.href)
-      },'image/png')
+      }, 'image/png')
     },
     zoomIn() {
       zoomAtViewportCenter(ZOOM_FACTOR)
@@ -220,12 +221,12 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
         .decelerate()
         .clampZoom({ minScale: ZOOM_MIN, maxScale: ZOOM_MAX })
       const gridLayer = new Container()   // [0] grid
-      const nlLayer   = new Container()   // [1] neighborhoods
-      const elLayer   = new Container()   // [2] elements
-      const glLayer   = new Container()   // [3] guides
-      const hlLayer   = new Container()   // [4] handles
+      const nlLayer = new Container()   // [1] neighborhoods
+      const elLayer = new Container()   // [2] elements
+      const glLayer = new Container()   // [3] guides
+      const hlLayer = new Container()   // [4] handles
       world.addChild(gridLayer); world.addChild(nlLayer)
-      world.addChild(elLayer);   world.addChild(glLayer); world.addChild(hlLayer)
+      world.addChild(elLayer); world.addChild(glLayer); world.addChild(hlLayer)
       gridLayerRef.current = gridLayer
 
       const handleViewportMove = () => {
@@ -235,47 +236,86 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       world.on('moved', handleViewportMove)
       world.on('zoomed', handleViewportMove)
 
-      app.stage.eventMode='static'; app.stage.hitArea=app.screen
-      app.stage.on('pointermove',(e:FederatedPointerEvent)=>{
-        if(dragRef.current){
-          const d=dragRef.current
-          const wp=world.toLocal(e.global)
-          useElementsStore.getState().updateElement(d.id,{x:d.sex+(wp.x-d.swx),y:d.sey+(wp.y-d.swy)})
+      app.stage.eventMode = 'static'; app.stage.hitArea = app.screen
+      app.stage.on('pointermove', (e: FederatedPointerEvent) => {
+        if (dragRef.current) {
+          const d = dragRef.current
+          const wp = world.toLocal(e.global)
+          const dx = wp.x - d.swx
+          const dy = wp.y - d.swy
+
+          if (d.action === 'resize') {
+            const el = useElementsStore.getState().elements[d.id]
+            if (!el) return
+            const isCenter = isCenterAnchoredBlock(el.type)
+            const oldLeft = isCenter ? d.sex - d.sw! / 2 : d.sex
+            const oldTop = isCenter ? d.sey - d.sh! / 2 : d.sey
+            const oldRight = isCenter ? d.sex + d.sw! / 2 : d.sex + d.sw!
+            const oldBottom = isCenter ? d.sey + d.sh! / 2 : d.sey + d.sh!
+
+            let newLeft = oldLeft
+            let newTop = oldTop
+            let newRight = oldRight
+            let newBottom = oldBottom
+
+            if ([0, 6, 7].includes(d.handleIndex!)) newLeft += dx
+            if ([0, 1, 2].includes(d.handleIndex!)) newTop += dy
+            if ([2, 3, 4].includes(d.handleIndex!)) newRight += dx
+            if ([4, 5, 6].includes(d.handleIndex!)) newBottom += dy
+
+            if (newRight - newLeft < 10) {
+              if ([0, 6, 7].includes(d.handleIndex!)) newLeft = newRight - 10
+              else newRight = newLeft + 10
+            }
+            if (newBottom - newTop < 10) {
+              if ([0, 1, 2].includes(d.handleIndex!)) newTop = newBottom - 10
+              else newBottom = newTop + 10
+            }
+
+            const newW = newRight - newLeft
+            const newH = newBottom - newTop
+            const newX = isCenter ? newLeft + newW / 2 : newLeft
+            const newY = isCenter ? newTop + newH / 2 : newTop
+
+            useElementsStore.getState().updateElement(d.id, { x: newX, y: newY, width: newW, height: newH })
+          } else {
+            useElementsStore.getState().updateElement(d.id, { x: d.sex + dx, y: d.sey + dy })
+          }
           schedDraw()
           return
         }
       })
-      app.stage.on('pointerup',()=>{ dragRef.current=null })
-      app.stage.on('pointerupoutside',()=>{ dragRef.current=null })
+      app.stage.on('pointerup', () => { dragRef.current = null })
+      app.stage.on('pointerupoutside', () => { dragRef.current = null })
 
       // ── Grid helpers ──────────────────────────────────────────────────
-      function drawGrid(){
+      function drawGrid() {
         if (!useCanvasStore.getState().settings.showGrid) {
           gridLayer.removeChildren().forEach((child) => child.destroy())
           return
         }
-        syncGrid(gridLayer,world.x,world.y,world.scale.x,w,h)
+        syncGrid(gridLayer, world.x, world.y, world.scale.x, w, h)
       }
-      let gridRaf: number|null = null
-      function schedGrid(){
-        if(gridRaf)return; gridRaf=requestAnimationFrame(()=>{ drawGrid(); gridRaf=null })
+      let gridRaf: number | null = null
+      function schedGrid() {
+        if (gridRaf) return; gridRaf = requestAnimationFrame(() => { drawGrid(); gridRaf = null })
       }
 
       // ── Element draw (rAF-debounced) ──────────────────────────────────
-      function schedDraw(){
-        if(dead)return
-        if(rafRef.current)return
-        rafRef.current=requestAnimationFrame(()=>{
+      function schedDraw() {
+        if (dead) return
+        if (rafRef.current) return
+        rafRef.current = requestAnimationFrame(() => {
           const startedAt = performance.now()
-          rafRef.current=null
-          if(dead)return
-          const els     = useElementsStore.getState().elements
-          const selIds  = useUIStore.getState().selectedIds
+          rafRef.current = null
+          if (dead) return
+          const els = useElementsStore.getState().elements
+          const selIds = useUIStore.getState().selectedIds
           const setSelIds = useUIStore.getState().setSelectedIds
-          const emps    = useEmployeeStore.getState().employees
-          const hoods   = useNeighborhoodStore.getState().neighborhoods
+          const emps = useEmployeeStore.getState().employees
+          const hoods = useNeighborhoodStore.getState().neighborhoods
           const floorId = useFloorStore.getState().activeFloorId
-          const guides  = useUIStore.getState().dragAlignmentGuides
+          const guides = useUIStore.getState().dragAlignmentGuides
           syncNeighborhoodLayer(nlLayer, hoods, floorId)
           const failures = syncElLayer(elLayer, map, els, selIds, setSelIds, emps, dragRef)
           if (failures > 0) {
@@ -289,7 +329,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
             buildFailureRef.current = 0
           }
           syncAlignmentGuides(glLayer, guides)
-          syncSelectionHandles(hlLayer, selIds.map(id=>els[id]).filter(Boolean) as CanvasElement[])
+          syncSelectionHandles(hlLayer, selIds.map(id => els[id]).filter(Boolean) as CanvasElement[], dragRef)
 
           const elapsed = performance.now() - startedAt
           if (elapsed > 32) {
@@ -310,8 +350,8 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       drawGrid()
       publishViewport(true)
       schedDraw()
-      const u1=useElementsStore.subscribe(schedDraw)
-      const u2=useUIStore.subscribe((state, prev) => {
+      const u1 = useElementsStore.subscribe(schedDraw)
+      const u2 = useUIStore.subscribe((state, prev) => {
         if (
           state.selectedIds !== prev.selectedIds ||
           state.dragAlignmentGuides !== prev.dragAlignmentGuides ||
@@ -320,51 +360,51 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
           schedDraw()
         }
       })
-      const u3=useNeighborhoodStore.subscribe(schedDraw)
-      const u4=useFloorStore.subscribe(schedDraw)
-      const u5=useCanvasStore.subscribe((state, prev) => {
+      const u3 = useNeighborhoodStore.subscribe(schedDraw)
+      const u4 = useFloorStore.subscribe(schedDraw)
+      const u5 = useCanvasStore.subscribe((state, prev) => {
         if (state.settings.showGrid !== prev.settings.showGrid) schedGrid()
       })
-      ;(app as Application&{_c?:()=>void})._c=()=>{
-        u1();u2();u3();u4();u5()
-        world.off('moved', handleViewportMove)
-        world.off('zoomed', handleViewportMove)
-        if(rafRef.current){ cancelAnimationFrame(rafRef.current); rafRef.current=null }
-        if(viewportPublishRafRef.current!==null){ cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current=null }
-        if(gridRaf){ cancelAnimationFrame(gridRaf); gridRaf=null }
-      }
+        ; (app as Application & { _c?: () => void })._c = () => {
+          u1(); u2(); u3(); u4(); u5()
+          world.off('moved', handleViewportMove)
+          world.off('zoomed', handleViewportMove)
+          if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+          if (viewportPublishRafRef.current !== null) { cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current = null }
+          if (gridRaf) { cancelAnimationFrame(gridRaf); gridRaf = null }
+        }
     }).catch((error) => {
       if (dead) return
       console.error('[PixiStage] Failed to initialize Pixi', error)
       onError?.('Pixi failed to initialize in this browser context.')
     })
 
-    return ()=>{
-      dead=true
-      if(rafRef.current){ cancelAnimationFrame(rafRef.current); rafRef.current=null }
-      if(viewportPublishRafRef.current!==null){ cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current=null }
-      const a=appRef.current as (Application&{_c?:()=>void})|null
-      if(a){a._c?.();a.destroy(true);appRef.current=null}
+    return () => {
+      dead = true
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      if (viewportPublishRafRef.current !== null) { cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current = null }
+      const a = appRef.current as (Application & { _c?: () => void }) | null
+      if (a) { a._c?.(); a.destroy(true); appRef.current = null }
       map.clear()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[]) // mount only — resize handled separately
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // mount only — resize handled separately
 
-  useEffect(()=>{
-    const app=appRef.current; if(!app)return
-    const w=width>0?width:800, h=height>0?height:600
-    app.renderer.resize(w,h)
-    worldRef.current?.resize(w,h,5000,5000)
+  useEffect(() => {
+    const app = appRef.current; if (!app) return
+    const w = width > 0 ? width : 800, h = height > 0 ? height : 600
+    app.renderer.resize(w, h)
+    worldRef.current?.resize(w, h, 5000, 5000)
     // Redraw grid at new size
-    const gl=gridLayerRef.current, world=worldRef.current
-    if(gl&&world) {
+    const gl = gridLayerRef.current, world = worldRef.current
+    if (gl && world) {
       if (useCanvasStore.getState().settings.showGrid) {
-        syncGrid(gl,world.x,world.y,world.scale.x,w,h)
+        syncGrid(gl, world.x, world.y, world.scale.x, w, h)
       } else {
         gl.removeChildren().forEach((child) => child.destroy())
       }
     }
-  },[width,height])
+  }, [width, height])
 
   return (
     <canvas
@@ -381,25 +421,25 @@ interface StatefulContainer extends Container {
 }
 
 function syncElLayer(
-  layer:Container, map:Map<string,Container>, elements:Record<string,CanvasElement>,
-  selIds:string[],
-  setSelIds:(ids:string[])=>void,
-  emps:Record<string,Employee>,
-  dragRef: { current: { id: string; swx: number; swy: number; sex: number; sey: number } | null },
+  layer: Container, map: Map<string, Container>, elements: Record<string, CanvasElement>,
+  selIds: string[],
+  setSelIds: (ids: string[]) => void,
+  emps: Record<string, Employee>,
+  dragRef: React.MutableRefObject<{ id: string; action?: 'move' | 'resize'; handleIndex?: number; swx: number; swy: number; sex: number; sey: number; sw?: number; sh?: number } | null>,
 ): number {
   let failures = 0
-  const cur=new Set(Object.keys(elements))
-  for(const [id,c] of map){ if(!cur.has(id)){layer.removeChild(c);c.destroy({children:true});map.delete(id)} }
+  const cur = new Set(Object.keys(elements))
+  for (const [id, c] of map) { if (!cur.has(id)) { layer.removeChild(c); c.destroy({ children: true }); map.delete(id) } }
 
   let childIdx = 0
-  for(const el of Object.values(elements).sort((a,b)=>a.zIndex-b.zIndex)){
-    if(!el.visible){ 
-      const x=map.get(el.id)
-      if(x){layer.removeChild(x);x.destroy({children:true});map.delete(el.id)} 
-      continue 
+  for (const el of Object.values(elements).sort((a, b) => a.zIndex - b.zIndex)) {
+    if (!el.visible) {
+      const x = map.get(el.id)
+      if (x) { layer.removeChild(x); x.destroy({ children: true }); map.delete(el.id) }
+      continue
     }
-    
-    const sel=selIds.includes(el.id)
+
+    const sel = selIds.includes(el.id)
     let empHash = ''
     if ('assignedEmployeeId' in el && el.assignedEmployeeId) {
       const emp = emps[el.assignedEmployeeId as string]
@@ -411,18 +451,21 @@ function syncElLayer(
       }).join(',')
     }
 
-    const existing=map.get(el.id) as StatefulContainer | undefined
+    const existing = map.get(el.id) as StatefulContainer | undefined
     let c = existing
-    
-    if(existing){
+
+    if (existing) {
       const state = existing._state
-      // Zustand guarantees `el` object reference only changes if element data changes
-      if(state && state.el === el && state.sel === sel && state.empHash === empHash){
+      if (state && state.el === el && state.sel === sel && state.empHash === empHash) {
         // Unchanged, keep c = existing
+      } else if (state && state.sel === sel && state.empHash === empHash && isOnlyPositionChanged(state.el, el)) {
+        // Only position/rotation changed, just update layout without rebuilding
+        updateContainerLayout(existing, el)
+        existing._state!.el = el
       } else {
-        layer.removeChild(existing);existing.destroy({children:true});map.delete(el.id)
+        layer.removeChild(existing); existing.destroy({ children: true }); map.delete(el.id)
         try {
-          c = buildEl(el,selIds,setSelIds,emps,dragRef) as StatefulContainer
+          c = buildEl(el, selIds, setSelIds, emps, dragRef) as StatefulContainer
         } catch (error) {
           console.error('[PixiStage] Failed to rebuild element', { id: el.id, type: el.type, error })
           failures += 1
@@ -430,11 +473,11 @@ function syncElLayer(
         }
         if (!c) continue
         c._state = { el, sel, empHash }
-        map.set(el.id,c); layer.addChild(c)
+        map.set(el.id, c); layer.addChild(c)
       }
     } else {
       try {
-        c = buildEl(el,selIds,setSelIds,emps,dragRef) as StatefulContainer
+        c = buildEl(el, selIds, setSelIds, emps, dragRef) as StatefulContainer
       } catch (error) {
         console.error('[PixiStage] Failed to build element', { id: el.id, type: el.type, error })
         failures += 1
@@ -442,7 +485,7 @@ function syncElLayer(
       }
       if (!c) continue
       c._state = { el, sel, empHash }
-      map.set(el.id,c); layer.addChild(c)
+      map.set(el.id, c); layer.addChild(c)
     }
 
     if (c) {
@@ -456,70 +499,73 @@ function syncElLayer(
 }
 
 function buildEl(
-  el:CanvasElement, selIds:string[],
-  setSelIds:(ids:string[])=>void,
-  emps:Record<string,Employee>,
-  dragRef: { current: { id: string; swx: number; swy: number; sex: number; sey: number } | null },
-):Container{
+  el: CanvasElement, selIds: string[],
+  setSelIds: (ids: string[]) => void,
+  emps: Record<string, Employee>,
+  dragRef: React.MutableRefObject<{ id: string; action?: 'move' | 'resize'; handleIndex?: number; swx: number; swy: number; sex: number; sey: number; sw?: number; sh?: number } | null>,
+): Container {
   const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
   const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
-  const c=new Container()
+  const c = new Container()
   const centerAnchored = isCenterAnchoredElement(el)
-  c.x = centerAnchored ? el.x - w / 2 : el.x
-  c.y = centerAnchored ? el.y - h / 2 : el.y
-  c.rotation=(el.rotation*Math.PI)/180
-  c.alpha=el.style?.opacity??1
-  const sel=selIds.includes(el.id); const g=new Graphics()
+  c.x = el.x
+  c.y = el.y
+  if (centerAnchored) {
+    c.pivot.set(w / 2, h / 2)
+  }
+  c.rotation = (el.rotation * Math.PI) / 180
+  c.alpha = el.style?.opacity ?? 1
+  const sel = selIds.includes(el.id); const g = new Graphics()
 
   const t = el.type as string
-  if(t==='workstation'){
-    renderWorkstation(g,c,el as WorkstationElement,emps,sel)
-  } else if(isStrokeOnlyBlock(el.type)){
-    renderWall(g,el as Parameters<typeof renderWall>[1],sel)
-  } else if(DESK_BLOCK_TYPES.has(t)){
-    renderDesk(g,el as DeskElement|PrivateOfficeElement,sel)
-  } else if(TABLE_BLOCK_TYPES.has(t)){
-    renderTable(g,el as Parameters<typeof renderTable>[1],sel)
-  } else if(ROOM_BLOCK_TYPES.has(t)){
-    renderRoom(c,el as Parameters<typeof renderRoom>[1],sel)
+  if (t === 'workstation') {
+    renderWorkstation(g, c, el as WorkstationElement, emps, sel)
+  } else if (isStrokeOnlyBlock(el.type)) {
+    renderWall(g, el as Parameters<typeof renderWall>[1], sel)
+  } else if (DESK_BLOCK_TYPES.has(t)) {
+    renderDesk(g, el as DeskElement | PrivateOfficeElement, sel)
+  } else if (TABLE_BLOCK_TYPES.has(t)) {
+    renderTable(g, el as Parameters<typeof renderTable>[1], sel)
+  } else if (ROOM_BLOCK_TYPES.has(t)) {
+    renderRoom(c, el as Parameters<typeof renderRoom>[1], sel)
   } else {
     if (w > 0 && h > 0) {
       const f = parsePixiColor(el.style?.fill, 0x9ca3af)
       const s = parsePixiColor(el.style?.stroke, 0x6b7280)
-      g.roundRect(0,0,w,h,3).fill({color:f}).stroke({color:sel?0x7c3aed:s,width:sel?2:1})
+      g.roundRect(0, 0, w, h, 3).fill({ color: f }).stroke({ color: sel ? 0x7c3aed : s, width: sel ? 2 : 1 })
     }
   }
-  if(!ROOM_BLOCK_TYPES.has(t)) c.addChild(g)
+  if (!ROOM_BLOCK_TYPES.has(t)) c.addChild(g)
 
   // Seat label — single-seat desks only
-  if(DESK_BLOCK_TYPES.has(t) && t !== 'workstation'){
-    const aid=(el as DeskElement).assignedEmployeeId
-    if(aid&&emps[aid]){
-      const emp=emps[aid]; const dc=deptColor(emp.department)
-      const bw=Math.min(w-4,80); const bg=new Graphics()
-      bg.roundRect(w/2-bw/2,-18,bw,14,3).fill({color:dc})
+  if (DESK_BLOCK_TYPES.has(t) && t !== 'workstation') {
+    const aid = (el as DeskElement).assignedEmployeeId
+    if (aid && emps[aid]) {
+      const emp = emps[aid]; const dc = deptColor(emp.department)
+      const bw = Math.min(w - 4, 80); const bg = new Graphics()
+      bg.roundRect(w / 2 - bw / 2, -18, bw, 14, 3).fill({ color: dc })
       c.addChild(bg)
-      const t=new Text({text:emp.name.split(' ')[0],style:SEAT_STYLE})
-      t.x=w/2-t.width/2; t.y=-17; c.addChild(t)
+      const t = new Text({ text: emp.name.split(' ')[0], style: SEAT_STYLE })
+      t.x = w / 2 - t.width / 2; t.y = -17; c.addChild(t)
     }
   }
 
-  c.eventMode='static'
-  c.cursor=el.locked?'pointer':'grab'
-  c.on('pointerdown',(e:FederatedPointerEvent)=>{
+  c.eventMode = 'static'
+  c.cursor = el.locked ? 'pointer' : 'grab'
+  c.on('pointerdown', (e: FederatedPointerEvent) => {
     e.stopPropagation()
-    const multi=e.ctrlKey||e.metaKey||e.shiftKey
-    const cur=useUIStore.getState().selectedIds
-    setSelIds(multi?(cur.includes(el.id)?cur.filter(i=>i!==el.id):[...cur,el.id]):[el.id])
-    if(el.locked)return
-    const wp=c.parent?.toLocal(e.global)
-    if(wp){
-      dragRef.current={id:el.id,swx:wp.x,swy:wp.y,sex:el.x,sey:el.y}
-      c.cursor='grabbing'
+    const multi = e.ctrlKey || e.metaKey || e.shiftKey
+    const cur = useUIStore.getState().selectedIds
+    setSelIds(multi ? (cur.includes(el.id) ? cur.filter(i => i !== el.id) : [...cur, el.id]) : [el.id])
+    if (el.locked) return
+    const wp = c.parent?.toLocal(e.global)
+    if (wp) {
+      dragRef.current = { id: el.id, action: 'move', swx: wp.x, swy: wp.y, sex: el.x, sey: el.y }
+      c.cursor = 'grabbing'
     }
   })
-  c.on('pointerup',()=>{ dragRef.current=null; c.cursor=el.locked?'pointer':'grab' })
-  c.on('pointerupoutside',()=>{ dragRef.current=null; c.cursor=el.locked?'pointer':'grab' })
+  c.on('pointerup', () => { if (dragRef.current?.action === 'move') dragRef.current = null; c.cursor = el.locked ? 'pointer' : 'grab' })
+  c.on('pointerupoutside', () => { if (dragRef.current?.action === 'move') dragRef.current = null; c.cursor = el.locked ? 'pointer' : 'grab' })
   return c
 }
 
@@ -572,4 +618,30 @@ function fitWorldToElements(
 
 function isCenterAnchoredElement(el: CanvasElement): boolean {
   return isCenterAnchoredBlock(el.type)
+}
+
+function isOnlyPositionChanged(a: CanvasElement, b: CanvasElement): boolean {
+  const keysA = Object.keys(a) as (keyof CanvasElement)[]
+  const keysB = Object.keys(b) as (keyof CanvasElement)[]
+  if (keysA.length !== keysB.length) return false
+  for (const k of keysA) {
+    if (k === 'x' || k === 'y' || k === 'rotation') continue
+    if (a[k] !== b[k]) return false
+  }
+  return true
+}
+
+function updateContainerLayout(c: Container, el: CanvasElement) {
+  const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
+  const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
+  const centerAnchored = isCenterAnchoredElement(el)
+  
+  c.x = el.x
+  c.y = el.y
+  if (centerAnchored) {
+    c.pivot.set(w / 2, h / 2)
+  } else {
+    c.pivot.set(0, 0)
+  }
+  c.rotation = (el.rotation * Math.PI) / 180
 }

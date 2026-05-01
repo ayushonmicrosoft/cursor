@@ -318,6 +318,45 @@ export function LibraryPreview({ item }: Props) {
     )
   }
 
+  if (key === 'decor/storage') {
+    return (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+        <rect x={4} y={5} width={W - 8} height={H - 10} fill={fill} stroke={stroke} />
+        <line x1={4} y1={H / 2} x2={W - 4} y2={H / 2} stroke={stroke} strokeWidth="0.8" opacity="0.5" />
+      </svg>
+    )
+  }
+
+  if (key === 'decor/locker') {
+    return (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+        <rect x={2} y={5} width={W - 4} height={H - 10} fill={fill} stroke={stroke} />
+        <line x1={W / 4} y1={5} x2={W / 4} y2={H - 5} stroke={stroke} strokeWidth="0.8" opacity="0.6" />
+        <line x1={W / 2} y1={5} x2={W / 2} y2={H - 5} stroke={stroke} strokeWidth="0.8" opacity="0.6" />
+        <line x1={W * 3 / 4} y1={5} x2={W * 3 / 4} y2={H - 5} stroke={stroke} strokeWidth="0.8" opacity="0.6" />
+      </svg>
+    )
+  }
+
+  if (key === 'decor/credenza') {
+    return (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+        <rect x={2} y={6} width={W - 4} height={H - 12} fill={fill} stroke={stroke} />
+        <line x1={W / 2} y1={6} x2={W / 2} y2={H - 6} stroke={stroke} strokeWidth="0.8" opacity="0.6" />
+      </svg>
+    )
+  }
+
+  if (key === 'decor/printer-bay') {
+    return (
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+        <rect x={3} y={4} width={W - 6} height={H - 8} fill={fill} stroke={stroke} rx="1" />
+        <rect x={5} y={6} width={W - 10} height={H - 12} fill="#fff" stroke={stroke} opacity="0.7" />
+        <rect x={W / 2 - 2} y={8} width={4} height={2} fill={stroke} opacity="0.5" />
+      </svg>
+    )
+  }
+
   if (key === 'decor/armchair' || item.type === 'chair') {
     return (
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
