@@ -1,5 +1,5 @@
 import { Graphics } from 'pixi.js'
-import type { CanvasElement, LineShapeElement } from '../../../../types/elements'
+import type { CanvasElement, LineShapeElement, DecorElement } from '../../../../types/elements'
 import { parsePixiColor } from '../../../../lib/pixiColor'
 
 export function renderFurniture(g: Graphics, el: CanvasElement, selected: boolean): void {
@@ -34,29 +34,28 @@ export function renderFurniture(g: Graphics, el: CanvasElement, selected: boolea
     
     // Left & Right armrests
     g.roundRect(0, armrestInsetY, armW, Math.max(4, h - armrestInsetY * 2), 1)
-      .fill({ color: stroke, alpha: 0.35 })
-      .stroke({ color: sColor, width: sw * 0.7 })
+      .fill({ color: fill, alpha: 0.5 })
+      .stroke({ color: sColor, width: sw * 0.8 })
     g.roundRect(w - armW, armrestInsetY, armW, Math.max(4, h - armrestInsetY * 2), 1)
-      .fill({ color: stroke, alpha: 0.35 })
-      .stroke({ color: sColor, width: sw * 0.7 })
+      .fill({ color: fill, alpha: 0.5 })
+      .stroke({ color: sColor, width: sw * 0.8 })
     
     // Backrest cushion
     g.roundRect((w - innerCushionW) / 2, innerPadY, innerCushionW, backrestH, 1)
-      .fill({ color: 0xffffff, alpha: 0.36 })
-      .stroke({ color: sColor, width: sw * 0.7 })
+      .fill({ color: 0xffffff, alpha: 0.4 })
+      .stroke({ color: sColor, width: sw * 0.8 })
       
-    // Seam
-    g.roundRect((w - seamW) / 2, h - seamH - Math.max(2, h * 0.14), seamW, seamH, 1)
-      .fill({ color: stroke, alpha: 0.22 })
+    // Seam hint
+    g.moveTo((w - seamW) / 2, h - Math.max(4, h * 0.15))
+    g.lineTo((w + seamW) / 2, h - Math.max(4, h * 0.15))
+    g.stroke({ color: sColor, width: 0.5, alpha: 0.3 })
   } else if (t === 'plant') {
     const potH = Math.max(4, h * 0.25)
     const foliageR = Math.min(w, h - potH) / 2
-
     // Foliage
     g.circle(w / 2, foliageR, foliageR).fill({ color: fill }).stroke({ color: selected ? 0x7c3aed : 0x166534, width: sw })
-    
     // Pot base
-    g.roundRect(w * 0.2, h - potH, w * 0.6, potH, 0).fill({ color: stroke })
+    g.roundRect(w * 0.2, h - potH, w * 0.6, potH, 1).fill({ color: stroke })
   } else if (t === 'ellipse') {
     g.ellipse(w / 2, h / 2, w / 2, h / 2).fill({ color: fill }).stroke({ color: sColor, width: sw })
   } else if (t === 'line-shape') {
@@ -68,8 +67,37 @@ export function renderFurniture(g: Graphics, el: CanvasElement, selected: boolea
       }
       g.stroke({ color: sColor, width: Math.max(2, el.style?.strokeWidth || 2) })
     }
+  } else if (t === 'decor') {
+    const de = el as DecorElement
+    const shape = de.shape
+    g.roundRect(0, 0, w, h, 1).fill({ color: fill }).stroke({ color: sColor, width: sw })
+
+    if (shape === 'storage') {
+       // Single horizontal drawer line
+       g.moveTo(2, h * 0.15).lineTo(w - 2, h * 0.15).stroke({ color: stroke, width: 0.5, alpha: 0.6 })
+    } else if (shape === 'locker') {
+       // Vertical locker slots
+       const slotCount = Math.floor(w / 12); const slotW = w / slotCount
+       for(let i=1; i<slotCount; i++){
+          g.moveTo(i * slotW, 2).lineTo(i * slotW, h - 2).stroke({ color: stroke, width: 0.5, alpha: 0.4 })
+       }
+    } else if (shape === 'credenza') {
+       // Two door rectangles
+       g.roundRect(w * 0.05, h * 0.2, w * 0.42, h * 0.7, 0.5).stroke({ color: stroke, width: 0.5, alpha: 0.5 })
+       g.roundRect(w * 0.53, h * 0.2, w * 0.42, h * 0.7, 0.5).stroke({ color: stroke, width: 0.5, alpha: 0.5 })
+    } else if (shape === 'printer-bay') {
+       // Printer silhouette
+       g.roundRect(w * 0.15, h * 0.15, w * 0.7, h * 0.6, 1).fill({ color: 0xffffff, alpha: 0.4 }).stroke({ color: stroke, width: 0.5 })
+       g.circle(w * 0.8, h * 0.8, 2).fill({ color: stroke, alpha: 0.6 }) // button
+    } else if (shape === 'fridge') {
+       // Door handle
+       g.rect(2, h * 0.2, 2, h * 0.3).fill({ color: stroke })
+    } else if (shape === 'reception') {
+       // Counter strip
+       g.rect(0, 0, w, h * 0.25).fill({ color: stroke, alpha: 0.35 })
+    }
   } else {
-    // Fallback for printer, whiteboard, decor, rect-shape
+    // Fallback for printer, whiteboard, rect-shape
     g.roundRect(0, 0, w, h, 3).fill({ color: fill }).stroke({ color: sColor, width: sw })
   }
 }
