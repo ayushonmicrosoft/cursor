@@ -1,15 +1,6 @@
 # OandOcraft
 
-> Interactive office floor planner and seating management application for modern teams
-
-[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com)
-[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-**Live demo:** https://floorcraft.space
+> 
 
 ---
 
@@ -47,34 +38,34 @@ OandOcraft is a browser-based office floor planner built for IT operations teams
 
 ## Tech Stack
 
-| Package | Version | Purpose |
-|---|---|---|
-| `react` | 19.2 | UI framework |
-| `react-dom` | 19.2 | DOM renderer |
-| `react-router-dom` | 7.14 | Client-side routing |
-| `konva` | 10.2 | 2D canvas rendering engine |
-| `react-konva` | 19.2 | React bindings for Konva |
-| `zustand` | 5.0 | Client state management |
-| `zundo` | 2.3 | Temporal (undo/redo) middleware for Zustand |
-| `@supabase/supabase-js` | 2.104 | Supabase client (auth + database) |
-| `tailwindcss` | 4.2 | Utility-first CSS (Vite plugin, no config file) |
-| `@radix-ui/react-dialog` | 1.1 | Accessible modal dialogs |
-| `@radix-ui/react-dropdown-menu` | 2.1 | Dropdown menus |
-| `@radix-ui/react-context-menu` | 2.2 | Right-click context menus |
-| `@radix-ui/react-popover` | 1.1 | Popovers |
-| `@radix-ui/react-tabs` | 1.1 | Tab navigation |
-| `@radix-ui/react-tooltip` | 1.2 | Tooltips |
-| `@tanstack/react-virtual` | 3.13 | Virtualized lists for large rosters |
-| `jspdf` | 4.2 | PDF export |
-| `papaparse` | 5.5 | CSV parsing and generation |
-| `nanoid` | 5.1 | Unique ID generation |
-| `lucide-react` | 1.8 | Icon library |
-| `vite` | 8.0 | Build tool and dev server |
-| `typescript` | 6.0 | Type safety |
-| `vitest` | 4.1 | Unit and component testing |
-| `@testing-library/react` | 16.3 | React component testing utilities |
-| `eslint` | 9.39 | Linting |
-| `supabase` (CLI) | 1.226 | Database migrations and Edge Functions |
+| Package                         | Version | Purpose                                         |
+| ------------------------------- | ------- | ----------------------------------------------- |
+| `react`                         | 19.2    | UI framework                                    |
+| `react-dom`                     | 19.2    | DOM renderer                                    |
+| `react-router-dom`              | 7.14    | Client-side routing                             |
+| `konva`                         | 10.2    | 2D canvas rendering engine                      |
+| `react-konva`                   | 19.2    | React bindings for Konva                        |
+| `zustand`                       | 5.0     | Client state management                         |
+| `zundo`                         | 2.3     | Temporal (undo/redo) middleware for Zustand     |
+| `@supabase/supabase-js`         | 2.104   | Supabase client (auth + database)               |
+| `tailwindcss`                   | 4.2     | Utility-first CSS (Vite plugin, no config file) |
+| `@radix-ui/react-dialog`        | 1.1     | Accessible modal dialogs                        |
+| `@radix-ui/react-dropdown-menu` | 2.1     | Dropdown menus                                  |
+| `@radix-ui/react-context-menu`  | 2.2     | Right-click context menus                       |
+| `@radix-ui/react-popover`       | 1.1     | Popovers                                        |
+| `@radix-ui/react-tabs`          | 1.1     | Tab navigation                                  |
+| `@radix-ui/react-tooltip`       | 1.2     | Tooltips                                        |
+| `@tanstack/react-virtual`       | 3.13    | Virtualized lists for large rosters             |
+| `jspdf`                         | 4.2     | PDF export                                      |
+| `papaparse`                     | 5.5     | CSV parsing and generation                      |
+| `nanoid`                        | 5.1     | Unique ID generation                            |
+| `lucide-react`                  | 1.8     | Icon library                                    |
+| `vite`                          | 8.0     | Build tool and dev server                       |
+| `typescript`                    | 6.0     | Type safety                                     |
+| `vitest`                        | 4.1     | Unit and component testing                      |
+| `@testing-library/react`        | 16.3    | React component testing utilities               |
+| `eslint`                        | 9.39    | Linting                                         |
+| `supabase` (CLI)                | 1.226   | Database migrations and Edge Functions          |
 
 ---
 
@@ -99,15 +90,14 @@ Custom shapes (L-desk, cubicle, U-office, round/oval tables, all decor pieces) l
 
 Six Zustand stores provide the full client state:
 
-| Store | File | Manages |
-|---|---|---|
-| `useCanvasStore` | `stores/canvasStore.ts` | Viewport position, zoom scale, active tool, grid settings |
-| `useElementsStore` | `stores/elementsStore.ts` | All canvas elements keyed by ID; wrapped in `zundo` for undo/redo (50-step limit) |
-| `useFloorStore` | `stores/floorStore.ts` | Floor list, active floor, per-floor element snapshots |
-| `useProjectStore` | `stores/projectStore.ts` | Project metadata, save state, Supabase office ID, optimistic-lock version, conflict payload |
-| `useEmployeeStore` | `stores/employeeStore.ts` | Employee roster, department color palette, search/filter/sort UI state |
-| `useInsightsStore` | `stores/insightsStore.ts` | Insight results, dismissal set (persisted in `localStorage` per project), filter state |
-
+| Store              | File                      | Manages                                                                                     |
+| ------------------ | ------------------------- | ------------------------------------------------------------------------------------------- |
+| `useCanvasStore`   | `stores/canvasStore.ts`   | Viewport position, zoom scale, active tool, grid settings                                   |
+| `useElementsStore` | `stores/elementsStore.ts` | All canvas elements keyed by ID; wrapped in `zundo` for undo/redo (50-step limit)           |
+| `useFloorStore`    | `stores/floorStore.ts`    | Floor list, active floor, per-floor element snapshots                                       |
+| `useProjectStore`  | `stores/projectStore.ts`  | Project metadata, save state, Supabase office ID, optimistic-lock version, conflict payload |
+| `useEmployeeStore` | `stores/employeeStore.ts` | Employee roster, department color palette, search/filter/sort UI state                      |
+| `useInsightsStore` | `stores/insightsStore.ts` | Insight results, dismissal set (persisted in `localStorage` per project), filter state      |
 
 `useElementsStore` uses `zundo`'s `temporal` middleware. Assignment fields (`assignedEmployeeId`, `assignedEmployeeIds`, seat `assignedGuestId`) are stripped from the undo snapshot via `partialize` so undoing a spatial move cannot desync element and employee state.
 
@@ -171,13 +161,13 @@ Copy `.env.example` to `.env.local` and fill in the values:
 cp .env.example .env.local
 ```
 
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Yes | Your Supabase project URL (e.g. `https://xyz.supabase.co`). Found in Supabase dashboard â†’ Project Settings â†’ API. |
-| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase `anon` / public key. Same location as above. Injected into the browser bundle â€” safe to expose. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Edge Functions only | Service role key for server-side operations. Never expose in the browser. |
-| `RESEND_API_KEY` | Edge Functions only | API key from [resend.com](https://resend.com) dashboard. Powers team invite emails. |
-| `APP_URL` | Edge Functions only | Base URL of the deployed app (for O&O production use `https://oando.co.in/OandOcraft`). Used to construct invite callback URLs. |
+| Variable                    | Required            | Description                                                                                                                     |
+| --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`         | Yes                 | Your Supabase project URL (e.g. `https://xyz.supabase.co`). Found in Supabase dashboard â†’ Project Settings â†’ API.           |
+| `VITE_SUPABASE_ANON_KEY`    | Yes                 | Supabase `anon` / public key. Same location as above. Injected into the browser bundle â€” safe to expose.                      |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge Functions only | Service role key for server-side operations. Never expose in the browser.                                                       |
+| `RESEND_API_KEY`            | Edge Functions only | API key from [resend.com](https://resend.com) dashboard. Powers team invite emails.                                             |
+| `APP_URL`                   | Edge Functions only | Base URL of the deployed app (for O&O production use `https://oando.co.in/OandOcraft`). Used to construct invite callback URLs. |
 
 > `VITE_*` variables are bundled into the client at build time. The other three are only read inside Supabase Edge Functions and should be set as Supabase secrets, not in `.env.local`.
 
@@ -319,19 +309,19 @@ src/
 
 ## Scripts
 
-| Script | Command | Description |
-|---|---|---|
-| `dev` | `vite` | Start Vite dev server with HMR |
-| `build` | `tsc -b && vite build` | Type-check then bundle for production |
-| `preview` | `vite preview` | Serve the `dist/` folder locally |
-| `lint` | `eslint .` | Run ESLint across all source files |
-| `test` | `vitest run` | Run the full test suite once |
-| `test:watch` | `vitest` | Run tests in interactive watch mode |
-| `build:oando` | `tsc -b && vite build --base=/OandOcraft/` | Build the main-site subpath bundle |
-| `audit:pages` | `node scripts/audit-pages.cjs` | Smoke-audit built routes for console issues and legacy naming |
-| `release:manifest` | `node scripts/create_release_manifest.cjs` | Write release artifact metadata and SHA-256 checksums |
-| `seed:counts` | `node scripts/report_public_table_counts.cjs` | Report public table counts for a Postgres URL |
-| `seed:verify` | `node scripts/verify_seed_payload.cjs` | Verify the seed SQL includes actual floor-plan payloads |
+| Script             | Command                                       | Description                                                   |
+| ------------------ | --------------------------------------------- | ------------------------------------------------------------- |
+| `dev`              | `vite`                                        | Start Vite dev server with HMR                                |
+| `build`            | `tsc -b && vite build`                        | Type-check then bundle for production                         |
+| `preview`          | `vite preview`                                | Serve the `dist/` folder locally                              |
+| `lint`             | `eslint .`                                    | Run ESLint across all source files                            |
+| `test`             | `vitest run`                                  | Run the full test suite once                                  |
+| `test:watch`       | `vitest`                                      | Run tests in interactive watch mode                           |
+| `build:oando`      | `tsc -b && vite build --base=/OandOcraft/`    | Build the main-site subpath bundle                            |
+| `audit:pages`      | `node scripts/audit-pages.cjs`                | Smoke-audit built routes for console issues and legacy naming |
+| `release:manifest` | `node scripts/create_release_manifest.cjs`    | Write release artifact metadata and SHA-256 checksums         |
+| `seed:counts`      | `node scripts/report_public_table_counts.cjs` | Report public table counts for a Postgres URL                 |
+| `seed:verify`      | `node scripts/verify_seed_payload.cjs`        | Verify the seed SQL includes actual floor-plan payloads       |
 
 ---
 
@@ -368,4 +358,3 @@ Operational docs:
 ## License
 
 [MIT](LICENSE) â€” Â© OandOcraft contributors
-
