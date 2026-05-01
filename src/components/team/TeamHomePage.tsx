@@ -448,6 +448,13 @@ export function TeamHomePage() {
           ? `/t/${team.slug}/o/${created.slug}/roster?import=csv`
           : `/t/${team.slug}/o/${created.slug}/engine`,
       )
+    } catch (err) {
+      console.warn('Create office failed', err)
+      pushToast({
+        tone: 'error',
+        title: 'Could not create office',
+        body: err instanceof Error ? err.message : 'Please retry in a moment.',
+      })
     } finally {
       setCreating(false)
     }
@@ -494,6 +501,13 @@ export function TeamHomePage() {
       })
       navigate(`/t/${team.slug}/o/${created.slug}/roster`)
       await queryClient.invalidateQueries({ queryKey: ['offices', team.id] })
+    } catch (err) {
+      console.warn('Create demo office failed', err)
+      pushToast({
+        tone: 'error',
+        title: 'Could not create sample office',
+        body: err instanceof Error ? err.message : 'Please retry in a moment.',
+      })
     } finally {
       setCreating(false)
     }
@@ -504,11 +518,21 @@ export function TeamHomePage() {
     try {
       await deleteOffice(office.id)
       await queryClient.invalidateQueries({ queryKey: ['offices', team?.id] })
+      pushToast({
+        tone: 'success',
+        title: 'Office deleted',
+        body: `${office.name} was removed.`,
+      })
+      setPendingDelete(null)
     } catch (err) {
       console.warn('Delete office failed', err)
+      pushToast({
+        tone: 'error',
+        title: 'Could not delete office',
+        body: err instanceof Error ? err.message : 'Please retry in a moment.',
+      })
     } finally {
       setDeleting(false)
-      setPendingDelete(null)
     }
   }
 

@@ -58,7 +58,7 @@ export function useOfficeSync() {
   const setSaveState = useProjectStore((s) => s.setSaveState)
   const setLastSavedAt = useProjectStore((s) => s.setLastSavedAt)
 
-  const initialSnapshotRef = useRef<unknown>(null)
+  const initialSnapshotReadyRef = useRef(false)
   const lastSavedSnapshotRef = useRef<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -68,25 +68,11 @@ export function useOfficeSync() {
     if (!officeId || !loadedVersion) return
     if (conflict) return
     if (conflictDismissedVersion === loadedVersion) return
-    const snapshot = { 
-      elements, 
-      employees, 
-      departmentColors, 
-      floor, 
-      settings, 
-      seatHistory, 
-      neighborhoods, 
-      annotations, 
-    }
-
-    if (initialSnapshotRef.current === null) {
-      initialSnapshotRef.current = snapshot
-      lastSavedSnapshotRef.current = JSON.stringify(snapshot)
+    if (!initialSnapshotReadyRef.current) {
+      initialSnapshotReadyRef.current = true
+      lastSavedSnapshotRef.current = JSON.stringify(currentSnapshot())
       return
     }
-
-    const currentSnapshotStr = JSON.stringify(snapshot)
-    if (currentSnapshotStr === lastSavedSnapshotRef.current) return
 
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
@@ -97,6 +83,8 @@ export function useOfficeSync() {
       const projectState = useProjectStore.getState()
       if (projectState.conflict) return
       if (projectState.conflictDismissedVersion === currentVersion) return
+      const snapshotStr = JSON.stringify(currentSnapshot())
+      if (snapshotStr === lastSavedSnapshotRef.current) return
 
       setSaveState('saving')
       const payload = buildCurrentPayload()
@@ -107,7 +95,7 @@ export function useOfficeSync() {
         setLastSavedAt(res.updated_at)
         setSaveState('saved')
         useProjectStore.getState().clearConflictDismissal()
-        lastSavedSnapshotRef.current = JSON.stringify(currentSnapshot())
+        lastSavedSnapshotRef.current = snapshotStr
         return
       }
       if (res.reason === 'conflict') {
