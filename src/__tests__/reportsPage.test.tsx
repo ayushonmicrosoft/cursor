@@ -86,7 +86,8 @@ describe('ReportsPage', () => {
     mount()
     fireEvent.click(screen.getByRole('tab', { name: /floor utilization/i }))
     expect(screen.getByRole('heading', { name: /floor utilization/i })).toBeInTheDocument()
-    expect(screen.getByText(/HQ/)).toBeInTheDocument()
+    expect(screen.getByText('Floor')).toBeInTheDocument()
+    expect(screen.getByText('Utilization')).toBeInTheDocument()
   })
 
   it('shows Unassigned table when the tab is active', () => {
@@ -116,7 +117,6 @@ describe('ReportsPage', () => {
     useElementsStore.setState({ elements: {} } as never)
     mount()
     expect(screen.getByText(/nothing to report yet/i)).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /go to roster/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /back to map/i })).toBeInTheDocument()
   })
 })

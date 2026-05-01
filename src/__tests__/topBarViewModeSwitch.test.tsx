@@ -11,6 +11,9 @@ import { useCanvasStore } from '../stores/canvasStore'
 import {
   DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
   DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY,
+  DEFAULT_TOPBAR_CONTROL_VISIBILITY,
+  DEFAULT_TOPBAR_QUICK_ACTION_ORDER,
+  DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY,
   WORKSPACE_PRESET_CONFIGS,
   useUIStore,
 } from '../stores/uiStore'
@@ -69,6 +72,9 @@ beforeEach(() => {
     dockableToolbarLayouts: { ...DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS },
     dockableToolbarVisibility: { ...DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY },
     activeWorkspacePreset: null,
+    topbarControlVisibility: { ...DEFAULT_TOPBAR_CONTROL_VISIBILITY },
+    topbarQuickActionOrder: [...DEFAULT_TOPBAR_QUICK_ACTION_ORDER],
+    topbarQuickActionVisibility: { ...DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY },
   })
 })
 
@@ -120,5 +126,44 @@ describe('TopBar view mode switch', () => {
     expect(JSON.parse(localStorage.getItem(TOOLBAR_VISIBILITY_STORAGE_KEY) ?? '{}')).toEqual(
       WORKSPACE_PRESET_CONFIGS.admin.visibility,
     )
+  })
+
+  it('hides topbar sections when admin workspace config disables them', () => {
+    useUIStore.setState((state) => ({
+      ...state,
+      topbarControlVisibility: {
+        ...state.topbarControlVisibility,
+        'view-mode-switch': false,
+        'quick-actions': false,
+      },
+    }))
+
+    renderTopBar()
+    expect(screen.queryByRole('button', { name: /switch to 2d view/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /toggle grid/i })).toBeNull()
+  })
+
+  it('renders quick action buttons in the configured order', () => {
+    useUIStore.setState((state) => ({
+      ...state,
+      topbarQuickActionOrder: ['presentation', 'grid', 'minimap'],
+      topbarQuickActionVisibility: {
+        ...state.topbarQuickActionVisibility,
+        presentation: true,
+        grid: true,
+        minimap: true,
+      },
+    }))
+
+    renderTopBar()
+    const quickActions = screen.getByTestId('topbar-quick-actions')
+    const ids = Array.from(quickActions.children).map((node) =>
+      node.getAttribute('data-testid'),
+    )
+    expect(ids).toEqual([
+      'topbar-quick-action-presentation',
+      'topbar-quick-action-grid',
+      'topbar-quick-action-minimap',
+    ])
   })
 })

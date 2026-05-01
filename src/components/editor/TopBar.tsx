@@ -4,6 +4,7 @@ import {
   WORKSPACE_PRESET_CONFIGS,
   useUIStore,
   type DockableToolbarId,
+  type TopbarQuickActionId,
   type WorkspacePresetId,
 } from '../../stores/uiStore'
 import { useElementsStore } from '../../stores/elementsStore'
@@ -67,7 +68,6 @@ const WORKSPACE_PRESET_IDS: WorkspacePresetId[] = ['design', 'admin', 'review']
 
 const primaryViewLinkClass = 'topbar-nav-link'
 const secondaryMenuButtonClass = 'topbar-btn'
-const toolbarMenuButtonClass = 'topbar-btn'
 const secondaryMenuItemClass =
   'flex min-w-0 items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:text-gray-200 dark:hover:bg-gray-800/50 dark:focus:bg-gray-800/50'
 
@@ -118,6 +118,9 @@ export function TopBar() {
     dockableToolbarLayouts,
     dockableToolbarVisibility,
     activeWorkspacePreset,
+    topbarControlVisibility,
+    topbarQuickActionOrder,
+    topbarQuickActionVisibility,
     setDockableToolbarMode,
     setDockableToolbarVisible,
     applyWorkspacePreset,
@@ -133,6 +136,9 @@ export function TopBar() {
       dockableToolbarLayouts: s.dockableToolbarLayouts,
       dockableToolbarVisibility: s.dockableToolbarVisibility,
       activeWorkspacePreset: s.activeWorkspacePreset,
+      topbarControlVisibility: s.topbarControlVisibility,
+      topbarQuickActionOrder: s.topbarQuickActionOrder,
+      topbarQuickActionVisibility: s.topbarQuickActionVisibility,
       setDockableToolbarMode: s.setDockableToolbarMode,
       setDockableToolbarVisible: s.setDockableToolbarVisible,
       applyWorkspacePreset: s.applyWorkspacePreset,
@@ -329,6 +335,58 @@ export function TopBar() {
     },
   ]
 
+  function renderQuickActionButton(id: TopbarQuickActionId) {
+    if (id === 'grid') {
+      return (
+        <button
+          key="grid"
+          type="button"
+          onClick={() => toggleGrid()}
+          className={`${iconActionButtonClass} ${settings.showGrid ? 'topbar-btn-active' : ''}`}
+          title={settings.showGrid ? 'Hide grid (G)' : 'Show grid (G)'}
+          aria-label="Toggle grid"
+          aria-pressed={settings.showGrid}
+          data-testid="topbar-quick-action-grid"
+        >
+          <Grid3x3 size={16} aria-hidden="true" />
+        </button>
+      )
+    }
+
+    if (id === 'minimap') {
+      const minimapVisible = dockableToolbarVisibility.minimap ?? true
+      return (
+        <button
+          key="minimap"
+          type="button"
+          onClick={() => setDockableToolbarVisible('minimap', !minimapVisible)}
+          className={`${iconActionButtonClass} ${minimapVisible ? 'topbar-btn-active' : ''}`}
+          title={minimapVisible ? 'Hide minimap' : 'Show minimap'}
+          aria-label="Toggle minimap"
+          aria-pressed={minimapVisible}
+          data-testid="topbar-quick-action-minimap"
+        >
+          <MapIcon size={16} aria-hidden="true" />
+        </button>
+      )
+    }
+
+    return (
+      <button
+        key="presentation"
+        type="button"
+        onClick={() => setPresentationMode(!presentationMode)}
+        className={`${iconActionButtonClass} ${presentationMode ? 'topbar-btn-active-violet' : ''}`}
+        title={presentationMode ? 'Exit presentation mode' : 'Enter presentation mode'}
+        aria-label="Toggle presentation mode"
+        aria-pressed={presentationMode}
+        data-testid="topbar-quick-action-presentation"
+      >
+        <PlaySquare size={16} aria-hidden="true" />
+      </button>
+    )
+  }
+
   return (
     <div
       className="relative z-[60] flex h-12 max-h-12 w-full min-w-0 flex-shrink-0 flex-nowrap items-center border-b border-gray-200/80 bg-white/95 backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-950/95"
@@ -375,72 +433,54 @@ export function TopBar() {
           </nav>
         )}
 
-        <FileMenu groups={fileMenuGroups} />
+        {topbarControlVisibility['file-menu'] && (
+          <FileMenu groups={fileMenuGroups} />
+        )}
 
         <div className={dividerClass} />
 
-        <SaveIndicator saveState={saveState} lastSavedAt={lastSavedAt} />
+        {topbarControlVisibility['save-indicator'] && (
+          <SaveIndicator saveState={saveState} lastSavedAt={lastSavedAt} />
+        )}
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => undo()}
-            disabled={!canUndo}
-            className={iconActionButtonClass}
-            title={canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo'}
-            aria-label={canUndo ? 'Undo' : 'Nothing to undo'}
-          >
-            <Undo2 size={16} aria-hidden="true" />
-          </button>
-          <button
-            onClick={() => redo()}
-            disabled={!canRedo}
-            className={iconActionButtonClass}
-            title={canRedo ? 'Redo (Ctrl+Shift+Z)' : 'Nothing to redo'}
-            aria-label={canRedo ? 'Redo' : 'Nothing to redo'}
-          >
-            <Redo2 size={16} aria-hidden="true" />
-          </button>
-        </div>
+        {topbarControlVisibility.history && (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => undo()}
+              disabled={!canUndo}
+              className={iconActionButtonClass}
+              title={canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo'}
+              aria-label={canUndo ? 'Undo' : 'Nothing to undo'}
+            >
+              <Undo2 size={16} aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => redo()}
+              disabled={!canRedo}
+              className={iconActionButtonClass}
+              title={canRedo ? 'Redo (Ctrl+Shift+Z)' : 'Nothing to redo'}
+              aria-label={canRedo ? 'Redo' : 'Nothing to redo'}
+            >
+              <Redo2 size={16} aria-hidden="true" />
+            </button>
+          </div>
+        )}
 
         <div className={dividerClass} />
 
         {/* Quick-access toolbar toggles */}
-        <div className="flex items-center gap-0.5">
-          <button
-            type="button"
-            onClick={() => toggleGrid()}
-            className={`${iconActionButtonClass} ${settings.showGrid ? 'topbar-btn-active' : ''}`}
-            title={settings.showGrid ? 'Hide grid (G)' : 'Show grid (G)'}
-            aria-label="Toggle grid"
-            aria-pressed={settings.showGrid}
-          >
-            <Grid3x3 size={16} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setDockableToolbarVisible('minimap', !(dockableToolbarVisibility['minimap'] ?? true))}
-            className={`${iconActionButtonClass} ${(dockableToolbarVisibility['minimap'] ?? true) ? 'topbar-btn-active' : ''}`}
-            title={(dockableToolbarVisibility['minimap'] ?? true) ? 'Hide minimap' : 'Show minimap'}
-            aria-label="Toggle minimap"
-            aria-pressed={dockableToolbarVisibility['minimap'] ?? true}
-          >
-            <MapIcon size={16} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setPresentationMode(!presentationMode)}
-            className={`${iconActionButtonClass} ${presentationMode ? 'topbar-btn-active-violet' : ''}`}
-            title={presentationMode ? 'Exit presentation mode' : 'Enter presentation mode'}
-            aria-label="Toggle presentation mode"
-            aria-pressed={presentationMode}
-          >
-            <PlaySquare size={16} aria-hidden="true" />
-          </button>
-        </div>
+        {topbarControlVisibility['quick-actions'] && (
+          <div className="flex items-center gap-0.5" data-testid="topbar-quick-actions">
+            {topbarQuickActionOrder
+              .filter((id) => topbarQuickActionVisibility[id] !== false)
+              .map((id) => renderQuickActionButton(id))}
+          </div>
+        )}
 
         <div className={dividerClass} />
 
-        <div className="relative" ref={viewMenuRef}>
+        {topbarControlVisibility['view-menu'] && (
+          <div className="relative" ref={viewMenuRef}>
           <button
             onClick={() => setViewMenuOpen((o) => !o)}
             className="topbar-btn"
@@ -609,124 +649,126 @@ export function TopBar() {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {canEditMap && (
           <div className="flex items-center gap-1">
             <div className={dividerClass} />
 
-            {/* Layout Menu */}
-            <div className="relative" ref={toolbarMenuRef}>
-              <button
-                type="button"
-                onClick={() => setToolbarMenuOpen((o) => !o)}
-                className="topbar-btn"
-                title="Workspace layout settings"
-                aria-label="Workspace layout settings"
-                aria-haspopup="menu"
-                aria-expanded={toolbarMenuOpen}
-              >
-                <SlidersHorizontal size={16} aria-hidden="true" />
-                <span>Layout</span>
-              </button>
-              {toolbarMenuOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 z-[100] mt-1 w-72 border border-black/[0.06] bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-white/[0.06] dark:bg-gray-950/95"
+            {topbarControlVisibility['layout-menu'] && (
+              <div className="relative" ref={toolbarMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setToolbarMenuOpen((o) => !o)}
+                  className="topbar-btn"
+                  title="Workspace layout settings"
+                  aria-label="Workspace layout settings"
+                  aria-haspopup="menu"
+                  aria-expanded={toolbarMenuOpen}
                 >
-                  <div className="mb-3 px-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
-                      Visibility
-                    </p>
-                    <div className="mt-1.5 space-y-1">
+                  <SlidersHorizontal size={16} aria-hidden="true" />
+                  <span>Layout</span>
+                </button>
+                {toolbarMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 z-[100] mt-1 w-72 border border-black/[0.06] bg-white/95 p-2 shadow-xl backdrop-blur-xl dark:border-white/[0.06] dark:bg-gray-950/95"
+                  >
+                    <div className="mb-3 px-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                        Visibility
+                      </p>
+                      <div className="mt-1.5 space-y-1">
+                        {TOOLBAR_MENU_ITEMS.filter(
+                          (item) => !item.adminOnly || canManageWorkspace,
+                        ).map((item) => {
+                          const visible = dockableToolbarVisibility[item.id] ?? true
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setDockableToolbarVisible(item.id, !visible)}
+                              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[11px] hover:bg-black/[0.05] dark:hover:bg-white/[0.05]"
+                            >
+                              <div className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${visible ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
+                                {visible && <Check size={10} />}
+                              </div>
+                              <span className="flex-1 font-medium text-gray-700 dark:text-gray-200">{item.label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
+
+                    <div className="mb-3 px-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                        Presets
+                      </p>
+                      <div className="mt-1.5 flex gap-1">
+                        {WORKSPACE_PRESET_IDS.map((presetId) => {
+                          const preset = WORKSPACE_PRESET_CONFIGS[presetId]
+                          const active = activeWorkspacePreset === presetId
+                          return (
+                            <button
+                              key={presetId}
+                              type="button"
+                              onClick={() => { applyWorkspacePreset(presetId); setToolbarMenuOpen(false) }}
+                              className={`flex-1 px-2 py-1.5 text-[11px] font-semibold transition-all ${active ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'bg-black/[0.04] text-gray-600 hover:bg-black/[0.07] dark:bg-white/[0.04] dark:text-gray-300'}`}
+                            >
+                              {preset.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
+
+                    <div className="px-1 space-y-1">
+                      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
+                        Configuration
+                      </p>
                       {TOOLBAR_MENU_ITEMS.filter(
                         (item) => !item.adminOnly || canManageWorkspace,
                       ).map((item) => {
+                        const mode = dockableToolbarLayouts[item.id]?.mode ?? 'docked'
                         const visible = dockableToolbarVisibility[item.id] ?? true
+                        if (!visible) return null
                         return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => setDockableToolbarVisible(item.id, !visible)}
-                            className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[11px] hover:bg-black/[0.05] dark:hover:bg-white/[0.05]"
-                          >
-                            <div className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${visible ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300 dark:border-gray-600'}`}>
-                              {visible && <Check size={10} />}
+                          <div key={item.id} className="flex items-center gap-2 px-1 py-1">
+                            <span className="min-w-0 flex-1 text-[11px] font-medium text-gray-600 dark:text-gray-400 truncate">{item.label}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setDockableToolbarMode(item.id, 'docked')}
+                                className={`px-1.5 py-0.5 text-[10px] font-semibold transition-all ${mode === 'docked' ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'text-gray-500 hover:bg-black/[0.05]'}`}
+                              >Dock</button>
+                              <button
+                                type="button"
+                                onClick={() => setDockableToolbarMode(item.id, 'floating')}
+                                className={`px-1.5 py-0.5 text-[10px] font-semibold transition-all ${mode === 'floating' ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'text-gray-500 hover:bg-black/[0.05]'}`}
+                              >Float</button>
                             </div>
-                            <span className="flex-1 font-medium text-gray-700 dark:text-gray-200">{item.label}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
-
-                  <div className="mb-3 px-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
-                      Presets
-                    </p>
-                    <div className="mt-1.5 flex gap-1">
-                      {WORKSPACE_PRESET_IDS.map((presetId) => {
-                        const preset = WORKSPACE_PRESET_CONFIGS[presetId]
-                        const active = activeWorkspacePreset === presetId
-                        return (
-                          <button
-                            key={presetId}
-                            type="button"
-                            onClick={() => { applyWorkspacePreset(presetId); setToolbarMenuOpen(false) }}
-                            className={`flex-1 px-2 py-1.5 text-[11px] font-semibold transition-all ${active ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'bg-black/[0.04] text-gray-600 hover:bg-black/[0.07] dark:bg-white/[0.04] dark:text-gray-300'}`}
-                          >
-                            {preset.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
-
-                  <div className="px-1 space-y-1">
-                    <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-400 dark:text-gray-500">
-                      Configuration
-                    </p>
-                    {TOOLBAR_MENU_ITEMS.filter(
-                      (item) => !item.adminOnly || canManageWorkspace,
-                    ).map((item) => {
-                      const mode = dockableToolbarLayouts[item.id]?.mode ?? 'docked'
-                      const visible = dockableToolbarVisibility[item.id] ?? true
-                      if (!visible) return null
-                      return (
-                        <div key={item.id} className="flex items-center gap-2 px-1 py-1">
-                          <span className="min-w-0 flex-1 text-[11px] font-medium text-gray-600 dark:text-gray-400 truncate">{item.label}</span>
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => setDockableToolbarMode(item.id, 'docked')}
-                              className={`px-1.5 py-0.5 text-[10px] font-semibold transition-all ${mode === 'docked' ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'text-gray-500 hover:bg-black/[0.05]'}`}
-                            >Dock</button>
-                            <button
-                              type="button"
-                              onClick={() => setDockableToolbarMode(item.id, 'floating')}
-                              className={`px-1.5 py-0.5 text-[10px] font-semibold transition-all ${mode === 'floating' ? 'bg-[#1f3653] text-white dark:bg-[#d6c2a6] dark:text-gray-950' : 'text-gray-500 hover:bg-black/[0.05]'}`}
-                            >Float</button>
                           </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                        )
+                      })}
+                    </div>
 
-                  <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
-                  <button
-                    type="button"
-                    onClick={() => { resetDockableWorkspace(); setToolbarMenuOpen(false) }}
-                    className="w-full px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-black/[0.04] hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    Reset defaults
-                  </button>
-                </div>
-              )}
-            </div>
+                    <div className="my-2 h-px bg-black/[0.05] dark:bg-white/[0.05]" />
+                    <button
+                      type="button"
+                      onClick={() => { resetDockableWorkspace(); setToolbarMenuOpen(false) }}
+                      className="w-full px-2 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-black/[0.04] hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      Reset defaults
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className={dividerClass} />
             <button
@@ -740,81 +782,83 @@ export function TopBar() {
           </div>
         )}
 
-        <div className="flex flex-none items-center border border-gray-200 bg-gray-50 p-0.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          {teamSlug && officeSlug ? (
-            <>
-              <NavLink
-                to={`/t/${teamSlug}/o/${officeSlug}/map`}
-                onClick={() => setViewMode('2d')}
-                role="button"
-                aria-label="Switch to 2D view"
-                className={({ isActive }) =>
-                  `inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
-                    isActive && viewMode === '2d'
-                      ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+        {topbarControlVisibility['view-mode-switch'] && (
+          <div className="flex flex-none items-center border border-gray-200 bg-gray-50 p-0.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            {teamSlug && officeSlug ? (
+              <>
+                <NavLink
+                  to={`/t/${teamSlug}/o/${officeSlug}/map`}
+                  onClick={() => setViewMode('2d')}
+                  role="button"
+                  aria-label="Switch to 2D view"
+                  className={({ isActive }) =>
+                    `inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
+                      isActive && viewMode === '2d'
+                        ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white'
+                        : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
+                    }`
+                  }
+                >
+                  <MapIcon size={14} />
+                  2D
+                </NavLink>
+                <NavLink
+                  to={`/t/${teamSlug}/o/${officeSlug}/map`}
+                  onClick={() => setViewMode('2.5d')}
+                  role="button"
+                  aria-label="Switch to 2.5D view"
+                  className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
+                    viewMode === '2.5d'
+                      ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950'
                       : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
-                  }`
-                }
-              >
-                <MapIcon size={14} />
-                2D
-              </NavLink>
-              <NavLink
-                to={`/t/${teamSlug}/o/${officeSlug}/map`}
-                onClick={() => setViewMode('2.5d')}
-                role="button"
-                aria-label="Switch to 2.5D view"
-                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
-                  viewMode === '2.5d'
-                    ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950'
-                    : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
-                }`}
-              >
-                <Maximize2 size={14} />
-                2.5D
-              </NavLink>
-            <NavLink
-              to={`/t/${teamSlug}/o/${officeSlug}/pixi`}
-              role="button"
-              aria-label="Open Pixi editor"
-              className={({ isActive }) =>
-                `inline-flex h-8 min-w-[68px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
-                  isActive
-                    ? 'bg-violet-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
-                }`
-              }
-            >
-              <Zap size={14} />
-              Pixi
-            </NavLink>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setViewMode('2d')}
-                aria-pressed={viewMode === '2d'}
-                className={`inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${viewMode === '2d' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
-              >
-                <MapIcon size={14} />
-                2D
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('2.5d')}
-                aria-pressed={viewMode === '2.5d'}
-                className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${viewMode === '2.5d' ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
-              >
-                <Maximize2 size={14} />
-                2.5D
-              </button>
-            </>
-          )}
-        </div>
+                  }`}
+                >
+                  <Maximize2 size={14} />
+                  2.5D
+                </NavLink>
+                <NavLink
+                  to={`/t/${teamSlug}/o/${officeSlug}/pixi`}
+                  role="button"
+                  aria-label="Open Pixi editor"
+                  className={({ isActive }) =>
+                    `inline-flex h-8 min-w-[68px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
+                      isActive
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
+                    }`
+                  }
+                >
+                  <Zap size={14} />
+                  Pixi
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('2d')}
+                  aria-pressed={viewMode === '2d'}
+                  className={`inline-flex h-8 min-w-[58px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${viewMode === '2d' ? 'bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
+                >
+                  <MapIcon size={14} />
+                  2D
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('2.5d')}
+                  aria-pressed={viewMode === '2.5d'}
+                  className={`inline-flex h-8 min-w-[70px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${viewMode === '2.5d' ? 'bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950' : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'}`}
+                >
+                  <Maximize2 size={14} />
+                  2.5D
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="ml-auto flex min-w-0 flex-none items-center gap-2 border-l border-gray-200 bg-white/95 pl-2 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
-          <PlanHealthPill />
+          {topbarControlVisibility['health-pill'] && <PlanHealthPill />}
           <UserMenu />
         </div>
       </div>

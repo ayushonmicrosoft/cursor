@@ -29,6 +29,17 @@ export interface DockableToolbarLayout {
 
 export type WorkspacePresetId = 'design' | 'admin' | 'review'
 export type RenderEngineId = 'konva' | 'pixi'
+export type TopbarControlId =
+  | 'file-menu'
+  | 'save-indicator'
+  | 'history'
+  | 'quick-actions'
+  | 'view-menu'
+  | 'layout-menu'
+  | 'view-mode-switch'
+  | 'health-pill'
+
+export type TopbarQuickActionId = 'grid' | 'minimap' | 'presentation'
 
 export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, DockableToolbarLayout> = {
   'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } },
@@ -48,6 +59,29 @@ export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, bool
   'right-inspector': true,
   'minimap': true,
   'color-palette': true,
+}
+
+export const DEFAULT_TOPBAR_CONTROL_VISIBILITY: Record<TopbarControlId, boolean> = {
+  'file-menu': true,
+  'save-indicator': true,
+  history: true,
+  'quick-actions': true,
+  'view-menu': true,
+  'layout-menu': true,
+  'view-mode-switch': true,
+  'health-pill': true,
+}
+
+export const DEFAULT_TOPBAR_QUICK_ACTION_ORDER: TopbarQuickActionId[] = [
+  'grid',
+  'minimap',
+  'presentation',
+]
+
+export const DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY: Record<TopbarQuickActionId, boolean> = {
+  grid: true,
+  minimap: true,
+  presentation: true,
 }
 
 export const WORKSPACE_PRESET_CONFIGS: Record<
@@ -131,6 +165,8 @@ const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts-v3'
 const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility-v3'
 const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset-v3'
 const RENDER_ENGINE_STORAGE_KEY = 'oandocraft.render-engine-v1'
+const TOPBAR_CONTROL_VISIBILITY_STORAGE_KEY = 'oandocraft.topbar-controls-v1'
+const TOPBAR_QUICK_ACTIONS_STORAGE_KEY = 'oandocraft.topbar-quick-actions-v1'
 
 function cloneToolbarLayouts(
   layouts: Record<DockableToolbarId, DockableToolbarLayout>,
@@ -345,6 +381,173 @@ function readStoredRenderEngine(): RenderEngineId {
   }
 }
 
+function readStoredTopbarControlVisibility(): Record<TopbarControlId, boolean> {
+  if (typeof window === 'undefined') {
+    return cloneTopbarControlVisibility(DEFAULT_TOPBAR_CONTROL_VISIBILITY)
+  }
+  try {
+    const raw = window.localStorage.getItem(TOPBAR_CONTROL_VISIBILITY_STORAGE_KEY)
+    if (!raw) return cloneTopbarControlVisibility(DEFAULT_TOPBAR_CONTROL_VISIBILITY)
+    const parsed = JSON.parse(raw) as Partial<Record<TopbarControlId, unknown>>
+    return {
+      'file-menu':
+        typeof parsed['file-menu'] === 'boolean'
+          ? parsed['file-menu']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['file-menu'],
+      'save-indicator':
+        typeof parsed['save-indicator'] === 'boolean'
+          ? parsed['save-indicator']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['save-indicator'],
+      history:
+        typeof parsed.history === 'boolean'
+          ? parsed.history
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY.history,
+      'quick-actions':
+        typeof parsed['quick-actions'] === 'boolean'
+          ? parsed['quick-actions']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['quick-actions'],
+      'view-menu':
+        typeof parsed['view-menu'] === 'boolean'
+          ? parsed['view-menu']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['view-menu'],
+      'layout-menu':
+        typeof parsed['layout-menu'] === 'boolean'
+          ? parsed['layout-menu']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['layout-menu'],
+      'view-mode-switch':
+        typeof parsed['view-mode-switch'] === 'boolean'
+          ? parsed['view-mode-switch']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['view-mode-switch'],
+      'health-pill':
+        typeof parsed['health-pill'] === 'boolean'
+          ? parsed['health-pill']
+          : DEFAULT_TOPBAR_CONTROL_VISIBILITY['health-pill'],
+    }
+  } catch {
+    return cloneTopbarControlVisibility(DEFAULT_TOPBAR_CONTROL_VISIBILITY)
+  }
+}
+
+function persistTopbarControlVisibility(
+  visibility: Record<TopbarControlId, boolean>,
+) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(
+      TOPBAR_CONTROL_VISIBILITY_STORAGE_KEY,
+      JSON.stringify(visibility),
+    )
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
+function readStoredTopbarQuickActions(): {
+  order: TopbarQuickActionId[]
+  visibility: Record<TopbarQuickActionId, boolean>
+} {
+  const fallback = {
+    order: cloneTopbarQuickActionOrder(DEFAULT_TOPBAR_QUICK_ACTION_ORDER),
+    visibility: cloneTopbarQuickActionVisibility(
+      DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY,
+    ),
+  }
+  if (typeof window === 'undefined') return fallback
+  try {
+    const raw = window.localStorage.getItem(TOPBAR_QUICK_ACTIONS_STORAGE_KEY)
+    if (!raw) return fallback
+    const parsed = JSON.parse(raw) as {
+      order?: unknown
+      visibility?: Partial<Record<TopbarQuickActionId, unknown>>
+    }
+    const parsedOrder = Array.isArray(parsed.order)
+      ? parsed.order.filter(
+          (value): value is TopbarQuickActionId =>
+            value === 'grid' || value === 'minimap' || value === 'presentation',
+        )
+      : DEFAULT_TOPBAR_QUICK_ACTION_ORDER
+    const visibility = parsed.visibility ?? {}
+    return {
+      order: cloneTopbarQuickActionOrder(parsedOrder),
+      visibility: {
+        grid:
+          typeof visibility.grid === 'boolean'
+            ? visibility.grid
+            : DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY.grid,
+        minimap:
+          typeof visibility.minimap === 'boolean'
+            ? visibility.minimap
+            : DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY.minimap,
+        presentation:
+          typeof visibility.presentation === 'boolean'
+            ? visibility.presentation
+            : DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY.presentation,
+      },
+    }
+  } catch {
+    return fallback
+  }
+}
+
+function persistTopbarQuickActions(
+  order: TopbarQuickActionId[],
+  visibility: Record<TopbarQuickActionId, boolean>,
+) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(
+      TOPBAR_QUICK_ACTIONS_STORAGE_KEY,
+      JSON.stringify({
+        order: cloneTopbarQuickActionOrder(order),
+        visibility: cloneTopbarQuickActionVisibility(visibility),
+      }),
+    )
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
+function cloneTopbarControlVisibility(
+  visibility: Record<TopbarControlId, boolean>,
+): Record<TopbarControlId, boolean> {
+  return {
+    'file-menu': visibility['file-menu'] !== false,
+    'save-indicator': visibility['save-indicator'] !== false,
+    history: visibility.history !== false,
+    'quick-actions': visibility['quick-actions'] !== false,
+    'view-menu': visibility['view-menu'] !== false,
+    'layout-menu': visibility['layout-menu'] !== false,
+    'view-mode-switch': visibility['view-mode-switch'] !== false,
+    'health-pill': visibility['health-pill'] !== false,
+  }
+}
+
+function cloneTopbarQuickActionOrder(
+  order: TopbarQuickActionId[],
+): TopbarQuickActionId[] {
+  const seen = new Set<TopbarQuickActionId>()
+  const next: TopbarQuickActionId[] = []
+  for (const id of order) {
+    if (!DEFAULT_TOPBAR_QUICK_ACTION_ORDER.includes(id) || seen.has(id)) continue
+    next.push(id)
+    seen.add(id)
+  }
+  for (const fallback of DEFAULT_TOPBAR_QUICK_ACTION_ORDER) {
+    if (!seen.has(fallback)) next.push(fallback)
+  }
+  return next
+}
+
+function cloneTopbarQuickActionVisibility(
+  visibility: Record<TopbarQuickActionId, boolean>,
+): Record<TopbarQuickActionId, boolean> {
+  return {
+    grid: visibility.grid !== false,
+    minimap: visibility.minimap !== false,
+    presentation: visibility.presentation !== false,
+  }
+}
+
 function persistRenderEngine(engine: RenderEngineId) {
   if (typeof window === 'undefined') return
   try {
@@ -454,6 +657,9 @@ interface UIState {
   dockableToolbarLayouts: Record<DockableToolbarId, DockableToolbarLayout>
   dockableToolbarVisibility: Record<DockableToolbarId, boolean>
   activeWorkspacePreset: WorkspacePresetId | null
+  topbarControlVisibility: Record<TopbarControlId, boolean>
+  topbarQuickActionOrder: TopbarQuickActionId[]
+  topbarQuickActionVisibility: Record<TopbarQuickActionId, boolean>
 
   // Actions
   setSelectedIds: (ids: string[]) => void
@@ -492,6 +698,11 @@ interface UIState {
   toggleDockableToolbarVisible: (id: DockableToolbarId) => void
   applyWorkspacePreset: (preset: WorkspacePresetId) => void
   resetDockableWorkspace: () => void
+  setTopbarControlVisible: (id: TopbarControlId, visible: boolean) => void
+  setTopbarQuickActionVisible: (id: TopbarQuickActionId, visible: boolean) => void
+  setTopbarQuickActionOrder: (order: TopbarQuickActionId[]) => void
+  moveTopbarQuickAction: (id: TopbarQuickActionId, direction: 'up' | 'down') => void
+  resetTopbarWorkspace: () => void
   /** Bump `drawingCancelTick` to ask any active drawing session to cancel. */
   requestCancelDrawing: () => void
   /** Increment `modalOpenCount`. Call from drawer/dialog mount effect. */
@@ -513,6 +724,8 @@ function createUIStore() {
   const initialToolbarVisibility = readStoredToolbarVisibility()
   const initialWorkspacePreset = readStoredWorkspacePreset()
   const initialRenderEngine = readStoredRenderEngine()
+  const initialTopbarControlVisibility = readStoredTopbarControlVisibility()
+  const initialTopbarQuickActions = readStoredTopbarQuickActions()
   return create<UIState>((set) => ({
   selectedIds: [],
   hoveredId: null,
@@ -543,6 +756,9 @@ function createUIStore() {
   dockableToolbarLayouts: initialToolbarLayouts,
   dockableToolbarVisibility: initialToolbarVisibility,
   activeWorkspacePreset: initialWorkspacePreset,
+  topbarControlVisibility: initialTopbarControlVisibility,
+  topbarQuickActionOrder: initialTopbarQuickActions.order,
+  topbarQuickActionVisibility: initialTopbarQuickActions.visibility,
   drawingCancelTick: 0,
   modalOpenCount: 0,
   assignmentQueue: [],
@@ -688,13 +904,83 @@ function createUIStore() {
     set(() => {
       const layouts = cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
       const visibility = cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)
+      const topbarControls = cloneTopbarControlVisibility(
+        DEFAULT_TOPBAR_CONTROL_VISIBILITY,
+      )
+      const topbarQuickActionOrder = cloneTopbarQuickActionOrder(
+        DEFAULT_TOPBAR_QUICK_ACTION_ORDER,
+      )
+      const topbarQuickActionVisibility = cloneTopbarQuickActionVisibility(
+        DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY,
+      )
       persistToolbarLayouts(layouts)
       persistToolbarVisibility(visibility)
       persistWorkspacePreset(null)
+      persistTopbarControlVisibility(topbarControls)
+      persistTopbarQuickActions(topbarQuickActionOrder, topbarQuickActionVisibility)
       return {
         dockableToolbarLayouts: layouts,
         dockableToolbarVisibility: visibility,
         activeWorkspacePreset: null,
+        topbarControlVisibility: topbarControls,
+        topbarQuickActionOrder,
+        topbarQuickActionVisibility,
+      }
+    }),
+  setTopbarControlVisible: (id, visible) =>
+    set((s) => {
+      const next = cloneTopbarControlVisibility({
+        ...s.topbarControlVisibility,
+        [id]: visible,
+      })
+      persistTopbarControlVisibility(next)
+      return { topbarControlVisibility: next }
+    }),
+  setTopbarQuickActionVisible: (id, visible) =>
+    set((s) => {
+      const nextVisibility = cloneTopbarQuickActionVisibility({
+        ...s.topbarQuickActionVisibility,
+        [id]: visible,
+      })
+      persistTopbarQuickActions(s.topbarQuickActionOrder, nextVisibility)
+      return { topbarQuickActionVisibility: nextVisibility }
+    }),
+  setTopbarQuickActionOrder: (order) =>
+    set((s) => {
+      const nextOrder = cloneTopbarQuickActionOrder(order)
+      persistTopbarQuickActions(nextOrder, s.topbarQuickActionVisibility)
+      return { topbarQuickActionOrder: nextOrder }
+    }),
+  moveTopbarQuickAction: (id, direction) =>
+    set((s) => {
+      const current = cloneTopbarQuickActionOrder(s.topbarQuickActionOrder)
+      const currentIndex = current.indexOf(id)
+      if (currentIndex < 0) return {}
+      const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+      if (swapIndex < 0 || swapIndex >= current.length) return {}
+      const nextOrder = [...current]
+      const [moved] = nextOrder.splice(currentIndex, 1)
+      nextOrder.splice(swapIndex, 0, moved)
+      persistTopbarQuickActions(nextOrder, s.topbarQuickActionVisibility)
+      return { topbarQuickActionOrder: nextOrder }
+    }),
+  resetTopbarWorkspace: () =>
+    set(() => {
+      const topbarControls = cloneTopbarControlVisibility(
+        DEFAULT_TOPBAR_CONTROL_VISIBILITY,
+      )
+      const topbarQuickActionOrder = cloneTopbarQuickActionOrder(
+        DEFAULT_TOPBAR_QUICK_ACTION_ORDER,
+      )
+      const topbarQuickActionVisibility = cloneTopbarQuickActionVisibility(
+        DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY,
+      )
+      persistTopbarControlVisibility(topbarControls)
+      persistTopbarQuickActions(topbarQuickActionOrder, topbarQuickActionVisibility)
+      return {
+        topbarControlVisibility: topbarControls,
+        topbarQuickActionOrder,
+        topbarQuickActionVisibility,
       }
     }),
   requestCancelDrawing: () =>
