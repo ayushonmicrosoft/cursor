@@ -21,3 +21,7 @@ export { syncGrid } from './PixiGridLayer'
 // Overlays
 export { syncAlignmentGuides } from './PixiAlignmentGuides'
 export { syncSelectionHandles } from './PixiSelectionHandles'
+
+// Adapter + IDs
+export { PixiAdapter } from './PixiAdapter'
+export { createPixiNodeId, parsePixiNodeId } from './pixiNodeFactory'

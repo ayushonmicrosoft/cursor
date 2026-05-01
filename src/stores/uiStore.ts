@@ -28,6 +28,7 @@ export interface DockableToolbarLayout {
 }
 
 export type WorkspacePresetId = 'design' | 'admin' | 'review'
+export type RenderEngineId = 'konva' | 'pixi'
 
 export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, DockableToolbarLayout> = {
   'canvas-actions': { mode: 'docked', position: { x: 0, y: 0 } },
@@ -129,6 +130,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
 const TOOLBAR_LAYOUTS_STORAGE_KEY = 'oandocraft.toolbar-layouts-v3'
 const TOOLBAR_VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility-v3'
 const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset-v3'
+const RENDER_ENGINE_STORAGE_KEY = 'oandocraft.render-engine-v1'
 
 function cloneToolbarLayouts(
   layouts: Record<DockableToolbarId, DockableToolbarLayout>,
@@ -329,6 +331,29 @@ function persistWorkspacePreset(preset: WorkspacePresetId | null) {
   }
 }
 
+function isRenderEngineId(value: unknown): value is RenderEngineId {
+  return value === 'konva' || value === 'pixi'
+}
+
+function readStoredRenderEngine(): RenderEngineId {
+  if (typeof window === 'undefined') return 'konva'
+  try {
+    const raw = window.localStorage.getItem(RENDER_ENGINE_STORAGE_KEY)
+    return isRenderEngineId(raw) ? raw : 'konva'
+  } catch {
+    return 'konva'
+  }
+}
+
+function persistRenderEngine(engine: RenderEngineId) {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(RENDER_ENGINE_STORAGE_KEY, engine)
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
 function collectMissingSelectionIds(ids: string[]): string[] {
   if (ids.length === 0) return []
   const elements = useElementsStore.getState().elements
@@ -370,6 +395,7 @@ interface UIState {
   // Presentation
   presentationMode: boolean
   viewMode: '2d' | '2.5d'
+  renderEngine: RenderEngineId
 
   // Minimap
   minimapVisible: boolean
@@ -449,6 +475,7 @@ interface UIState {
   setCsvImportSummary: (summary: CSVImportSummary | null) => void
   setPresentationMode: (mode: boolean) => void
   setViewMode: (mode: UIState['viewMode']) => void
+  setRenderEngine: (engine: RenderEngineId) => void
   setMinimapVisible: (v: boolean) => void
   toggleMinimap: () => void
   setContextMenu: (menu: UIState['contextMenu']) => void
@@ -485,6 +512,7 @@ function createUIStore() {
   const initialToolbarLayouts = readStoredToolbarLayouts()
   const initialToolbarVisibility = readStoredToolbarVisibility()
   const initialWorkspacePreset = readStoredWorkspacePreset()
+  const initialRenderEngine = readStoredRenderEngine()
   return create<UIState>((set) => ({
   selectedIds: [],
   hoveredId: null,
@@ -503,6 +531,7 @@ function createUIStore() {
   csvImportSummary: null,
   presentationMode: false,
   viewMode: '2d',
+  renderEngine: initialRenderEngine,
   minimapVisible: true,
   contextMenu: null,
   editingLabelId: null,
@@ -557,6 +586,11 @@ function createUIStore() {
   setCsvImportSummary: (summary) => set({ csvImportSummary: summary }),
   setPresentationMode: (mode) => set({ presentationMode: mode }),
   setViewMode: (mode) => set({ viewMode: mode }),
+  setRenderEngine: (engine) =>
+    set(() => {
+      persistRenderEngine(engine)
+      return { renderEngine: engine }
+    }),
   setMinimapVisible: (v) => set({ minimapVisible: v }),
   toggleMinimap: () => set((s) => ({ minimapVisible: !s.minimapVisible })),
   setContextMenu: (menu) => set({ contextMenu: menu }),

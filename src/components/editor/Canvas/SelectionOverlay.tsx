@@ -9,6 +9,7 @@ import {
   isWindowElement,
 } from '../../../types/elements'
 import { CANVAS_COLORS } from './visualStyle'
+import { createKonvaNodeId, parseKonvaNodeId } from '../../../lib/konva/konvaNodeFactory'
 
 /**
  * Cardinal-angle snaps for the Transformer's rotate handle. Konva snaps
@@ -57,7 +58,7 @@ export function SelectionOverlay() {
 
     const nodes: Konva.Node[] = []
     for (const id of transformableIds) {
-      const node = stage.findOne(`#element-${id}`)
+      const node = stage.findOne(`#${createKonvaNodeId(id)}`)
       if (node) nodes.push(node)
     }
 
@@ -108,7 +109,7 @@ export function SelectionOverlay() {
   // onDragEnd handler, but it doesn't cover multi-node rotate.)
   const handleTransformEnd = useCallback(() => {
     for (const node of nodesRef.current) {
-      const id = node.id().replace(/^element-/, '')
+      const id = parseKonvaNodeId(node.id() ?? '')
       if (!id) continue
       const el = elements[id]
       if (!el) continue

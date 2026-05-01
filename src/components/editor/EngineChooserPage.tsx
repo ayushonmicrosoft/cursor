@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useUIStore } from '../../stores/uiStore'
 
 /**
  * Engine comparison landing page.
@@ -10,9 +11,11 @@ import { useState } from 'react'
  */
 export function EngineChooserPage() {
   const navigate = useNavigate()
+  const setRenderEngine = useUIStore((s) => s.setRenderEngine)
   const [hoveredEngine, setHoveredEngine] = useState<'konva' | 'pixi' | null>(null)
 
   function pick(engine: 'konva' | 'pixi') {
+    setRenderEngine(engine)
     navigate(engine === 'pixi' ? '../pixi' : '../map', { replace: true })
   }
 

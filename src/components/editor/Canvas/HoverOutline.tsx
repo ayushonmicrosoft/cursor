@@ -4,6 +4,7 @@ import type Konva from 'konva'
 import { useUIStore } from '../../../stores/uiStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { CANVAS_COLORS } from './visualStyle'
+import { createKonvaNodeId } from '../../../lib/konva/konvaNodeFactory'
 
 /**
  * Faint dashed outline that tracks the currently hovered element when
@@ -47,7 +48,7 @@ export function HoverOutline() {
     }
     const stage = tr.getStage()
     if (!stage) return
-    const node = stage.findOne(`#element-${hoveredId}`)
+    const node = stage.findOne(`#${createKonvaNodeId(hoveredId)}`)
     if (node) {
       tr.nodes([node])
     } else {

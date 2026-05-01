@@ -78,7 +78,11 @@ const DOOR_WINDOW_SNAP_PX = 24
  */
 const PAN_CLICK_THRESHOLD_PX = 4
 
-export function CanvasStage() {
+interface CanvasStageProps {
+  onStageReady?: (stage: Konva.Stage | null) => void
+}
+
+export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
   const stageRef = useRef<Konva.Stage>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 800, height: 600 })
@@ -151,10 +155,12 @@ export function CanvasStage() {
     const stage = stageRef.current
     if (!stage) return
     setActiveStage(stage)
+    onStageReady?.(stage)
     return () => {
+      onStageReady?.(null)
       setActiveStage(null)
     }
-  }, [])
+  }, [onStageReady])
 
   // Phase 3: Esc cancels an in-flight multi-seat assignment. Guarded so
   // we don't steal Escape from dialogs or other features when there's no

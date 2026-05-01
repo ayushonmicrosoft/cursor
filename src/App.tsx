@@ -33,17 +33,14 @@ const AuthResetPage = lazy(() =>
 const ProjectShell = lazy(() =>
   import('./components/editor/ProjectShell').then((m) => ({ default: m.ProjectShell })),
 )
-const MapView = lazy(() =>
-  import('./components/editor/MapView').then((m) => ({ default: m.MapView })),
+const EngineHost = lazy(() =>
+  import('./components/editor/EngineHost').then((m) => ({ default: m.EngineHost })),
 )
 const RosterPage = lazy(() =>
   import('./components/editor/RosterPage').then((m) => ({ default: m.RosterPage })),
 )
 const EngineChooserPage = lazy(() =>
   import('./components/editor/EngineChooserPage').then((m) => ({ default: m.EngineChooserPage })),
-)
-const PixiPreviewPage = lazy(() =>
-  import('./components/editor/PixiPreviewPage').then((m) => ({ default: m.PixiPreviewPage })),
 )
 const TeamOnboardingPage = lazy(() =>
   import('./components/team/TeamOnboardingPage').then((m) => ({
@@ -181,8 +178,8 @@ function App() {
             >
               <Route index element={<Navigate to="engine" replace />} />
               <Route path="engine" element={<EngineChooserPage />} />
-              <Route path="map" element={<MapView />} />
-              <Route path="pixi" element={<PixiPreviewPage />} />
+              <Route path="map" element={<EngineHost preferredEngine="konva" />} />
+              <Route path="pixi" element={<EngineHost preferredEngine="pixi" />} />
               <Route path="roster" element={<RosterPage />} />
 
               <Route path="reports" element={<ReportsPage />} />

@@ -13,6 +13,7 @@ import {
   type View3DCameraPreset,
   type View3DCameraPresetId,
 } from '../../../lib/view3d/sceneMapping'
+import { VIEW3D_MATERIAL_SETTINGS } from '../../../lib/twopointfive/materials'
 
 interface View3DCanvasProps {
   floor?: Floor | null
@@ -23,37 +24,11 @@ interface View3DCanvasProps {
   onRequestFallback2D?: () => void
 }
 
-const MATERIAL_SETTINGS: Record<
-  View3DMaterialProfile,
-  {
-    roughness: number
-    metalness: number
-    opacity?: number
-    edge: string
-    edgeOpacity: number
-    emissive?: string
-  }
-> = {
-  'solid-wall': { roughness: 0.72, metalness: 0.04, edge: '#0f172a', edgeOpacity: 0.3 },
-  'glass-wall': { roughness: 0.2, metalness: 0, opacity: 0.36, edge: '#0369a1', edgeOpacity: 0.36 },
-  'half-wall': { roughness: 0.7, metalness: 0.03, edge: '#1e293b', edgeOpacity: 0.28 },
-  'room-zone': { roughness: 0.9, metalness: 0, opacity: 0.42, edge: '#475569', edgeOpacity: 0.24 },
-  'work-surface': { roughness: 0.64, metalness: 0.08, edge: '#075985', edgeOpacity: 0.22 },
-  'hot-desk': { roughness: 0.66, metalness: 0.06, edge: '#0f766e', edgeOpacity: 0.22 },
-  'meeting-table': { roughness: 0.58, metalness: 0.04, edge: '#78350f', edgeOpacity: 0.2 },
-  'soft-seating': { roughness: 0.86, metalness: 0, edge: '#9a3412', edgeOpacity: 0.2 },
-  divider: { roughness: 0.7, metalness: 0.03, opacity: 0.9, edge: '#334155', edgeOpacity: 0.26 },
-  plant: { roughness: 0.82, metalness: 0, edge: '#166534', edgeOpacity: 0.16 },
-  equipment: { roughness: 0.54, metalness: 0.16, edge: '#334155', edgeOpacity: 0.2 },
-  whiteboard: { roughness: 0.38, metalness: 0.02, edge: '#94a3b8', edgeOpacity: 0.28, emissive: '#f8fafc' },
-  'generic-furniture': { roughness: 0.68, metalness: 0.04, edge: '#334155', edgeOpacity: 0.2 },
-}
-
 function createMaterial(
   color: string,
   profile: View3DMaterialProfile,
 ): THREE.MeshStandardMaterial {
-  const settings = MATERIAL_SETTINGS[profile]
+  const settings = VIEW3D_MATERIAL_SETTINGS[profile]
   return new THREE.MeshStandardMaterial({
     color,
     roughness: settings.roughness,
@@ -66,7 +41,7 @@ function createMaterial(
 }
 
 function addEdgeOverlay(mesh: THREE.Mesh, profile: View3DMaterialProfile) {
-  const settings = MATERIAL_SETTINGS[profile]
+  const settings = VIEW3D_MATERIAL_SETTINGS[profile]
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(mesh.geometry),
     new THREE.LineBasicMaterial({

@@ -55,6 +55,7 @@ import { SnapEngine } from '../../../lib/snapEngine'
 import { elementBounds } from '../../../lib/elementBounds'
 import { ALIGNMENT_THRESHOLD } from '../../../lib/constants'
 import { useElementSpawnAnimation } from '../../../hooks/useElementSpawnAnimation'
+import { createKonvaNodeId } from '../../../lib/konva/konvaNodeFactory'
 
 export function ElementRenderer() {
   const elements = useElementsStore((s) => s.elements)
@@ -422,7 +423,7 @@ function AnimatedElementGroup({
   const scaleY = applyScale ? spawn.scaleY : 1
   return (
     <Group
-      id={`element-${id}`}
+      id={createKonvaNodeId(id)}
       x={x}
       y={y}
       opacity={combinedOpacity}

@@ -38,6 +38,7 @@ import { syncSelectionHandles } from '../../../lib/pixi/PixiSelectionHandles'
 import { syncGrid } from '../../../lib/pixi/PixiGridLayer'
 import { parsePixiColor } from '../../../lib/pixiColor'
 import { ZOOM_FACTOR, ZOOM_MAX, ZOOM_MIN } from '../../../lib/constants'
+import { createPixiNodeId } from '../../../lib/pixi/pixiNodeFactory'
 
 export interface PixiViewportState {
   scale: number
@@ -54,11 +55,23 @@ export interface PixiStageHandle {
   getViewport(): PixiViewportState
 }
 
+export interface PixiStageError {
+  severity: 'warning' | 'fatal'
+  code: string
+  message: string
+}
+
+export interface PixiStageEventBridge {
+  on: (eventName: string, handler: (event: unknown) => void) => void
+  off: (eventName: string, handler: (event: unknown) => void) => void
+}
+
 interface PixiStageProps {
   width: number
   height: number
-  onError?: (message: string) => void
+  onError?: (error: PixiStageError) => void
   onViewportChange?: (viewport: PixiViewportState) => void
+  onStageReady?: (stage: PixiStageEventBridge | null) => void
 }
 
 const SEAT_STYLE = new TextStyle({ fontSize: 9, fill: '#1F2937', fontFamily: 'Inter,sans-serif', fontWeight: '600' })
@@ -69,7 +82,7 @@ function deptColor(dept: string | null): number {
   return PALETTE[h % PALETTE.length]
 }
 
-export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function PixiStage({ width, height, onError, onViewportChange }, ref) {
+export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function PixiStage({ width, height, onError, onViewportChange, onStageReady }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const appRef = useRef<Application | null>(null)
   const worldRef = useRef<Viewport | null>(null)
@@ -203,6 +216,7 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
     }).then(() => {
       if (dead) { app.destroy(); return }
       appRef.current = app
+      onStageReady?.(app.stage as unknown as PixiStageEventBridge)
 
       // ── Layer stack ──────────────────────────────────────────────────
       const world = new Viewport({
@@ -322,7 +336,11 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
             buildFailureRef.current += failures
             if (buildFailureRef.current >= 3) {
               console.error('[PixiStage] Repeated element build failures')
-              onError?.('Pixi could not draw some elements. The preview is still open so we can inspect it.')
+              onError?.({
+                severity: 'fatal',
+                code: 'pixi-build-failure',
+                message: 'Pixi could not draw some elements. Falling back to the stable renderer.',
+              })
               buildFailureRef.current = 0
             }
           } else {
@@ -336,7 +354,11 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
             drawOverrunRef.current += 1
             if (drawOverrunRef.current >= 6) {
               console.warn('[PixiStage] Repeated slow frames', { elapsed })
-              onError?.('Pixi is rendering slowly. It will stay open instead of falling back to 2D.')
+              onError?.({
+                severity: 'warning',
+                code: 'pixi-slow-frames',
+                message: 'Pixi is rendering slowly. The preview is still open.',
+              })
               drawOverrunRef.current = 0
             }
           } else {
@@ -376,11 +398,16 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
     }).catch((error) => {
       if (dead) return
       console.error('[PixiStage] Failed to initialize Pixi', error)
-      onError?.('Pixi failed to initialize in this browser context.')
+      onError?.({
+        severity: 'fatal',
+        code: 'pixi-init-failure',
+        message: 'Pixi failed to initialize in this browser context.',
+      })
     })
 
     return () => {
       dead = true
+      onStageReady?.(null)
       if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
       if (viewportPublishRafRef.current !== null) { cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current = null }
       const a = appRef.current as (Application & { _c?: () => void }) | null
@@ -507,6 +534,8 @@ function buildEl(
   const w = Number.isFinite(el.width) ? Math.max(0, el.width) : 0
   const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
   const c = new Container()
+  c.label = createPixiNodeId(el.id)
+  c.name = createPixiNodeId(el.id)
   const centerAnchored = isCenterAnchoredElement(el)
   c.x = el.x
   c.y = el.y
