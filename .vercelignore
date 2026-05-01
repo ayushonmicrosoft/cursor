@@ -1,0 +1,11 @@
+audit
+root
+.codex-logs
+docs
+docs-site
+pland
+supabase
+dev-server.log
+dev-server.err.log
+lighthouse-report.html
+lighthouse-report.json
