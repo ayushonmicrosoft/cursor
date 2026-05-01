@@ -528,6 +528,8 @@ function buildEl(
     renderTable(g, el as Parameters<typeof renderTable>[1], sel)
   } else if (ROOM_BLOCK_TYPES.has(t)) {
     renderRoom(c, el as Parameters<typeof renderRoom>[1], sel)
+  } else if (['sofa','plant','printer','whiteboard','decor','ellipse','line-shape','rect-shape'].includes(t)) {
+    renderFurniture(g, el, sel)
   } else {
     if (w > 0 && h > 0) {
       const f = parsePixiColor(el.style?.fill, 0x9ca3af)
