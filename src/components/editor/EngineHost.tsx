@@ -5,6 +5,7 @@ import { useToastStore } from '../../stores/toastStore'
 import { MapView } from './MapView'
 import { PixiPreviewPage } from './PixiPreviewPage'
 import type { RenderEngineId } from '../../stores/uiStore'
+import { ENGINE_ROUTE_POLICIES, type EngineRoutePolicyId } from './engineRoutePolicy'
 
 interface EngineRenderBoundaryProps {
   children: ReactNode
@@ -34,21 +35,31 @@ class EngineRenderBoundary extends Component<EngineRenderBoundaryProps, { hasErr
 }
 
 interface EngineHostProps {
+  routePolicyId?: EngineRoutePolicyId
   preferredEngine?: RenderEngineId
 }
 
 interface EngineHostBaseProps extends EngineHostProps {
-  navigateToMap?: () => void
+  navigateToRoute?: (route: string) => void
 }
 
-function EngineHostBase({ preferredEngine, navigateToMap }: EngineHostBaseProps = {}) {
+function resolveRoutePolicy(routePolicyId?: EngineRoutePolicyId, preferredEngine?: RenderEngineId) {
+  if (routePolicyId) return ENGINE_ROUTE_POLICIES[routePolicyId]
+  if (preferredEngine === 'konva') return ENGINE_ROUTE_POLICIES.map
+  if (preferredEngine === 'pixi') return ENGINE_ROUTE_POLICIES.pixi
+  return null
+}
+
+function EngineHostBase({ routePolicyId, preferredEngine, navigateToRoute }: EngineHostBaseProps = {}) {
   const renderEngine = useUIStore((s) => s.renderEngine)
   const setRenderEngine = useUIStore((s) => s.setRenderEngine)
   const setViewMode = useUIStore((s) => s.setViewMode)
   const hasFallenBackRef = useRef(false)
+  const routePolicy = resolveRoutePolicy(routePolicyId, preferredEngine)
+  const routePreferredEngine = routePolicy?.preferredEngine ?? preferredEngine
 
-  const [preferRouteEngine, setPreferRouteEngine] = useState(Boolean(preferredEngine))
-  const effectiveEngine = preferRouteEngine ? preferredEngine ?? renderEngine : renderEngine
+  const [preferRouteEngine, setPreferRouteEngine] = useState(Boolean(routePreferredEngine))
+  const effectiveEngine = preferRouteEngine ? routePreferredEngine ?? renderEngine : renderEngine
 
   useEffect(() => {
     if (effectiveEngine === 'pixi') {
@@ -57,29 +68,29 @@ function EngineHostBase({ preferredEngine, navigateToMap }: EngineHostBaseProps 
   }, [effectiveEngine])
 
   useEffect(() => {
-    setPreferRouteEngine(Boolean(preferredEngine))
-  }, [preferredEngine])
+    setPreferRouteEngine(Boolean(routePreferredEngine))
+  }, [routePreferredEngine])
 
   useEffect(() => {
-    if (!preferredEngine || !preferRouteEngine) return
-    if (renderEngine !== preferredEngine) {
-      setRenderEngine(preferredEngine)
+    if (!routePreferredEngine || !preferRouteEngine) return
+    if (renderEngine !== routePreferredEngine) {
+      setRenderEngine(routePreferredEngine)
     }
-  }, [preferredEngine, preferRouteEngine, renderEngine, setRenderEngine])
+  }, [routePreferredEngine, preferRouteEngine, renderEngine, setRenderEngine])
 
   const fallbackToKonva = useCallback((reason: string) => {
     if (hasFallenBackRef.current) return
     hasFallenBackRef.current = true
     setPreferRouteEngine(false)
     setViewMode('2d')
-    setRenderEngine('konva')
-    if (preferredEngine === 'pixi') navigateToMap?.()
+    setRenderEngine(routePolicy?.fallbackEngine ?? 'konva')
+    if (routePolicy?.fallbackRoute) navigateToRoute?.(routePolicy.fallbackRoute)
     useToastStore.getState().push({
       tone: 'warning',
       title: 'Switched to Konva for stability.',
       body: reason,
     })
-  }, [navigateToMap, preferredEngine, setRenderEngine, setViewMode])
+  }, [navigateToRoute, routePolicy?.fallbackEngine, routePolicy?.fallbackRoute, setRenderEngine, setViewMode])
 
   if (effectiveEngine === 'pixi') {
     return (
@@ -96,11 +107,11 @@ function EngineHostBase({ preferredEngine, navigateToMap }: EngineHostBaseProps 
 
 function EngineHostWithRouter(props: EngineHostProps) {
   const navigate = useNavigate()
-  const navigateToMap = useCallback(() => {
-    navigate('../map', { replace: true })
+  const navigateToRoute = useCallback((route: string) => {
+    navigate(route, { replace: true })
   }, [navigate])
 
-  return <EngineHostBase {...props} navigateToMap={navigateToMap} />
+  return <EngineHostBase {...props} navigateToRoute={navigateToRoute} />
 }
 
 export function EngineHost(props: EngineHostProps = {}) {

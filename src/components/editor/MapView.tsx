@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState, type ComponentType } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CanvasStage } from './Canvas/CanvasStage'
 import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
 import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 import { KonvaToolbarHost } from './konva/KonvaToolbarHost'
-import { KonvaViewport, type KonvaThreeDEntryProps } from './konva/KonvaViewport'
+import { KonvaViewport } from './konva/KonvaViewport'
+import { useView3DEntry } from './view3d/useView3DEntry'
 import { useUIStore } from '../../stores/uiStore'
 import {
   normalizeNorthArrowVisibility,
@@ -48,8 +49,7 @@ export function MapView() {
   const elements = useElementsStore((s) => s.elements)
   const [searchParams, setSearchParams] = useSearchParams()
   const [viewportWidth, setViewportWidth] = useState(() => readViewportWidth())
-  const [ThreeDEntry, setThreeDEntry] = useState<ComponentType<KonvaThreeDEntryProps> | null>(null)
-  const [threeDLoadFailed, setThreeDLoadFailed] = useState(false)
+  const { ThreeDEntry, threeDLoadFailed, setThreeDLoadFailed } = useView3DEntry(viewMode)
   const previousSelectionCountRef = useRef(selectedIds.length)
   const collapsedSidebarForCompactRef = useRef(false)
   const wasCompactEditorRef = useRef(viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX)
@@ -134,32 +134,6 @@ export function MapView() {
       setCanvasSettings(next)
     }
   }, [northRotationRaw, setCanvasSettings, showNorthArrowRaw])
-
-  useEffect(() => {
-    if (viewMode !== '2.5d' || ThreeDEntry || threeDLoadFailed) return
-    let active = true
-    ;(async () => {
-      try {
-        const mod = await import(
-          /* @vite-ignore */ './view3d'
-        )
-        const entry =
-          (mod as { default?: ComponentType<KonvaThreeDEntryProps>; View3DCanvas?: ComponentType<KonvaThreeDEntryProps> }).default ??
-          (mod as { View3DCanvas?: ComponentType<KonvaThreeDEntryProps> }).View3DCanvas
-        if (active && entry) {
-          setThreeDEntry(() => entry)
-          setThreeDLoadFailed(false)
-        } else if (active) {
-          setThreeDLoadFailed(true)
-        }
-      } catch {
-        if (active) setThreeDLoadFailed(true)
-      }
-    })()
-    return () => {
-      active = false
-    }
-  }, [ThreeDEntry, threeDLoadFailed, viewMode])
 
   useEffect(() => {
     const seatId = searchParams.get('seat')

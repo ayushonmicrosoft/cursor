@@ -178,8 +178,8 @@ function App() {
             >
               <Route index element={<Navigate to="engine" replace />} />
               <Route path="engine" element={<EngineChooserPage />} />
-              <Route path="map" element={<EngineHost preferredEngine="konva" />} />
-              <Route path="pixi" element={<EngineHost preferredEngine="pixi" />} />
+              <Route path="map" element={<EngineHost routePolicyId="map" />} />
+              <Route path="pixi" element={<EngineHost routePolicyId="pixi" />} />
               <Route path="roster" element={<RosterPage />} />
 
               <Route path="reports" element={<ReportsPage />} />
