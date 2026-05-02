@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useWindowSize } from '../../hooks/useWindowSize'
 import {
   AlertCircle,
   ArrowUpDown,
@@ -177,6 +178,8 @@ export function RosterPage() {
   const equipFilter = searchParams.get('equip') ?? ''
   // `view` controls layout (list vs. cards) and is deliberately kept out of
   // `hasAnyFilter` — switching to cards doesn't hide people, so the "Clear
+  const { width: viewportWidth } = useWindowSize()
+
   // filters" button shouldn't appear just because the user picked cards.
   // View mode: explicit URL param takes precedence, then auto-detect narrow screens
   const viewMode: ViewMode = useMemo(() => {
@@ -184,9 +187,9 @@ export function RosterPage() {
     if (urlValue === 'cards') return 'cards'
     if (urlValue === 'list') return 'list'
     // Auto-switch to cards on narrow screens (<640px) for better UX
-    if (typeof window !== 'undefined' && window.innerWidth < 640) return 'cards'
+    if (viewportWidth < 640) return 'cards'
     return 'list'
-  }, [searchParams])
+  }, [searchParams, viewportWidth])
   const hasAnyFilter = Boolean(
     q || deptFilter || statusFilter || floorFilter || seatFilter || dayFilter || presetFilter || equipFilter,
   )

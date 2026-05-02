@@ -37,7 +37,6 @@ import {
   Maximize,
   PlaySquare,
   Menu,
-  ChevronDown,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
