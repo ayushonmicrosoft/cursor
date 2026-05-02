@@ -16,9 +16,16 @@ vi.mock('../lib/offices/officeRepository', () => ({
 // pattern that vi.mock's factory return type infers.
 type Selector<S> = ((s: S) => unknown) | undefined
 function makeStoreHook<S>(state: S) {
-  return ((sel: Selector<S>) => (sel ? sel(state) : state)) as unknown as (
-    sel?: Selector<S>,
-  ) => unknown
+  const hook = ((sel: Selector<S>) => (sel ? sel(state) : state)) as unknown as {
+    (sel?: Selector<S>): unknown
+    getState: () => S
+    setState: (u: Partial<S> | ((s: S) => Partial<S>)) => void
+  }
+  hook.getState = () => state
+  hook.setState = (u) => {
+    Object.assign(state as object, typeof u === 'function' ? u(state) : u)
+  }
+  return hook
 }
 
 vi.mock('../stores/elementsStore', () => ({
@@ -28,7 +35,11 @@ vi.mock('../stores/employeeStore', () => ({
   useEmployeeStore: makeStoreHook({ employees: {}, departmentColors: {} }),
 }))
 vi.mock('../stores/floorStore', () => ({
-  useFloorStore: makeStoreHook({ floors: [], activeFloorId: null }),
+  useFloorStore: makeStoreHook({
+    floor: { id: 'default', name: 'Main Floor', order: 0, elements: {} },
+    floors: [],
+    activeFloorId: 'default',
+  }),
 }))
 vi.mock('../stores/canvasStore', () => ({
   useCanvasStore: makeStoreHook({ settings: {} }),

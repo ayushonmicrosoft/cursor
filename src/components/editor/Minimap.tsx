@@ -184,10 +184,6 @@ export function Minimap() {
   // Selected-ids is needed for the background tile split, but NOT for
   // the viewport indicator, so we subscribe here and pass down.
   const selectedIds = useUIStore((s) => s.selectedIds)
-  // Toggle from the floating CanvasActionDock. When the operator hides the
-  // minimap, render nothing — the dock keeps its own toggle button visible
-  // so the user can bring it back without hunting through a menu.
-  const minimapVisible = useUIStore((s) => s.dockableToolbarVisibility['minimap'] ?? true)
   const { setStagePosition } = useCanvasStore(
     useShallow((s) => ({ setStagePosition: s.setStagePosition })),
   )
@@ -314,8 +310,6 @@ export function Minimap() {
     return () => stopDragging()
   }, [stopDragging])
 
-  // if (!minimapVisible) return null
-
   // When collapsed we render a tight 40x40 handle that just holds the
   // expand button — no SVG, no pointer-pan plumbing to worry about. The
   // user can still toggle the global minimap visibility from the action
@@ -333,7 +327,7 @@ export function Minimap() {
         role="region"
         aria-label="Canvas overview"
         data-minimap-anchor="bottom-right-offset"
-        className="cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900"
+        className={`${MINIMAP_ANCHOR_CLASS} cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900`}
         style={{ width: COLLAPSED_SIZE, height: COLLAPSED_SIZE }}
       >
         <button
@@ -363,7 +357,7 @@ export function Minimap() {
         role="region"
       aria-label="Canvas overview"
       data-minimap-anchor="bottom-right-offset"
-      className="cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900"
+      className={`${MINIMAP_ANCHOR_CLASS} cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900`}
       style={{ width: MINIMAP_WIDTH, height: MINIMAP_HEIGHT }}
       onPointerDown={handlePointerDown}
     >

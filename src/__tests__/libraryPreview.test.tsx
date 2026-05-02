@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { LibraryPreview } from '../components/editor/LeftSidebar/LibraryPreview'
-import type { LibraryItem } from '../components/editor/LeftSidebar/ElementLibrary'
+import type { LibraryItem } from '../components/editor/LeftSidebar/elementLibraryModel'
 
 function snap(item: LibraryItem) {
   const { container } = render(<LibraryPreview item={item} />)

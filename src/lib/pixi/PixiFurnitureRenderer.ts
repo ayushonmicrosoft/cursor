@@ -27,7 +27,6 @@ export function renderFurniture(g: Graphics, el: CanvasElement, selected: boolea
     const innerCushionW = Math.max(8, w - innerPadX * 2)
     const backrestH = Math.max(5, h * 0.3)
     const seamW = Math.max(10, w * 0.32)
-    const seamH = Math.max(2, h * 0.08)
 
     // Main cushion
     g.roundRect(0, 0, w, h, 1).fill({ color: fill }).stroke({ color: sColor, width: sw })

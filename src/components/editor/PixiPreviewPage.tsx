@@ -4,6 +4,7 @@ import { useUIStore } from '../../stores/uiStore'
 import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 import { PixiToolbarHost } from './pixi/PixiToolbarHost'
 import { PixiViewport } from './pixi/PixiViewport'
+import { classifyPixiError } from './pixiPreviewErrorModel'
 import type { PixiStageError, PixiStageHandle, PixiViewportState } from './Canvas/PixiStage'
 
 const PIXI_INSPECTION_MIN_WIDTH_PX = 375
@@ -15,16 +16,6 @@ function readViewportWidth(): number {
 
 interface PixiPreviewPageProps {
   onEngineFailure?: (reason: string) => void
-}
-
-export function classifyPixiError(error: PixiStageError): {
-  message: string
-  shouldFallback: boolean
-} {
-  return {
-    message: error.message,
-    shouldFallback: error.severity === 'fatal',
-  }
 }
 
 export function PixiPreviewPage({ onEngineFailure }: PixiPreviewPageProps = {}) {

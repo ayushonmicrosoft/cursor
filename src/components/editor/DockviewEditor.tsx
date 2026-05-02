@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { DockviewReact } from 'dockview-react'
-import type { DockviewReadyEvent } from 'dockview-react'
+import type { AddPanelPositionOptions, DockviewReadyEvent } from 'dockview-react'
 import { ToolSelector } from './LeftSidebar/ToolSelector'
 import { LayerVisibilityPanel } from './LeftSidebar/LayerVisibilityPanel'
 import { ElementLibrary } from './LeftSidebar/ElementLibrary'
@@ -45,7 +45,7 @@ export function DockviewEditor() {
       id: 'tools',
       component: 'tools',
       title: 'Tools',
-      position: { referencePanel: canvasPanel, direction: 'left' } as any,
+      position: { referencePanel: canvasPanel, direction: 'left' } satisfies AddPanelPositionOptions,
     })
 
     // Add Layers below Tools
@@ -53,7 +53,7 @@ export function DockviewEditor() {
       id: 'layers',
       component: 'layers',
       title: 'Layers',
-      position: { referencePanel: toolsPanel, direction: 'bottom' } as any,
+      position: { referencePanel: toolsPanel, direction: 'below' } satisfies AddPanelPositionOptions,
     })
 
     // Add Library below Layers
@@ -61,7 +61,7 @@ export function DockviewEditor() {
       id: 'library',
       component: 'library',
       title: 'Library',
-      position: { referencePanel: 'layers', direction: 'bottom' } as any,
+      position: { referencePanel: 'layers', direction: 'below' } satisfies AddPanelPositionOptions,
     })
 
     // Add Properties to the right of Canvas
@@ -69,7 +69,7 @@ export function DockviewEditor() {
       id: 'rightSidebar',
       component: 'rightSidebar',
       title: 'Properties',
-      position: { referencePanel: canvasPanel, direction: 'right' } as any,
+      position: { referencePanel: canvasPanel, direction: 'right' } satisfies AddPanelPositionOptions,
     })
   }, [])
 

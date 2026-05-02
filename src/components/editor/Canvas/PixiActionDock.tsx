@@ -8,7 +8,6 @@ import {
   Minus,
   Plus,
   Paintbrush,
-  MapIcon,
   PlaySquare
 } from 'lucide-react'
 import { DockableToolbar } from '../DockableToolbar'

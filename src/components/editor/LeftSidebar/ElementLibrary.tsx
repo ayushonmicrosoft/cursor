@@ -11,7 +11,6 @@ import {
   Upload,
   X,
 } from 'lucide-react'
-import { TABLE_SEAT_DEFAULTS, getDefaults } from '../../../lib/constants'
 import { LibraryPreview } from './LibraryPreview'
 import { Input } from '../../ui/Input'
 import { useRecentLibraryItems } from '../../../hooks/useRecentLibraryItems'
@@ -25,55 +24,11 @@ import {
   clearRecents as clearRecentsStorage,
   getRecents as readPersistedRecents,
 } from '../../../lib/elementLibraryRecents'
-import type {
-  ElementType,
-  TableType,
-  TableElement,
-  BaseElement,
-  DeskElement,
-  WorkstationElement,
-  PrivateOfficeElement,
-  ConferenceRoomElement,
-  PhoneBoothElement,
-  CommonAreaElement,
-  DecorElement,
-  DecorShape,
-  CustomSvgElement,
-} from '../../../types/elements'
+import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem } from './elementLibraryModel'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useCan } from '../../../hooks/useCan'
-import { computeSeatPositions } from '../../../lib/seatLayout'
-import { nextSeatNumber } from '../../../lib/seatNumbering'
 
-export interface LibraryItem {
-  type: ElementType
-  label: string
-  category: string
-  shape?: string    // NEW — optional shape override
-  /** Only present when type === 'custom-svg'. Inline sanitised SVG source. */
-  svgSource?: string
-  /** Only present when type === 'custom-svg'. Stable id of the custom shape
-   *  so the library tile and the stored shape stay linked (used by the
-   *  "×" delete button on the tile). */
-  customShapeId?: string
-}
-
-/**
- * Mime type carried on the HTML5 drag payload when a library tile is
- * dragged onto the canvas. CanvasStage checks for this mime to distinguish
- * library drags from employee-assignment drags (which use
- * `application/employee-id`).
- */
-export const LIBRARY_DRAG_MIME = 'application/floocraft-element-type'
-
-/**
- * Short, file-local copy keyed by `tileKey(item)` (i.e. `type[/shape]`).
- * Used by the hover tooltip — the action records themselves don't carry a
- * `description` field, and we deliberately do not extend `LibraryItem`
- * with one to keep the persisted shape stable. Missing entries fall back
- * to a generic single-line tooltip in the renderer.
- */
 const TILE_DESCRIPTIONS: Record<string, string> = {
   'table-rect': 'Rectangular meeting or work table.',
   'table-conference': 'Long conference table with seats around the edges.',
@@ -112,14 +67,40 @@ const TILE_DESCRIPTIONS: Record<string, string> = {
   'decor/locker': 'Bank of personal lockers.',
   'decor/credenza': 'Low storage credenza.',
   'decor/printer-bay': 'Dedicated area for printers and copiers.',
+  'kit/bench-2': 'Two-seat bench pod with assignable positions and a shared divider.',
+  'kit/bench-4': 'Four-seat bench pod with assignable positions and a shared divider.',
+  'kit/bench-6': 'Six-seat bench pod arranged as grouped bench runs.',
+  'kit/bench-8': 'Eight-seat bench pod arranged as grouped bench runs.',
+  'kit/sit-stand': 'Single sit-stand workstation with one assignable seat.',
+  'kit/premium-chair': 'Standalone premium task chair silhouette for planning layouts.',
+  'kit/huddle-room': 'Small huddle room with room capacity, table, and chairs grouped together.',
+  'kit/boardroom': 'Boardroom kit with room capacity and a large meeting table.',
+  'kit/focus-pod-row': 'Row of grouped one-person focus pods.',
+  'kit/lounge': 'Modular lounge setting with sofa, armchairs, table, and plant.',
+  'kit/reception': 'Reception setting with desk, seating, and planter grouped together.',
+  'kit/copy-zone': 'Printer / copy zone with printer, storage, and counter elements.',
 }
 
 /** Same key shape as the recents helper so descriptions follow shape variants. */
 function tileKey(item: LibraryItem): string {
+  if (item.kit) return `kit/${item.kit}`
   return `${item.type}${item.shape ? `/${item.shape}` : ''}`
 }
 
 const LIBRARY_ITEMS: LibraryItem[] = [
+  { type: 'workstation', label: '2-seat bench pod', category: 'Catalog Kits', kit: 'bench-2', capacity: 2, dimensions: { width: 12, height: 6, unit: 'ft' } },
+  { type: 'workstation', label: '4-seat bench pod', category: 'Catalog Kits', kit: 'bench-4', capacity: 4, dimensions: { width: 20, height: 6, unit: 'ft' } },
+  { type: 'workstation', label: '6-seat bench pod', category: 'Catalog Kits', kit: 'bench-6', capacity: 6, dimensions: { width: 24, height: 12, unit: 'ft' } },
+  { type: 'workstation', label: '8-seat bench pod', category: 'Catalog Kits', kit: 'bench-8', capacity: 8, dimensions: { width: 32, height: 12, unit: 'ft' } },
+  { type: 'desk', label: 'Sit-stand workstation', category: 'Catalog Kits', kit: 'sit-stand', capacity: 1, dimensions: { width: 5, height: 2.5, unit: 'ft' } },
+  { type: 'chair', label: 'Premium task chair', category: 'Catalog Kits', kit: 'premium-chair', capacity: 1, dimensions: { width: 28, height: 28, unit: 'in' } },
+  { type: 'conference-room', label: 'Small huddle room', category: 'Catalog Kits', kit: 'huddle-room', capacity: 4, dimensions: { width: 10, height: 10, unit: 'ft' } },
+  { type: 'conference-room', label: 'Boardroom kit', category: 'Catalog Kits', kit: 'boardroom', capacity: 12, dimensions: { width: 20, height: 14, unit: 'ft' } },
+  { type: 'phone-booth', label: 'Focus pod row', category: 'Catalog Kits', kit: 'focus-pod-row', capacity: 3, dimensions: { width: 17, height: 6, unit: 'ft' } },
+  { type: 'common-area', label: 'Modular lounge setting', category: 'Catalog Kits', kit: 'lounge', capacity: 5, dimensions: { width: 15, height: 11, unit: 'ft' } },
+  { type: 'decor', label: 'Reception setting', category: 'Catalog Kits', kit: 'reception', capacity: 3, dimensions: { width: 15, height: 10, unit: 'ft' } },
+  { type: 'printer', label: 'Printer / copy zone', category: 'Catalog Kits', kit: 'copy-zone', dimensions: { width: 10, height: 7, unit: 'ft' } },
+
   // Tables
   { type: 'table-rect',        label: 'Rect Table',     category: 'Tables' },
   { type: 'table-conference',  label: 'Conf. Table',    category: 'Tables' },
@@ -177,176 +158,8 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   { type: 'text-label',        label: 'Text Label',      category: 'Other' },
 ]
 
-function isTableType(type: ElementType): type is TableType {
-  return type === 'table-rect' || type === 'table-conference' || type === 'table-round' || type === 'table-oval'
-}
-
-type AnyLibraryElement =
-  | TableElement
-  | DeskElement
-  | WorkstationElement
-  | PrivateOfficeElement
-  | ConferenceRoomElement
-  | PhoneBoothElement
-  | CommonAreaElement
-  | DecorElement
-  | BaseElement
-
-/**
- * Build (but do not insert) an element from a library item at the given
- * canvas-space coords. Extracted so the click-to-add path (centres in the
- * current viewport) and the drag-to-canvas path (drops at the cursor)
- * share the exact same factory — keep this pure so it can be called from
- * the library tile click handler or from CanvasStage's drop handler.
- *
- * Lives next to the component because it's a one-caller helper; the
- * fast-refresh warning is a non-issue (no hot-reload surface worth
- * splitting a file for).
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export function buildLibraryElement(
-  item: LibraryItem,
-  x: number,
-  y: number,
-  zIndex: number,
-  /**
-   * Current floor's elements — passed in so the assignable-element
-   * branches can hand out a sequential `deskId` ("1", "2", "3" …).
-   * Omitting this (callers from tests, etc.) falls back to `"1"`.
-   */
-  existingElements: Record<string, import('../../../types/elements').CanvasElement> = {},
-): AnyLibraryElement {
-  const defaults = getDefaults(item.type, item.shape) || { width: 60, height: 60, fill: '#F3F4F6', stroke: '#6B7280' }
-  const id = crypto.randomUUID()
-
-  const baseProps = {
-    id,
-    x,
-    y,
-    width: defaults.width,
-    height: defaults.height,
-    rotation: 0,
-    locked: false,
-    groupId: null,
-    zIndex,
-    label: item.label,
-    visible: true,
-    style: { fill: defaults.fill, stroke: defaults.stroke, strokeWidth: 1.4, opacity: 1 },
-  } as const
-
-  if (isTableType(item.type)) {
-    const seatCount = TABLE_SEAT_DEFAULTS[item.type] || 6
-    const layout = item.type === 'table-conference' || item.type === 'table-round' || item.type === 'table-oval' ? 'around' as const : 'both-sides' as const
-    const element: TableElement = {
-      ...baseProps,
-      type: item.type,
-      seatCount,
-      seatLayout: layout,
-      seats: computeSeatPositions(item.type, seatCount, layout, defaults.width, defaults.height),
-    }
-    return element
-  }
-
-  if (item.type === 'desk' || item.type === 'hot-desk') {
-    // Sequential "1", "2", "3"… per floor — see `nextSeatNumber` for the
-    // scoping rules. Workstations and private offices use the same
-    // counter so we never hand out "W-4" while a desk is also "4".
-    const deskId = nextSeatNumber(existingElements)
-    const element: DeskElement = {
-      ...baseProps,
-      type: item.type,
-      deskId,
-      assignedEmployeeId: null,
-      capacity: 1,
-      ...(item.shape ? { shape: item.shape as DeskElement['shape'] } : {}),
-    }
-    return element
-  }
-
-  if (item.type === 'workstation') {
-    const deskId = nextSeatNumber(existingElements)
-    const positions = 4
-    const element: WorkstationElement = {
-      ...baseProps,
-      type: 'workstation',
-      deskId,
-      positions,
-      // Sparse positional array — one `null` per slot. The renderer
-      // and per-slot drop logic expect length === `positions`, so we
-      // initialise that invariant at construction time.
-      assignedEmployeeIds: Array.from({ length: positions }, () => null),
-    }
-    return element
-  }
-
-  if (item.type === 'private-office') {
-    const deskId = nextSeatNumber(existingElements)
-    const element: PrivateOfficeElement = {
-      ...baseProps,
-      type: 'private-office',
-      deskId,
-      capacity: item.shape === 'u-shape' ? 2 : 1,
-      assignedEmployeeIds: [],
-      ...(item.shape ? { shape: item.shape as PrivateOfficeElement['shape'] } : {}),
-    }
-    return element
-  }
-
-  if (item.type === 'conference-room') {
-    const element: ConferenceRoomElement = {
-      ...baseProps,
-      type: 'conference-room',
-      roomName: 'Conference Room',
-      capacity: 8,
-    }
-    return element
-  }
-
-  if (item.type === 'phone-booth') {
-    const element: PhoneBoothElement = {
-      ...baseProps,
-      type: 'phone-booth',
-    }
-    return element
-  }
-
-  if (item.type === 'common-area') {
-    const element: CommonAreaElement = {
-      ...baseProps,
-      type: 'common-area',
-      areaName: 'Common Area',
-    }
-    return element
-  }
-
-  if (item.type === 'decor') {
-    const el: DecorElement = {
-      ...baseProps,
-      type: 'decor',
-      shape: item.shape as DecorShape,
-    } as DecorElement
-    return el
-  }
-
-  if (item.type === 'custom-svg' && item.svgSource) {
-    const el: CustomSvgElement = {
-      ...baseProps,
-      type: 'custom-svg',
-      svgSource: item.svgSource,
-    }
-    return el
-  }
-
-  // Default: generic BaseElement for chair, counter, divider, planter, custom-shape, text-label
-  const element: BaseElement = {
-    ...baseProps,
-    type: item.type,
-  }
-  return element
-}
-
 function itemKey(item: LibraryItem): string {
-  return `${item.type}${item.shape ? `-${item.shape}` : ''}-${item.label}`
+  return `${item.kit ? `kit-${item.kit}` : item.type}${item.shape ? `-${item.shape}` : ''}-${item.label}`
 }
 
 interface LibraryTileProps {
@@ -386,6 +199,8 @@ function LibraryTile({
   // one whose `dragstart` fired, so a tile-local boolean is the cleanest
   // representation. `dragend` clears it whether or not the drop succeeded.
   const [isDragging, setIsDragging] = useState(false)
+  const capacityBadge = formatCapacity(item.capacity)
+  const dimensionBadge = formatDimensions(item.dimensions)
 
   const handleStarClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault()
@@ -449,7 +264,17 @@ function LibraryTile({
         className="flex min-w-0 flex-1 items-center gap-1.5 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       >
         <LibraryPreview item={item} />
-        <span className="block min-w-0 truncate">{item.label}</span>
+        <span className="block min-w-0 flex-1 truncate">{item.label}</span>
+        {capacityBadge && (
+          <span className="shrink-0 rounded bg-blue-50 dark:bg-blue-950/50 px-1 py-0.5 text-[9px] font-medium text-blue-700 dark:text-blue-300">
+            {capacityBadge}
+          </span>
+        )}
+        {!capacityBadge && dimensionBadge && (
+          <span className="shrink-0 rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 text-[9px] font-medium text-gray-500 dark:text-gray-400">
+            {dimensionBadge}
+          </span>
+        )}
       </button>
       {onDelete ? (
         <button
@@ -728,6 +553,17 @@ export function ElementLibrary() {
     e.target.value = ''
     if (!file) return
 
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+    if (['dxf', 'dwg', 'ifc', 'rvt'].includes(ext)) {
+      setUploadError(`${ext.toUpperCase()} import is coming soon. Export or convert to SVG for now.`)
+      return
+    }
+
+    if (ext !== 'svg' && file.type !== 'image/svg+xml') {
+      setUploadError('Only SVG import is supported today. CAD/BIM import is coming soon; convert to SVG for now.')
+      return
+    }
+
     if (file.size > MAX_SVG_BYTES) {
       setUploadError(`File is too large (max ${Math.round(MAX_SVG_BYTES / 1024)}KB).`)
       return
@@ -780,7 +616,7 @@ export function ElementLibrary() {
     // Read elements via getState() so we don't re-subscribe the component
     // to the whole map just to auto-number a new seat.
     const existing = useElementsStore.getState().elements
-    addElement(buildLibraryElement(item, x, y, getMaxZIndex() + 1, existing))
+    buildLibraryElements(item, x, y, getMaxZIndex() + 1, existing).forEach((element) => addElement(element))
     bumpRecent(item)
   }
 
@@ -820,7 +656,8 @@ export function ElementLibrary() {
       customShapes.map((s) => ({
         type: 'custom-svg' as const,
         label: s.name,
-        category: 'My Shapes',
+        category: 'Imported Assets',
+        dimensions: { width: 80, height: 80, unit: 'px' },
         svgSource: s.svgSource,
         customShapeId: s.id,
       })),
@@ -1117,8 +954,8 @@ export function ElementLibrary() {
             })}
             {customShapeItems.filter(matchesQuery).length > 0 && (
               <LibrarySection
-                id="my-shapes"
-                title="My Shapes"
+                id="imported-assets-search"
+                title="Imported Assets"
                 items={customShapeItems.filter(matchesQuery)}
                 collapsible={true}
                 onClick={handleAddElement}
@@ -1162,8 +999,8 @@ export function ElementLibrary() {
           ))}
           {customShapeItems.length > 0 && (
             <LibrarySection
-              id="my-shapes"
-              title="My Shapes"
+              id="imported-assets"
+              title="Imported Assets"
               items={customShapeItems}
               collapsible={true}
               onClick={handleAddElement}
@@ -1181,15 +1018,18 @@ export function ElementLibrary() {
               className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded border border-dashed border-gray-300 dark:border-gray-700 hover:border-gray-400 transition-colors"
             >
               <Upload size={12} aria-hidden="true" />
-              <span>Upload SVG</span>
+              <span>BIM import / SVG upload</span>
             </button>
+            <div className="mt-1 px-1 text-[10px] leading-snug text-gray-400 dark:text-gray-500">
+              SVG supported now. DXF, DWG, IFC, and RVT are staged; convert to SVG for now.
+            </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/svg+xml,.svg"
+              accept="image/svg+xml,.svg,.dxf,.dwg,.ifc,.rvt"
               onChange={handleFileChange}
               className="hidden"
-              aria-label="Upload SVG shape"
+              aria-label="Import SVG or staged CAD/BIM asset"
             />
             {uploadError && (
               <div
@@ -1258,6 +1098,8 @@ function HoverTooltip({ item, rect }: HoverTooltipProps) {
   // style flag below, so reduced-motion users see the tooltip render at
   // full opacity on first paint with no transition.
   const noMotion = prefersReducedMotion()
+  const capacityBadge = formatCapacity(item.capacity)
+  const dimensionBadge = formatDimensions(item.dimensions)
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     if (noMotion) return
@@ -1277,6 +1119,12 @@ function HoverTooltip({ item, rect }: HoverTooltipProps) {
       style={{ top, left, width: TOOLTIP_WIDTH, opacity }}
     >
       <div className="font-medium mb-0.5">{item.label}</div>
+      {(capacityBadge || dimensionBadge) && (
+        <div className="mb-1 flex flex-wrap gap-1">
+          {capacityBadge && <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px]">{capacityBadge}</span>}
+          {dimensionBadge && <span className="rounded bg-white/10 dark:bg-gray-900/10 px-1.5 py-0.5 text-[10px]">{dimensionBadge}</span>}
+        </div>
+      )}
       <div className="opacity-80 leading-snug">
         {TILE_DESCRIPTIONS[tileKey(item)] ?? `${item.category} element.`}
       </div>
@@ -1300,4 +1148,16 @@ function HoverTooltip({ item, rect }: HoverTooltipProps) {
     </div>,
     document.body,
   )
+}
+
+function formatCapacity(capacity?: number | string) {
+  if (capacity === undefined || capacity === null || capacity === 0) return null
+  return typeof capacity === 'number' ? `${capacity} seat${capacity === 1 ? '' : 's'}` : capacity
+}
+
+function formatDimensions(dimensions?: LibraryItem['dimensions']) {
+  if (!dimensions) return null
+  const unit = dimensions.unit ?? 'in'
+  const suffix = unit === 'ft' ? "'" : unit === 'in' ? '"' : ` ${unit}`
+  return `${dimensions.width}${suffix} × ${dimensions.height}${suffix}`
 }

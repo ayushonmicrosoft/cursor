@@ -220,7 +220,7 @@ function isIsoDate(v: unknown): v is string {
 
 function migratePendingStatusChanges(
   raw: unknown,
-  employeeId: string,
+  _employeeId: string,
 ): PendingStatusChange[] {
   if (raw === undefined || raw === null) return []
   if (!Array.isArray(raw)) {

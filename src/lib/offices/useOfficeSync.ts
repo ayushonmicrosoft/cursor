@@ -20,7 +20,7 @@ const RETRY_DELAYS = [2000, 5000, 15000, 30000]
 export function buildCurrentPayload(): Record<string, unknown> {
   const elements = useElementsStore.getState().elements
   const { employees, departmentColors } = useEmployeeStore.getState()
-  const { floor } = useFloorStore.getState()
+  const { floor, activeFloorId } = useFloorStore.getState()
   const settings = useCanvasStore.getState().settings
   const seatHistory = useSeatHistoryStore.getState().entries
   const neighborhoods = useNeighborhoodStore.getState().neighborhoods
@@ -32,7 +32,7 @@ export function buildCurrentPayload(): Record<string, unknown> {
     employees,
     departmentColors,
     floors: [floor],
-    activeFloorId: floor.id,
+    activeFloorId: activeFloorId ?? floor.id,
     settings,
     seatHistory,
     neighborhoods,

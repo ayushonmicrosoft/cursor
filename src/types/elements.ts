@@ -62,6 +62,12 @@ export interface BaseElement {
   label: string
   visible: boolean
   zone?: string
+  catalog?: {
+    source?: 'catalog' | 'import'
+    family?: string
+    capacity?: number
+    dimensions?: { width: number; height: number; unit: string }
+  }
   style: ElementStyle
 }
 

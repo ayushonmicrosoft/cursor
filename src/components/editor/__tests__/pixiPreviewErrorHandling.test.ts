@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classifyPixiError } from '../PixiPreviewPage'
+import { classifyPixiError } from '../pixiPreviewErrorModel'
 
 describe('classifyPixiError', () => {
   it('keeps warning messages without fallback', () => {

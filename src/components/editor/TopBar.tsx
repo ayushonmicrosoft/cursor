@@ -124,7 +124,6 @@ export function TopBar() {
     setDockableToolbarMode,
     setDockableToolbarVisible,
     applyWorkspacePreset,
-    resetDockableToolbarLayout,
     resetDockableWorkspace,
   } = useUIStore(
     useShallow((s) => ({
@@ -142,7 +141,6 @@ export function TopBar() {
       setDockableToolbarMode: s.setDockableToolbarMode,
       setDockableToolbarVisible: s.setDockableToolbarVisible,
       applyWorkspacePreset: s.applyWorkspacePreset,
-      resetDockableToolbarLayout: s.resetDockableToolbarLayout,
       resetDockableWorkspace: s.resetDockableWorkspace,
     })),
   )

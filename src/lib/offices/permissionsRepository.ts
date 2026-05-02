@@ -10,6 +10,14 @@ export interface OfficePermEntry {
   isSelf: boolean
 }
 
+type TeamMemberPermissionProfile = { email: string; name: string | null }
+
+type TeamMemberPermissionRow = {
+  user_id: string
+  role: string | null
+  profiles: TeamMemberPermissionProfile | TeamMemberPermissionProfile[] | null
+}
+
 /**
  * Returns one row per team member of the office's team.
  * Roles are normalized to `edit` / `view`.
@@ -26,9 +34,9 @@ export async function listPermissions(
   
   if (error) throw error
 
-  return (members ?? []).map((m: any) => {
-    const prof = m.profiles as { email: string; name: string | null }
-    const memberRole = (m.role as string | undefined) ?? null
+  return ((members ?? []) as TeamMemberPermissionRow[]).map((m) => {
+    const prof = (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) ?? { email: '', name: null }
+    const memberRole = m.role ?? null
     const normalizedRole: OfficeRole =
       memberRole === 'view' || memberRole === 'viewer'
         ? 'view'
