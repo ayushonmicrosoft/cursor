@@ -76,6 +76,7 @@ interface CanvasState {
   setStageSize: (width: number, height: number) => void
   zoomIn: () => void
   zoomOut: () => void
+  zoomAtPoint: (x: number, y: number, scale: number) => void
   zoomToFit: (contentBounds: { x: number; y: number; width: number; height: number }, stageWidth: number, stageHeight: number) => void
   /**
    * Convenience wrapper around `zoomToFit` for the floating action dock.
@@ -120,6 +121,23 @@ function anchorZoom(
     stageScale: newScale,
     stageX: cx - worldX * newScale,
     stageY: cy - worldY * newScale,
+  }
+}
+
+function zoomAtPointInternal(
+  oldScale: number,
+  newScale: number,
+  pointX: number,
+  pointY: number,
+  stageX: number,
+  stageY: number,
+) {
+  const worldX = (pointX - stageX) / oldScale
+  const worldY = (pointY - stageY) / oldScale
+  return {
+    stageScale: newScale,
+    stageX: pointX - worldX * newScale,
+    stageY: pointY - worldY * newScale,
   }
 }
 
@@ -169,6 +187,13 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   setStageScale: (scale) =>
     set({ stageScale: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale)) }),
+
+  zoomAtPoint: (pointX, pointY, scale) => {
+    const { stageScale, stageX, stageY } = get()
+    const newScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale))
+    if (newScale === stageScale) return
+    set(zoomAtPointInternal(stageScale, newScale, pointX, pointY, stageX, stageY))
+  },
 
   setStageSize: (width, height) => {
     // Skip writes when the measurement hasn't actually changed — a

@@ -19,7 +19,7 @@ import { DimensionLayer } from './DimensionLayer'
 import { OrgChartOverlay } from '../../reports/OrgChartOverlay'
 import { SeatMapColorMode } from '../../reports/SeatMapColorMode'
 import { useWallDrawing } from '../../../hooks/useWallDrawing'
-import { ZOOM_MIN, ZOOM_MAX, ZOOM_WHEEL_SENSITIVITY } from '../../../lib/constants'
+import { ZOOM_MIN, ZOOM_MAX, ZOOM_WHEEL_SENSITIVITY, ZOOM_FACTOR } from '../../../lib/constants'
 import { isAssignableElement, isWorkstationElement } from '../../../types/elements'
 import { computeWorkstationSlotIndex } from '../../../lib/workstationSlots'
 import { elementsIntersectingRect } from '../../../lib/marquee'
@@ -86,6 +86,8 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
   const stageRef = useRef<Konva.Stage>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 800, height: 600 })
+  const canvasLongPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const canvasLongPressStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const { stageX, stageY, stageScale, setStagePosition, activeTool, settings } = useCanvasStore(useShallow((s) => ({
     stageX: s.stageX,
@@ -98,6 +100,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
   const northRotation = settings.northRotation ?? 0
 
   const { clearSelection, setContextMenu } = useUIStore(useShallow((s) => ({ clearSelection: s.clearSelection, setContextMenu: s.setContextMenu })))
+  const zoomAtPoint = useCanvasStore((s) => s.zoomAtPoint)
   const canEdit = useCan('editMap')
   // Annotations are explicitly `editMap || editRoster` — HR editors should
   // be able to leave notes on the map even though they can't move elements.
@@ -358,8 +361,20 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
 
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      if (e.evt.button === 2) {
+      if (canvasLongPressTimeoutRef.current) {
+        clearTimeout(canvasLongPressTimeoutRef.current)
+        canvasLongPressTimeoutRef.current = null
+      }
+
+      const stage = stageRef.current
+      if (!stage) return
+
+      if (
+        (e.evt.button === 2 || (e.evt.button === 0 && (e.evt.ctrlKey || e.evt.metaKey))) &&
+        e.target === stage
+      ) {
         e.evt.preventDefault()
+        clearSelection()
         setContextMenu({ x: e.evt.clientX, y: e.evt.clientY, elementId: null })
         return
       }
@@ -895,6 +910,11 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
 
   // Clear the ghost when the cursor leaves the canvas so it doesn't linger.
   const handleMouseLeave = useCallback(() => {
+    if (canvasLongPressTimeoutRef.current) {
+      clearTimeout(canvasLongPressTimeoutRef.current)
+      canvasLongPressTimeoutRef.current = null
+    }
+    canvasLongPressStartPosRef.current = null
     if (ghostCursor) setGhostCursor(null)
     // If the user dragged out of the canvas mid-pan, reset our pan state so
     // the next mouseup outside the canvas doesn't leave the cursor stuck on
@@ -941,6 +961,61 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
     // the live rubberband anchor is stale the moment the pointer leaves.
     useCalibrateScaleStore.getState().clearCursor()
   }, [ghostCursor])
+
+  const handleTouchStart = useCallback(
+    (e: Konva.KonvaEventObject<TouchEvent>) => {
+      if (e.evt.touches.length === 1 && e.target === e.target.getStage()) {
+        canvasLongPressStartPosRef.current = {
+          x: e.evt.touches[0].clientX,
+          y: e.evt.touches[0].clientY,
+        }
+        canvasLongPressTimeoutRef.current = setTimeout(() => {
+          if (canvasLongPressStartPosRef.current) {
+            const start = canvasLongPressStartPosRef.current
+            clearSelection()
+            setContextMenu({ x: start.x, y: start.y, elementId: null })
+            canvasLongPressStartPosRef.current = null
+          }
+        }, 500)
+      } else if (e.evt.touches.length > 1 && canvasLongPressTimeoutRef.current) {
+        clearTimeout(canvasLongPressTimeoutRef.current)
+        canvasLongPressTimeoutRef.current = null
+        canvasLongPressStartPosRef.current = null
+      }
+    },
+    [clearSelection, setContextMenu]
+  )
+
+  const handleTouchMove = useCallback(
+    (e: Konva.KonvaEventObject<TouchEvent>) => {
+      if (
+        canvasLongPressTimeoutRef.current &&
+        e.evt.touches.length === 1 &&
+        canvasLongPressStartPosRef.current
+      ) {
+        const dx = e.evt.touches[0].clientX - canvasLongPressStartPosRef.current.x
+        const dy = e.evt.touches[0].clientY - canvasLongPressStartPosRef.current.y
+        if (Math.hypot(dx, dy) > 8) {
+          clearTimeout(canvasLongPressTimeoutRef.current)
+          canvasLongPressTimeoutRef.current = null
+          canvasLongPressStartPosRef.current = null
+        }
+      } else if (e.evt.touches.length > 1 && canvasLongPressTimeoutRef.current) {
+        clearTimeout(canvasLongPressTimeoutRef.current)
+        canvasLongPressTimeoutRef.current = null
+        canvasLongPressStartPosRef.current = null
+      }
+    },
+    []
+  )
+
+  const handleTouchEnd = useCallback(() => {
+    if (canvasLongPressTimeoutRef.current) {
+      clearTimeout(canvasLongPressTimeoutRef.current)
+      canvasLongPressTimeoutRef.current = null
+    }
+    canvasLongPressStartPosRef.current = null
+  }, [])
 
   // Global Escape handling for the marquee: cancel the drag and leave the
   // selection untouched. The global keyboard shortcut listener owns Escape
@@ -1027,19 +1102,31 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
   // polyline, and the measure tool uses it to finalise the ruler. Without
   // this router the store-level `onDblClick={handleCanvasDoubleClick}` would
   // fire only the wall handler, leaving the measure tool unable to finish.
-  const handleStageDoubleClick = useCallback(() => {
-    if (activeTool === 'wall') {
-      handleCanvasDoubleClick()
-      return
-    }
-    if (activeTool === 'measure') {
-      setMeasureSession((prev) =>
-        prev.points.length > 0
-          ? { points: prev.points, cursor: null, finalised: true }
-          : prev,
-      )
-    }
-  }, [activeTool, handleCanvasDoubleClick])
+  const handleStageDoubleClick = useCallback(
+    (e?: Konva.KonvaEventObject<MouseEvent>) => {
+      if (activeTool === 'wall') {
+        handleCanvasDoubleClick()
+        return
+      }
+      if (activeTool === 'measure') {
+        setMeasureSession((prev) =>
+          prev.points.length > 0
+            ? { points: prev.points, cursor: null, finalised: true }
+            : prev,
+        )
+        return
+      }
+      const stage = stageRef.current
+      if (!stage) return
+      const scale = stage.scaleX()
+      const nextScale = Math.min(ZOOM_MAX, scale * ZOOM_FACTOR)
+      if (nextScale === scale) return
+      const pointer = e && e.target ? stage.getPointerPosition() : stage.getPointerPosition()
+      if (!pointer) return
+      zoomAtPoint(pointer.x, pointer.y, nextScale)
+    },
+    [activeTool, handleCanvasDoubleClick, zoomAtPoint]
+  )
 
   const handleMouseUp = useCallback(() => {
     const wasPanning = isPanning.current
@@ -1388,7 +1475,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
     <div
       ref={containerRef}
       className="w-full h-full relative"
-      style={{ cursor }}
+      style={{ cursor, touchAction: 'none' }}
       onDragOver={handleDragOver}
       onDragLeave={(e) => {
         // Clear hover-outline state when the drag leaves the canvas —
@@ -1416,7 +1503,24 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onDblClick={handleStageDoubleClick}
-        onContextMenu={(e) => e.evt.preventDefault()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onContextMenu={(e) => {
+          const isStageClicked = e.target === stageRef.current
+          if (isStageClicked) {
+            e.evt.preventDefault()
+            clearSelection()
+            setContextMenu({ x: e.evt.clientX, y: e.evt.clientY, elementId: null })
+          } else {
+            e.evt.preventDefault()
+          }
+        }}
+        onTap={(e) => {
+          if (e.target === stageRef.current) {
+            clearSelection()
+          }
+        }}
       >
         {/* ── Layer 1: Background ─────────────────────────────────── */}
         <Layer listening={false}>
