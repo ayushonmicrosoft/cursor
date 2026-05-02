@@ -4,6 +4,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import { ContextMenu } from '../components/editor/ContextMenu'
 import { useElementsStore } from '../stores/elementsStore'
 import { useUIStore } from '../stores/uiStore'
+import { useCanvasStore } from '../stores/canvasStore'
 import type { DecorElement } from '../types/elements'
 
 function makeDecor(id: string, overrides: Partial<DecorElement> = {}): DecorElement {
@@ -97,6 +98,55 @@ describe('ContextMenu', () => {
     expect(screen.queryByText('Arrange')).toBeNull()
     expect(screen.getByRole('menuitem', { name: /Select all/ })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: /Toggle grid/ })).toBeInTheDocument()
+  })
+
+  it('opens canvas menu on right-click with elementId null', () => {
+    useElementsStore.setState({ elements: { a: makeDecor('a') } })
+    const x = 100
+    const y = 200
+    useUIStore.setState({
+      selectedIds: [],
+      contextMenu: { x, y, elementId: null },
+    } as any)
+    const { container } = render(<ContextMenu />)
+    expect(container.querySelector('[role="menu"]')).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Select all/ })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Toggle grid/ })).toBeInTheDocument()
+    // Element menu items (Edit group) should not appear for canvas menu
+    expect(screen.queryByText('Edit')).toBeNull()
+    expect(screen.queryByText('Arrange')).toBeNull()
+  })
+
+  it('Select all in canvas menu selects all elements', () => {
+    const a = makeDecor('a')
+    const b = makeDecor('b')
+    useElementsStore.setState({ elements: { a, b } })
+    useUIStore.setState({
+      selectedIds: [],
+      contextMenu: { x: 0, y: 0, elementId: null },
+    } as any)
+    render(<ContextMenu />)
+    const selectAllBtn = screen.getByRole('menuitem', { name: /Select all/ })
+    fireEvent.click(selectAllBtn)
+    const selected = useUIStore.getState().selectedIds
+    expect(selected).toHaveLength(2)
+    expect(selected).toContain('a')
+    expect(selected).toContain('b')
+    expect(useUIStore.getState().contextMenu).toBeNull()
+  })
+
+  it('Toggle grid in canvas menu toggles grid setting', () => {
+    const toggleGrid = vi.spyOn(useCanvasStore.getState(), 'toggleGrid')
+    useElementsStore.setState({ elements: {} })
+    useUIStore.setState({
+      selectedIds: [],
+      contextMenu: { x: 0, y: 0, elementId: null },
+    } as any)
+    render(<ContextMenu />)
+    const toggleGridBtn = screen.getByRole('menuitem', { name: /Toggle grid/ })
+    fireEvent.click(toggleGridBtn)
+    expect(toggleGrid).toHaveBeenCalledTimes(1)
+    expect(useUIStore.getState().contextMenu).toBeNull()
   })
 
   it('shows keyboard shortcuts on the right side of supported rows', () => {

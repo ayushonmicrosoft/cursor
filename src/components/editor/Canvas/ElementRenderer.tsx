@@ -49,7 +49,7 @@ import { SofaRenderer } from './SofaRenderer'
 import { PlantRenderer } from './PlantRenderer'
 import { PrinterRenderer } from './PrinterRenderer'
 import { WhiteboardRenderer } from './WhiteboardRenderer'
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useState, useRef, type ReactNode } from 'react'
 import type Konva from 'konva'
 import { SnapEngine } from '../../../lib/snapEngine'
 import { elementBounds } from '../../../lib/elementBounds'
@@ -111,6 +111,8 @@ export function ElementRenderer() {
   // with a lazy initializer captures the snapshot exactly once and
   // never updates afterwards, which is what we want.
   const [initialIds] = useState(() => Object.keys(elements))
+  const longPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const longPressStartPosRef = useRef<{ x: number; y: number } | null>(null)
 
   // Snap the dragged element (center-origin) to alignment guides formed by
   // the edges and centers of OTHER elements on the floor. Walls, doors,
@@ -201,9 +203,19 @@ export function ElementRenderer() {
   const handleClick = useCallback(
     (id: string, e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
       e.cancelBubble = true
-      // Reliability fallback: if the operator is stuck in pan mode and
-      // clicks an element, promote that click to selection and switch
-      // back to select so subsequent edits work without hunting for tools.
+      if (
+        'button' in e.evt &&
+        (e.evt.button === 2 || (e.evt.button === 0 && (e.evt.ctrlKey || e.evt.metaKey)))
+      ) {
+        setSelectedIds([id])
+        setContextMenu({ x: e.evt.clientX, y: e.evt.clientY, elementId: id })
+        if (longPressTimeoutRef.current) {
+          clearTimeout(longPressTimeoutRef.current)
+          longPressTimeoutRef.current = null
+        }
+        longPressStartPosRef.current = null
+        return
+      }
       if (activeTool === 'pan') {
         setSelectedIds([id])
         useCanvasStore.getState().setActiveTool('select')
@@ -216,7 +228,7 @@ export function ElementRenderer() {
         setSelectedIds([id])
       }
     },
-    [activeTool, setSelectedIds, toggleSelection]
+    [activeTool, setSelectedIds, toggleSelection, setContextMenu]
   )
 
   const handleContextMenu = useCallback(
@@ -225,9 +237,57 @@ export function ElementRenderer() {
       e.cancelBubble = true
       setSelectedIds([id])
       setContextMenu({ x: e.evt.clientX, y: e.evt.clientY, elementId: id })
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current)
+        longPressTimeoutRef.current = null
+      }
+      longPressStartPosRef.current = null
     },
     [setSelectedIds, setContextMenu]
   )
+
+  const handleTouchStart = useCallback(
+    (id: string, e: Konva.KonvaEventObject<TouchEvent>) => {
+      if (e.evt.touches.length === 1) {
+        const touch = e.evt.touches[0]
+        longPressStartPosRef.current = { x: touch.clientX, y: touch.clientY }
+        const clientX = touch.clientX
+        const clientY = touch.clientY
+        longPressTimeoutRef.current = setTimeout(() => {
+          setSelectedIds([id])
+          setContextMenu({ x: clientX, y: clientY, elementId: id })
+        }, 500)
+      }
+    },
+    [setSelectedIds, setContextMenu]
+  )
+
+  const handleTouchMove = useCallback(
+    (e: Konva.KonvaEventObject<TouchEvent>) => {
+      if (longPressTimeoutRef.current && e.evt.touches.length === 1 && longPressStartPosRef.current) {
+        const dx = e.evt.touches[0].clientX - longPressStartPosRef.current.x
+        const dy = e.evt.touches[0].clientY - longPressStartPosRef.current.y
+        if (Math.hypot(dx, dy) > 8) {
+          clearTimeout(longPressTimeoutRef.current)
+          longPressTimeoutRef.current = null
+          longPressStartPosRef.current = null
+        }
+      } else if (e.evt.touches.length > 1 && longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current)
+        longPressTimeoutRef.current = null
+        longPressStartPosRef.current = null
+      }
+    },
+    []
+  )
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current)
+      longPressTimeoutRef.current = null
+    }
+    longPressStartPosRef.current = null
+  }, [])
 
   // Hover tracking — meaningful for select + pan (the two non-creating
   // tools). Other tools (wall, door, window, primitives) each have their
@@ -359,6 +419,9 @@ export function ElementRenderer() {
             onContextMenu={(e) => handleContextMenu(el.id, e)}
             onMouseEnter={() => handleMouseEnter(el.id)}
             onMouseLeave={() => handleMouseLeave(el.id)}
+            onTouchStart={(e) => handleTouchStart(el.id, e)}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {child}
           </AnimatedElementGroup>
@@ -383,6 +446,9 @@ interface AnimatedElementGroupProps {
   onContextMenu: (e: Konva.KonvaEventObject<PointerEvent>) => void
   onMouseEnter: () => void
   onMouseLeave: () => void
+  onTouchStart?: (e: Konva.KonvaEventObject<TouchEvent>) => void
+  onTouchMove?: (e: Konva.KonvaEventObject<TouchEvent>) => void
+  onTouchEnd?: () => void
   children: ReactNode
 }
 
@@ -409,14 +475,12 @@ function AnimatedElementGroup({
   onContextMenu,
   onMouseEnter,
   onMouseLeave,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
   children,
 }: AnimatedElementGroupProps) {
   const spawn = useElementSpawnAnimation(id, { initialIds })
-  // Combine the spawn-fade with the finder dim. When the finder is
-  // active and this element isn't a match, the finder opacity (0.25)
-  // wins for the steady state; while the spawn animation is in flight
-  // we multiply so it still ramps up but to the dimmed level rather
-  // than full.
   const baseOpacity = finderOpacity ?? 1
   const combinedOpacity = baseOpacity * spawn.opacity
   const scaleX = applyScale ? spawn.scaleX : 1
@@ -437,6 +501,9 @@ function AnimatedElementGroup({
       onContextMenu={onContextMenu}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       {children}
     </Group>

@@ -302,6 +302,62 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       app.stage.on('pointerup', () => { dragRef.current = null })
       app.stage.on('pointerupoutside', () => { dragRef.current = null })
 
+      const handleRightClick = (e: FederatedPointerEvent) => {
+        const nativeEvent = e.originalEvent as { button?: number; ctrlKey?: boolean; preventDefault?: () => void }
+        const isRightClick = nativeEvent?.button === 2 || nativeEvent?.ctrlKey
+        if (isRightClick && nativeEvent?.preventDefault) {
+          nativeEvent.preventDefault()
+        }
+        e.stopPropagation()
+
+        let targetId: string | null = null
+        for (const [id, c] of map) {
+          const container = c as Container
+          if (container.eventMode === 'static') {
+            const local = container.toLocal(e.global)
+            const w = container.width
+            const h = container.height
+            if (local.x >= 0 && local.y >= 0 && local.x <= w && local.y <= h) {
+              targetId = id
+              break
+            }
+          }
+        }
+
+        if (targetId) {
+          const el = useElementsStore.getState().elements[targetId]
+          if (el) {
+            useUIStore.getState().setSelectedIds([targetId])
+            useUIStore.getState().setContextMenu({ x: e.global.x, y: e.global.y, elementId: targetId })
+            return
+          }
+        }
+        useUIStore.getState().clearSelection()
+        useUIStore.getState().setContextMenu({ x: e.global.x, y: e.global.y, elementId: null })
+      }
+      const handleRightDown = (evt: FederatedPointerEvent) => {
+        const native = evt.originalEvent as { preventDefault?: () => void }
+        if (native?.preventDefault) {
+          native.preventDefault()
+        }
+      }
+      app.stage.on('rightclick', handleRightClick)
+
+      const canvasEl = canvasRef.current
+      if (canvasEl) {
+        const onContextMenu = (e: Event) => {
+          const evt = e as { preventDefault?: () => void }
+          if (evt.preventDefault) {
+            evt.preventDefault()
+          }
+        }
+        canvasEl.addEventListener('contextmenu', onContextMenu)
+        app.stage.on('rightdown', handleRightDown)
+        ;(app as Application & { _cAndDetach?: () => void })._cAndDetach = () => {
+          canvasEl.removeEventListener('contextmenu', onContextMenu)
+        }
+      }
+
       // ── Grid helpers ──────────────────────────────────────────────────
       function drawGrid() {
         if (!useCanvasStore.getState().settings.showGrid) {
@@ -387,10 +443,13 @@ export const PixiStage = forwardRef<PixiStageHandle, PixiStageProps>(function Pi
       const u5 = useCanvasStore.subscribe((state, prev) => {
         if (state.settings.showGrid !== prev.settings.showGrid) schedGrid()
       })
-        ; (app as Application & { _c?: () => void })._c = () => {
+        ; (app as Application & { _c?: () => void; _cAndDetach?: () => void })._c = () => {
+          ;(app as Application & { _cAndDetach?: () => void })._cAndDetach?.()
           u1(); u2(); u3(); u4(); u5()
           world.off('moved', handleViewportMove)
           world.off('zoomed', handleViewportMove)
+          app.stage.off('rightclick', handleRightClick)
+          app.stage.off('rightdown', handleRightDown)
           if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
           if (viewportPublishRafRef.current !== null) { cancelAnimationFrame(viewportPublishRafRef.current); viewportPublishRafRef.current = null }
           if (gridRaf) { cancelAnimationFrame(gridRaf); gridRaf = null }
@@ -585,6 +644,17 @@ function buildEl(
   c.cursor = el.locked ? 'pointer' : 'grab'
   c.on('pointerdown', (e: FederatedPointerEvent) => {
     e.stopPropagation()
+    const nativeEvent = e.originalEvent as { button?: number; ctrlKey?: boolean; preventDefault?: () => void }
+    const isRightClick = nativeEvent?.button === 2 || nativeEvent?.ctrlKey
+    if (isRightClick) {
+      if (nativeEvent?.preventDefault) {
+        nativeEvent.preventDefault()
+      }
+      e.stopPropagation()
+      setSelIds([el.id])
+      useUIStore.getState().setContextMenu({ x: e.global.x, y: e.global.y, elementId: el.id })
+      return
+    }
     const multi = e.ctrlKey || e.metaKey || e.shiftKey
     const cur = useUIStore.getState().selectedIds
     setSelIds(multi ? (cur.includes(el.id) ? cur.filter(i => i !== el.id) : [...cur, el.id]) : [el.id])

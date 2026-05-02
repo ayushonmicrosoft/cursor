@@ -143,7 +143,7 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
-  it('Home and End do NOT switch floors', () => {
+  it('Home jumps to first floor', () => {
     setFloors(['f1', 'f2', 'f3'], 'f2')
     const spy = vi.spyOn(seatAssignment, 'switchToFloor')
     render(<PresentationOverlay />)
@@ -153,11 +153,20 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home' }))
     })
+    expect(spy).toHaveBeenLastCalledWith('f1')
+  })
+
+  it('End jumps to last floor', () => {
+    setFloors(['f1', 'f2', 'f3'], 'f1')
+    const spy = vi.spyOn(seatAssignment, 'switchToFloor')
+    render(<PresentationOverlay />)
+    act(() => {
+      useUIStore.getState().setPresentationMode(true)
+    })
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'End' }))
     })
-    // Keyboard floor navigation was removed from presentation mode
-    expect(spy).not.toHaveBeenCalled()
+    expect(spy).toHaveBeenLastCalledWith('f3')
   })
 
   it('arrow keys do NOT switch floors when presentation mode is off', () => {

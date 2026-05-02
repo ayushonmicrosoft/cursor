@@ -43,3 +43,24 @@ function installLocalStorageShim() {
 }
 
 installLocalStorageShim()
+
+// ResizeObserver is not available in jsdom; provide a minimal polyfill for tests.
+class ResizeObserverPolyfill {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    value: ResizeObserverPolyfill,
+    writable: true,
+    configurable: true,
+  })
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'ResizeObserver', {
+      value: ResizeObserverPolyfill,
+      writable: true,
+      configurable: true,
+    })
+  }
+}

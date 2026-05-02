@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { Stage, Layer } from 'react-konva'
+import { Layer, Stage } from 'react-konva'
 import { AlignmentGuides } from '../components/editor/Canvas/AlignmentGuides'
 import { useCanvasStore } from '../stores/canvasStore'
 import { DEFAULT_CANVAS_SETTINGS } from '../types/project'
@@ -82,7 +82,7 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        {/* AlignmentGuides must be wrapped in a Layer since it returns a Group */}
+
         <Layer>
           <AlignmentGuides guides={[]} />
         </Layer>
