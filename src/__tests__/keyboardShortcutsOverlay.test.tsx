@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useUIStore } from '../stores/uiStore'
 import { KeyboardShortcutsOverlay } from '../components/editor/KeyboardShortcutsOverlay'
+import { useProjectStore } from '../stores/projectStore'
 
 /**
  * The overlay reads `open` from `uiStore.shortcutsOverlayOpen` and
@@ -37,6 +38,7 @@ describe('KeyboardShortcutsOverlay', () => {
   beforeEach(() => {
     closeOverlay()
     useUIStore.setState({ commandPaletteOpen: false, firstRunCoachOpen: false })
+    useProjectStore.setState({ currentOfficeRole: null, impersonatedRole: null })
     setPlatform('Linux x86_64')
   })
 
@@ -177,5 +179,27 @@ describe('KeyboardShortcutsOverlay', () => {
     fireEvent.click(screen.getByTestId('shortcuts-replay-tour'))
     expect(useUIStore.getState().firstRunCoachOpen).toBe(true)
     expect(useUIStore.getState().shortcutsOverlayOpen).toBe(false)
+  })
+
+  it('switches to the touch gestures tab', () => {
+    render(<KeyboardShortcutsOverlay />)
+    openOverlay()
+    fireEvent.click(screen.getByRole('tab', { name: /touch gestures/i }))
+    expect(screen.getByText(/long-press context menu/i)).toBeInTheDocument()
+    expect(screen.getByText(/pinch zoom/i)).toBeInTheDocument()
+    expect(screen.getByText(/double-tap zoom/i)).toBeInTheDocument()
+    expect(screen.getByText(/swipe floor navigation/i)).toBeInTheDocument()
+  })
+
+  it('shows admin reports shortcuts only when viewReports is allowed', () => {
+    render(<KeyboardShortcutsOverlay />)
+    openOverlay()
+    expect(screen.queryByText(/admin \/ reports/i)).toBeNull()
+    closeOverlay()
+
+    useProjectStore.setState({ currentOfficeRole: 'space-planner' })
+    openOverlay()
+    expect(screen.getByText(/admin \/ reports/i)).toBeInTheDocument()
+    expect(screen.getByText(/open org chart report/i)).toBeInTheDocument()
   })
 })

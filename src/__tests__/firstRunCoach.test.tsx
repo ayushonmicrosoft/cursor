@@ -33,21 +33,21 @@ describe('FirstRunCoach tour (persistence)', () => {
     dismissDemoCard()
   })
 
-  it('mounts the welcome card when firstRunWelcomeSeen is unset', () => {
+  it('mounts the welcome card when floorcraft.onboardingCompleted is unset', () => {
     render(<FirstRunCoach />)
     expect(screen.getByRole('dialog', { name: /welcome to oandocraft/i })).toBeInTheDocument()
     expect(screen.getByText(/welcome to oandocraft/i)).toBeInTheDocument()
   })
 
-  it('does NOT mount when firstRunWelcomeSeen is set to "1"', () => {
-    localStorage.setItem('firstRunWelcomeSeen', '1')
+  it('does NOT mount when floorcraft.onboardingCompleted is set to "1"', () => {
+    localStorage.setItem('floorcraft.onboardingCompleted', '1')
     dismissDemoCard()
     render(<FirstRunCoach />)
     expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
   })
 
   it('can be reopened explicitly even after it was previously dismissed', () => {
-    localStorage.setItem('firstRunWelcomeSeen', '1')
+    localStorage.setItem('floorcraft.onboardingCompleted', '1')
     render(<FirstRunCoach forceTourOpen />)
     expect(screen.getByRole('dialog', { name: /welcome to oandocraft/i })).toBeInTheDocument()
   })
@@ -59,17 +59,17 @@ describe('FirstRunCoach tour (persistence)', () => {
     expect(onTourClosed).toHaveBeenCalledTimes(1)
   })
 
-  it('Skip tour link writes firstRunWelcomeSeen=1 and unmounts the card', () => {
+  it('Skip tour link writes floorcraft.onboardingCompleted=1 and unmounts the card', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /skip tour/i }))
-    expect(localStorage.getItem('firstRunWelcomeSeen')).toBe('1')
+    expect(localStorage.getItem('floorcraft.onboardingCompleted')).toBe('1')
     expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
   })
 
   it('X close button also dismisses', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /dismiss welcome card/i }))
-    expect(localStorage.getItem('firstRunWelcomeSeen')).toBe('1')
+    expect(localStorage.getItem('floorcraft.onboardingCompleted')).toBe('1')
   })
 
   it('"Open palette" CTA on the last step opens the command palette and dismisses', () => {
@@ -81,7 +81,7 @@ describe('FirstRunCoach tour (persistence)', () => {
     }
     fireEvent.click(screen.getByRole('button', { name: /open palette/i }))
     expect(useUIStore.getState().commandPaletteOpen).toBe(true)
-    expect(localStorage.getItem('firstRunWelcomeSeen')).toBe('1')
+    expect(localStorage.getItem('floorcraft.onboardingCompleted')).toBe('1')
   })
 })
 
@@ -93,7 +93,7 @@ describe('FirstRunCoach demo seeder', () => {
   beforeEach(() => {
     localStorage.clear()
     // Hide the tour dialog so the seeder tests aren't entangled with it.
-    localStorage.setItem('firstRunWelcomeSeen', '1')
+    localStorage.setItem('floorcraft.onboardingCompleted', '1')
     useElementsStore.setState({ elements: {} })
     useEmployeeStore.setState({ employees: {}, departmentColors: {} })
   })

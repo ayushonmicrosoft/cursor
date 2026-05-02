@@ -13,12 +13,13 @@ import { buildDemoOfficePayload } from '../../lib/demo/createDemoOffice'
 import { saveOffice } from '../../lib/offices/officeRepository'
 import { prefersReducedMotion } from '../../lib/prefersReducedMotion'
 
-const STORAGE_KEY = 'firstRunWelcomeSeen'
+const STORAGE_KEY = 'floorcraft.onboardingCompleted'
+const LEGACY_STORAGE_KEY = 'firstRunWelcomeSeen'
 const DEMO_DISMISSED_KEY = 'floocraft.firstRunDemoDismissed'
 
 function readInitialSeen(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === '1'
+    return localStorage.getItem(STORAGE_KEY) === '1' || localStorage.getItem(LEGACY_STORAGE_KEY) === '1'
   } catch {
     return false
   }
@@ -202,7 +203,7 @@ function FirstRunDemoSeeder() {
       // bottom-right; keeping this one top-right means a user who sees
       // BOTH (fresh empty office, tour not yet dismissed) can act on
       // either without either covering the other.
-      className={`absolute top-4 right-4 w-[340px] bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-4 z-40 ${
+      className={`fixed top-3 left-3 right-3 max-h-[calc(100vh-1.5rem)] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-4 z-40 sm:absolute sm:top-4 sm:left-auto sm:right-4 sm:w-[340px] ${
         reducedMotion ? '' : 'animate-in fade-in slide-in-from-top-2 duration-300'
       }`}
     >
@@ -301,6 +302,16 @@ function FirstRunCoachTour({
         ),
       },
       {
+        id: 'fr-step-touch-pan',
+        title: 'Navigate on touch screens',
+        body: (
+          <>
+            On mobile, drag with one finger to pan, pinch to zoom, and
+            double-tap the canvas to zoom toward the spot you touched.
+          </>
+        ),
+      },
+      {
         id: 'fr-step-tools',
         title: 'Pick a tool',
         body: (
@@ -312,6 +323,46 @@ function FirstRunCoachTour({
         ),
       },
       {
+        id: 'fr-step-place-elements',
+        title: 'Place desks, rooms, and labels',
+        body: (
+          <>
+            Choose a tool, then tap or drag on the canvas to place desks,
+            rooms, doors, windows, labels, and measurement guides.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-select-edit',
+        title: 'Select and edit properties',
+        body: (
+          <>
+            Select an element to open the properties inspector. Update labels,
+            sizes, colors, assignments, locks, and other details without leaving the map.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-context-menu',
+        title: 'Use the context menu',
+        body: (
+          <>
+            Right-click on desktop or long-press on touch devices to duplicate,
+            arrange, align, lock, or delete selected elements.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-floors',
+        title: 'Switch floors',
+        body: (
+          <>
+            Use the floor controls to move between levels. In presentation mode,
+            arrow keys or swipe navigation walk stakeholders through each floor.
+          </>
+        ),
+      },
+      {
         id: 'fr-step-palette',
         title: 'Command palette',
         body: (
@@ -319,6 +370,36 @@ function FirstRunCoachTour({
             Press <kbd>Cmd</kbd>+<kbd>K</kbd> to open the command palette —
             every action in one searchable list. <kbd>Cmd</kbd>+<kbd>F</kbd>{' '}
             opens the canvas finder to highlight elements by label.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-finder',
+        title: 'Find items fast',
+        body: (
+          <>
+            Press <kbd>Cmd</kbd>+<kbd>F</kbd> on the map to find desks, labels,
+            neighborhoods, and other canvas elements by name.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-presentation',
+        title: 'Present the plan',
+        body: (
+          <>
+            Press <kbd>P</kbd> to enter presentation mode. Use ←/→ to move
+            floor by floor, then press <kbd>Escape</kbd> to return to editing.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-export',
+        title: 'Export when ready',
+        body: (
+          <>
+            Open Export to save the canvas as PNG, PDF, or SVG, or download
+            CSV and JSON data for reporting workflows.
           </>
         ),
       },
@@ -341,6 +422,16 @@ function FirstRunCoachTour({
             <strong>MAP</strong> and <strong>ROSTER</strong> tabs sit at the
             top of every office. Press <kbd>M</kbd> for the map,{' '}
             <kbd>R</kbd> for the roster — your selection survives the jump.
+          </>
+        ),
+      },
+      {
+        id: 'fr-step-restart',
+        title: 'Restart this tour anytime',
+        body: (
+          <>
+            Open the canvas Settings menu and choose <strong>Restart onboarding tour</strong>
+            whenever you want to replay these tips.
           </>
         ),
       },
@@ -429,7 +520,7 @@ function FirstRunCoachTour({
       // The per-step heading inside the body re-announces step copy as
       // the user advances; we don't shift the dialog's name itself.
       aria-labelledby="first-run-coach-title"
-      className="absolute bottom-12 right-4 w-[360px] bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-5 z-40"
+      className="fixed inset-x-3 bottom-3 max-h-[calc(100vh-1.5rem)] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-4 z-40 sm:absolute sm:inset-x-auto sm:bottom-12 sm:right-4 sm:w-[380px] sm:p-5"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -508,7 +599,7 @@ function FirstRunCoachTour({
         </span>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex flex-col gap-3 min-[480px]:flex-row min-[480px]:items-center">
         <button
           type="button"
           onClick={handleDismiss}
@@ -516,7 +607,7 @@ function FirstRunCoachTour({
         >
           Skip tour
         </button>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2 min-[480px]:ml-auto">
           {stepIdx > 0 && (
             <button
               type="button"
