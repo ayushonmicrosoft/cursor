@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { Stage } from 'react-konva'
+import { Stage, Layer } from 'react-konva'
 import { DimensionLayer } from '../components/editor/Canvas/DimensionLayer'
 import { useElementsStore } from '../stores/elementsStore'
 import { useCanvasStore } from '../stores/canvasStore'
@@ -63,7 +63,7 @@ describe('DimensionLayer', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <DimensionLayer />
+        <Layer><DimensionLayer /></Layer>
       </Stage>,
     )
     expect(getLayerTexts(stage)).toEqual([])
@@ -81,7 +81,7 @@ describe('DimensionLayer', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <DimensionLayer />
+        <Layer><DimensionLayer /></Layer>
       </Stage>,
     )
 
@@ -102,7 +102,7 @@ describe('DimensionLayer', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <DimensionLayer />
+        <Layer><DimensionLayer /></Layer>
       </Stage>,
     )
 

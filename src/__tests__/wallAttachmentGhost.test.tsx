@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { Stage } from 'react-konva'
+import { Stage, Layer } from 'react-konva'
 import { AttachmentGhost } from '../components/editor/Canvas/AttachmentGhost'
 import { useElementsStore } from '../stores/elementsStore'
 import type { WallElement } from '../types/elements'
@@ -72,12 +72,14 @@ function renderGhost(props: {
   let stage: any
   render(
     <Stage width={400} height={400} ref={(s) => { stage = s }}>
-      <AttachmentGhost
-        tool={props.tool}
-        cursor={props.cursor}
-        stageScale={1}
-        snapPx={24}
-      />
+      <Layer>
+        <AttachmentGhost
+          tool={props.tool}
+          cursor={props.cursor}
+          stageScale={1}
+          snapPx={24}
+        />
+      </Layer>
     </Stage>,
   )
   return stage
@@ -96,13 +98,19 @@ describe('AttachmentGhost', () => {
 
   it('renders nothing when the active tool is not door/window', () => {
     const stage = renderGhost({ tool: 'select', cursor: { x: 50, y: 5 } })
-    expect(ghostLayerCount(stage)).toBe(0)
+    // Layer is rendered, but it should be empty since AttachmentGhost returns null
+    expect(ghostLayerCount(stage)).toBe(1)
+    const layer = stage.getLayers()[0]
+    expect(layer.getChildren().length).toBe(0)
   })
 
   it('renders nothing when the cursor is null (cursor left the canvas)', () => {
     useElementsStore.setState({ elements: { 'wall-1': makeWall() } })
     const stage = renderGhost({ tool: 'door', cursor: null })
-    expect(ghostLayerCount(stage)).toBe(0)
+    // Layer is rendered, but it should be empty since AttachmentGhost returns null
+    expect(ghostLayerCount(stage)).toBe(1)
+    const layer = stage.getLayers()[0]
+    expect(layer.getChildren().length).toBe(0)
   })
 
   it('renders a ghost layer when hovering near a wall with the door tool', () => {
@@ -128,9 +136,13 @@ describe('AttachmentGhost', () => {
     const layer = stage.getLayers()[0]
     const kinds: string[] = []
     layer.getChildren().forEach((c: any) => kinds.push(c.getClassName()))
-    // The crosshair is drawn from a Circle + two Lines; no Group wrapper.
-    expect(kinds).not.toContain('Group')
-    expect(kinds).toContain('Circle')
-    expect(kinds.filter((k) => k === 'Line').length).toBe(2)
+    // The crosshair is drawn from a Circle + two Lines; with Layer wrapper, we see the Group
+    expect(kinds).toContain('Group')
+    // Inside the Group, we should have Circle and 2 Lines
+    const group = layer.getChildren()[0]
+    const groupChildren: string[] = []
+    group.getChildren().forEach((c: any) => groupChildren.push(c.getClassName()))
+    expect(groupChildren).toContain('Circle')
+    expect(groupChildren.filter((k) => k === 'Line').length).toBe(2)
   })
 })

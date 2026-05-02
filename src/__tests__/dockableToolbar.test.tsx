@@ -9,9 +9,9 @@ import {
   type DockableToolbarId,
 } from '../stores/uiStore'
 
-const STORAGE_KEY = 'oandocraft.toolbar-layouts'
-const VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility'
-const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset'
+const STORAGE_KEY = 'oandocraft.toolbar-layouts-v3'
+const VISIBILITY_STORAGE_KEY = 'oandocraft.toolbar-visibility-v3'
+const WORKSPACE_PRESET_STORAGE_KEY = 'oandocraft.workspace-preset-v3'
 
 function resetToolbarState() {
   useUIStore.setState({

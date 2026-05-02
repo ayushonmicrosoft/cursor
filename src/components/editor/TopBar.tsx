@@ -36,6 +36,7 @@ import {
   PanelRight,
   Maximize,
   PlaySquare,
+  Menu,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -44,7 +45,7 @@ import { exportFloorAsPng } from '../../lib/pngExport'
 import { buildExportFilename } from '../../lib/exportFilename'
 import { getActiveStage } from '../../lib/stageRegistry'
 import { useState, useRef, useEffect } from 'react'
-import { NavLink, useParams } from 'react-router-dom'
+import { NavLink, useLocation, useParams } from 'react-router-dom'
 import { useCan } from '../../hooks/useCan'
 import { TeamSwitcher } from '../team/TeamSwitcher'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'
@@ -195,6 +196,113 @@ export function TopBar() {
   }, [])
 
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isNarrow, setIsNarrow] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+  const [compactMenuOpen, setCompactMenuOpen] = useState(false)
+  const compactMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const onResize = () => {
+      setIsNarrow(window.innerWidth < 768)
+      if (window.innerWidth >= 768) setCompactMenuOpen(false)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    function onPointer(e: MouseEvent) {
+      if (compactMenuRef.current && !compactMenuRef.current.contains(e.target as Node)) {
+        setCompactMenuOpen(false)
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setCompactMenuOpen(false)
+    }
+    if (compactMenuOpen) {
+      document.addEventListener('mousedown', onPointer)
+      document.addEventListener('keydown', onKey)
+      return () => {
+        document.removeEventListener('mousedown', onPointer)
+        document.removeEventListener('keydown', onKey)
+      }
+    }
+  }, [compactMenuOpen])
+
+  const compactMenu = isNarrow && (
+    <div className="relative" ref={compactMenuRef}>
+      <button
+        type="button"
+        onClick={() => setCompactMenuOpen(!compactMenuOpen)}
+        className={`${iconActionButtonClass} ${compactMenuOpen ? 'topbar-btn-active' : ''}`}
+        aria-label="More actions"
+        aria-expanded={compactMenuOpen}
+      >
+        <Menu size={18} />
+      </button>
+      {compactMenuOpen && (
+        <div className="absolute top-full right-0 mt-1 z-50 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-xl min-w-[200px] py-1">
+          {teamSlug && officeSlug && (
+            <div className="px-2 py-1 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-1">
+                <NavLink
+                  to={`/t/${teamSlug}/o/${officeSlug}/map`}
+                  onClick={() => { setViewMode('2d'); setCompactMenuOpen(false) }}
+                  className={({ isActive }) => `flex-1 px-2 py-1.5 text-xs rounded flex items-center justify-center gap-1 ${isActive ? 'bg-gray-100 dark:bg-gray-800 font-medium' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                >
+                  <MapIcon size={12} /> Map
+                </NavLink>
+                <NavLink
+                  to={`/t/${teamSlug}/o/${officeSlug}/roster`}
+                  onClick={() => setCompactMenuOpen(false)}
+                  className={({ isActive }) => `flex-1 px-2 py-1.5 text-xs rounded flex items-center justify-center gap-1 ${isActive ? 'bg-gray-100 dark:bg-gray-800 font-medium' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                >
+                  <BarChart3 size={12} /> Roster
+                </NavLink>
+              </div>
+            </div>
+          )}
+          <div className="px-2 py-1 border-b border-gray-100 dark:border-gray-800">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-2 py-1">History</p>
+            <button
+              type="button"
+              onClick={() => { undo(); setCompactMenuOpen(false) }}
+              disabled={!canUndo}
+              className="w-full px-2 py-1.5 text-xs text-left rounded flex items-center gap-2 disabled:opacity-40"
+            >
+              <Undo2 size={14} /> Undo
+            </button>
+            <button
+              type="button"
+              onClick={() => { redo(); setCompactMenuOpen(false) }}
+              disabled={!canRedo}
+              className="w-full px-2 py-1.5 text-xs text-left rounded flex items-center gap-2 disabled:opacity-40"
+            >
+              <Redo2 size={14} /> Redo
+            </button>
+          </div>
+          <div className="px-2 py-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 px-2 py-1">Zoom {Math.round(stageScale * 100)}%</p>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => { zoomOut(); setCompactMenuOpen(false) }}
+                className="flex-1 px-2 py-1.5 text-xs rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <ZoomOut size={14} className="mx-auto" />
+              </button>
+              <button
+                type="button"
+                onClick={() => { zoomIn(); setCompactMenuOpen(false) }}
+                className="flex-1 px-2 py-1.5 text-xs rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <ZoomIn size={14} className="mx-auto" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
   useEffect(() => {
     const h = () => setIsFullscreen(!!document.fullscreenElement)
     document.addEventListener('fullscreenchange', h)
@@ -397,7 +505,9 @@ export function TopBar() {
       >
         <TeamSwitcher currentSlug={teamSlug} />
 
-        {teamSlug && officeSlug && (
+        {compactMenu}
+
+        {!isNarrow && teamSlug && officeSlug && (
           <nav
             aria-label="Primary office views"
             className="flex min-w-0 flex-none items-center gap-1  border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"

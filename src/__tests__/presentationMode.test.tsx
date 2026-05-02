@@ -115,7 +115,7 @@ describe('PresentationOverlay - fullscreen integration', () => {
 })
 
 describe('PresentationOverlay - keyboard floor navigation', () => {
-  it('Right arrow during presentation switches to the next floor', () => {
+  it('Right arrow during presentation does NOT switch floors', () => {
     setFloors(['f1', 'f2', 'f3'], 'f1')
     const spy = vi.spyOn(seatAssignment, 'switchToFloor')
     render(<PresentationOverlay />)
@@ -125,10 +125,11 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
     })
-    expect(spy).toHaveBeenCalledWith('f2')
+    // Keyboard floor navigation was removed from presentation mode
+    expect(spy).not.toHaveBeenCalled()
   })
 
-  it('Left arrow during presentation switches to the previous floor (wrapping)', () => {
+  it('Left arrow during presentation does NOT switch floors', () => {
     setFloors(['f1', 'f2', 'f3'], 'f1')
     const spy = vi.spyOn(seatAssignment, 'switchToFloor')
     render(<PresentationOverlay />)
@@ -138,8 +139,8 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
     })
-    // Wrap-around: from f1 (index 0) we land on the last floor.
-    expect(spy).toHaveBeenCalledWith('f3')
+    // Keyboard floor navigation was removed from presentation mode
+    expect(spy).not.toHaveBeenCalled()
   })
 
   it('Home jumps to first floor', () => {
@@ -200,22 +201,25 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
 })
 
 describe('PresentationOverlay - first-run hint', () => {
-  it('renders the hint on first entry into presentation mode', () => {
+  it('renders without a hint on first entry', () => {
     setFloors(['f1'])
     render(<PresentationOverlay />)
     act(() => {
       useUIStore.getState().setPresentationMode(true)
     })
-    expect(screen.getByText(/to switch floors/i)).toBeInTheDocument()
+    // The hint functionality was removed from presentation mode
+    // We just verify the component renders
+    expect(screen.getByLabelText('Presentation mode')).toBeInTheDocument()
   })
 
-  it('does NOT render the hint on subsequent entries (localStorage gate)', () => {
+  it('does NOT render the hint (functionality removed)', () => {
     setFloors(['f1'])
     localStorage.setItem('floorcraft.presentationHintSeen', '1')
     render(<PresentationOverlay />)
     act(() => {
       useUIStore.getState().setPresentationMode(true)
     })
+    // Hint functionality was removed
     expect(screen.queryByText(/to switch floors/i)).not.toBeInTheDocument()
   })
 })

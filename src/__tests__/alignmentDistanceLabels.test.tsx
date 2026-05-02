@@ -82,6 +82,7 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
+
         <Layer>
           <AlignmentGuides guides={[]} />
         </Layer>
