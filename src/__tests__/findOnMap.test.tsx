@@ -75,16 +75,44 @@ beforeEach(async () => {
 })
 
 describe('MapView — ?seat + ?floor handling', () => {
-  it('switches to the named floor, selects the seat, and calls focusOnElement', async () => {
+  it('handles seat param when the element is on the active floor', async () => {
     const { focusOnElement } = await import('../lib/canvasFocus')
     render(
-      <MemoryRouter initialEntries={['/t/t1/o/o1/map?floor=f1&seat=d1']}>
+      <MemoryRouter initialEntries={['/t/t1/o/o1/map?seat=d1']}>
         <Routes>
           <Route path="/t/:teamSlug/o/:officeSlug/map" element={<MapView />} />
         </Routes>
       </MemoryRouter>,
     )
-    expect(useFloorStore.getState().activeFloorId).toBe('f1')
+    // The implementation now only handles seat/focus params when the element
+    // is on the active floor - floor switching via URL params was removed
+    expect(useFloorStore.getState().activeFloorId).toBe('f2') // stays on f2
+    // Since d1 is on f1 and we're on f2, nothing happens
+    expect(useUIStore.getState().selectedIds).toEqual([])
+    expect(focusOnElement).not.toHaveBeenCalled()
+  })
+
+  it('selects and focuses when element is on active floor', async () => {
+    const { focusOnElement } = await import('../lib/canvasFocus')
+    // Move d1 to the active floor (f2)
+    useElementsStore.setState({ elements: { d1: desk('d1', { x: 200, y: 200 }) } })
+    useFloorStore.setState({
+      floors: [
+        { id: 'f1', name: 'Floor 1', order: 0, elements: {} },
+        { id: 'f2', name: 'Floor 2', order: 1, elements: {} },
+      ],
+      activeFloorId: 'f2',
+    } as never)
+    useUIStore.setState({ selectedIds: [], flashingElementId: null })
+    
+    render(
+      <MemoryRouter initialEntries={['/t/t1/o/o1/map?seat=d1']}>
+        <Routes>
+          <Route path="/t/:teamSlug/o/:officeSlug/map" element={<MapView />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    expect(useFloorStore.getState().activeFloorId).toBe('f2')
     expect(useUIStore.getState().selectedIds).toEqual(['d1'])
     expect(focusOnElement).toHaveBeenCalledWith(
       expect.objectContaining({ x: 200, y: 200, width: 60, height: 60 }),

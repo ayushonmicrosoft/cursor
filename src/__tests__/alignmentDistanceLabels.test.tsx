@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { Stage } from 'react-konva'
+import { Stage, Layer } from 'react-konva'
 import { AlignmentGuides } from '../components/editor/Canvas/AlignmentGuides'
 import { useCanvasStore } from '../stores/canvasStore'
 import { DEFAULT_CANVAS_SETTINGS } from '../types/project'
@@ -82,7 +82,10 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[]} />
+        {/* AlignmentGuides must be wrapped in a Layer since it returns a Group */}
+        <Layer>
+          <AlignmentGuides guides={[]} />
+        </Layer>
       </Stage>,
     )
     expect(getTexts(stage)).toEqual([])
@@ -96,7 +99,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[leftEdgeGuide(60)]} />
+        <Layer>
+          <AlignmentGuides guides={[leftEdgeGuide(60)]} />
+        </Layer>
       </Stage>,
     )
     // gap=60 canvas units * scale=1 → 60.0 ft with formatLength's 1-decimal
@@ -112,7 +117,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[leftEdgeGuide(60)]} />
+        <Layer>
+          <AlignmentGuides guides={[leftEdgeGuide(60)]} />
+        </Layer>
       </Stage>,
     )
     // 60 canvas units * 0.5 scale = 30 meters → '30.00 m' (m uses 2 decimals).
@@ -127,7 +134,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[leftEdgeGuide(48)]} />
+        <Layer>
+          <AlignmentGuides guides={[leftEdgeGuide(48)]} />
+        </Layer>
       </Stage>,
     )
     expect(getTexts(stage)).toContain('48.0 px')
@@ -137,7 +146,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     const { container } = render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[leftEdgeGuide()]} />
+        <Layer>
+          <AlignmentGuides guides={[leftEdgeGuide()]} />
+        </Layer>
       </Stage>,
     )
     // The label group carries aria-hidden. Konva's attrs bag preserves
@@ -164,7 +175,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[shortGuide]} />
+        <Layer>
+          <AlignmentGuides guides={[shortGuide]} />
+        </Layer>
       </Stage>,
     )
     // Line still renders, but no text label. If ANY '10.0 ft' showed up
@@ -176,14 +189,18 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     const { rerender } = render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[leftEdgeGuide(60)]} />
+        <Layer>
+          <AlignmentGuides guides={[leftEdgeGuide(60)]} />
+        </Layer>
       </Stage>,
     )
     expect(getTexts(stage)).toContain('60.0 ft')
 
     rerender(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[]} />
+        <Layer>
+          <AlignmentGuides guides={[]} />
+        </Layer>
       </Stage>,
     )
     expect(getTexts(stage)).toEqual([])
@@ -221,7 +238,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[far, near, mid]} />
+        <Layer>
+          <AlignmentGuides guides={[far, near, mid]} />
+        </Layer>
       </Stage>,
     )
     const texts = getTexts(stage)
@@ -240,7 +259,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[a, b]} />
+        <Layer>
+          <AlignmentGuides guides={[a, b]} />
+        </Layer>
       </Stage>,
     )
     // One dashed line (position=100) + one label at the smallest gap.
@@ -277,7 +298,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[v1, v2, h1, h2]} />
+        <Layer>
+          <AlignmentGuides guides={[v1, v2, h1, h2]} />
+        </Layer>
       </Stage>,
     )
     const texts = getTexts(stage).sort()
@@ -299,7 +322,9 @@ describe('AlignmentGuides — distance labels', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <AlignmentGuides guides={[legacy]} />
+        <Layer>
+          <AlignmentGuides guides={[legacy]} />
+        </Layer>
       </Stage>,
     )
     expect(getTexts(stage)).toEqual([])

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
 import { render } from '@testing-library/react'
-import { Stage } from 'react-konva'
+import { Stage, Layer } from 'react-konva'
 import { NeighborhoodLayer } from '../components/editor/Canvas/NeighborhoodLayer'
 import { useNeighborhoodStore } from '../stores/neighborhoodStore'
 import { useFloorStore } from '../stores/floorStore'
@@ -56,7 +56,7 @@ describe('NeighborhoodLayer', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <NeighborhoodLayer />
+        <Layer><NeighborhoodLayer /></Layer>
       </Stage>,
     )
     const allLayers = stage.getLayers()
@@ -72,7 +72,7 @@ describe('NeighborhoodLayer', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <NeighborhoodLayer />
+        <Layer><NeighborhoodLayer /></Layer>
       </Stage>,
     )
     const layer = stage.getLayers()[0]
@@ -89,7 +89,7 @@ describe('NeighborhoodLayer', () => {
     let stage: any
     render(
       <Stage width={400} height={400} ref={(s) => { stage = s }}>
-        <NeighborhoodLayer />
+        <Layer><NeighborhoodLayer /></Layer>
       </Stage>,
     )
     const layer = stage.getLayers()[0]
