@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { LibraryItem } from '../components/editor/LeftSidebar/ElementLibrary'
+import type { LibraryItem } from '../components/editor/LeftSidebar/elementLibraryModel'
 
 const MAX_RECENTS = 6
 const STORAGE_KEY = 'floocraft.library.recents'
@@ -13,6 +13,7 @@ interface RecentsState {
 
 /** Stable identity key for an item. Same item type+shape dedupes. */
 function itemKey(item: LibraryItem): string {
+  if (item.kit) return `kit/${item.kit}`
   return `${item.type}${item.shape ? `/${item.shape}` : ''}`
 }
 

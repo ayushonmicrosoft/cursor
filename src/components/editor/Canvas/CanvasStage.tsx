@@ -32,7 +32,7 @@ import { consumeQueueAtElement } from '../../../lib/multiSeatAssign'
 import { useToastStore } from '../../../stores/toastStore'
 import { findNearestStraightWallHit } from '../../../lib/wallAttachment'
 import type { DoorElement, WindowElement, CanvasElement } from '../../../types/elements'
-import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem } from '../LeftSidebar/ElementLibrary'
+import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem } from '../LeftSidebar/elementLibraryModel'
 import {
   buildRectShape,
   buildEllipse,

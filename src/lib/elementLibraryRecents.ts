@@ -11,7 +11,7 @@
  * library item descriptors — no version field; if the schema ever changes
  * we treat parse-failures as "no recents" (see `getRecents`).
  */
-import type { LibraryItem } from '../components/editor/LeftSidebar/ElementLibrary'
+import type { LibraryItem } from '../components/editor/LeftSidebar/elementLibraryModel'
 
 export const ELEMENT_LIBRARY_RECENTS_KEY = 'floocraft.elementLibrary.recent'
 export const ELEMENT_LIBRARY_RECENTS_MAX = 5

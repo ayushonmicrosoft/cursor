@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useLibraryFavorites, favoriteKey } from '../hooks/useLibraryFavorites'
-import type { LibraryItem } from '../components/editor/LeftSidebar/ElementLibrary'
+import type { LibraryItem } from '../components/editor/LeftSidebar/elementLibraryModel'
 
 function item(overrides: Partial<LibraryItem> = {}): LibraryItem {
   return { type: 'desk', label: 'A Desk', category: 'Desks', ...overrides }

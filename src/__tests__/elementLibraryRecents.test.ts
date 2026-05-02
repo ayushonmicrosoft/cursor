@@ -6,7 +6,7 @@ import {
   ELEMENT_LIBRARY_RECENTS_KEY,
   ELEMENT_LIBRARY_RECENTS_MAX,
 } from '../lib/elementLibraryRecents'
-import type { LibraryItem } from '../components/editor/LeftSidebar/ElementLibrary'
+import type { LibraryItem } from '../components/editor/LeftSidebar/elementLibraryModel'
 
 function item(label: string, overrides: Partial<LibraryItem> = {}): LibraryItem {
   return { type: 'desk', label, category: 'Desks', ...overrides }

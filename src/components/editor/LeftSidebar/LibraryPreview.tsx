@@ -1,5 +1,5 @@
 import { getDefaults } from '../../../lib/constants'
-import type { LibraryItem } from './ElementLibrary'
+import type { LibraryItem } from './elementLibraryModel'
 
 /**
  * 24x18 inline SVG thumbnail for a library tile. These previews mirror
