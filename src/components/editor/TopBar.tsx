@@ -37,6 +37,7 @@ import {
   Maximize,
   PlaySquare,
   Menu,
+  Sparkles,
 } from 'lucide-react'
 import { SeatLabelStylePicker } from './TopBar/SeatLabelStylePicker'
 import { FileMenu, type FileMenuGroup } from './TopBar/FileMenu'
@@ -45,7 +46,7 @@ import { exportFloorAsPng } from '../../lib/pngExport'
 import { buildExportFilename } from '../../lib/exportFilename'
 import { getActiveStage } from '../../lib/stageRegistry'
 import { useState, useRef, useEffect } from 'react'
-import { NavLink, useLocation, useParams } from 'react-router-dom'
+import { NavLink, useParams } from 'react-router-dom'
 import { useCan } from '../../hooks/useCan'
 import { TeamSwitcher } from '../team/TeamSwitcher'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'
@@ -116,6 +117,7 @@ export function TopBar() {
     setViewMode,
     presentationMode,
     setPresentationMode,
+    setFirstRunCoachOpen,
     dockableToolbarLayouts,
     dockableToolbarVisibility,
     activeWorkspacePreset,
@@ -133,6 +135,7 @@ export function TopBar() {
       setViewMode: s.setViewMode,
       presentationMode: s.presentationMode,
       setPresentationMode: s.setPresentationMode,
+      setFirstRunCoachOpen: s.setFirstRunCoachOpen,
       dockableToolbarLayouts: s.dockableToolbarLayouts,
       dockableToolbarVisibility: s.dockableToolbarVisibility,
       activeWorkspacePreset: s.activeWorkspacePreset,
@@ -755,6 +758,18 @@ export function TopBar() {
                 </div>
                 <ScaleSettingsPopover />
               </div>
+              <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+              <button
+                role="menuitem"
+                onClick={() => {
+                  setViewMenuOpen(false)
+                  setFirstRunCoachOpen(true)
+                }}
+                className={secondaryMenuItemClass}
+              >
+                <Sparkles size={14} aria-hidden="true" />
+                Restart onboarding tour
+              </button>
             </div>
           )}
           </div>

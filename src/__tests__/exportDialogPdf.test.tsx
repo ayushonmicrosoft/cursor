@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import type Konva from 'konva'
 import { ExportDialog } from '../components/editor/ExportDialog'
 import { useUIStore } from '../stores/uiStore'
@@ -54,35 +54,37 @@ describe('ExportDialog PDF + PNG wiring', () => {
     useToastStore.setState({ items: [] })
   })
 
-  it('clicking PDF Floor Plan calls exportPdf with stage + project filename', () => {
+  it('exporting PDF calls exportPdf with stage + project filename', async () => {
     const fakeStage = { __brand: 'stage' } as unknown as Konva.Stage
     setActiveStage(fakeStage)
     openDialog('office-plan')
     render(<ExportDialog />)
 
-    fireEvent.click(screen.getByRole('button', { name: /PDF Floor Plan/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^PDF/i }))
+    fireEvent.click(screen.getByRole('button', { name: /export pdf/i }))
 
-    expect(exportPdfMock).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(exportPdfMock).toHaveBeenCalledTimes(1))
     const [stageArg, opts] = exportPdfMock.mock.calls[0]
     expect(stageArg).toBe(fakeStage)
     expect(opts.fileName).toBe('office-plan.pdf')
-    expect(opts.dpi).toBe(300)
+    expect(opts.dpi).toBe(150)
     // Dialog closes on success.
     expect(useUIStore.getState().exportDialogOpen).toBe(false)
   })
 
-  it('clicking PNG Image calls exportPng with stage + project filename', () => {
+  it('exporting PNG calls exportPng with stage + project filename', async () => {
     const fakeStage = { __brand: 'stage' } as unknown as Konva.Stage
     setActiveStage(fakeStage)
     openDialog('office-plan')
     render(<ExportDialog />)
 
-    fireEvent.click(screen.getByRole('button', { name: /PNG Image/i }))
+    fireEvent.click(screen.getByRole('button', { name: /export png/i }))
 
-    expect(exportPngMock).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(exportPngMock).toHaveBeenCalledTimes(1))
     const [stageArg, opts] = exportPngMock.mock.calls[0]
     expect(stageArg).toBe(fakeStage)
     expect(opts.fileName).toBe('office-plan.png')
+    expect(opts.pixelRatio).toBe(2)
     expect(useUIStore.getState().exportDialogOpen).toBe(false)
   })
 
@@ -91,7 +93,8 @@ describe('ExportDialog PDF + PNG wiring', () => {
     openDialog()
     render(<ExportDialog />)
 
-    fireEvent.click(screen.getByRole('button', { name: /PDF Floor Plan/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^PDF/i }))
+    fireEvent.click(screen.getByRole('button', { name: /export pdf/i }))
 
     expect(exportPdfMock).not.toHaveBeenCalled()
     expect(useUIStore.getState().exportDialogOpen).toBe(true)
@@ -101,5 +104,20 @@ describe('ExportDialog PDF + PNG wiring', () => {
     expect(toasts).toHaveLength(1)
     expect(toasts[0].tone).toBe('error')
     expect(toasts[0].body).toMatch(/Open a floor plan/i)
+  })
+
+  it('shows advanced export controls and progress while exporting', async () => {
+    const fakeStage = { __brand: 'stage' } as unknown as Konva.Stage
+    setActiveStage(fakeStage)
+    openDialog('office-plan')
+    render(<ExportDialog />)
+
+    expect(screen.getByLabelText(/background color/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/scale factor/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/include dimensions/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /export png/i }))
+    expect(screen.getByRole('status')).toHaveTextContent(/exporting png/i)
+    await waitFor(() => expect(exportPngMock).toHaveBeenCalledTimes(1))
   })
 })

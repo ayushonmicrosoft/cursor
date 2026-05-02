@@ -32,7 +32,7 @@ export function FirstUseTooltip({
     <div
       id={id}
       role="tooltip"
-      className="absolute left-full top-0 ml-2 w-60 z-50 pointer-events-none"
+      className="absolute left-full top-0 z-50 ml-2 w-60 max-w-[calc(100vw-2rem)] pointer-events-none max-[520px]:left-0 max-[520px]:top-full max-[520px]:mt-2 max-[520px]:ml-0 max-[520px]:w-[min(15rem,calc(100vw-2rem))]"
     >
       <div className="bg-gray-900 text-white rounded-lg shadow-xl p-3 text-xs leading-snug border border-gray-800">
         <div className="flex items-center gap-2 mb-1">
