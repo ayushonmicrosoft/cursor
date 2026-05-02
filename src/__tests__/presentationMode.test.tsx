@@ -142,7 +142,7 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     expect(spy).toHaveBeenCalledWith('f3')
   })
 
-  it('Home jumps to first floor and End jumps to last floor', () => {
+  it('Home jumps to first floor', () => {
     setFloors(['f1', 'f2', 'f3'], 'f2')
     const spy = vi.spyOn(seatAssignment, 'switchToFloor')
     render(<PresentationOverlay />)
@@ -153,8 +153,15 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home' }))
     })
     expect(spy).toHaveBeenLastCalledWith('f1')
-    // Reset active floor so End has somewhere to go.
-    useFloorStore.setState({ activeFloorId: 'f1' } as any)
+  })
+
+  it('End jumps to last floor', () => {
+    setFloors(['f1', 'f2', 'f3'], 'f1')
+    const spy = vi.spyOn(seatAssignment, 'switchToFloor')
+    render(<PresentationOverlay />)
+    act(() => {
+      useUIStore.getState().setPresentationMode(true)
+    })
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'End' }))
     })

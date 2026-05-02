@@ -19,7 +19,7 @@ import { DimensionLayer } from './DimensionLayer'
 import { OrgChartOverlay } from '../../reports/OrgChartOverlay'
 import { SeatMapColorMode } from '../../reports/SeatMapColorMode'
 import { useWallDrawing } from '../../../hooks/useWallDrawing'
-import { ZOOM_MIN, ZOOM_MAX, ZOOM_WHEEL_SENSITIVITY, ZOOM_FACTOR } from '../../../lib/constants'
+import { ZOOM_MIN, ZOOM_MAX, ZOOM_WHEEL_SENSITIVITY } from '../../../lib/constants'
 import { isAssignableElement, isWorkstationElement } from '../../../types/elements'
 import { computeWorkstationSlotIndex } from '../../../lib/workstationSlots'
 import { elementsIntersectingRect } from '../../../lib/marquee'
@@ -100,7 +100,6 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
   const northRotation = settings.northRotation ?? 0
 
   const { clearSelection, setContextMenu } = useUIStore(useShallow((s) => ({ clearSelection: s.clearSelection, setContextMenu: s.setContextMenu })))
-  const zoomAtPoint = useCanvasStore((s) => s.zoomAtPoint)
   const canEdit = useCan('editMap')
   // Annotations are explicitly `editMap || editRoster` — HR editors should
   // be able to leave notes on the map even though they can't move elements.
@@ -1102,31 +1101,19 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
   // polyline, and the measure tool uses it to finalise the ruler. Without
   // this router the store-level `onDblClick={handleCanvasDoubleClick}` would
   // fire only the wall handler, leaving the measure tool unable to finish.
-  const handleStageDoubleClick = useCallback(
-    (e?: Konva.KonvaEventObject<MouseEvent>) => {
-      if (activeTool === 'wall') {
-        handleCanvasDoubleClick()
-        return
-      }
-      if (activeTool === 'measure') {
-        setMeasureSession((prev) =>
-          prev.points.length > 0
-            ? { points: prev.points, cursor: null, finalised: true }
-            : prev,
-        )
-        return
-      }
-      const stage = stageRef.current
-      if (!stage) return
-      const scale = stage.scaleX()
-      const nextScale = Math.min(ZOOM_MAX, scale * ZOOM_FACTOR)
-      if (nextScale === scale) return
-      const pointer = e && e.target ? stage.getPointerPosition() : stage.getPointerPosition()
-      if (!pointer) return
-      zoomAtPoint(pointer.x, pointer.y, nextScale)
-    },
-    [activeTool, handleCanvasDoubleClick, zoomAtPoint]
-  )
+  const handleStageDoubleClick = useCallback(() => {
+    if (activeTool === 'wall') {
+      handleCanvasDoubleClick()
+      return
+    }
+    if (activeTool === 'measure') {
+      setMeasureSession((prev) =>
+        prev.points.length > 0
+          ? { points: prev.points, cursor: null, finalised: true }
+          : prev,
+      )
+    }
+  }, [activeTool, handleCanvasDoubleClick])
 
   const handleMouseUp = useCallback(() => {
     const wasPanning = isPanning.current

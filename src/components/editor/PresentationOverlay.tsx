@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useUIStore } from '../../stores/uiStore'
 import { prefersReducedMotion } from '../../lib/prefersReducedMotion'
+import { usePresentationShortcuts } from '../../hooks/usePresentationShortcuts'
 
 /**
  * Wave 11B: presentation-mode chrome.
@@ -30,6 +31,8 @@ import { prefersReducedMotion } from '../../lib/prefersReducedMotion'
  * isn't paying for fade-timer refs while in normal editing.
  */
 export function PresentationOverlay() {
+  usePresentationShortcuts()
+
   const presentationMode = useUIStore((s) => s.presentationMode)
   const setPresentationMode = useUIStore((s) => s.setPresentationMode)
 
@@ -75,6 +78,12 @@ function PresentationOverlayContent({ onExit }: { onExit: () => void }) {
   const reduceMotion = prefersReducedMotion()
   const [active, setActive] = useState(false)
   const [cursorNearTopRight, setCursorNearTopRight] = useState(false)
+  const [showHint] = useState(() => {
+    if (typeof localStorage === 'undefined') return false
+    const seen = localStorage.getItem('floorcraft.presentationHintSeen') === '1'
+    if (!seen) localStorage.setItem('floorcraft.presentationHintSeen', '1')
+    return !seen
+  })
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -122,6 +131,9 @@ function PresentationOverlayContent({ onExit }: { onExit: () => void }) {
         <span className="text-gray-200">Presentation</span>
         <span className="mx-1.5 text-gray-500">·</span>
         <span className="text-gray-300">Esc to exit</span>
+        {showHint && (
+          <span className="ml-2 text-gray-300">Use ←/→ to switch floors</span>
+        )}
       </div>
 
       <button
