@@ -49,7 +49,9 @@ function cloneAndResetElement(source: CanvasElement, id: string): CanvasElement 
     ;(cloned as DeskElement).assignedEmployeeId = null
   } else if (cloned.type === 'workstation') {
     const workstation = cloned as WorkstationElement
-    const positions = Number(workstation.positions) || 0
+    const positions = Number.isFinite(workstation.positions)
+      ? Math.max(0, Math.floor(workstation.positions))
+      : workstation.assignedEmployeeIds.length
     workstation.assignedEmployeeIds = Array.from({ length: positions }, () => null)
   } else if (cloned.type === 'private-office') {
     ;(cloned as PrivateOfficeElement).assignedEmployeeIds = []

@@ -77,6 +77,33 @@ function numberCapacity(item: LibraryItem, fallback: number): number {
   return typeof item.capacity === 'number' ? item.capacity : fallback
 }
 
+function parseSvgLength(raw: string | undefined): number | null {
+  if (!raw) return null
+  const value = Number.parseFloat(raw.trim())
+  return Number.isFinite(value) && value > 0 ? value : null
+}
+
+function parseSvgNaturalDimensions(svgSource: string): { width: number; height: number } | null {
+  const svgOpenTag = svgSource.match(/<svg\b[^>]*>/i)?.[0]
+  if (!svgOpenTag) return null
+
+  const viewBox = svgOpenTag.match(/\sviewBox\s*=\s*(["'])(.*?)\1/i)?.[2]
+  if (viewBox) {
+    const parts = viewBox.trim().split(/[\s,]+/).map(Number)
+    if (parts.length === 4) {
+      const [, , width, height] = parts
+      if (Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0) {
+        return { width, height }
+      }
+    }
+  }
+
+  const width = parseSvgLength(svgOpenTag.match(/\swidth\s*=\s*(["'])(.*?)\1/i)?.[2])
+  const height = parseSvgLength(svgOpenTag.match(/\sheight\s*=\s*(["'])(.*?)\1/i)?.[2])
+  if (width && height) return { width, height }
+  return null
+}
+
 function buildLibraryElement(
   item: LibraryItem,
   x: number,
@@ -193,8 +220,10 @@ function buildLibraryElement(
   }
 
   if (item.type === 'custom-svg' && item.svgSource) {
+    const naturalSize = parseSvgNaturalDimensions(item.svgSource)
     const el: CustomSvgElement = {
       ...baseProps,
+      ...(naturalSize ?? {}),
       type: 'custom-svg',
       svgSource: item.svgSource,
     }

@@ -10,6 +10,7 @@ import { elementBounds } from '../../lib/elementBounds'
 const MINIMAP_WIDTH = 180
 const MINIMAP_HEIGHT = 120
 const COLLAPSED_SIZE = 40
+const MINIMAP_ANCHOR_CLASS = 'absolute bottom-12 right-24 z-20'
 
 /**
  * Lower-right overview panel. Split into three concerns so a pan
@@ -326,7 +327,7 @@ export function Minimap() {
         role="region"
         aria-label="Canvas overview"
         data-minimap-anchor="bottom-right-offset"
-        className="cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900"
+        className={`${MINIMAP_ANCHOR_CLASS} cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900`}
         style={{ width: COLLAPSED_SIZE, height: COLLAPSED_SIZE }}
       >
         <button
@@ -356,7 +357,7 @@ export function Minimap() {
         role="region"
       aria-label="Canvas overview"
       data-minimap-anchor="bottom-right-offset"
-      className="cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900"
+      className={`${MINIMAP_ANCHOR_CLASS} cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900`}
       style={{ width: MINIMAP_WIDTH, height: MINIMAP_HEIGHT }}
       onPointerDown={handlePointerDown}
     >

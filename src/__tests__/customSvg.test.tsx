@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { sanitizeSvg, MAX_SVG_BYTES } from '../lib/svgSanitize'
 import { useCustomShapes } from '../hooks/useCustomShapes'
+import { buildLibraryElements } from '../components/editor/LeftSidebar/elementLibraryModel'
 
 describe('sanitizeSvg', () => {
   it('strips <script> blocks and on* handlers from an otherwise valid SVG', () => {
@@ -70,6 +71,42 @@ describe('sanitizeSvg', () => {
     const result = sanitizeSvg(valid)
     expect(result.ok).toBe(true)
     expect(result.svg).toContain('<circle')
+  })
+})
+
+describe('custom SVG library elements', () => {
+  it('uses viewBox dimensions for uploaded SVG canvas size', () => {
+    const [element] = buildLibraryElements(
+      {
+        type: 'custom-svg',
+        label: 'Wide SVG',
+        category: 'Imported Assets',
+        svgSource: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 20 240 120"><rect width="240" height="120" /></svg>',
+      },
+      0,
+      0,
+      1,
+    )
+
+    expect(element.width).toBe(240)
+    expect(element.height).toBe(120)
+  })
+
+  it('uses width and height attributes when viewBox is unavailable', () => {
+    const [element] = buildLibraryElements(
+      {
+        type: 'custom-svg',
+        label: 'Tall SVG',
+        category: 'Imported Assets',
+        svgSource: '<svg xmlns="http://www.w3.org/2000/svg" width="64px" height="128px"><rect width="64" height="128" /></svg>',
+      },
+      0,
+      0,
+      1,
+    )
+
+    expect(element.width).toBe(64)
+    expect(element.height).toBe(128)
   })
 })
 
