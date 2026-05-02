@@ -32,7 +32,7 @@ import { consumeQueueAtElement } from '../../../lib/multiSeatAssign'
 import { useToastStore } from '../../../stores/toastStore'
 import { findNearestStraightWallHit } from '../../../lib/wallAttachment'
 import type { DoorElement, WindowElement, CanvasElement } from '../../../types/elements'
-import { LIBRARY_DRAG_MIME, buildLibraryElement, type LibraryItem } from '../LeftSidebar/ElementLibrary'
+import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem } from '../LeftSidebar/ElementLibrary'
 import {
   buildRectShape,
   buildEllipse,
@@ -1288,15 +1288,15 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
         return
       }
       const elementsStore = useElementsStore.getState()
-      const element = buildLibraryElement(
+      const built = buildLibraryElements(
         item,
         pos.x,
         pos.y,
         elementsStore.getMaxZIndex() + 1,
         elementsStore.elements,
       )
-      elementsStore.addElement(element)
-      useUIStore.getState().setSelectedIds([element.id])
+      built.forEach((element) => elementsStore.addElement(element))
+      useUIStore.getState().setSelectedIds(built.map((element) => element.id))
       useRecentLibraryItems.getState().addRecent(item)
       return
     }

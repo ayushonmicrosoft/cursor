@@ -88,6 +88,102 @@ export function LibraryPreview({ item }: Props) {
   const key = `${item.type}${item.shape ? `/${item.shape}` : ''}`
 
   // Special-cased silhouettes -------------------------------------------------
+  if (item.kit) {
+    switch (item.kit) {
+      case 'bench-2':
+      case 'bench-4':
+      case 'bench-6':
+      case 'bench-8': {
+        const seats = item.kit === 'bench-2' ? 2 : item.kit === 'bench-4' ? 4 : item.kit === 'bench-6' ? 6 : 8
+        const rowSeats = seats <= 4 ? seats : seats / 2
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <rect x={2} y={6.2} width={20} height={5.6} rx={R} fill={fill} stroke={stroke} />
+            <line x1={2} y1={9} x2={22} y2={9} stroke={stroke} opacity="0.45" />
+            {Array.from({ length: rowSeats }).map((_, i) => {
+              const x = 3.2 + (17 / Math.max(1, rowSeats - 1)) * i
+              return <Chair key={`kit-bench-top-${i}`} x={x} y={2.7} width={2.6} height={1.9} stroke={stroke} />
+            })}
+            {(seats > 4 ? Array.from({ length: rowSeats }) : []).map((_, i) => {
+              const x = 3.2 + (17 / Math.max(1, rowSeats - 1)) * i
+              return <Chair key={`kit-bench-bottom-${i}`} x={x} y={13.4} width={2.6} height={1.9} stroke={stroke} />
+            })}
+            {seats <= 4 && <PlanLine d="M12 6.4v5.2" stroke={stroke} opacity={0.45} />}
+          </svg>
+        )
+      }
+      case 'sit-stand':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <rect x={3} y={5} width={18} height={7.8} rx={R} fill={fill} stroke={stroke} />
+            <rect x={5} y={6.5} width={5} height={2.4} rx="0.4" fill="#fff" stroke={stroke} opacity="0.72" />
+            <rect x={13.5} y={6.5} width={4.8} height={2.4} rx="0.4" fill="#fff" stroke={stroke} opacity="0.72" />
+            <PlanLine d="M7 12.8v2.3M17 12.8v2.3" stroke={stroke} opacity={0.6} />
+            <Chair x={9.4} y={14} width={5.2} height={2.2} stroke={stroke} />
+          </svg>
+        )
+      case 'premium-chair':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <rect x={7} y={3} width={10} height={4.2} rx="1.1" fill="#fff" stroke={stroke} />
+            <rect x={5.2} y={7} width={13.6} height={7.2} rx="1.2" fill={fill} stroke={stroke} />
+            <path d="M7 8.2c2 1.1 8 1.1 10 0M12 14.2v2.2M8.6 16.4h6.8" stroke={stroke} strokeWidth="0.8" fill="none" opacity="0.65" />
+            <rect x={4} y={8.3} width={2.4} height={4.8} rx="0.7" fill="#fff" stroke={stroke} />
+            <rect x={17.6} y={8.3} width={2.4} height={4.8} rx="0.7" fill="#fff" stroke={stroke} />
+          </svg>
+        )
+      case 'huddle-room':
+      case 'boardroom':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <rect x={2} y={2} width={20} height={14} rx={R} fill={GLASS_FILL} stroke={stroke} opacity="0.65" />
+            <rect x={item.kit === 'boardroom' ? 5 : 7} y={6.2} width={item.kit === 'boardroom' ? 14 : 10} height={5.5} rx={R} fill={fill} stroke={stroke} />
+            {[5, 9.5, 14.5, 19].map((x) => <Chair key={`kit-room-top-${x}`} x={x - 1.1} y={3.2} width={2.2} height={1.7} stroke={stroke} />)}
+            {[5, 9.5, 14.5, 19].map((x) => <Chair key={`kit-room-bottom-${x}`} x={x - 1.1} y={13.1} width={2.2} height={1.7} stroke={stroke} />)}
+          </svg>
+        )
+      case 'focus-pod-row':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            {[3, 9, 15].map((x, i) => (
+              <g key={i}>
+                <rect x={x} y={2.5} width={6} height={13} rx={R} fill={fill} stroke={stroke} />
+                <rect x={x + 1.4} y={5} width={3.2} height={5.4} rx="0.5" fill="#fff" stroke={stroke} opacity="0.75" />
+              </g>
+            ))}
+          </svg>
+        )
+      case 'lounge':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <rect x={5} y={11} width={14} height={4.8} rx={R} fill={fill} stroke={stroke} />
+            <rect x={3} y={4.5} width={5.2} height={5} rx={R} fill="#fff" stroke={stroke} />
+            <rect x={15.8} y={4.5} width={5.2} height={5} rx={R} fill="#fff" stroke={stroke} />
+            <ellipse cx={12} cy={8.7} rx={3.2} ry={2.2} fill="#fff" stroke={stroke} />
+            <circle cx={20} cy={13.5} r={2.2} fill="#86EFAC" stroke={stroke} />
+          </svg>
+        )
+      case 'reception':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <path d="M3 4h17v4H8v4H3z" fill={fill} stroke={stroke} strokeLinejoin="miter" />
+            <Chair x={6} y={13.2} width={3.4} height={2.2} stroke={stroke} />
+            <Chair x={11} y={13.2} width={3.4} height={2.2} stroke={stroke} />
+            <circle cx={19} cy={13} r={2.3} fill="#86EFAC" stroke={stroke} />
+          </svg>
+        )
+      case 'copy-zone':
+        return (
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
+            <rect x={3} y={3.5} width={18} height={3.6} rx={R} fill={fill} stroke={stroke} />
+            <rect x={5} y={9} width={6.5} height={6} rx="1" fill="#E2E8F0" stroke={stroke} />
+            <rect x={13.4} y={9.5} width={6} height={4.8} rx="0.8" fill="#fff" stroke={stroke} opacity="0.82" />
+            <PlanLine d="M15 12h3" stroke={stroke} opacity={0.55} />
+          </svg>
+        )
+    }
+  }
+
   if (item.type === 'desk' || item.type === 'hot-desk') {
     if (key === 'desk/l-shape' || key === 'hot-desk/l-shape') {
       return (

@@ -39,6 +39,7 @@ import type {
   DecorElement,
   DecorShape,
   CustomSvgElement,
+  CanvasElement,
 } from '../../../types/elements'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
@@ -51,6 +52,9 @@ export interface LibraryItem {
   label: string
   category: string
   shape?: string    // NEW — optional shape override
+  kit?: CatalogKitId
+  dimensions?: { width: number; height: number; unit?: string }
+  capacity?: number | string
   /** Only present when type === 'custom-svg'. Inline sanitised SVG source. */
   svgSource?: string
   /** Only present when type === 'custom-svg'. Stable id of the custom shape
@@ -112,14 +116,54 @@ const TILE_DESCRIPTIONS: Record<string, string> = {
   'decor/locker': 'Bank of personal lockers.',
   'decor/credenza': 'Low storage credenza.',
   'decor/printer-bay': 'Dedicated area for printers and copiers.',
+  'kit/bench-2': 'Two-seat bench pod with assignable positions and a shared divider.',
+  'kit/bench-4': 'Four-seat bench pod with assignable positions and a shared divider.',
+  'kit/bench-6': 'Six-seat bench pod arranged as grouped bench runs.',
+  'kit/bench-8': 'Eight-seat bench pod arranged as grouped bench runs.',
+  'kit/sit-stand': 'Single sit-stand workstation with one assignable seat.',
+  'kit/premium-chair': 'Standalone premium task chair silhouette for planning layouts.',
+  'kit/huddle-room': 'Small huddle room with room capacity, table, and chairs grouped together.',
+  'kit/boardroom': 'Boardroom kit with room capacity and a large meeting table.',
+  'kit/focus-pod-row': 'Row of grouped one-person focus pods.',
+  'kit/lounge': 'Modular lounge setting with sofa, armchairs, table, and plant.',
+  'kit/reception': 'Reception setting with desk, seating, and planter grouped together.',
+  'kit/copy-zone': 'Printer / copy zone with printer, storage, and counter elements.',
 }
 
 /** Same key shape as the recents helper so descriptions follow shape variants. */
 function tileKey(item: LibraryItem): string {
+  if (item.kit) return `kit/${item.kit}`
   return `${item.type}${item.shape ? `/${item.shape}` : ''}`
 }
 
+export type CatalogKitId =
+  | 'bench-2'
+  | 'bench-4'
+  | 'bench-6'
+  | 'bench-8'
+  | 'sit-stand'
+  | 'premium-chair'
+  | 'huddle-room'
+  | 'boardroom'
+  | 'focus-pod-row'
+  | 'lounge'
+  | 'reception'
+  | 'copy-zone'
+
 const LIBRARY_ITEMS: LibraryItem[] = [
+  { type: 'workstation', label: '2-seat bench pod', category: 'Catalog Kits', kit: 'bench-2', capacity: 2, dimensions: { width: 12, height: 6, unit: 'ft' } },
+  { type: 'workstation', label: '4-seat bench pod', category: 'Catalog Kits', kit: 'bench-4', capacity: 4, dimensions: { width: 20, height: 6, unit: 'ft' } },
+  { type: 'workstation', label: '6-seat bench pod', category: 'Catalog Kits', kit: 'bench-6', capacity: 6, dimensions: { width: 24, height: 12, unit: 'ft' } },
+  { type: 'workstation', label: '8-seat bench pod', category: 'Catalog Kits', kit: 'bench-8', capacity: 8, dimensions: { width: 32, height: 12, unit: 'ft' } },
+  { type: 'desk', label: 'Sit-stand workstation', category: 'Catalog Kits', kit: 'sit-stand', capacity: 1, dimensions: { width: 5, height: 2.5, unit: 'ft' } },
+  { type: 'chair', label: 'Premium task chair', category: 'Catalog Kits', kit: 'premium-chair', capacity: 1, dimensions: { width: 28, height: 28, unit: 'in' } },
+  { type: 'conference-room', label: 'Small huddle room', category: 'Catalog Kits', kit: 'huddle-room', capacity: 4, dimensions: { width: 10, height: 10, unit: 'ft' } },
+  { type: 'conference-room', label: 'Boardroom kit', category: 'Catalog Kits', kit: 'boardroom', capacity: 12, dimensions: { width: 20, height: 14, unit: 'ft' } },
+  { type: 'phone-booth', label: 'Focus pod row', category: 'Catalog Kits', kit: 'focus-pod-row', capacity: 3, dimensions: { width: 17, height: 6, unit: 'ft' } },
+  { type: 'common-area', label: 'Modular lounge setting', category: 'Catalog Kits', kit: 'lounge', capacity: 5, dimensions: { width: 15, height: 11, unit: 'ft' } },
+  { type: 'decor', label: 'Reception setting', category: 'Catalog Kits', kit: 'reception', capacity: 3, dimensions: { width: 15, height: 10, unit: 'ft' } },
+  { type: 'printer', label: 'Printer / copy zone', category: 'Catalog Kits', kit: 'copy-zone', dimensions: { width: 10, height: 7, unit: 'ft' } },
+
   // Tables
   { type: 'table-rect',        label: 'Rect Table',     category: 'Tables' },
   { type: 'table-conference',  label: 'Conf. Table',    category: 'Tables' },
@@ -192,6 +236,22 @@ type AnyLibraryElement =
   | DecorElement
   | BaseElement
 
+function catalogMeta(item: LibraryItem): BaseElement['catalog'] | undefined {
+  if (!item.kit && item.type !== 'custom-svg') return undefined
+  return {
+    source: item.type === 'custom-svg' ? 'import' : 'catalog',
+    family: item.kit ?? item.category,
+    capacity: typeof item.capacity === 'number' ? item.capacity : undefined,
+    dimensions: item.dimensions
+      ? { width: item.dimensions.width, height: item.dimensions.height, unit: item.dimensions.unit ?? 'in' }
+      : undefined,
+  }
+}
+
+function numberCapacity(item: LibraryItem, fallback: number): number {
+  return typeof item.capacity === 'number' ? item.capacity : fallback
+}
+
 /**
  * Build (but do not insert) an element from a library item at the given
  * canvas-space coords. Extracted so the click-to-add path (centres in the
@@ -231,6 +291,7 @@ export function buildLibraryElement(
     zIndex,
     label: item.label,
     visible: true,
+    ...(catalogMeta(item) ? { catalog: catalogMeta(item) } : {}),
     style: { fill: defaults.fill, stroke: defaults.stroke, strokeWidth: 1.4, opacity: 1 },
   } as const
 
@@ -265,7 +326,7 @@ export function buildLibraryElement(
 
   if (item.type === 'workstation') {
     const deskId = nextSeatNumber(existingElements)
-    const positions = 4
+    const positions = numberCapacity(item, 4)
     const element: WorkstationElement = {
       ...baseProps,
       type: 'workstation',
@@ -297,7 +358,7 @@ export function buildLibraryElement(
       ...baseProps,
       type: 'conference-room',
       roomName: 'Conference Room',
-      capacity: 8,
+      capacity: numberCapacity(item, 8),
     }
     return element
   }
@@ -345,8 +406,119 @@ export function buildLibraryElement(
   return element
 }
 
+type KitPart = {
+  item: LibraryItem
+  dx: number
+  dy: number
+  width?: number
+  height?: number
+  rotation?: number
+  capacity?: number
+}
+
+function kitParts(item: LibraryItem): KitPart[] | null {
+  switch (item.kit) {
+    case 'bench-2':
+      return [
+        { item: { ...item, kit: undefined, type: 'workstation', label: '2-seat bench', capacity: 2 }, dx: 0, dy: 0, width: 120, height: 56 },
+        { item: { type: 'divider', label: 'Bench divider', category: item.category }, dx: 0, dy: 0, width: 132, height: 5 },
+      ]
+    case 'bench-4':
+      return [
+        { item: { ...item, kit: undefined, type: 'workstation', label: '4-seat bench', capacity: 4 }, dx: 0, dy: 0, width: 200, height: 60 },
+        { item: { type: 'divider', label: 'Bench divider', category: item.category }, dx: 0, dy: 0, width: 212, height: 5 },
+      ]
+    case 'bench-6':
+      return [
+        { item: { ...item, kit: undefined, type: 'workstation', label: '3-seat bench A', capacity: 3 }, dx: 0, dy: -38, width: 168, height: 56 },
+        { item: { ...item, kit: undefined, type: 'workstation', label: '3-seat bench B', capacity: 3 }, dx: 0, dy: 38, width: 168, height: 56, rotation: 180 },
+        { item: { type: 'divider', label: 'Bench spine', category: item.category }, dx: 0, dy: 0, width: 184, height: 5 },
+      ]
+    case 'bench-8':
+      return [
+        { item: { ...item, kit: undefined, type: 'workstation', label: '4-seat bench A', capacity: 4 }, dx: 0, dy: -40, width: 216, height: 60 },
+        { item: { ...item, kit: undefined, type: 'workstation', label: '4-seat bench B', capacity: 4 }, dx: 0, dy: 40, width: 216, height: 60, rotation: 180 },
+        { item: { type: 'divider', label: 'Bench spine', category: item.category }, dx: 0, dy: 0, width: 232, height: 5 },
+      ]
+    case 'huddle-room':
+      return [
+        { item: { ...item, kit: undefined, type: 'conference-room', label: 'Small huddle room', capacity: 4 }, dx: 0, dy: 0, width: 160, height: 130 },
+        { item: { type: 'table-round', label: 'Huddle table', category: item.category, capacity: 4 }, dx: 0, dy: 0, width: 68, height: 68, capacity: 4 },
+        ...[-42, 42].map((dx) => ({ item: { type: 'chair' as const, label: 'Guest chair', category: item.category }, dx, dy: -44, width: 24, height: 24 })),
+        ...[-42, 42].map((dx) => ({ item: { type: 'chair' as const, label: 'Guest chair', category: item.category }, dx, dy: 44, width: 24, height: 24, rotation: 180 })),
+      ]
+    case 'boardroom':
+      return [
+        { item: { ...item, kit: undefined, type: 'conference-room', label: 'Boardroom', capacity: 12 }, dx: 0, dy: 0, width: 260, height: 170 },
+        { item: { type: 'table-conference', label: 'Boardroom table', category: item.category, capacity: 12 }, dx: 0, dy: 0, width: 190, height: 70, capacity: 12 },
+      ]
+    case 'focus-pod-row':
+      return [-68, 0, 68].map((dx, idx) => ({
+        item: { ...item, kit: undefined, type: 'phone-booth', label: `Focus pod ${idx + 1}`, capacity: 1 },
+        dx,
+        dy: 0,
+        width: 56,
+        height: 64,
+      }))
+    case 'lounge':
+      return [
+        { item: { type: 'sofa', label: 'Lounge sofa', category: item.category }, dx: 0, dy: 42, width: 132, height: 52 },
+        { item: { type: 'decor', label: 'Lounge chair', category: item.category, shape: 'armchair' }, dx: -72, dy: -28, width: 48, height: 48, rotation: 35 },
+        { item: { type: 'decor', label: 'Lounge chair', category: item.category, shape: 'armchair' }, dx: 72, dy: -28, width: 48, height: 48, rotation: -35 },
+        { item: { type: 'table-round', label: 'Coffee table', category: item.category, capacity: 0 }, dx: 0, dy: -12, width: 52, height: 52, capacity: 0 },
+        { item: { type: 'plant', label: 'Plant', category: item.category }, dx: 92, dy: 44, width: 34, height: 34 },
+      ]
+    case 'reception':
+      return [
+        { item: { type: 'decor', label: 'Reception desk', category: item.category, shape: 'reception' }, dx: 0, dy: -28, width: 150, height: 72 },
+        { item: { type: 'decor', label: 'Guest chair', category: item.category, shape: 'armchair' }, dx: -52, dy: 54, width: 42, height: 42, rotation: 180 },
+        { item: { type: 'decor', label: 'Guest chair', category: item.category, shape: 'armchair' }, dx: 0, dy: 54, width: 42, height: 42, rotation: 180 },
+        { item: { type: 'plant', label: 'Plant', category: item.category }, dx: 72, dy: 46, width: 34, height: 34 },
+      ]
+    case 'copy-zone':
+      return [
+        { item: { type: 'printer', label: 'Printer', category: item.category }, dx: -34, dy: 10, width: 56, height: 48 },
+        { item: { type: 'decor', label: 'Supply storage', category: item.category, shape: 'storage' }, dx: 38, dy: 12, width: 62, height: 36 },
+        { item: { type: 'counter', label: 'Copy counter', category: item.category }, dx: 0, dy: -34, width: 104, height: 28 },
+      ]
+    default:
+      return null
+  }
+}
+
+export function buildLibraryElements(
+  item: LibraryItem,
+  x: number,
+  y: number,
+  zIndex: number,
+  existingElements: Record<string, CanvasElement> = {},
+): AnyLibraryElement[] {
+  const parts = kitParts(item)
+  if (!parts) return [buildLibraryElement(item, x, y, zIndex, existingElements)]
+  const groupId = crypto.randomUUID()
+  const virtualExisting: Record<string, CanvasElement> = { ...existingElements }
+  return parts.map((part, idx) => {
+    const element = buildLibraryElement(part.item, x + part.dx, y + part.dy, zIndex + idx, virtualExisting) as AnyLibraryElement
+    const next = {
+      ...element,
+      groupId,
+      ...(part.width ? { width: part.width } : {}),
+      ...(part.height ? { height: part.height } : {}),
+      ...(part.rotation !== undefined ? { rotation: part.rotation } : {}),
+      catalog: catalogMeta(item),
+    } as AnyLibraryElement
+    if (isTableType(next.type)) {
+      const table = next as TableElement
+      table.seatCount = part.capacity ?? numberCapacity(part.item, table.seatCount)
+      table.seats = computeSeatPositions(table.type, table.seatCount, table.seatLayout, table.width, table.height)
+    }
+    virtualExisting[next.id] = next as CanvasElement
+    return next
+  })
+}
+
 function itemKey(item: LibraryItem): string {
-  return `${item.type}${item.shape ? `-${item.shape}` : ''}-${item.label}`
+  return `${item.kit ? `kit-${item.kit}` : item.type}${item.shape ? `-${item.shape}` : ''}-${item.label}`
 }
 
 interface LibraryTileProps {
@@ -386,6 +558,8 @@ function LibraryTile({
   // one whose `dragstart` fired, so a tile-local boolean is the cleanest
   // representation. `dragend` clears it whether or not the drop succeeded.
   const [isDragging, setIsDragging] = useState(false)
+  const capacityBadge = formatCapacity(item.capacity)
+  const dimensionBadge = formatDimensions(item.dimensions)
 
   const handleStarClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault()
@@ -449,7 +623,17 @@ function LibraryTile({
         className="flex min-w-0 flex-1 items-center gap-1.5 text-left rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       >
         <LibraryPreview item={item} />
-        <span className="block min-w-0 truncate">{item.label}</span>
+        <span className="block min-w-0 flex-1 truncate">{item.label}</span>
+        {capacityBadge && (
+          <span className="shrink-0 rounded bg-blue-50 dark:bg-blue-950/50 px-1 py-0.5 text-[9px] font-medium text-blue-700 dark:text-blue-300">
+            {capacityBadge}
+          </span>
+        )}
+        {!capacityBadge && dimensionBadge && (
+          <span className="shrink-0 rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 text-[9px] font-medium text-gray-500 dark:text-gray-400">
+            {dimensionBadge}
+          </span>
+        )}
       </button>
       {onDelete ? (
         <button
@@ -728,6 +912,17 @@ export function ElementLibrary() {
     e.target.value = ''
     if (!file) return
 
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+    if (['dxf', 'dwg', 'ifc', 'rvt'].includes(ext)) {
+      setUploadError(`${ext.toUpperCase()} import is coming soon. Export or convert to SVG for now.`)
+      return
+    }
+
+    if (ext !== 'svg' && file.type !== 'image/svg+xml') {
+      setUploadError('Only SVG import is supported today. CAD/BIM import is coming soon; convert to SVG for now.')
+      return
+    }
+
     if (file.size > MAX_SVG_BYTES) {
       setUploadError(`File is too large (max ${Math.round(MAX_SVG_BYTES / 1024)}KB).`)
       return
@@ -780,7 +975,7 @@ export function ElementLibrary() {
     // Read elements via getState() so we don't re-subscribe the component
     // to the whole map just to auto-number a new seat.
     const existing = useElementsStore.getState().elements
-    addElement(buildLibraryElement(item, x, y, getMaxZIndex() + 1, existing))
+    buildLibraryElements(item, x, y, getMaxZIndex() + 1, existing).forEach((element) => addElement(element))
     bumpRecent(item)
   }
 
@@ -820,7 +1015,8 @@ export function ElementLibrary() {
       customShapes.map((s) => ({
         type: 'custom-svg' as const,
         label: s.name,
-        category: 'My Shapes',
+        category: 'Imported Assets',
+        dimensions: { width: 80, height: 80, unit: 'px' },
         svgSource: s.svgSource,
         customShapeId: s.id,
       })),
@@ -1117,8 +1313,8 @@ export function ElementLibrary() {
             })}
             {customShapeItems.filter(matchesQuery).length > 0 && (
               <LibrarySection
-                id="my-shapes"
-                title="My Shapes"
+                id="imported-assets-search"
+                title="Imported Assets"
                 items={customShapeItems.filter(matchesQuery)}
                 collapsible={true}
                 onClick={handleAddElement}
@@ -1162,8 +1358,8 @@ export function ElementLibrary() {
           ))}
           {customShapeItems.length > 0 && (
             <LibrarySection
-              id="my-shapes"
-              title="My Shapes"
+              id="imported-assets"
+              title="Imported Assets"
               items={customShapeItems}
               collapsible={true}
               onClick={handleAddElement}
@@ -1181,15 +1377,18 @@ export function ElementLibrary() {
               className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded border border-dashed border-gray-300 dark:border-gray-700 hover:border-gray-400 transition-colors"
             >
               <Upload size={12} aria-hidden="true" />
-              <span>Upload SVG</span>
+              <span>BIM import / SVG upload</span>
             </button>
+            <div className="mt-1 px-1 text-[10px] leading-snug text-gray-400 dark:text-gray-500">
+              SVG supported now. DXF, DWG, IFC, and RVT are staged; convert to SVG for now.
+            </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/svg+xml,.svg"
+              accept="image/svg+xml,.svg,.dxf,.dwg,.ifc,.rvt"
               onChange={handleFileChange}
               className="hidden"
-              aria-label="Upload SVG shape"
+              aria-label="Import SVG or staged CAD/BIM asset"
             />
             {uploadError && (
               <div
@@ -1258,6 +1457,8 @@ function HoverTooltip({ item, rect }: HoverTooltipProps) {
   // style flag below, so reduced-motion users see the tooltip render at
   // full opacity on first paint with no transition.
   const noMotion = prefersReducedMotion()
+  const capacityBadge = formatCapacity(item.capacity)
+  const dimensionBadge = formatDimensions(item.dimensions)
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     if (noMotion) return
@@ -1277,6 +1478,12 @@ function HoverTooltip({ item, rect }: HoverTooltipProps) {
       style={{ top, left, width: TOOLTIP_WIDTH, opacity }}
     >
       <div className="font-medium mb-0.5">{item.label}</div>
+      {(capacityBadge || dimensionBadge) && (
+        <div className="mb-1 flex flex-wrap gap-1">
+          {capacityBadge && <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px]">{capacityBadge}</span>}
+          {dimensionBadge && <span className="rounded bg-white/10 dark:bg-gray-900/10 px-1.5 py-0.5 text-[10px]">{dimensionBadge}</span>}
+        </div>
+      )}
       <div className="opacity-80 leading-snug">
         {TILE_DESCRIPTIONS[tileKey(item)] ?? `${item.category} element.`}
       </div>
@@ -1300,4 +1507,16 @@ function HoverTooltip({ item, rect }: HoverTooltipProps) {
     </div>,
     document.body,
   )
+}
+
+function formatCapacity(capacity?: number | string) {
+  if (capacity === undefined || capacity === null || capacity === 0) return null
+  return typeof capacity === 'number' ? `${capacity} seat${capacity === 1 ? '' : 's'}` : capacity
+}
+
+function formatDimensions(dimensions?: LibraryItem['dimensions']) {
+  if (!dimensions) return null
+  const unit = dimensions.unit ?? 'in'
+  const suffix = unit === 'ft' ? "'" : unit === 'in' ? '"' : ` ${unit}`
+  return `${dimensions.width}${suffix} × ${dimensions.height}${suffix}`
 }

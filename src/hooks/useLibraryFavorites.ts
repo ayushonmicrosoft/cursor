@@ -13,6 +13,7 @@ interface FavoritesState {
 }
 
 export function favoriteKey(item: LibraryItem): string {
+  if (item.kit) return `kit/${item.kit}`
   return `${item.type}${item.shape ? `/${item.shape}` : ''}`
 }
 
