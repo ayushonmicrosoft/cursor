@@ -178,7 +178,15 @@ export function RosterPage() {
   // `view` controls layout (list vs. cards) and is deliberately kept out of
   // `hasAnyFilter` — switching to cards doesn't hide people, so the "Clear
   // filters" button shouldn't appear just because the user picked cards.
-  const viewMode: ViewMode = searchParams.get('view') === 'cards' ? 'cards' : 'list'
+  // View mode: explicit URL param takes precedence, then auto-detect narrow screens
+  const viewMode: ViewMode = useMemo(() => {
+    const urlValue = searchParams.get('view')
+    if (urlValue === 'cards') return 'cards'
+    if (urlValue === 'list') return 'list'
+    // Auto-switch to cards on narrow screens (<640px) for better UX
+    if (typeof window !== 'undefined' && window.innerWidth < 640) return 'cards'
+    return 'list'
+  }, [searchParams])
   const hasAnyFilter = Boolean(
     q || deptFilter || statusFilter || floorFilter || seatFilter || dayFilter || presetFilter || equipFilter,
   )
@@ -1541,7 +1549,7 @@ export function RosterPage() {
         </div>
       ) : (
       <div className="flex-1 min-w-0 overflow-x-auto overflow-y-auto">
-        <table className="w-full min-w-[860px] text-sm">
+        <table className="w-full min-w-[640px] lg:min-w-[860px] text-sm">
           <thead className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 z-10">
             <tr>
               {canEdit && (

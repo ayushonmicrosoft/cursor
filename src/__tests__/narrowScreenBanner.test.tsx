@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { fireEvent, render, screen, act } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { NarrowScreenBanner } from '../components/editor/NarrowScreenBanner'
+import { NarrowScreenBanner, MOBILE_BREAKPOINT_PX, MIN_EDITOR_LAYOUT_WIDTH_PX } from '../components/editor/NarrowScreenBanner'
 
 function setViewportWidth(width: number) {
   Object.defineProperty(window, 'innerWidth', {
@@ -28,29 +28,85 @@ beforeEach(() => {
 })
 
 describe('NarrowScreenBanner', () => {
-  it('shows mobile inspection guidance on narrow map viewports', () => {
-    setViewportWidth(768)
+  it('shows hard guidance below 480px', () => {
+    setViewportWidth(400)
     renderBanner('/t/acme/o/hq/map')
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'You can inspect sample offices on mobile, but full editing works best above 1180px.',
+      /rotate to landscape or use a tablet/i,
     )
     expect(screen.getByRole('link', { name: /open roster/i })).toBeInTheDocument()
+    // Should not have dismiss button below 480px
+    expect(screen.queryByRole('button', { name: /dismiss/i })).not.toBeInTheDocument()
+  })
+
+  it('shows mobile editor mode banner at 480px-1179px', () => {
+    setViewportWidth(600)
+    renderBanner('/t/acme/o/hq/map')
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /mobile editor mode enabled/i,
+    )
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /full editing works best above \d+px/i,
+    )
+    expect(screen.getByRole('link', { name: /open roster/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /dismiss mobile editor banner/i })).toBeInTheDocument()
+  })
+
+  it('does not show banner at 1180px+', () => {
+    setViewportWidth(1366)
+    renderBanner('/t/acme/o/hq/map')
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('does not render outside map routes', () => {
-    setViewportWidth(768)
+    setViewportWidth(600)
     renderBanner('/t/acme/o/hq/roster')
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
-  it('stays dismissed after closing', () => {
-    setViewportWidth(768)
+  it('stays dismissed after closing (mobile editor mode)', () => {
+    setViewportWidth(600)
     renderBanner('/t/acme/o/hq/map')
 
-    fireEvent.click(screen.getByRole('button', { name: /dismiss narrow-screen warning/i }))
+    fireEvent.click(screen.getByRole('button', { name: /dismiss mobile editor banner/i }))
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
-    expect(localStorage.getItem('narrowScreenBannerDismissed')).toBe('1')
+    expect(localStorage.getItem('mobileEditorBannerDismissed')).toBe('1')
+  })
+
+  it('migrates legacy dismissed state to new key', () => {
+    // Set legacy key
+    localStorage.setItem('narrowScreenBannerDismissed', '1')
+    
+    setViewportWidth(600)
+    renderBanner('/t/acme/o/hq/map')
+
+    // Banner should be dismissed because of legacy migration
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(localStorage.getItem('mobileEditorBannerDismissed')).toBe('1')
+  })
+
+  it('updates when viewport changes', () => {
+    setViewportWidth(1366)
+    const { rerender } = renderBanner('/t/acme/o/hq/map')
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+
+    // Resize to mobile range
+    setViewportWidth(600)
+    
+    // Re-render to pick up the change
+    rerender(
+      <MemoryRouter initialEntries={['/t/acme/o/hq/map']}>
+        <Routes>
+          <Route path="/t/:teamSlug/o/:officeSlug/*" element={<NarrowScreenBanner />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 })

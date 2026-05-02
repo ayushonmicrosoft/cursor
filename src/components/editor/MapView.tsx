@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { CanvasStage } from './Canvas/CanvasStage'
 import { KeyboardShortcutsOverlay } from './KeyboardShortcutsOverlay'
 import { PresentationOverlay } from './PresentationOverlay'
-import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
+import { MIN_EDITOR_LAYOUT_WIDTH_PX, MOBILE_BREAKPOINT_PX } from './NarrowScreenBanner'
 import { KonvaToolbarHost } from './konva/KonvaToolbarHost'
 import { KonvaViewport } from './konva/KonvaViewport'
 import { useView3DEntry } from './view3d/useView3DEntry'
@@ -16,6 +16,8 @@ import {
 import { useActiveFloor } from '../../stores/floorStore'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useToastStore } from '../../stores/toastStore'
+import { MobileBottomBar } from './MobileBottomBar'
+import { MobilePropertiesSheet } from './MobilePropertiesSheet'
 
 import { focusOnElement } from '../../lib/canvasFocus'
 
@@ -55,6 +57,8 @@ export function MapView() {
   const wasCompactEditorRef = useRef(viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX)
 
   const isCompactEditor = viewportWidth < MIN_EDITOR_LAYOUT_WIDTH_PX
+  // Mobile editor mode: 480px-767px (below 480px is the hard warning threshold)
+  const isMobileEditor = viewportWidth >= MOBILE_BREAKPOINT_PX && viewportWidth < 768
   const leftToolsVisible = dockableToolbarVisibility['left-tools'] !== false
   const rightInspectorVisible = dockableToolbarVisibility['right-inspector'] !== false
 
@@ -193,9 +197,12 @@ export function MapView() {
     )
   }
 
+  // Mobile properties sheet should be shown instead of the overlay sidebar on mobile
+  const showMobilePropertiesSheet = isMobileEditor && rightSidebarOpen && rightSidebarTab === 'properties' && selectedIds.length > 0
+
   return (
     <>
-      <div className="flex flex-1 min-w-0 overflow-hidden">
+      <div className="flex flex-1 min-w-0 overflow-hidden relative">
         <div
           className="flex min-w-0 flex-1 overflow-hidden"
           style={{ minWidth: `${CANVAS_INSPECTION_MIN_WIDTH_PX}px` }}
@@ -222,6 +229,15 @@ export function MapView() {
             />
           </KonvaToolbarHost>
         </div>
+
+        {/* Mobile bottom bar for 480px-767px */}
+        <MobileBottomBar isVisible={isMobileEditor} />
+
+        {/* Mobile properties sheet - shown instead of overlay sidebar on mobile */}
+        <MobilePropertiesSheet
+          isOpen={showMobilePropertiesSheet}
+          onClose={() => setRightSidebarOpen(false)}
+        />
       </div>
     </>
   )

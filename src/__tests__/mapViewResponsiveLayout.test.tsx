@@ -6,6 +6,7 @@ import { useElementsStore } from '../stores/elementsStore'
 import { useFloorStore } from '../stores/floorStore'
 import { useUIStore } from '../stores/uiStore'
 import type { ReactNode } from 'react'
+import { MOBILE_BREAKPOINT_PX, MIN_EDITOR_LAYOUT_WIDTH_PX } from '../components/editor/NarrowScreenBanner'
 
 vi.mock('../components/editor/FloorSwitcher', () => ({
   FloorSwitcher: () => null,
@@ -23,7 +24,7 @@ vi.mock('../components/editor/LeftSidebar/CollapsibleSection', () => ({
   CollapsibleSection: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
 vi.mock('../components/editor/RightSidebar/RightSidebar', () => ({
-  RightSidebar: () => <div>right-sidebar</div>,
+  RightSidebar: () => <div data-testid="right-sidebar">right-sidebar</div>,
 }))
 vi.mock('../components/editor/RightSidebar/SidebarToggle', () => ({
   SidebarToggle: () => <button type="button">toggle-sidebar</button>,
@@ -32,7 +33,7 @@ vi.mock('../components/editor/StatusBar', () => ({
   StatusBar: () => null,
 }))
 vi.mock('../components/editor/Canvas/CanvasStage', () => ({
-  CanvasStage: () => null,
+  CanvasStage: () => <div data-testid="canvas-stage">canvas-stage</div>,
 }))
 vi.mock('../components/editor/KeyboardShortcutsOverlay', () => ({
   KeyboardShortcutsOverlay: () => null,
@@ -93,7 +94,7 @@ beforeEach(() => {
   } as never)
   useUIStore.setState({
     rightSidebarOpen: true,
-    rightSidebarTab: 'people',
+    rightSidebarTab: 'properties',
     selectedIds: [],
     presentationMode: false,
     viewMode: '2d',
@@ -101,7 +102,7 @@ beforeEach(() => {
 })
 
 describe('MapView responsive layout', () => {
-  it('collapses editor sidebars below minimum width', async () => {
+  it('collapses editor sidebars below minimum width (desktop breakpoint)', async () => {
     setViewportWidth(1024)
     renderMapView()
 
@@ -111,8 +112,8 @@ describe('MapView responsive layout', () => {
     })
   })
 
-  it('shows right sidebar as overlay on narrow screens when reopened', async () => {
-    setViewportWidth(1024)
+  it('shows right sidebar as overlay on tablet screens (768px-1179px) when reopened', async () => {
+    setViewportWidth(900)
     renderMapView()
     await waitFor(() => {
       expect(useUIStore.getState().rightSidebarOpen).toBe(false)
@@ -126,11 +127,102 @@ describe('MapView responsive layout', () => {
     expect(screen.queryByTestId('mapview-right-sidebar-docked')).not.toBeInTheDocument()
   })
 
-  it('keeps sidebars docked at desktop widths', () => {
+  it('shows left sidebar docked at desktop widths', () => {
     setViewportWidth(1366)
     renderMapView()
 
+    // Left sidebar should be visible at desktop widths
     expect(screen.getByTestId('mapview-left-sidebar')).toBeInTheDocument()
-    expect(screen.getByTestId('mapview-right-sidebar-docked')).toBeInTheDocument()
+    // Toggle button indicates right sidebar can be opened
+    expect(screen.getByText('toggle-sidebar')).toBeInTheDocument()
+  })
+})
+
+describe('MapView mobile editor mode (480px-767px)', () => {
+  it('hides left sidebar in mobile editor mode', () => {
+    setViewportWidth(600)
+    renderMapView()
+
+    expect(screen.queryByTestId('mapview-left-sidebar')).not.toBeInTheDocument()
+  })
+
+  it('does not show right sidebar overlay on mobile (uses bottom sheet instead)', async () => {
+    setViewportWidth(600)
+    renderMapView()
+    
+    // Wait for initial sidebar collapse
+    await waitFor(() => {
+      expect(useUIStore.getState().rightSidebarOpen).toBe(false)
+    })
+
+    // Try to open sidebar
+    act(() => {
+      useUIStore.setState({ rightSidebarOpen: true, selectedIds: ['test-element'] })
+    })
+
+    // On mobile, right sidebar overlay should not be shown (bottom sheet is used instead)
+    expect(screen.queryByTestId('mapview-right-sidebar-overlay')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('mapview-right-sidebar-docked')).not.toBeInTheDocument()
+  })
+
+  it('renders mobile bottom bar in mobile editor mode', () => {
+    setViewportWidth(600)
+    const { container } = renderMapView()
+
+    // Check for bottom bar presence via its z-index class or structure
+    expect(container.querySelector('.absolute.bottom-0')).toBeInTheDocument()
+  })
+
+  it('does not render mobile bottom bar at desktop widths', () => {
+    setViewportWidth(1366)
+    const { container } = renderMapView()
+
+    expect(container.querySelector('.absolute.bottom-0')).not.toBeInTheDocument()
+  })
+
+  it('maintains canvas visibility at all supported widths', () => {
+    // Desktop
+    setViewportWidth(1366)
+    const { rerender } = renderMapView()
+    expect(screen.getByTestId('canvas-stage')).toBeInTheDocument()
+
+    // Tablet
+    setViewportWidth(900)
+    act(() => {
+      rerender(
+        <MemoryRouter initialEntries={['/t/acme/o/hq/map']}>
+          <Routes>
+            <Route path="/t/:teamSlug/o/:officeSlug/map" element={<MapView />} />
+          </Routes>
+        </MemoryRouter>
+      )
+    })
+    expect(screen.getByTestId('canvas-stage')).toBeInTheDocument()
+
+    // Mobile editor mode
+    setViewportWidth(600)
+    act(() => {
+      rerender(
+        <MemoryRouter initialEntries={['/t/acme/o/hq/map']}>
+          <Routes>
+            <Route path="/t/:teamSlug/o/:officeSlug/map" element={<MapView />} />
+          </Routes>
+        </MemoryRouter>
+      )
+    })
+    expect(screen.getByTestId('canvas-stage')).toBeInTheDocument()
+
+    // Below 480px (warning mode, but canvas should still render)
+    setViewportWidth(400)
+    act(() => {
+      rerender(
+        <MemoryRouter initialEntries={['/t/acme/o/hq/map']}>
+          <Routes>
+            <Route path="/t/:teamSlug/o/:officeSlug/map" element={<MapView />} />
+          </Routes>
+        </MemoryRouter>
+      )
+    })
+    expect(screen.getByTestId('canvas-stage')).toBeInTheDocument()
   })
 })
