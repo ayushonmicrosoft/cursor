@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { CanvasStage } from './Canvas/CanvasStage'
 import { Minimap } from './Minimap'
 import { CanvasActionDock } from './Canvas/CanvasActionDock'

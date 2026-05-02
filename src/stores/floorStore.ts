@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Floor } from '../types/floor'
-import type { CanvasElement } from '../types/elements'
+import type { CanvasElement, DeskElement, PrivateOfficeElement, WorkstationElement } from '../types/elements'
 
 /**
  * Single-floor store.
@@ -46,12 +46,13 @@ function cloneAndResetElement(source: CanvasElement, id: string): CanvasElement 
   const cloned = structuredClone(source) as CanvasElement
   cloned.id = id
   if (cloned.type === 'desk') {
-    ;(cloned as any).assignedEmployeeId = null
+    ;(cloned as DeskElement).assignedEmployeeId = null
   } else if (cloned.type === 'workstation') {
-    const positions = Number((cloned as any).positions) || 0
-    ;(cloned as any).assignedEmployeeIds = Array.from({ length: positions }, () => null)
+    const workstation = cloned as WorkstationElement
+    const positions = Number(workstation.positions) || 0
+    workstation.assignedEmployeeIds = Array.from({ length: positions }, () => null)
   } else if (cloned.type === 'private-office') {
-    ;(cloned as any).assignedEmployeeIds = []
+    ;(cloned as PrivateOfficeElement).assignedEmployeeIds = []
   }
   return cloned
 }

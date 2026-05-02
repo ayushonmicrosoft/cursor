@@ -4,21 +4,25 @@ import { createKonvaNodeId } from '../konvaNodeFactory'
 import type { EngineLifecycleEvent } from '../../core/rendererContract'
 import type { EngineIntent } from '../../core/engineIntents'
 
-class MockStage {
-  private readonly handlers = new Map<string, Set<(event: any) => void>>()
+type MockKonvaStageLike = Parameters<KonvaAdapter['bindStage']>[0]
+type MockKonvaStageHandler = Parameters<MockKonvaStageLike['on']>[1]
+type MockKonvaStageEvent = Parameters<MockKonvaStageHandler>[0]
 
-  on(eventName: string, handler: (event: any) => void) {
+class MockStage implements MockKonvaStageLike {
+  private readonly handlers = new Map<string, Set<MockKonvaStageHandler>>()
+
+  on(eventName: string, handler: MockKonvaStageHandler) {
     if (!this.handlers.has(eventName)) {
       this.handlers.set(eventName, new Set())
     }
     this.handlers.get(eventName)?.add(handler)
   }
 
-  off(eventName: string, handler: (event: any) => void) {
+  off(eventName: string, handler: MockKonvaStageHandler) {
     this.handlers.get(eventName)?.delete(handler)
   }
 
-  emit(eventName: string, event: any) {
+  emit(eventName: string, event: MockKonvaStageEvent) {
     const callbacks = this.handlers.get(eventName)
     if (!callbacks) return
     for (const callback of callbacks) {

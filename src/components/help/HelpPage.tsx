@@ -1,4 +1,4 @@
-import { Search, Map as MapIcon, Layers, FileText, Share2, HelpCircle, User, Zap, Pencil, Trash2, ArrowUpRight, MousePointer2, Plus, Info, Check, Copy, ChevronRight, X, ExternalLink, Menu, Sparkles, ChevronDown, Monitor, LayoutGrid, Ruler, Compass, Hash, Undo2, Redo2, Eye, Shield, Users, Building, Activity, Sliders, Play, Settings, Download, Printer, ImageIcon, Presentation, ClipboardList, BarChart3, AlertTriangle } from 'lucide-react'
+import { Search, HelpCircle, ChevronRight, X, ExternalLink, Sparkles } from 'lucide-react'
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Kbd } from '../ui/Kbd'

@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS,
-  DEFAULT_TOPBAR_CONTROL_VISIBILITY,
   DEFAULT_TOPBAR_QUICK_ACTION_ORDER,
-  DEFAULT_TOPBAR_QUICK_ACTION_VISIBILITY,
   useUIStore,
   type DockableToolbarId,
   type TopbarControlId,

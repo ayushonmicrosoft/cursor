@@ -90,7 +90,7 @@ function EngineHostBase({ routePolicyId, preferredEngine, navigateToRoute }: Eng
       title: 'Switched to Konva for stability.',
       body: reason,
     })
-  }, [navigateToRoute, routePolicy?.fallbackEngine, routePolicy?.fallbackRoute, setRenderEngine, setViewMode])
+  }, [navigateToRoute, routePolicy, setRenderEngine, setViewMode])
 
   if (effectiveEngine === 'pixi') {
     return (

@@ -17,10 +17,24 @@ const BOX_COLOR = 0x6366f1
 const HANDLE_RADIUS = 4
 const HANDLE_SIZE = 8
 
+type SelectionDragState = {
+  id: string
+  action?: 'move' | 'resize'
+  handleIndex?: number
+  swx: number
+  swy: number
+  sex: number
+  sey: number
+  sw?: number
+  sh?: number
+}
+
+type SelectionDragRef = { current: SelectionDragState | null }
+
 export function syncSelectionHandles(
   layer: Container,
   selectedElements: CanvasElement[],
-  dragRef?: { current: any }
+  dragRef?: SelectionDragRef
 ): void {
   layer.removeChildren().forEach(c => c.destroy())
 
@@ -45,7 +59,7 @@ export function syncSelectionHandles(
   }
 }
 
-function drawSingleHandles(layer: Container, el: CanvasElement, dragRef?: { current: any }) {
+function drawSingleHandles(layer: Container, el: CanvasElement, dragRef?: SelectionDragRef) {
   const { rotation } = el
   const box = elementBox(el)
   const pad = 4

@@ -10,7 +10,6 @@ import { elementBounds } from '../../lib/elementBounds'
 const MINIMAP_WIDTH = 180
 const MINIMAP_HEIGHT = 120
 const COLLAPSED_SIZE = 40
-const MINIMAP_ANCHOR_CLASS = 'absolute bottom-12 right-24 z-20'
 
 /**
  * Lower-right overview panel. Split into three concerns so a pan
@@ -184,10 +183,6 @@ export function Minimap() {
   // Selected-ids is needed for the background tile split, but NOT for
   // the viewport indicator, so we subscribe here and pass down.
   const selectedIds = useUIStore((s) => s.selectedIds)
-  // Toggle from the floating CanvasActionDock. When the operator hides the
-  // minimap, render nothing — the dock keeps its own toggle button visible
-  // so the user can bring it back without hunting through a menu.
-  const minimapVisible = useUIStore((s) => s.dockableToolbarVisibility['minimap'] ?? true)
   const { setStagePosition } = useCanvasStore(
     useShallow((s) => ({ setStagePosition: s.setStagePosition })),
   )
@@ -313,8 +308,6 @@ export function Minimap() {
   useEffect(() => {
     return () => stopDragging()
   }, [stopDragging])
-
-  // if (!minimapVisible) return null
 
   // When collapsed we render a tight 40x40 handle that just holds the
   // expand button — no SVG, no pointer-pan plumbing to worry about. The
