@@ -1,0 +1,62 @@
+---
+alwaysApply: true
+---
+# Agent Pack Policy
+
+This repository uses the agent files in `.cursor/agents/` for all structured tasks.
+
+## Rule
+
+Use the agent files for all tasks that involve planning, implementation, review, architecture, docs sync, or any multi-step work.
+
+## Roles
+
+### `planner-agent`
+Use first when the request is ambiguous, multi-step, architectural, or otherwise requires structure before implementation.
+
+Duties:
+- Define the objective
+- Identify the source of truth
+- Bound scope, assumptions, dependencies, constraints, and non-goals
+- Specify validation, risks, and acceptance criteria
+- Produce an execution-ready plan
+- End with a concrete handoff to the builder
+- Reference AGENTS.md stack constraints before producing a plan
+
+### `builder-agent`
+Use after the plan is specific enough to execute without guessing.
+
+Duties:
+- Implement only the requested work
+- Fail closed on ambiguity or missing decisions
+- Keep changes minimal and source-of-truth aligned
+- Preserve existing structure unless the request explicitly changes it
+- Stop and report blockers instead of inventing details
+- If code produced was not in the plan, stop and flag it as out-of-scope
+
+### `critic-agent`
+Use after planning or implementation when strict review is needed.
+
+Duties:
+- Review only; do not edit
+- Compare work against the request, the plan, and the source of truth
+- Identify contradictions, missing details, boundary violations, and hardcoding
+- Require explicit corrections for failures
+- Remain read-only at all times
+
+## Mandatory flow
+
+1. **Planner first** when structure is needed.
+2. **Builder second** only after the plan is executable.
+3. **Critic last** to verify the result against the rules.
+
+## Enforcement rules
+
+- The planner must be specific enough for the builder to proceed without guessing.
+- The builder must stop when ambiguity would affect implementation.
+- The critic must call out exact violations and required corrections.
+- None of the roles should absorb another role's responsibility.
+- If the request is unclear, planning must happen before implementation.
+- If the result violates the plan or rules, it is not done.
+- If the builder produces code that was not in the plan, the critic must flag it as out-of-scope.
+- The planner must reference the AGENTS.md stack constraints before producing a plan.

@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OandOcraft Overhaul Plan</title>
+  <meta name="description" content="Standalone HTML version of the canonical OandOcraft overhaul plan, aligned closely with the Markdown source." />
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --panel: rgba(255, 255, 255, 0.92);
+      --ink: #0f172a;
+      --muted: #475569;
+      --faint: #64748b;
+      --line: #dbe3ef;
+      --brand: #0f766e;
+      --brand-soft: #ccfbf1;
+      --brand-deep: #115e59;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      --radius: 18px;
+      --sidebar: 320px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(204, 251, 241, 0.7), transparent 30%),
+        radial-gradient(circle at top right, rgba(191, 219, 254, 0.7), transparent 28%),
+        linear-gradient(180deg, #eef6ff 0%, var(--bg) 180px, var(--bg) 100%);
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: inherit; }
+    .layout { max-width: 1560px; margin: 0 auto; display: grid; grid-template-columns: var(--sidebar) minmax(0, 1fr); gap: 20px; padding: 20px; }
+    .sidebar { position: sticky; top: 20px; align-self: start; background: rgba(255,255,255,0.84); backdrop-filter: blur(10px); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); padding: 18px; max-height: calc(100vh - 40px); overflow: auto; }
+    .content { min-width: 0; }
+    .hero, .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px; margin: 0 0 16px; }
+    .hero { background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.86)); padding: 28px; }
+    .brand { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--brand-soft); color: var(--brand-deep); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+    h1 { margin: 0 0 10px; font-size: clamp(2rem, 3vw, 3rem); line-height: 1.1; letter-spacing: -0.03em; }
+    h2 { margin: 0 0 12px; font-size: 1.35rem; line-height: 1.2; letter-spacing: -0.02em; }
+    h3 { margin: 18px 0 8px; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+    p { margin: 0 0 10px; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { margin: 0; padding-left: 20px; }
+    li { margin: 6px 0; padding-left: 2px; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace; font-size: 0.92em; background: rgba(15, 23, 42, 0.05); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 0.14em 0.38em; }
+    .meta { color: var(--muted); font-size: 0.98rem; max-width: 76ch; }
+    .nav { display: grid; gap: 8px; }
+    .nav a { text-decoration: none; font-size: 14px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,0.8); color: var(--ink); }
+    .nav a:hover { border-color: #c7d2e3; }
+    .flowchart { margin-top: 10px; white-space: pre-wrap; background: #f8fafc; border: 1px solid var(--line); border-radius: 14px; padding: 16px; font-family: ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.75; overflow-x: auto; }
+    .section-anchor { display: inline-block; margin-left: 8px; color: var(--faint); text-decoration: none; opacity: 0; transition: opacity 0.15s ease; }
+    section:hover .section-anchor { opacity: 1; }
+    .toplink { display: inline-flex; margin-top: 10px; text-decoration: none; color: var(--brand-deep); font-weight: 600; font-size: 14px; }
+    .stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .note { border-left: 4px solid var(--brand); padding-left: 14px; color: var(--muted); }
+    .subtle { color: var(--faint); font-size: 0.94rem; }
+    .section-grid { display: grid; gap: 16px; }
+    @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; top: 0; max-height: none; } }
+    @media (max-width: 720px) { .layout { padding: 12px; } .hero, .card { padding: 18px; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Table of contents">
+      <span class="brand">Standalone HTML version</span>
+      <h2>OandOcraft Overhaul Plan</h2>
+      <p class="subtle">Aligned closely with the Markdown source of truth.</p>
+      <nav class="nav">
+        <a href="#canonical-plan-folder">Canonical plan folder</a>
+        <a href="#purpose">Purpose</a>
+        <a href="#operating-principles">Operating principles</a>
+        <a href="#working-method">Working method</a>
+        <a href="#stack-and-truth">Stack and truth</a>
+        <a href="#plan-structure">Plan structure</a>
+        <a href="#how-to-use-this-plan">How to use this plan</a>
+        <a href="#flow-of-execution">Flow of execution</a>
+        <a href="#what-the-product-should-become">What the product should become</a>
+        <a href="#ux-ui-vision">UX / UI vision</a>
+        <a href="#engine-pixi-and-25d-3d-direction">Engine, Pixi, and 2.5D / 3D direction</a>
+        <a href="#admin-control-plane">Admin control plane</a>
+        <a href="#phase-model">Phase model</a>
+        <a href="#detailed-phase-plan">Detailed phase plan</a>
+        <a href="#what-i-envision">What I envision</a>
+        <a href="#reference-rebuild-rule">Reference rebuild rule</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section class="hero" id="canonical-plan-folder">
+        <span class="brand">Canonical plan folder</span>
+        <h1>OandOcraft Overhaul Plan</h1>
+        <p class="meta">_Last updated: 2026-05-02_</p>
+        <p class="meta">`docs_new/plan` is the active planning home for the OandOcraft overhaul. It is the canonical root for the rewrite, the phase files, the HTML presentation, and the supporting plan-site material.</p>
+        <p class="meta">This is not a historical note. This is the working plan that governs the rewrite.</p>
+      </section>
+
+      <section class="card" id="purpose">
+        <h2>Purpose<a class="section-anchor" href="#purpose">#</a></h2>
+        <p>This plan exists to replace scattered legacy planning with one execution-ready source of truth.</p>
+        <p>It defines:</p>
+        <ul>
+          <li>the product direction</li>
+          <li>the current repo truth</li>
+          <li>the boundaries between current and future stack decisions</li>
+          <li>the agent workflow expected for all structured work</li>
+          <li>the phase-by-phase path from cleanup to rollout</li>
+        </ul>
+        <p>If a change is not consistent with this plan, the change is not ready.</p>
+      </section>
+
+      <section class="card" id="operating-principles">
+        <h2>Operating principles<a class="section-anchor" href="#operating-principles">#</a></h2>
+        <h3>1. Truth before ambition</h3>
+        <p>Do not describe the repo as something it is not. The plan must reflect the actual codebase, not a desired future state written as if it were already done.</p>
+        <h3>2. Smallest complete change</h3>
+        <p>When implementing work from this plan, choose the smallest change that satisfies the phase goal while preserving compatibility and clarity.</p>
+        <h3>3. Explicit decisions over implied assumptions</h3>
+        <p>If a detail matters to architecture, routing, security, rendering, or deployment, it must be written down explicitly.</p>
+        <h3>4. Source of truth wins</h3>
+        <p>When documents conflict, the current repo truth and this canonical plan override older references.</p>
+        <h3>5. Reviewable work only</h3>
+        <p>Any request or implementation should be explainable, testable, and reviewable without hidden behavior.</p>
+      </section>
+
+      <section class="card" id="working-method">
+        <h2>Working method<a class="section-anchor" href="#working-method">#</a></h2>
+        <p>Use the three-agent workflow for all structured work.</p>
+        <div class="stack">
+          <article class="card" style="margin:0;">
+            <h3>Planner first</h3>
+            <p>The planner is responsible for framing the work before code or content changes begin.</p>
+            <ul>
+              <li>define the objective in one sentence</li>
+              <li>identify the source of truth</li>
+              <li>bound scope, assumptions, dependencies, constraints, and non-goals</li>
+              <li>specify validation, risks, and acceptance criteria</li>
+              <li>decide which phase owns the work</li>
+              <li>produce an execution-ready plan</li>
+              <li>end with a concrete handoff to the builder</li>
+            </ul>
+          </article>
+          <article class="card" style="margin:0;">
+            <h3>Builder second</h3>
+            <p>The builder implements only the approved scope.</p>
+            <ul>
+              <li>implement only the requested work</li>
+              <li>fail closed on ambiguity or missing decisions</li>
+              <li>keep changes minimal and source-of-truth aligned</li>
+              <li>preserve existing structure unless the request explicitly changes it</li>
+              <li>keep compatibility unless a migration is explicitly planned</li>
+              <li>stop and report blockers instead of inventing details</li>
+            </ul>
+          </article>
+          <article class="card" style="margin:0;">
+            <h3>Critic last</h3>
+            <p>The critic reviews only.</p>
+            <ul>
+              <li>compare work against the request, the plan, and the source of truth</li>
+              <li>identify contradictions, missing details, boundary violations, and hardcoding</li>
+              <li>confirm that the implementation matches the approved phase</li>
+              <li>require explicit corrections for failures</li>
+              <li>remain read-only at all times</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="card" id="stack-and-truth">
+        <h2>Stack and truth<a class="section-anchor" href="#stack-and-truth">#</a></h2>
+        <h3>Current stack truth</h3>
+        <ul>
+          <li>The current app shell is <strong>Vite + React</strong>.</li>
+          <li><code>index.html</code> loads <code>/src/main.tsx</code>, which is the current runtime entry.</li>
+          <li>The current docs and plan must not describe the repo as already migrated to Next.js.</li>
+          <li>Route behavior, editor behavior, and persistence behavior must be described as they exist now, not as they might exist later.</li>
+        </ul>
+        <h3>Future desired stack</h3>
+        <ul>
+          <li>If the main site later moves to a different stack, that is a future decision, not current truth.</li>
+          <li>Any future stack decision should be documented separately from the current repo truth.</li>
+          <li>The current app should never be described as a migrated Next.js system unless the entrypoint actually changes.</li>
+        </ul>
+        <h3>Repo truth that must stay stable</h3>
+        <ul>
+          <li>Public routes: <code>/</code>, <code>/login</code>, <code>/signup</code>, <code>/forgot</code>, <code>/auth/verify</code>, <code>/auth/reset</code>, <code>/help</code>, <code>/docs</code>.</li>
+          <li>Auth routes: <code>/onboarding/team</code>, <code>/account</code>.</li>
+          <li>Office routes: <code>engine</code>, <code>map</code>, <code>pixi</code>, <code>roster</code>, <code>reports</code>, <code>reports/scenarios</code>, <code>org-chart</code>.</li>
+          <li><code>RequireAuth</code> sends unauthenticated users to login with <code>next</code>.</li>
+          <li><code>RequireTeam</code> sends zero-team users to onboarding.</li>
+          <li><code>useCan(action)</code> remains the explicit permission gate.</li>
+          <li>Autosave stays debounced.</li>
+          <li>Optimistic locking stays the default save strategy.</li>
+          <li>Conflict handling must stay explicit.</li>
+          <li>Payload compatibility should be preserved unless a migration is intentionally scoped.</li>
+        </ul>
+        <p class="note"><strong>Non-negotiable documentation rule:</strong> If a doc describes the current repo truth, it must match the live runtime and the actual route model. If a doc describes a future target, it must label it as future target language.</p>
+      </section>
+
+      <section class="card" id="plan-structure">
+        <h2>Plan structure<a class="section-anchor" href="#plan-structure">#</a></h2>
+        <ul>
+          <li><code>OandOcraft_PLAN.md</code> — canonical root plan, stack truth, agent workflow, and navigation hub</li>
+          <li><code>OandOcraft_PLAN.html</code> — matching HTML view of the canonical root plan</li>
+          <li><code>index.md</code> — folder index for the split plan files</li>
+          <li><code>phase-1-foundation.md</code> — truth, archive hygiene, documentation alignment, and agent workflow enforcement</li>
+          <li><code>phase-2-catalog.md</code> — generated catalog, workflow validation, and internal deployment</li>
+          <li><code>phase-3-rollout.md</code> — external rollout, renderer expansion, and 2.5D / 3D direction</li>
+          <li><code>pitch-site/</code> — merged plan-site presentation for the canonical plan narrative</li>
+          <li><code>html-version/</code> — separate HTML-only folder for a standalone rendered version of the canonical plan</li>
+        </ul>
+      </section>
+
+      <section class="card" id="how-to-use-this-plan">
+        <h2>How to use this plan<a class="section-anchor" href="#how-to-use-this-plan">#</a></h2>
+        <ol>
+          <li>Start from this plan, not from archived reference docs.</li>
+          <li>Check the repo truth before making architectural assumptions.</li>
+          <li>Confirm whether the change belongs in Phase 1, Phase 2, or Phase 3.</li>
+          <li>Make the smallest change that still respects the phase goal.</li>
+          <li>Validate that Markdown and HTML still match after every meaningful update.</li>
+          <li>If the work crosses a phase boundary, stop and reframe the task before implementing.</li>
+        </ol>
+      </section>
+
+      <section class="card" id="flow-of-execution">
+        <h2>Flow of execution<a class="section-anchor" href="#flow-of-execution">#</a></h2>
+        <div class="flowchart">[Start]
+   |
+   v
+[Read this plan]
+   |
+   v
+[Check repo truth and stack]
+   |
+   v
+[Planner: structure the work]
+   |
+   v
+[Builder: implement the approved scope]
+   |
+   v
+[Critic: verify against rules]
+   |
+   v
+[Phase 1: foundation + truth + archive hygiene]
+   |
+   v
+[Phase 2: catalog generation + validation + internal deployment]
+   |
+   v
+[Phase 3: external rollout + renderer evolution]
+   |
+   v
+[Validate Markdown + HTML]
+   |
+   v
+[Deliver]</div>
+      </section>
+
+      <section class="card" id="what-the-product-should-become">
+        <h2>What the product should become<a class="section-anchor" href="#what-the-product-should-become">#</a></h2>
+        <p>The target is a serious internal operations platform with three strong surfaces:</p>
+        <ol>
+          <li><strong>Workspace editing</strong> — fast, clear, keyboard-friendly daily work.</li>
+          <li><strong>Admin control plane</strong> — permissions, workspace settings, policy, audit, and oversight.</li>
+          <li><strong>Rendering and spatial engine layer</strong> — map, Pixi, and future 2.5D / 3D experiences as first-class product decisions.</li>
+        </ol>
+        <p>The product should feel cohesive, deliberate, and professional. It should be easier to operate than before, not just more technically flexible.</p>
+      </section>
+
+      <section class="card" id="ux-ui-vision">
+        <h2>UX / UI vision<a class="section-anchor" href="#ux-ui-vision">#</a></h2>
+        <h3>Primary UX goals</h3>
+        <ul>
+          <li>Make the interface easier to scan and harder to misuse.</li>
+          <li>Reduce visual noise and keep actions grouped by intent.</li>
+          <li>Support dense operational data without overwhelming users.</li>
+          <li>Make state, selection, and permission boundaries obvious.</li>
+          <li>Keep the editor responsive and predictable.</li>
+          <li>Ensure important operations are discoverable without adding clutter.</li>
+        </ul>
+        <h3>UI principles</h3>
+        <ul>
+          <li>Clear hierarchy over decoration.</li>
+          <li>Persistent context over hidden state.</li>
+          <li>Fast editing over modal-heavy flows.</li>
+          <li>Strong empty, loading, and error states.</li>
+          <li>Power-user efficiency without losing clarity.</li>
+          <li>Role-aware visibility instead of generic one-size-fits-all screens.</li>
+        </ul>
+        <h3>Surface intent</h3>
+        <ul>
+          <li><strong>Map / workspace</strong>: sharp, immediate, controllable.</li>
+          <li><strong>Roster / reports / org chart</strong>: operational views, not generic dashboards.</li>
+          <li><strong>Admin screens</strong>: explicit, structured, role-aware.</li>
+          <li><strong>Engine chooser</strong>: a real product decision point, not a debug menu.</li>
+          <li><strong>Help and docs</strong>: support the workflow, not distract from it.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="engine-pixi-and-25d-3d-direction">
+        <h2>Engine, Pixi, and 2.5D / 3D direction<a class="section-anchor" href="#engine-pixi-and-25d-3d-direction">#</a></h2>
+        <h3>Current direction</h3>
+        <ul>
+          <li><code>engine</code> remains the route-level chooser.</li>
+          <li><code>map</code> remains the production editor path.</li>
+          <li><code>pixi</code> remains a separate rendering surface, not a sub-mode of map.</li>
+          <li>Each rendering route should have a clear job and a clear exit criteria.</li>
+        </ul>
+        <h3>What we want next</h3>
+        <ul>
+          <li>Treat Pixi as a high-potential renderer path for performance, fidelity, and advanced interactions.</li>
+          <li>Keep room for richer spatial representation beyond flat 2D.</li>
+          <li>Let <code>2.5d</code> be the step between today’s editor and deeper spatial rendering.</li>
+          <li>Preserve the ability to have distinct rendering strategies for different workflows.</li>
+          <li>Avoid collapsing everything into one rendering implementation just because the UI can technically support it.</li>
+        </ul>
+        <h3>Product decision rule</h3>
+        <p>If a rendering change improves realism, performance, or operator clarity, it belongs in the engine plan. If it only changes appearance inside one editor state, it stays in the editor plan.</p>
+      </section>
+
+      <section class="card" id="admin-control-plane">
+        <h2>Admin control plane<a class="section-anchor" href="#admin-control-plane">#</a></h2>
+        <p>The overhaul should make admin and workspace control feel intentional.</p>
+        <h3>Must support</h3>
+        <ul>
+          <li>Workspace settings and configuration</li>
+          <li>Permission and role-aware controls</li>
+          <li>Audit and oversight paths</li>
+          <li>Safe destructive actions with obvious guardrails</li>
+          <li>Distinction between daily editing and privileged operations</li>
+          <li>Clear ownership of who can do what and where those actions live</li>
+        </ul>
+        <h3>Design requirement</h3>
+        <p>Administrative actions should not be buried inside unrelated screens. They should live in a coherent control plane that is obvious to operators and safe for team members.</p>
+        <h3>UX requirement</h3>
+        <p>Admin views should explain consequences before actions are taken. Destructive or high-risk actions must be isolated, labeled clearly, and reversible where possible.</p>
+      </section>
+
+      <section class="card" id="phase-model">
+        <h2>Phase model<a class="section-anchor" href="#phase-model">#</a></h2>
+        <p>The phase model below defines the current rewrite path.</p>
+        <h3>Phase 1 — Foundation, truth, and archive alignment</h3>
+        <p>Purpose:</p>
+        <ul>
+          <li>establish the single source of truth</li>
+          <li>reconcile documentation with the repo</li>
+          <li>move obsolete material into the archive</li>
+          <li>make the plan and HTML mirror each other</li>
+          <li>enforce the planner / builder / critic workflow</li>
+        </ul>
+        <p>Success looks like:</p>
+        <ul>
+          <li>no ambiguity about the current stack</li>
+          <li>no ambiguity about canonical docs</li>
+          <li>no confusion between current truth and future targets</li>
+          <li>a plan that is detailed enough to guide execution</li>
+        </ul>
+        <h3>Phase 2 — Generated catalog, workflow validation, and internal deployment</h3>
+        <p>Purpose:</p>
+        <ul>
+          <li>make the catalog coherent and generated</li>
+          <li>validate real operator workflows</li>
+          <li>harden behavior around selection, editing, and recovery</li>
+          <li>deploy internally before any broader rollout</li>
+        </ul>
+        <p>Success looks like:</p>
+        <ul>
+          <li>real workflows can be completed end to end</li>
+          <li>the catalog model is understandable and extensible</li>
+          <li>internal users encounter the real gaps before external users do</li>
+        </ul>
+        <h3>Phase 3 — External rollout, renderer expansion, and 2.5D / 3D direction</h3>
+        <p>Purpose:</p>
+        <ul>
+          <li>evolve the rendering strategy outward</li>
+          <li>prepare the product for a broader audience</li>
+          <li>support richer spatial presentation when it helps the workflow</li>
+          <li>keep the renderer architecture deliberate instead of accidental</li>
+        </ul>
+        <p>Success looks like:</p>
+        <ul>
+          <li>a stable outward-facing experience</li>
+          <li>rendering strategy choices are explicit</li>
+          <li>2.5D and 3D are treated as product decisions, not gimmicks</li>
+        </ul>
+      </section>
+
+      <section class="card" id="detailed-phase-plan">
+        <h2>Detailed phase plan<a class="section-anchor" href="#detailed-phase-plan">#</a></h2>
+        <div class="section-grid">
+          <article class="card" id="phase-1" style="margin:0;">
+            <h2>Phase 1 — Foundation, truth, and archive alignment</h2>
+            <p><strong>Goal:</strong> establish the only source of truth, remove ambiguity, and prepare the plan set so future work can proceed without guessing.</p>
+            <p><strong>Outcome:</strong> the team knows what is active, what is archived, what the stack really is, and what decisions are already fixed.</p>
+            <p><strong>Dependencies:</strong> repository truth, current docs state, archive inventory, plan ownership, agent pack in <code>.cursor/agents/</code>.</p>
+            <p><strong>Owner type:</strong> product lead, platform lead, docs owner, and reviewer.</p>
+            <p><strong>Exit gate:</strong> no implementation work starts until the plan, HTML, and source truth agree.</p>
+            <h3>1.1 Canonical plan ownership</h3>
+            <ul>
+              <li>Confirm <code>docs/docs_new/plan/OandOcraft_PLAN.md</code> is the active working plan.</li>
+              <li>Confirm <code>docs/docs_new/plan/OandOcraft_PLAN.html</code> is the matching published view.</li>
+              <li>Keep both files in lockstep whenever one changes.</li>
+              <li>Remove wording that implies any other plan is active.</li>
+              <li>Confirm the root <code>AGENTS.md</code> and <code>.cursor/agents/AGENTS.md</code> point to the same workflow.</li>
+              <li>Ensure the three-agent pack is the standard operating model for structured work.</li>
+            </ul>
+            <h3>1.2 Stack truth and migration boundaries</h3>
+            <ul>
+              <li>Record the current app shell as <code>Vite + React</code>.</li>
+              <li>Record <code>index.html</code> → <code>/src/main.tsx</code> as the current runtime entry.</li>
+              <li>Record <code>Next.js + React</code> as the future main-site target only.</li>
+              <li>Keep current editor-runtime truth separate from future site migration truth.</li>
+              <li>Remove any phrase that makes the repo sound already migrated.</li>
+              <li>Preserve the distinction between current editor architecture and future site architecture.</li>
+            </ul>
+            <h3>1.3 Route and permission truth</h3>
+            <ul>
+              <li>Keep the route inventory explicit and current.</li>
+              <li>Preserve the auth and office route separation.</li>
+              <li>Preserve the <code>RequireAuth</code> and <code>RequireTeam</code> behaviors.</li>
+              <li>Preserve <code>useCan(action)</code> as the explicit permission gate.</li>
+              <li>Preserve autosave, optimistic locking, explicit conflicts, and payload compatibility.</li>
+              <li>Document any future route changes only as proposals, not as current truth.</li>
+            </ul>
+            <h3>1.4 Archive inventory and reference hygiene</h3>
+            <ul>
+              <li>Identify every non-canonical reference document still in working folders.</li>
+              <li>Move obsolete reference docs out of the active planning path.</li>
+              <li>Keep the archive clearly labeled as historical, not active.</li>
+              <li>Preserve <code>OandOcraft_BLOCK_LIBRARY_SOURCES.md</code> as the explicit exception.</li>
+              <li>Note which archived docs may be consulted for context and which may not.</li>
+              <li>Prevent archived docs from being cited as live truth in future work.</li>
+            </ul>
+            <h3>1.5 Documentation alignment</h3>
+            <ul>
+              <li>Make the Markdown plan and HTML plan say the same thing.</li>
+              <li>Keep section order, headings, and intent aligned.</li>
+              <li>Rewrite vague summary text so it becomes implementation-grade language.</li>
+              <li>Remove duplicated or circular statements.</li>
+              <li>Ensure the plan can be used as a source of truth by future agents.</li>
+              <li>Make the HTML version read like a polished docs page, not a marketing page.</li>
+            </ul>
+            <h3>1.6 Phase 1 validation and acceptance criteria</h3>
+            <ul>
+              <li>A builder can identify the current stack without guessing.</li>
+              <li>A builder can identify the future stack target without confusing it for current truth.</li>
+              <li>A reviewer can tell which files are canonical and which are archival.</li>
+              <li>A builder can understand the agent workflow from the plan.</li>
+              <li>HTML and Markdown remain aligned after edits.</li>
+              <li>No stale reference layer is presented as active.</li>
+            </ul>
+            <h3>1.7 Phase 1 risks</h3>
+            <ul>
+              <li>Stack confusion leaks into implementation work.</li>
+              <li>Archived docs continue to behave like live docs.</li>
+              <li>The plan remains too vague for execution.</li>
+              <li>The HTML diverges from the Markdown source of truth.</li>
+              <li>The agent workflow is described loosely instead of operationally.</li>
+            </ul>
+          </article>
+
+          <article class="card" id="phase-2" style="margin:0;">
+            <h2>Phase 2 — Generated catalog, workflow validation, and internal deployment</h2>
+            <p><strong>Goal:</strong> build the first usable generated catalog, validate real workflows, and deploy internally before any external rollout.</p>
+            <p><strong>Outcome:</strong> the product can be used by internal operators with enough confidence to expose workflow gaps and catalog issues.</p>
+            <p><strong>Dependencies:</strong> Phase 1 complete, stable object schema decisions, archive boundaries set, route truth stable, agent workflow active.</p>
+            <p><strong>Owner type:</strong> product, design, frontend, content/system owner, and reviewer.</p>
+            <p><strong>Exit gate:</strong> internal users can run the product on real work with minimal hand-holding.</p>
+            <h3>2.1 Catalog definition and object taxonomy</h3>
+            <ul>
+              <li>Define the initial object families that the catalog must support.</li>
+              <li>Separate core objects from temporary placeholders.</li>
+              <li>Define which objects must exist on day one for a usable workspace.</li>
+              <li>Define naming rules for generated assets so future additions stay coherent.</li>
+              <li>Define dimension, category, and display-rule requirements.</li>
+              <li>Define what metadata every catalog object must carry.</li>
+              <li>Define which objects can later become photo-backed without changing the schema.</li>
+              <li>Define which objects are intentionally temporary and why.</li>
+            </ul>
+            <h3>2.2 Generated asset preparation</h3>
+            <ul>
+              <li>Produce the initial generated 2D assets needed for the first usable catalog.</li>
+              <li>Define how 2.5D assets are derived from the same object metadata.</li>
+              <li>Decide which elements are visual tokens versus semantic objects.</li>
+              <li>Validate that generated assets do not depend on hardcoded per-shape logic.</li>
+              <li>Ensure the generated set covers common layouts, common furniture, and common annotations.</li>
+              <li>Ensure the generated set is sufficient for a real internal workflow, not just a demo.</li>
+            </ul>
+            <h3>2.3 Editor workflow validation</h3>
+            <ul>
+              <li>Validate object placement, drag, drop, snap, align, resize, select, and inspect.</li>
+              <li>Validate duplication, deletion, multi-select, and group operations if supported.</li>
+              <li>Validate undo, redo, autosave, and conflict recovery.</li>
+              <li>Validate search, filter, and library browsing inside the catalog.</li>
+              <li>Validate that selection and state feedback are obvious.</li>
+              <li>Validate that keyboard workflows remain usable for power users.</li>
+              <li>Capture where the editor is slow, confusing, or brittle.</li>
+            </ul>
+            <h3>2.4 Internal deployment design</h3>
+            <ul>
+              <li>Decide which internal user groups receive the first deployment.</li>
+              <li>Define the internal deployment environment and its expectations.</li>
+              <li>Define what production-like behavior must be preserved.</li>
+              <li>Define what telemetry or feedback should be collected.</li>
+              <li>Define how internal users will report workflow failures.</li>
+              <li>Define what counts as a blocker versus a cosmetic issue.</li>
+            </ul>
+            <h3>2.5 Internal deployment execution</h3>
+            <ul>
+              <li>Deploy the generated catalog to internal users only.</li>
+              <li>Verify routes, permissions, and access boundaries in the deployment.</li>
+              <li>Observe real usage patterns.</li>
+              <li>Record where users hesitate, make mistakes, or need help.</li>
+              <li>Record which objects or workflows are missing from the catalog.</li>
+              <li>Keep the environment close to production behavior.</li>
+            </ul>
+            <h3>2.6 Phase 2 validation and acceptance criteria</h3>
+            <ul>
+              <li>The first generated catalog is usable in real workflows.</li>
+              <li>The internal deployment exposes the real interaction gaps.</li>
+              <li>Users can perform daily tasks without hand-holding.</li>
+              <li>The catalog model is stable enough to continue growing.</li>
+              <li>The data model can later support photo-backed and 3D phases.</li>
+              <li>The plan can describe what the next rollout needs to fix.</li>
+            </ul>
+            <h3>2.7 Phase 2 risks</h3>
+            <ul>
+              <li>The catalog is too small to expose real workflow problems.</li>
+              <li>Generated assets are too generic to test meaningful usage.</li>
+              <li>The internal deployment still feels like a demo.</li>
+              <li>The object model is too unstable to carry into later phases.</li>
+              <li>Workflow validation is delayed because the catalog is overdesigned.</li>
+            </ul>
+          </article>
+
+          <article class="card" id="phase-3" style="margin:0;">
+            <h2>Phase 3 — External rollout, renderer expansion, and 2.5D / 3D direction</h2>
+            <p><strong>Goal:</strong> release outward with a stronger spatial and rendering story once the internal system is proven.</p>
+            <p><strong>Rough timeframe:</strong> 4–8 weeks if the internal build is already solid; longer if the renderer and catalog integration needs more refinement.</p>
+            <p><strong>Dependencies:</strong> Phase 2 validation, stable catalog data, internal deployment feedback, renderer strategy.</p>
+            <p><strong>Owner type:</strong> frontend/rendering, product, and release owner.</p>
+            <h3>3.1 External rollout posture</h3>
+            <ul>
+              <li>Make the external experience feel clearly deliberate and production-ready.</li>
+              <li>Decide which interactions are visible by default and which remain advanced.</li>
+              <li>Ensure the outward rollout exposes value quickly without breaking the proven internal workflow.</li>
+              <li>Keep the external surface compatible with the object catalog and metadata model built earlier.</li>
+              <li>Define what users should see first when entering a project.</li>
+            </ul>
+            <h3>3.2 Renderer and visualization expansion</h3>
+            <ul>
+              <li>Treat Pixi as a serious rendering option with real performance and fidelity goals.</li>
+              <li>Define what workloads Pixi should handle better than the current editor path.</li>
+              <li>Plan for advanced canvas interactions and richer rendering primitives.</li>
+              <li>Keep Pixi separated from the map editor so each can evolve independently.</li>
+              <li>Identify how Pixi could support future visualization or simulation features.</li>
+              <li>Capture where Pixi should stay experimental and where it should become production-ready.</li>
+              <li>Establish how future rendering layers inherit from the same catalog and workspace data.</li>
+              <li>Keep photo-backed and generated assets compatible with the rollout path.</li>
+            </ul>
+            <h3>3.3 2.5D and spatial evolution</h3>
+            <ul>
+              <li>Define what <code>2.5d</code> means in product language.</li>
+              <li>Treat <code>2.5d</code> as a bridge toward more spatial presentation, not a dead-end mode.</li>
+              <li>Identify whether depth, tilt, layering, or perspective effects add user value.</li>
+              <li>Keep the option open for future 3D-style spatial experiences where they improve comprehension.</li>
+              <li>Prevent the editor from becoming locked into a flat-2D-only mental model.</li>
+              <li>Use 2.5D as the transition layer between generated assets and richer 3D rollout.</li>
+            </ul>
+            <h3>3.4 Exit criteria</h3>
+            <ul>
+              <li>External users can enter the product through a production-ready experience.</li>
+              <li>The rendering architecture can serve generated, photo-backed, and 3D assets.</li>
+              <li>2.5D remains available as a bridge, not a dead end.</li>
+              <li>The rollout path is stable enough for broader public use.</li>
+            </ul>
+            <h3>3.5 Risk flags</h3>
+            <ul>
+              <li>External rollout hides instability instead of exposing value.</li>
+              <li>Pixi becomes a side quest rather than a strategic renderer.</li>
+              <li>The catalog data model cannot support both photo-backed and 3D assets.</li>
+              <li>The external experience arrives before internal confidence is real.</li>
+            </ul>
+            <h3>3.6 Must-not-slip items</h3>
+            <ul>
+              <li>The outward-facing experience is production-ready before release.</li>
+              <li>Pixi has a defined future and the editor/renderer story stays separated.</li>
+              <li>2.5D remains a bridge.</li>
+              <li>The rollout path is stable enough for broader public use.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="card" id="what-i-envision">
+        <h2>What I envision<a class="section-anchor" href="#what-i-envision">#</a></h2>
+        <ul>
+          <li>One coherent product instead of scattered plan fragments.</li>
+          <li>A workspace that feels built for real operators.</li>
+          <li>A serious control plane for admin and permissions.</li>
+          <li>Pixi and the engine layer treated as strategic, not incidental.</li>
+          <li>A path from 2D to 2.5D and eventually deeper spatial presentation where useful.</li>
+          <li>The main site living as a Next.js + React surface.</li>
+          <li>Archived reference material preserved only as history, not as a planning source.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="reference-rebuild-rule">
+        <h2>Reference rebuild rule<a class="section-anchor" href="#reference-rebuild-rule">#</a></h2>
+        <p>Do not recreate the old reference layer until the overhaul actually needs a fresh canonical reference set.</p>
+        <p>If it returns, it must be rebuilt from this plan and current source truth, not copied from archived docs.</p>
+        <a class="toplink" href="#canonical-plan-folder">Back to top</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

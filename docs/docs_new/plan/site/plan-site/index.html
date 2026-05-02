@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OandOcraft Plan Site</title>
+  <meta name="description" content="Canonical plan site for OandOcraft, combining the product narrative, stack truth, rollout direction, and planning workflow." />
+  <style>
+    :root{--bg:#f6f8fc;--panel:#ffffff;--ink:#0f172a;--muted:#475569;--line:#dbe3ef;--line-strong:#c7d2e3;--brand:#0f766e;--brand-soft:#ccfbf1;--accent:#7c3aed;--shadow:0 14px 32px rgba(15,23,42,.08);--radius:18px}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at top left,rgba(204,251,241,.75),transparent 30%),radial-gradient(circle at top right,rgba(191,219,254,.75),transparent 28%),linear-gradient(180deg,#eef6ff 0%,var(--bg) 180px,var(--bg) 100%);line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    .layout{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;padding:20px}
+    .sidebar{position:sticky;top:20px;align-self:start;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:18px;max-height:calc(100vh - 40px);overflow:auto}
+    .brand{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+    .sidebar h2{margin:12px 0 8px;font-size:1.15rem;line-height:1.2}
+    .sidebar p{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+    .nav{display:grid;gap:8px}
+    .nav a{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.88)}
+    .nav a:hover{border-color:var(--line-strong);color:var(--brand)}
+    .content{min-width:0}
+    .hero,section.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin:0 0 16px}
+    .hero{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.88));padding:28px}
+    h1{margin:0 0 10px;font-size:clamp(2rem,3vw,3.1rem);line-height:1.1;letter-spacing:-.03em}
+    h2{margin:0 0 12px;font-size:1.35rem;line-height:1.2;letter-spacing:-.02em}
+    h3{margin:18px 0 8px;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b}
+    p{margin:0 0 10px}
+    p:last-child{margin-bottom:0}
+    ul,ol{margin:0;padding-left:20px}
+    li{margin:6px 0;padding-left:2px}
+    code{font-family:ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;font-size:.92em;background:rgba(15,23,42,.05);border:1px solid rgba(148,163,184,.25);border-radius:6px;padding:.14em .38em}
+    .meta{color:var(--muted);font-size:.98rem;max-width:72ch}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+    .section-anchor{display:inline-block;margin-left:8px;color:#64748b;text-decoration:none;opacity:0;transition:opacity .15s ease}
+    section:hover .section-anchor{opacity:1}
+    .toplink{display:inline-flex;margin-top:10px;text-decoration:none;color:var(--brand);font-weight:600;font-size:14px}
+    .flowchart{font-family:ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:16px;white-space:pre-wrap;overflow:auto}
+    @media (max-width:1080px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:0;max-height:none}}
+    @media (max-width:720px){.layout{padding:12px}.hero,section.card{padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" aria-label="Plan navigation">
+      <span class="brand">OandOcraft Plan Site</span>
+      <h2>Canonical plan navigation</h2>
+      <p>One plan site, one stack truth, separate phase files, and no drift.</p>
+      <nav class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#working-method">Working method</a>
+        <a href="#stack-and-truth">Stack and truth</a>
+        <a href="#plan-structure">Plan structure</a>
+        <a href="#product">Product</a>
+        <a href="#ux-ui">UX / UI</a>
+        <a href="#engine">Engine / Pixi / 2.5D / 3D</a>
+        <a href="#admin">Admin control plane</a>
+        <a href="#phase-1">Phase 1</a>
+        <a href="#phase-2">Phase 2</a>
+        <a href="#phase-3">Phase 3</a>
+        <a href="#vision">Vision</a>
+        <a href="#reference-rule">Reference rule</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section class="hero" id="overview">
+        <span class="brand">Canonical plan site</span>
+        <h1>OandOcraft Overhaul Plan</h1>
+        <p class="meta">_Last updated: 2026-05-01_</p>
+        <p class="meta">This is the canonical plan site for the OandOcraft overhaul. It merges the plan narrative, stack truth, workflow rules, and product direction into a single premium docs-style experience.</p>
+      </section>
+
+      <section class="card" id="working-method">
+        <h2>Working method<a class="section-anchor" href="#working-method">#</a></h2>
+        <p>Use the three-agent workflow for all structured work.</p>
+        <h3>Planner first</h3>
+        <ul>
+          <li>Define the objective</li>
+          <li>Identify the source of truth</li>
+          <li>Bound scope, assumptions, dependencies, constraints, and non-goals</li>
+          <li>Specify validation, risks, and acceptance criteria</li>
+          <li>Produce an execution-ready plan</li>
+          <li>End with a concrete handoff to the builder</li>
+        </ul>
+        <h3>Builder second</h3>
+        <ul>
+          <li>Implement only the requested work</li>
+          <li>Fail closed on ambiguity or missing decisions</li>
+          <li>Keep changes minimal and source-of-truth aligned</li>
+          <li>Preserve existing structure unless the request explicitly changes it</li>
+          <li>Stop and report blockers instead of inventing details</li>
+        </ul>
+        <h3>Critic last</h3>
+        <ul>
+          <li>Review only; do not edit</li>
+          <li>Compare work against the request, the plan, and the source of truth</li>
+          <li>Identify contradictions, missing details, boundary violations, and hardcoding</li>
+          <li>Require explicit corrections for failures</li>
+          <li>Remain read-only at all times</li>
+        </ul>
+      </section>
+
+      <section class="card" id="stack-and-truth">
+        <h2>Stack and truth<a class="section-anchor" href="#stack-and-truth">#</a></h2>
+        <h3>Current stack truth</h3>
+        <ul>
+          <li>The current app shell is <strong>Vite + React</strong>.</li>
+          <li><code>index.html</code> loads <code>/src/main.tsx</code>, which is the current runtime entry.</li>
+          <li>The current docs and plan must not pretend the repo is already on Next.js.</li>
+        </ul>
+        <h3>Future desired stack</h3>
+        <ul>
+          <li>If the main site later moves to a different stack, that should be treated as a future target, not as current truth.</li>
+          <li>Any future stack decision should be documented separately from the current repo truth.</li>
+          <li>Do not frame the current app as a migrated Next.js system unless the entrypoint actually changes.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="plan-structure">
+        <h2>Plan structure<a class="section-anchor" href="#plan-structure">#</a></h2>
+        <ul>
+          <li><code>OandOcraft_PLAN.md</code> — canonical root plan and navigation hub</li>
+          <li><code>OandOcraft_PLAN.html</code> — matching HTML view</li>
+          <li><code>index.md</code> — folder index for the split plan files</li>
+          <li><code>phase-1-foundation.md</code> — truth, archive hygiene, and documentation alignment</li>
+          <li><code>phase-2-catalog.md</code> — generated catalog, validation, and internal deployment</li>
+          <li><code>phase-3-rollout.md</code> — external rollout, renderer expansion, and 2.5D / 3D direction</li>
+        </ul>
+      </section>
+
+      <section class="card" id="product">
+        <h2>What the product should become<a class="section-anchor" href="#product">#</a></h2>
+        <p>The target is a serious internal operations platform with three strong surfaces:</p>
+        <ol>
+          <li><strong>Workspace editing</strong> — fast, clear, keyboard-friendly daily work.</li>
+          <li><strong>Admin control plane</strong> — permissions, workspace settings, policy, audit, oversight.</li>
+          <li><strong>Rendering and spatial engine layer</strong> — map, Pixi, and future 2.5D / 3D experiences as first-class product decisions.</li>
+        </ol>
+      </section>
+
+      <section class="card" id="ux-ui">
+        <h2>UX / UI vision<a class="section-anchor" href="#ux-ui">#</a></h2>
+        <h3>Primary UX goals</h3>
+        <ul>
+          <li>Make the interface easier to scan and harder to misuse.</li>
+          <li>Reduce visual noise and keep actions grouped by intent.</li>
+          <li>Support dense operational data without overwhelming users.</li>
+          <li>Make state, selection, and permission boundaries obvious.</li>
+          <li>Keep the editor responsive and predictable.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="engine">
+        <h2>Engine, Pixi, and 2.5D / 3D direction<a class="section-anchor" href="#engine">#</a></h2>
+        <h3>Current direction</h3>
+        <ul>
+          <li><code>engine</code> remains the route-level chooser.</li>
+          <li><code>map</code> remains the production editor path.</li>
+          <li><code>pixi</code> remains a separate rendering surface, not a sub-mode of map.</li>
+        </ul>
+        <h3>What we want next</h3>
+        <ul>
+          <li>Treat Pixi as a high-potential renderer path for performance, fidelity, and advanced interactions.</li>
+          <li>Keep room for richer spatial representation beyond flat 2D.</li>
+          <li>Let <code>2.5d</code> be the step between today’s editor and deeper spatial rendering.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="admin">
+        <h2>Admin control plane<a class="section-anchor" href="#admin">#</a></h2>
+        <p>The overhaul should make admin and workspace control feel intentional.</p>
+        <ul>
+          <li>Workspace settings and configuration</li>
+          <li>Permission and role-aware controls</li>
+          <li>Audit and oversight paths</li>
+          <li>Safe destructive actions with obvious guardrails</li>
+          <li>Distinction between daily editing and privileged operations</li>
+        </ul>
+      </section>
+
+      <section class="grid" style="margin:0 0 16px">
+        <article class="card" id="phase-1">
+          <h2>Phase 1</h2>
+          <p>Truth, archive hygiene, documentation alignment, stack boundaries, and agent workflow enforcement.</p>
+        </article>
+        <article class="card" id="phase-2">
+          <h2>Phase 2</h2>
+          <p>Generated catalog, workflow validation, and internal deployment with real operator feedback.</p>
+        </article>
+        <article class="card" id="phase-3">
+          <h2>Phase 3</h2>
+          <p>External rollout, renderer expansion, and 2.5D / 3D direction once the internal system is proven.</p>
+        </article>
+      </section>
+
+      <section class="card" id="vision">
+        <h2>What I envision<a class="section-anchor" href="#vision">#</a></h2>
+        <ul>
+          <li>One coherent product instead of scattered plan fragments.</li>
+          <li>A workspace that feels built for real operators.</li>
+          <li>A serious control plane for admin and permissions.</li>
+          <li>Pixi and the engine layer treated as strategic, not incidental.</li>
+          <li>A path from 2D to 2.5D and eventually deeper spatial presentation where useful.</li>
+          <li>The main site living as a Next.js + React surface.</li>
+          <li>Archived reference material preserved only as history, not as a planning source.</li>
+        </ul>
+      </section>
+
+      <section class="card" id="reference-rule">
+        <h2>Reference rebuild rule<a class="section-anchor" href="#reference-rule">#</a></h2>
+        <ul>
+          <li>Do not recreate the old reference layer until the overhaul actually needs a fresh canonical reference set.</li>
+          <li>If it returns, it must be rebuilt from this plan and current source truth, not copied from archived docs.</li>
+        </ul>
+        <a class="toplink" href="#overview">Back to top</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
