@@ -36,7 +36,7 @@
     "jspdf": "^4.2.1",
     "konva": "^10.2.5",
     "lucide-react": "^1.8.0",
-    "nanoid": "^5.1.9",
+    "nanoid": "^5.1.11",
     "papaparse": "^5.5.3",
     "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.18.1",
