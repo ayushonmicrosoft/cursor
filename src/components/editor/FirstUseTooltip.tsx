@@ -32,19 +32,19 @@ export function FirstUseTooltip({
     <div
       id={id}
       role="tooltip"
-      className="absolute left-full top-0 ml-2 w-60 z-50 pointer-events-none"
+      className="pointer-events-none absolute top-0 left-full z-50 ml-2 w-60"
     >
-      <div className="bg-gray-900 text-white rounded-lg shadow-xl p-3 text-xs leading-snug border border-gray-800">
-        <div className="flex items-center gap-2 mb-1">
+      <div className="rounded-lg border border-gray-800 bg-gray-900 p-3 text-xs leading-snug text-white shadow-xl">
+        <div className="mb-1 flex items-center gap-2">
           {icon && (
             <span className="text-blue-300" aria-hidden="true">
               {icon}
             </span>
           )}
-          <span className="font-semibold text-sm">{name}</span>
+          <span className="text-sm font-semibold">{name}</span>
           {shortcut && (
             <kbd
-              className="ml-auto text-[10px] font-mono bg-white/15 dark:bg-gray-900/15 px-1.5 py-0.5 rounded"
+              className="ml-auto rounded bg-white/15 px-1.5 py-0.5 font-mono text-[10px] dark:bg-gray-900/15"
               aria-hidden="true"
             >
               {shortcut}

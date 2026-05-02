@@ -37,7 +37,9 @@ describe('FirstRunCoach copy + step behavior', () => {
     expect(screen.getByRole('heading', { name: titles[0] })).toBeInTheDocument()
     for (let i = 1; i < titles.length; i++) {
       fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-      expect(screen.getByRole('heading', { name: titles[i] })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: titles[i] }),
+      ).toBeInTheDocument()
     }
     expect(screen.queryByRole('button', { name: /^next$/i })).toBeNull()
     expect(screen.getByRole('button', { name: /^done$/i })).toBeInTheDocument()
@@ -47,7 +49,9 @@ describe('FirstRunCoach copy + step behavior', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-    expect(screen.getByText(/every action in one searchable list/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/every action in one searchable list/i),
+    ).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
     expect(screen.getByText(/full shortcut cheat\s+sheet/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
@@ -83,12 +87,16 @@ describe('FirstRunCoach copy + step behavior', () => {
       { key: 'Escape' },
     )
     expect(localStorage.getItem('firstRunWelcomeSeen')).toBe('1')
-    expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
+    expect(
+      screen.queryByRole('dialog', { name: /welcome to oandocraft/i }),
+    ).toBeNull()
   })
 
   it('uses dialog role with aria-labelledby pointing at the dialog title', () => {
     render(<FirstRunCoach />)
-    const dialog = screen.getByRole('dialog', { name: /welcome to oandocraft/i })
+    const dialog = screen.getByRole('dialog', {
+      name: /welcome to oandocraft/i,
+    })
     const labelledBy = dialog.getAttribute('aria-labelledby')
     expect(labelledBy).toBeTruthy()
     if (labelledBy) {
@@ -100,7 +108,9 @@ describe('FirstRunCoach copy + step behavior', () => {
   it('step indicator dots are clickable to jump to a step', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /go to step 3/i }))
-    expect(screen.getByRole('heading', { name: /^command palette$/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: /^command palette$/i }),
+    ).toBeInTheDocument()
     expect(screen.getByText(/3\s*\/\s*5/)).toBeInTheDocument()
   })
 })

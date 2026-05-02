@@ -46,7 +46,8 @@ export function usePresentationShortcuts(): void {
           tag === 'TEXTAREA' ||
           tag === 'SELECT' ||
           target.isContentEditable
-        ) return
+        )
+          return
       }
 
       if (
@@ -54,7 +55,8 @@ export function usePresentationShortcuts(): void {
         e.key !== 'ArrowRight' &&
         e.key !== 'Home' &&
         e.key !== 'End'
-      ) return
+      )
+        return
 
       // Floors are stored unordered; the user's mental model is the sorted
       // (by `order`) sequence shown in the FloorSwitcher tabs. Sort once
@@ -90,7 +92,9 @@ export function usePresentationShortcuts(): void {
 
     window.addEventListener('keydown', handler, { capture: true })
     return () => {
-      window.removeEventListener('keydown', handler, { capture: true } as EventListenerOptions)
+      window.removeEventListener('keydown', handler, {
+        capture: true,
+      } as EventListenerOptions)
     }
   }, [])
 }
