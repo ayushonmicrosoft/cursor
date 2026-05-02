@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
 import type { AlignmentGuide } from '../../lib/geometry'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 4 — Alignment guide overlay.
@@ -7,7 +8,7 @@ import type { AlignmentGuide } from '../../lib/geometry'
  * AlignmentGuide.orientation is 'vertical' | 'horizontal'.
  * start/end are the guide line extents along the perpendicular axis.
  */
-const GUIDE_COLOR = 0x6366f1
+const GUIDE_COLOR = PIXI_COLORS.guideColor
 
 export function syncAlignmentGuides(
   layer: Container,

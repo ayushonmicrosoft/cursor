@@ -2,6 +2,7 @@ import { Graphics, Text, TextStyle, Container } from 'pixi.js'
 import type { WorkstationElement } from '../../types/elements'
 import type { Employee } from '../../types/employee'
 import { parsePixiColor } from '../pixiColor'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 2 — PixiJS workstation bench renderer.
@@ -16,14 +17,14 @@ import { parsePixiColor } from '../pixiColor'
 
 const SLOT_LABEL_STYLE = new TextStyle({
   fontSize: 8,
-  fill: '#1F2937',
+  fill: PIXI_COLORS.text,
   fontFamily: 'Inter, sans-serif',
   fontWeight: '600',
 })
 
 const SLOT_NUM_STYLE = new TextStyle({
   fontSize: 7,
-  fill: '#9CA3AF',
+  fill: PIXI_COLORS.textSubtle,
   fontFamily: 'Inter, sans-serif',
 })
 
@@ -34,8 +35,8 @@ export function renderWorkstation(
   employees: Record<string, Employee>,
   selected: boolean,
 ): void {
-  const fill = parsePixiColor(el.style?.fill, 0xe5e7eb)
-  const stroke = parsePixiColor(el.style?.stroke, 0x6b7280)
+  const fill = parsePixiColor(el.style?.fill, PIXI_COLORS.deskFill)
+  const stroke = parsePixiColor(el.style?.stroke, PIXI_COLORS.deskStroke)
   const { width: w, height: h, positions, assignedEmployeeIds } = el
 
   g.clear()
@@ -43,7 +44,7 @@ export function renderWorkstation(
   // Selection ring
   if (selected) {
     g.roundRect(-4, -4, w + 8, h + 8, 6)
-    g.stroke({ color: 0x7c3aed, width: 2, alpha: 0.85 })
+    g.stroke({ color: PIXI_COLORS.selected, width: 2, alpha: PIXI_COLORS.selectionAlpha })
   }
 
   // Bench body
@@ -70,7 +71,7 @@ export function renderWorkstation(
     const cx = sx + slotW / 2
     const cy = h + 8
     g.circle(cx, cy, 6)
-    g.fill({ color: 0xffffff })
+    g.fill({ color: PIXI_COLORS.seatFill })
     g.stroke({ color: stroke, width: 1 })
 
     // Slot number (top-left corner of slot)
@@ -98,9 +99,9 @@ export function renderWorkstation(
 }
 
 // Deterministic dept color — same algo as PixiStage
-const PALETTE = [0x6366f1, 0x10b981, 0xf59e0b, 0xef4444, 0x8b5cf6, 0x06b6d4, 0xf97316, 0x84cc16]
+const PALETTE = PIXI_COLORS.deptPalette
 function deptColor(dept: string | null): number {
-  if (!dept) return 0x6366f1
+  if (!dept) return PIXI_COLORS.neighborhoodFill
   let h = 0; for (let i = 0; i < dept.length; i++) h = (h * 31 + dept.charCodeAt(i)) >>> 0
   return PALETTE[h % PALETTE.length]
 }

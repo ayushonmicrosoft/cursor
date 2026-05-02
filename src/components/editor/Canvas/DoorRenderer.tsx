@@ -8,6 +8,7 @@ import {
   locateOnStraightSegments,
   tangentAt,
 } from '../../../lib/wallPath'
+import { CANVAS_COLORS } from './visualStyle'
 
 interface DoorRendererProps {
   element: DoorElement
@@ -61,15 +62,15 @@ export function DoorRenderer({ element }: DoorRendererProps) {
 
   const w = element.width
   const h = Math.max(element.height, 2)
-  const stroke = isSelected ? '#3B82F6' : element.style.stroke
-  const fill = isSelected ? '#EFF6FF' : element.style.fill
+  const stroke = isSelected ? CANVAS_COLORS.selected : element.style.stroke
+  const fill = isSelected ? CANVAS_COLORS.roomFill : element.style.fill
 
   // Swing arc: quarter-circle whose hinge is at the door's left edge for
   // 'left' / 'both', right edge for 'right'. We render in local coords then
   // let the Group rotate the whole thing to match the wall tangent.
   const radius = w
-  const swingFill = 'rgba(59, 130, 246, 0.08)'
-  const swingStroke = isSelected ? '#3B82F6' : '#94A3B8'
+  const swingFill = CANVAS_COLORS.shadowSoft
+  const swingStroke = isSelected ? CANVAS_COLORS.selected : CANVAS_COLORS.doorSwing
 
   return (
     <Group x={cx} y={cy} rotation={rotationDeg}>

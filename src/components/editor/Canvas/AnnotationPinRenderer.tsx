@@ -1,6 +1,7 @@
 import { Group, Circle, Text } from 'react-konva'
 import type Konva from 'konva'
 import { useCanvasStore } from '../../../stores/canvasStore'
+import { CANVAS_COLORS } from './visualStyle'
 
 /**
  * Single speech-bubble pin rendered on the canvas. The pin visually floats
@@ -29,8 +30,8 @@ export function AnnotationPinRenderer({ id, x, y, resolved, onClick }: Props) {
   const r = 10 / stageScale
   const stroke = 1 / stageScale
 
-  const fill = resolved ? '#E5E7EB' : '#FBBF24'
-  const line = resolved ? '#9CA3AF' : '#92400E'
+  const fill = resolved ? CANVAS_COLORS.annotationResolved : CANVAS_COLORS.annotationOpen
+  const line = resolved ? CANVAS_COLORS.annotationResolvedStroke : CANVAS_COLORS.annotationOpenStroke
 
   const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true

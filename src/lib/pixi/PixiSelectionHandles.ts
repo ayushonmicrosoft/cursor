@@ -1,6 +1,7 @@
 import { Container, Graphics } from 'pixi.js'
 import { isCenterAnchoredBlock } from '../../blocks/rendering'
 import type { CanvasElement } from '../../types/elements'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 5 — Selection handles overlay.
@@ -11,9 +12,9 @@ import type { CanvasElement } from '../../types/elements'
  * This gives the visual fidelity parity needed before Konva removal.
  */
 
-const HANDLE_FILL = 0xffffff
-const HANDLE_STROKE = 0x6366f1
-const BOX_COLOR = 0x6366f1
+const HANDLE_FILL = PIXI_COLORS.handleFill
+const HANDLE_STROKE = PIXI_COLORS.handleStroke
+const BOX_COLOR = PIXI_COLORS.guideColor
 const HANDLE_RADIUS = 4
 const HANDLE_SIZE = 8
 

@@ -1,5 +1,6 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js'
 import { parsePixiColor } from '../pixiColor'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 4 — Neighborhood zone fills.
@@ -79,7 +80,7 @@ export function syncNeighborhoodLayer(
         const gFill = c.children[0] as Graphics
         const gStroke = c.children[1] as Graphics
         const label = c.children[2] as Text
-        const fill = parsePixiColor(color, 0x6366f1)
+        const fill = parsePixiColor(color, PIXI_COLORS.neighborhoodFill)
         
         gFill.clear().roundRect(x, y, w, h, 8).fill(fill)
         gStroke.clear().roundRect(x, y, w, h, 8).stroke({ color: fill, width: 1.5, alpha: 0.4 })
@@ -90,7 +91,7 @@ export function syncNeighborhoodLayer(
       }
     } else {
       c = new Container() as StatefulZone
-      const fill = parsePixiColor(color, 0x6366f1)
+      const fill = parsePixiColor(color, PIXI_COLORS.neighborhoodFill)
       
       const gFill = new Graphics()
       gFill.roundRect(x, y, w, h, 8).fill(fill)

@@ -1,6 +1,7 @@
 import { Graphics } from 'pixi.js'
 import type { DeskElement, PrivateOfficeElement } from '../../types/elements'
 import { parsePixiColor } from '../pixiColor'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 2 — Desk / private-office renderer.
@@ -11,8 +12,8 @@ import { parsePixiColor } from '../pixiColor'
 type AssignableDesk = DeskElement | PrivateOfficeElement
 
 export function renderDesk(g: Graphics, el: AssignableDesk, selected: boolean): void {
-  const fill = parsePixiColor(el.style?.fill, 0xe5e7eb)
-  const stroke = parsePixiColor(el.style?.stroke, 0x6b7280)
+  const fill = parsePixiColor(el.style?.fill, PIXI_COLORS.deskFill)
+  const stroke = parsePixiColor(el.style?.stroke, PIXI_COLORS.deskStroke)
   const { width: w, height: h } = el
   const shape = el.shape
 
@@ -21,7 +22,7 @@ export function renderDesk(g: Graphics, el: AssignableDesk, selected: boolean): 
   // Selection ring
   if (selected) {
     g.roundRect(-4, -4, w + 8, h + 8, 6)
-    g.stroke({ color: 0x7c3aed, width: 2, alpha: 0.85 })
+    g.stroke({ color: PIXI_COLORS.selected, width: 2, alpha: PIXI_COLORS.selectionAlpha })
   }
 
   if (shape === 'l-shape') {
@@ -41,5 +42,5 @@ export function renderDesk(g: Graphics, el: AssignableDesk, selected: boolean): 
   }
 
   // Chair dot — bottom-centre
-  g.circle(w / 2, h + 8, 7).fill({ color: 0xffffff }).stroke({ color: stroke, width: 1 })
+  g.circle(w / 2, h + 8, 7).fill({ color: PIXI_COLORS.seatFill }).stroke({ color: stroke, width: 1 })
 }

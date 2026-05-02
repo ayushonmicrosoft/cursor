@@ -4,6 +4,7 @@ import { ALIGNMENT_GUIDE_COLOR } from '../../../lib/constants'
 import type { AlignmentGuide } from '../../../lib/geometry'
 import { formatLength, toRealLength } from '../../../lib/units'
 import { useCanvasStore } from '../../../stores/canvasStore'
+import { CANVAS_COLORS } from './visualStyle'
 
 interface AlignmentGuidesProps {
   guides: AlignmentGuide[]
@@ -30,7 +31,7 @@ const LABEL_FONT_SIZE = 9
 const LABEL_PAD_X = 3
 const LABEL_PAD_Y = 1.5
 const LABEL_CORNER_RADIUS = 2
-const LABEL_BG = '#1e3a8a' // Tailwind blue-900 — darker but translucent; reads on grid
+const LABEL_BG = CANVAS_COLORS.alignmentLabel // Tailwind blue-900 — darker but translucent; reads on grid
 const LABEL_BG_OPACITY = 0.88
 const LABEL_FG = '#ffffff'
 const LABEL_FONT_FAMILY = 'ui-monospace, SFMono-Regular, Menlo, monospace'

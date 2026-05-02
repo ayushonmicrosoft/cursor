@@ -1,6 +1,7 @@
 import { Graphics } from 'pixi.js'
 import type { TableElement } from '../../types/elements'
 import { parsePixiColor } from '../pixiColor'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 2 — PixiJS table renderer.
@@ -11,8 +12,8 @@ export function renderTable(
   el: TableElement,
   selected: boolean,
 ): void {
-  const fill = parsePixiColor(el.style?.fill, 0xf3f4f6)
-  const stroke = parsePixiColor(el.style?.stroke, 0x6b7280)
+  const fill = parsePixiColor(el.style?.fill, PIXI_COLORS.furnitureFill)
+  const stroke = parsePixiColor(el.style?.stroke, PIXI_COLORS.furnitureStroke)
   const w = el.width
   const h = el.height
 
@@ -21,7 +22,7 @@ export function renderTable(
   // Selection ring
   if (selected) {
     g.roundRect(-4, -4, w + 8, h + 8, 6)
-    g.stroke({ color: 0x7c3aed, width: 2, alpha: 0.85 })
+    g.stroke({ color: PIXI_COLORS.selected, width: 2, alpha: PIXI_COLORS.selectionAlpha })
   }
 
   // Table body
@@ -50,7 +51,7 @@ export function renderTable(
     const seatX = w / 2 + seat.offsetX
     const seatY = h / 2 + seat.offsetY
     g.circle(seatX, seatY, 6)
-    g.fill({ color: 0xffffff, alpha: 0.95 })
+    g.fill({ color: PIXI_COLORS.sofaCushion, alpha: 0.95 })
     g.stroke({ color: stroke, width: 1 })
   }
 }

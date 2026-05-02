@@ -11,6 +11,7 @@ import {
 } from '../../../lib/neighborhoodMetrics'
 import { isAssignableElement } from '../../../types/elements'
 import type { CanvasElement } from '../../../types/elements'
+import { CANVAS_COLORS } from './visualStyle'
 
 /**
  * Renders a small occupancy chip above each neighborhood on the active
@@ -94,10 +95,10 @@ const PILL_HEIGHT = 10
 const PILL_GAP = 6
 
 const HEALTH_FILL: Record<NeighborhoodHealth, string> = {
-  healthy: '#10B981',
-  warn: '#F59E0B',
-  critical: '#EF4444',
-  unknown: '#9CA3AF',
+  healthy: CANVAS_COLORS.neighborhoodHealthy,
+  warn: CANVAS_COLORS.neighborhoodWarn,
+  critical: CANVAS_COLORS.neighborhoodCritical,
+  unknown: CANVAS_COLORS.neighborhoodUnknown,
 }
 
 /**

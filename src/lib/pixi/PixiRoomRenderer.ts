@@ -1,6 +1,7 @@
 import { Container, Graphics, Text, TextStyle } from 'pixi.js'
 import type { ConferenceRoomElement, CommonAreaElement, PhoneBoothElement } from '../../types/elements'
 import { parsePixiColor } from '../pixiColor'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 2 — Room renderer.
@@ -10,24 +11,24 @@ import { parsePixiColor } from '../pixiColor'
 type RoomElement = ConferenceRoomElement | PhoneBoothElement | CommonAreaElement
 
 const NAME_STYLE = new TextStyle({
-  fontSize: 11, fill: '#374151', fontFamily: 'Inter, sans-serif',
+  fontSize: 11, fill: PIXI_COLORS.text, fontFamily: 'Inter, sans-serif',
   fontWeight: '600', wordWrap: true, align: 'center',
 })
 const CAP_STYLE = new TextStyle({
-  fontSize: 9, fill: '#9CA3AF', fontFamily: 'Inter, sans-serif',
+  fontSize: 9, fill: PIXI_COLORS.textSubtle, fontFamily: 'Inter, sans-serif',
 })
 
 export function renderRoom(container: Container, el: RoomElement, selected: boolean): void {
   container.removeChildren()
 
-  const fill = parsePixiColor(el.style?.fill, 0xeff6ff)
-  const stroke = parsePixiColor(el.style?.stroke, 0x3b82f6)
+  const fill = parsePixiColor(el.style?.fill, PIXI_COLORS.roomFill)
+  const stroke = parsePixiColor(el.style?.stroke, PIXI_COLORS.roomStroke)
   const { width: w, height: h } = el
 
   const g = new Graphics()
   if (selected) {
     g.roundRect(-4, -4, w + 8, h + 8, 6)
-    g.stroke({ color: 0x7c3aed, width: 2, alpha: 0.85 })
+    g.stroke({ color: PIXI_COLORS.selected, width: 2, alpha: PIXI_COLORS.selectionAlpha })
   }
   g.roundRect(0, 0, w, h, 6)
   g.fill({ color: fill })

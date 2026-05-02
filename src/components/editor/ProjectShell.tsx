@@ -33,6 +33,7 @@ import { useEffectiveDateTick } from '../../hooks/useEffectiveDateTick'
 import type { Project } from '../../types/project'
 import { DEFAULT_CANVAS_SETTINGS, isSeatLabelStyle } from '../../types/project'
 import type { Floor } from '../../types/floor'
+import { preloadSilhouettes } from '../../lib/silhouettes/loadSilhouettes'
 
 type ShellState = 'loading' | 'not_found' | 'ready'
 
@@ -128,6 +129,10 @@ export function ProjectShell() {
     async function load() {
       if (!teamSlug || !officeSlug) return
       setShellState('loading')
+      
+      // Preload silhouettes at app initialization
+      preloadSilhouettes()
+      
       try {
         const { data: team, error: teamError } = await supabase
           .from('teams')

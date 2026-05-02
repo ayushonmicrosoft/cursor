@@ -1,6 +1,7 @@
 import { Graphics } from 'pixi.js'
 import type { WallElement } from '../../types/elements'
 import { parsePixiColor } from '../pixiColor'
+import { PIXI_COLORS } from './pixiColors'
 
 /**
  * Phase 2 — PixiJS wall renderer.
@@ -8,8 +9,8 @@ import { parsePixiColor } from '../pixiColor'
  */
 export function renderWall(g: Graphics, el: WallElement, selected: boolean): void {
   const { points, bulges, thickness = 8 } = el
-  const strokeColor = parsePixiColor(el.style?.stroke, 0x374151)
-  const activeColor = selected ? 0x7c3aed : strokeColor
+  const strokeColor = parsePixiColor(el.style?.stroke, PIXI_COLORS.wallStroke)
+  const activeColor = selected ? PIXI_COLORS.selected : strokeColor
 
   g.clear()
   if (points.length < 4) return

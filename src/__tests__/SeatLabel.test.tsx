@@ -9,7 +9,7 @@ import {
   NARROW_SLOT_W,
   COMPACT_SLOT_W,
 } from '../components/editor/Canvas/SeatLabel'
-import { DeskRenderer } from '../components/editor/Canvas/DeskRenderer'
+import { DeskRenderer } from '../components/editor/Canvas/DeskRouter'
 import { labelDensityForScale } from '../components/editor/Canvas/visualStyle'
 import { useCanvasStore } from '../stores/canvasStore'
 import { useEmployeeStore } from '../stores/employeeStore'

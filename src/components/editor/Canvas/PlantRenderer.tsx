@@ -32,7 +32,7 @@ export function PlantRenderer({ element }: Props) {
         y={-h / 2 + foliageR}
         radius={foliageR}
         fill={element.style.fill}
-        stroke={isSelected ? CANVAS_COLORS.selected : element.locked ? CANVAS_COLORS.locked : '#166534'}
+        stroke={isSelected ? CANVAS_COLORS.selected : element.locked ? CANVAS_COLORS.locked : CANVAS_COLORS.plantStroke}
         strokeWidth={interactionStrokeWidth(isSelected)}
         opacity={element.style.opacity}
         shadowColor="#0F172A"
