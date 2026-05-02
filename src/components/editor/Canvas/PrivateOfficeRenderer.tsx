@@ -2,7 +2,6 @@ import { Group, Rect, Text } from 'react-konva'
 import type { PrivateOfficeElement } from '../../../types/elements'
 import type { Accommodation } from '../../../types/employee'
 import type { SeatLabelStyle } from '../../../types/project'
-import type { SeatStatus } from '../../../types/seatAssignment'
 import {
   SeatLabel,
   accommodationAnchorFor,
