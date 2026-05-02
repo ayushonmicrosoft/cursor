@@ -48,7 +48,12 @@ export function TeamOnboardingPage() {
 
       {error && <AuthErrorBanner id="onboarding-form-error" message={error} />}
 
-      <form onSubmit={onSubmit} className="space-y-4" noValidate aria-busy={busy}>
+      <form
+        onSubmit={onSubmit}
+        className="space-y-4"
+        noValidate
+        aria-busy={busy}
+      >
         <AuthFieldLabel htmlFor="onboarding-team-name" label="Workspace name">
           <Input
             id="onboarding-team-name"
@@ -59,11 +64,18 @@ export function TeamOnboardingPage() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Acme HQ"
             invalid={!!error}
-            aria-describedby={error ? 'onboarding-form-error onboarding-hint' : 'onboarding-hint'}
+            aria-describedby={
+              error
+                ? 'onboarding-form-error onboarding-hint'
+                : 'onboarding-hint'
+            }
           />
         </AuthFieldLabel>
 
-        <ul id="onboarding-hint" className="space-y-0.5 text-xs text-gray-500 dark:text-gray-400">
+        <ul
+          id="onboarding-hint"
+          className="space-y-0.5 text-xs text-gray-500 dark:text-gray-400"
+        >
           <li>This name appears in team switchers and invites.</li>
           <li>You can rename it later from Team settings.</li>
           <li>Next up: invite people or create your first office.</li>
@@ -92,7 +104,7 @@ export function TeamOnboardingPage() {
         Got an invite link?{' '}
         <Link
           to="/dashboard"
-          className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          className="font-medium text-blue-600 hover:underline dark:text-blue-400"
         >
           Skip setup and open dashboard
         </Link>

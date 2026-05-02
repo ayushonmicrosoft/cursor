@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useUIStore } from '../../stores/uiStore'
 import { useCan } from '../../hooks/useCan'
+import { Smartphone, Monitor, HelpCircle, X, Command, Zap } from 'lucide-react'
 
 /**
  * Keyboard shortcut reference.
@@ -14,6 +15,13 @@ import { useCan } from '../../hooks/useCan'
  * narrow down to relevant entries quickly. The platform-aware label
  * helper (`formatKeys`) swaps `Cmd` for `⌘` on macOS so the rendered
  * pills match what's printed on the user's keyboard.
+ *
+ * Enhanced in Wave 12D:
+ * - Added touch gesture hints for mobile users
+ * - Added Admin/Reports section for privileged users
+ * - Added Cmd/Ctrl+/ binding (on top of existing ? binding)
+ * - Mobile-responsive layout for 480px+ screens
+ * - Tabbed interface for Keyboard vs Touch gestures
  */
 
 type ShortcutRow = {
@@ -22,15 +30,24 @@ type ShortcutRow = {
    * modifier — `formatKeys` will translate to ⌘ on macOS and `Ctrl`
    * elsewhere. Use `+` between modifiers and the base key, and
    * `/` when there's a logical alternative (e.g. `Delete / Backspace`).
+   *
+   * For touch gestures, use descriptive text (e.g. "Long press") —
+   * the renderer will show an icon + text instead of keyboard pills.
    */
   keys: string
   action: string
+  /**
+   * When true, this row represents a touch gesture rather than a
+   * keyboard shortcut. The renderer shows a touch icon + text.
+   */
+  isTouch?: boolean
 }
+
 type ShortcutGroup = { title: string; rows: ShortcutRow[] }
 type GestureRow = { gesture: string; action: string; detail: string }
 type OverlayTab = 'keyboard' | 'touch'
 
-const shortcutGroups: ShortcutGroup[] = [
+const keyboardShortcutGroups: ShortcutGroup[] = [
   {
     title: 'Editing',
     rows: [
@@ -95,6 +112,7 @@ const shortcutGroups: ShortcutGroup[] = [
       { keys: 'Cmd+K', action: 'Command palette' },
       { keys: '/', action: 'Command palette' },
       { keys: '?', action: 'Show keyboard shortcuts' },
+      { keys: 'Cmd+/', action: 'Show keyboard shortcuts' },
       { keys: 'Cmd+F', action: 'Find on canvas' },
     ],
   },
@@ -104,35 +122,51 @@ const shortcutGroups: ShortcutGroup[] = [
   },
 ]
 
-const adminShortcutGroup: ShortcutGroup = {
-  title: 'Admin / Reports',
-  rows: [
-    { keys: 'O', action: 'Open org chart report' },
-    { keys: 'Cmd+K', action: 'Search reports actions' },
-    { keys: 'M', action: 'Return to map view from reports' },
-  ],
-}
+const adminShortcutGroups: ShortcutGroup[] = [
+  {
+    title: 'Admin / Reports',
+    rows: [
+      { keys: 'Cmd+Shift+R', action: 'Open reports panel' },
+      { keys: 'Cmd+Shift+E', action: 'Export dialog' },
+      { keys: 'Cmd+Shift+I', action: 'Import employees (CSV)' },
+      { keys: 'Cmd+Shift+S', action: 'Share project' },
+    ],
+  },
+]
 
-const touchGestures: GestureRow[] = [
+const touchGestureGroups: ShortcutGroup[] = [
   {
-    gesture: 'Long-press context menu',
-    action: 'Open object actions',
-    detail: 'Touch and hold an element or canvas area to show the same actions as right-click.',
+    title: 'Canvas Navigation',
+    rows: [
+      { keys: 'One-finger drag', action: 'Pan the canvas', isTouch: true },
+      { keys: 'Pinch (2 fingers)', action: 'Zoom in/out', isTouch: true },
+      { keys: 'Double-tap', action: 'Quick zoom to fit', isTouch: true },
+      {
+        keys: 'Two-finger swipe',
+        action: 'Navigate between floors',
+        isTouch: true,
+      },
+    ],
   },
   {
-    gesture: 'Pinch zoom',
-    action: 'Zoom the canvas',
-    detail: 'Use two fingers to zoom in or out around the midpoint of the gesture.',
+    title: 'Selection & Editing',
+    rows: [
+      { keys: 'Long press', action: 'Open context menu', isTouch: true },
+      { keys: 'Tap', action: 'Select element', isTouch: true },
+      { keys: 'Tap + drag', action: 'Move element', isTouch: true },
+    ],
   },
   {
-    gesture: 'Double-tap zoom',
-    action: 'Step into a location',
-    detail: 'Double-tap empty canvas to zoom toward that point without changing tools.',
-  },
-  {
-    gesture: 'Swipe floor navigation',
-    action: 'Move between floors',
-    detail: 'Swipe horizontally in presentation or mobile floor controls to advance floors.',
+    title: 'Drawing & Tools',
+    rows: [
+      {
+        keys: 'Long press empty space',
+        action: 'Tool selector',
+        isTouch: true,
+      },
+      { keys: 'Two-finger tap', action: 'Undo last action', isTouch: true },
+      { keys: 'Three-finger tap', action: 'Redo / restore', isTouch: true },
+    ],
   },
 ]
 
@@ -158,7 +192,10 @@ function isMacPlatform(): boolean {
  * are returned verbatim as their own tokens so the renderer can
  * place a non-keycap glue character between pills.
  */
-function formatKeys(combo: string, mac: boolean): Array<{ kind: 'key' | 'sep'; text: string }> {
+function formatKeys(
+  combo: string,
+  mac: boolean,
+): Array<{ kind: 'key' | 'sep'; text: string }> {
   // Normalize an alternative-separator (`/`, ` or `, `,`) into a single
   // token type; the splitter below preserves both keycap segments
   // around it so the UI can render "Delete or Backspace" with two
@@ -175,7 +212,10 @@ function formatKeys(combo: string, mac: boolean): Array<{ kind: 'key' | 'sep'; t
       continue
     }
     if (trimmed === '/' || trimmed === 'or' || trimmed === ',') {
-      tokens.push({ kind: 'sep', text: trimmed === ',' ? ',' : trimmed === 'or' ? 'or' : '/' })
+      tokens.push({
+        kind: 'sep',
+        text: trimmed === ',' ? ',' : trimmed === 'or' ? 'or' : '/',
+      })
       continue
     }
     if (trimmed === '') continue
@@ -197,11 +237,14 @@ function matchesQuery(row: ShortcutRow, mac: boolean, query: string): boolean {
   // Also let the user search by the rendered platform label
   // ("⌘", "ctrl") so typing "ctrl" still works on a Mac and
   // typing "cmd" still works on Linux/Windows.
-  const rendered = formatKeys(row.keys, mac)
-    .map((t) => t.text)
-    .join(' ')
-    .toLowerCase()
-  return rendered.includes(q)
+  if (!row.isTouch) {
+    const rendered = formatKeys(row.keys, mac)
+      .map((t) => t.text)
+      .join(' ')
+      .toLowerCase()
+    return rendered.includes(q)
+  }
+  return false
 }
 
 function KeyCombo({ combo, mac }: { combo: string; mac: boolean }) {
@@ -212,20 +255,29 @@ function KeyCombo({ combo, mac }: { combo: string; mac: boolean }) {
         t.kind === 'key' ? (
           <kbd
             key={`${i}-${t.text}`}
-            className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[11px] font-medium font-mono text-gray-700 dark:text-gray-200 shadow-[0_1px_0_0_rgba(0,0,0,0.05),inset_0_-1px_0_0_rgba(0,0,0,0.06)] dark:shadow-[0_1px_0_0_rgba(0,0,0,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.04)]"
+            className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-1.5 font-mono text-[11px] font-medium text-gray-700 shadow-[0_1px_0_0_rgba(0,0,0,0.05),inset_0_-1px_0_0_rgba(0,0,0,0.06)] dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:shadow-[0_1px_0_0_rgba(0,0,0,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.04)]"
           >
             {t.text}
           </kbd>
         ) : (
           <span
             key={`sep-${i}`}
-            className="text-[11px] text-gray-400 dark:text-gray-500 select-none"
+            className="text-[11px] text-gray-400 select-none dark:text-gray-500"
             aria-hidden="true"
           >
             {t.text}
           </span>
         ),
       )}
+    </span>
+  )
+}
+
+function TouchBadge({ gesture }: { gesture: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+      <Smartphone size={14} className="text-gray-400 dark:text-gray-500" />
+      <span className="font-medium">{gesture}</span>
     </span>
   )
 }
@@ -243,7 +295,7 @@ export function KeyboardShortcutsOverlay() {
 
 function OverlayContent({ setOpen }: { setOpen: (open: boolean) => void }) {
   const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<OverlayTab>('keyboard')
+  const [activeTab, setActiveTab] = useState<'keyboard' | 'touch'>('keyboard')
   const inputRef = useRef<HTMLInputElement>(null)
   const setCommandPaletteOpen = useUIStore((s) => s.setCommandPaletteOpen)
   const setFirstRunCoachOpen = useUIStore((s) => s.setFirstRunCoachOpen)
@@ -280,17 +332,32 @@ function OverlayContent({ setOpen }: { setOpen: (open: boolean) => void }) {
       }
     }
     window.addEventListener('keydown', onKey, { capture: true })
-    return () => window.removeEventListener('keydown', onKey, { capture: true } as EventListenerOptions)
+    return () =>
+      window.removeEventListener('keydown', onKey, {
+        capture: true,
+      } as EventListenerOptions)
   }, [setOpen])
+
+  // Build the groups based on active tab and permissions
+  const baseGroups =
+    activeTab === 'keyboard' ? keyboardShortcutGroups : touchGestureGroups
+  const groups = useMemo(() => {
+    if (activeTab === 'keyboard' && canViewReports) {
+      return [...baseGroups, ...adminShortcutGroups]
+    }
+    return baseGroups
+  }, [activeTab, canViewReports, baseGroups])
 
   // Filter every group through the query, dropping any that have no
   // surviving rows so the layout stays tight.
   const filteredGroups = useMemo(() => {
-    const groups = canViewReports ? [...shortcutGroups, adminShortcutGroup] : shortcutGroups
     return groups
-      .map((g) => ({ ...g, rows: g.rows.filter((r) => matchesQuery(r, mac, query)) }))
+      .map((g) => ({
+        ...g,
+        rows: g.rows.filter((r) => matchesQuery(r, mac, query)),
+      }))
       .filter((g) => g.rows.length > 0)
-  }, [query, mac, canViewReports])
+  }, [groups, query, mac])
 
   const totalCount = useMemo(
     () => filteredGroups.reduce((sum, g) => sum + g.rows.length, 0),
@@ -307,146 +374,212 @@ function OverlayContent({ setOpen }: { setOpen: (open: boolean) => void }) {
     setFirstRunCoachOpen(true)
   }
 
+  const headerText =
+    activeTab === 'keyboard' ? 'Keyboard Shortcuts' : 'Touch Gestures'
+  const searchPlaceholder =
+    activeTab === 'keyboard'
+      ? 'Search shortcuts (e.g. undo, cmd, zoom)'
+      : 'Search gestures (e.g. pinch, tap, drag)'
+
   return (
     <div
-      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-3 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={() => setOpen(false)}
       role="dialog"
       aria-modal="true"
       aria-labelledby="shortcuts-heading"
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-4 sm:p-6 max-w-3xl w-full max-h-[calc(100vh-1.5rem)] sm:max-h-[85vh] overflow-y-auto"
+        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-gray-900"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h2 id="shortcuts-heading" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Keyboard Shortcuts & Gestures
-          </h2>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+          <div className="flex items-center gap-3">
+            {activeTab === 'keyboard' ? (
+              <Command size={20} className="text-gray-500 dark:text-gray-400" />
+            ) : (
+              <Smartphone
+                size={20}
+                className="text-gray-500 dark:text-gray-400"
+              />
+            )}
+            <h2
+              id="shortcuts-heading"
+              className="text-base font-semibold text-gray-900 dark:text-gray-100"
+            >
+              {headerText}
+            </h2>
+          </div>
           <button
             onClick={() => setOpen(false)}
-            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none"
+            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             aria-label="Close shortcuts overlay"
           >
-            &times;
+            <X size={18} />
           </button>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 rounded-lg bg-gray-100 p-1 text-sm dark:bg-gray-800" role="tablist" aria-label="Shortcut reference type">
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-1 border-b border-gray-200 px-4 pt-3 dark:border-gray-800">
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === 'keyboard'}
             onClick={() => setActiveTab('keyboard')}
-            className={`rounded-md px-3 py-2 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${activeTab === 'keyboard' ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-950 dark:text-gray-100' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'}`}
+            className={`flex items-center gap-2 rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
+              activeTab === 'keyboard'
+                ? 'border-b-2 border-blue-600 bg-blue-50/50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-400'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            }`}
+            aria-pressed={activeTab === 'keyboard'}
           >
-            Keyboard
+            <Monitor size={16} />
+            <span className="hidden sm:inline">Keyboard</span>
+            <span className="sm:hidden">Keys</span>
           </button>
           <button
             type="button"
-            role="tab"
-            aria-selected={activeTab === 'touch'}
             onClick={() => setActiveTab('touch')}
-            className={`rounded-md px-3 py-2 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${activeTab === 'touch' ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-950 dark:text-gray-100' : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'}`}
+            className={`flex items-center gap-2 rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
+              activeTab === 'touch'
+                ? 'border-b-2 border-blue-600 bg-blue-50/50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/20 dark:text-blue-400'
+                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
+            }`}
+            aria-pressed={activeTab === 'touch'}
           >
-            Touch Gestures
+            <Smartphone size={16} />
+            <span className="hidden sm:inline">Touch Gestures</span>
+            <span className="sm:hidden">Touch</span>
           </button>
         </div>
 
-        {activeTab === 'keyboard' ? (
-          <>
-            <form
-              // Enter inside the search field would otherwise submit and
-              // (with no action) close / reload — capture and noop so the
-              // overlay stays open while users refine their query.
-              onSubmit={(e) => e.preventDefault()}
-              className="mb-4"
+        {/* Search & Actions */}
+        <div className="space-y-3 px-4 py-3">
+          <form onSubmit={(e) => e.preventDefault()} className="flex gap-2">
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label={
+                activeTab === 'keyboard'
+                  ? 'Search keyboard shortcuts'
+                  : 'Search touch gestures'
+              }
+              className="min-w-0 flex-1 rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+            />
+            <button
+              type="button"
+              onClick={handleOpenPalette}
+              data-testid="shortcuts-open-palette"
+              className="hidden items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none sm:inline-flex dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search shortcuts (e.g. undo, cmd, zoom)"
-                aria-label="Search keyboard shortcuts"
-                className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </form>
+              <Zap size={14} />
+              Palette
+            </button>
+            <button
+              type="button"
+              onClick={handleReplayTour}
+              data-testid="shortcuts-replay-tour"
+              className="hidden items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none sm:inline-flex dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <HelpCircle size={14} />
+              Tour
+            </button>
+          </form>
 
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3" aria-live="polite">
-              {totalCount === 0 ? 'No shortcuts match' : `${totalCount} shortcut${totalCount === 1 ? '' : 's'}`}
-              {' '}
-              <span className="text-gray-400 dark:text-gray-500">·</span>
-              {' '}
-              <span>Single-letter tool keys only fire when no input is focused.</span>
-            </p>
-
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={handleOpenPalette}
-                className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-                data-testid="shortcuts-open-palette"
-              >
-                Open command palette
-              </button>
-              <button
-                type="button"
-                onClick={handleReplayTour}
-                className="rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"
-                data-testid="shortcuts-replay-tour"
-              >
-                Replay quick tour
-              </button>
-            </div>
-
-            {filteredGroups.length === 0 ? (
-              <div className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                No shortcuts match &ldquo;{query}&rdquo;.
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6">
-                {filteredGroups.map((group) => (
-                  <section key={group.title}>
-                    <h3 className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">
-                      {group.title}
-                    </h3>
-                    <ul className="flex flex-col gap-1.5">
-                      {group.rows.map((row) => (
-                        <li
-                          key={`${group.title}-${row.keys}-${row.action}`}
-                          className="flex items-center justify-between gap-3"
-                        >
-                          <span className="text-sm text-gray-700 dark:text-gray-200">{row.action}</span>
-                          <KeyCombo combo={row.keys} mac={mac} />
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2" role="tabpanel" aria-label="Touch gesture shortcuts">
-            {touchGestures.map((gesture) => (
-              <div
-                key={gesture.gesture}
-                className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/40"
-              >
-                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                  {gesture.gesture}
-                </div>
-                <div className="mt-1 text-sm text-gray-700 dark:text-gray-200">
-                  {gesture.action}
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-                  {gesture.detail}
-                </p>
-              </div>
-            ))}
+          <div className="flex items-center justify-between text-xs">
+            <span
+              className="text-gray-500 dark:text-gray-400"
+              aria-live="polite"
+            >
+              {totalCount === 0
+                ? 'No results'
+                : `${totalCount} ${activeTab === 'keyboard' ? 'shortcut' : 'gesture'}${totalCount === 1 ? '' : 's'}`}
+            </span>
+            <span className="hidden text-gray-400 sm:inline dark:text-gray-500">
+              {activeTab === 'keyboard'
+                ? 'Press ? or Cmd+/ anytime'
+                : 'Works on touch devices'}
+            </span>
           </div>
-        )}
+
+          {/* Mobile action buttons */}
+          <div className="flex gap-2 sm:hidden">
+            <button
+              type="button"
+              onClick={handleOpenPalette}
+              data-testid="shortcuts-open-palette-mobile"
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <Zap size={14} />
+              Palette
+            </button>
+            <button
+              type="button"
+              onClick={handleReplayTour}
+              data-testid="shortcuts-replay-tour-mobile"
+              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <HelpCircle size={14} />
+              Tour
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {filteredGroups.length === 0 ? (
+            <div className="py-12 text-center">
+              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <HelpCircle
+                  size={24}
+                  className="text-gray-400 dark:text-gray-500"
+                />
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No {activeTab === 'keyboard' ? 'shortcuts' : 'gestures'} match
+                &ldquo;{query}&rdquo;.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+              {filteredGroups.map((group) => (
+                <section key={group.title}>
+                  <h3 className="mb-2 text-[11px] font-semibold tracking-wider text-gray-400 uppercase dark:text-gray-500">
+                    {group.title}
+                  </h3>
+                  <ul className="flex flex-col gap-2">
+                    {group.rows.map((row) => (
+                      <li
+                        key={`${group.title}-${row.keys}-${row.action}`}
+                        className="flex items-center justify-between gap-3 py-1"
+                      >
+                        <span className="text-sm leading-snug text-gray-700 dark:text-gray-200">
+                          {row.action}
+                        </span>
+                        {row.isTouch ? (
+                          <TouchBadge gesture={row.keys} />
+                        ) : (
+                          <KeyCombo combo={row.keys} mac={mac} />
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer hint */}
+        <div className="border-t border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-800 dark:bg-gray-800/50">
+          <p className="text-center text-[11px] text-gray-500 dark:text-gray-400">
+            {activeTab === 'keyboard'
+              ? 'Tool keys only fire when no input is focused. Escape closes any overlay.'
+              : 'Gestures may vary by device. Long-press often reveals context menus.'}
+          </p>
+        </div>
       </div>
     </div>
   )

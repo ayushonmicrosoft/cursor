@@ -1,5 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Sparkles, X } from 'lucide-react'
+import {
+  Sparkles,
+  X,
+  MousePointer,
+  Users,
+  MapPin,
+  Menu,
+  BarChart3,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Hand,
+  MousePointerClick,
+  Type,
+  Search,
+  FileText,
+  Zap,
+} from 'lucide-react'
 import { useUIStore } from '../../stores/uiStore'
 import { useElementsStore } from '../../stores/elementsStore'
 import { useEmployeeStore } from '../../stores/employeeStore'
@@ -16,6 +33,8 @@ import { prefersReducedMotion } from '../../lib/prefersReducedMotion'
 const STORAGE_KEY = 'floorcraft.onboardingCompleted'
 const LEGACY_STORAGE_KEY = 'firstRunWelcomeSeen'
 const DEMO_DISMISSED_KEY = 'floocraft.firstRunDemoDismissed'
+const ONBOARDING_COMPLETED_KEY = 'floocraft.onboardingCompleted'
+const ONBOARDING_STEP_KEY = 'floocraft.onboardingStep'
 
 function readInitialSeen(): boolean {
   try {
@@ -49,36 +68,65 @@ function writeDemoDismissed(): void {
   }
 }
 
+function readOnboardingCompleted(): boolean {
+  try {
+    return localStorage.getItem(ONBOARDING_COMPLETED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeOnboardingCompleted(): void {
+  try {
+    localStorage.setItem(ONBOARDING_COMPLETED_KEY, '1')
+    localStorage.removeItem(ONBOARDING_STEP_KEY)
+  } catch {
+    // Ignore
+  }
+}
+
+function readOnboardingStep(): number {
+  try {
+    const step = localStorage.getItem(ONBOARDING_STEP_KEY)
+    return step ? parseInt(step, 10) : 0
+  } catch {
+    return 0
+  }
+}
+
+function writeOnboardingStep(step: number): void {
+  try {
+    localStorage.setItem(ONBOARDING_STEP_KEY, String(step))
+  } catch {
+    // Ignore
+  }
+}
+
 interface CoachStep {
-  // Used as the heading for each step. `aria-labelledby` on the dialog
-  // also points at the active step's id so the screen reader announces
-  // the right thing as the user walks through.
   id: string
   title: string
   body: React.ReactNode
+  icon: React.ReactNode
+  highlight?: 'tools' | 'canvas' | 'roster' | 'reports' | 'context-menu'
+  action?: string
 }
 
 /**
- * First-run coach composite. Two surfaces live here:
+ * First-run coach composite. Three surfaces live here:
  *
- *   1. `FirstRunCoachTour` — a step-by-step popover teaching the editor's
- *      main moves (pan, tools, command palette, shortcut sheet, MAP/ROSTER
- *      tabs). Persists "seen" via localStorage under `firstRunWelcomeSeen`.
- *      Unchanged from Wave 12C apart from being extracted so the demo
- *      seeder can render alongside without wrestling for z-index.
+ *   1. `FirstRunDemoSeeder` — a small inline card shown ONLY when the
+ *      active office is empty. Offers a one-click "Load sample content" CTA.
+ *      Persists dismiss under `floocraft.firstRunDemoDismissed`.
  *
- *   2. `FirstRunDemoSeeder` — a small inline card shown ONLY when the
- *      active office is empty (zero elements on the active floor, zero
- *      employees). Offers a one-click "Load sample content" CTA that
- *      builds `buildDemoOfficePayload()`, persists it via `saveOffice`,
- *      and rehydrates every store so the canvas reflects the seed without
- *      a reload. Persists its own dismiss under
- *      `floocraft.firstRunDemoDismissed`.
+ *   2. `FirstRunCoachTour` — a comprehensive step-by-step onboarding
+ *      teaching new users: choosing tools, placing elements, assigning
+ *      employees, using context menus, and accessing reports.
+ *      Persists progress and completion in localStorage.
  *
- * Both are opt-in to dismissal independently — a user who dismissed the
- * tour on a previous office still sees the "Load sample content" card on
- * a freshly-created empty office, and vice versa. That way the two
- * affordances don't get tangled by a single blanket "seen" flag.
+ *   3. `QuickStartHints` — subtle contextual hints that appear during
+ *      first use (e.g., "Press V for select tool").
+ *
+ * All three are opt-in to dismissal independently.
  */
 interface FirstRunCoachProps {
   forceTourOpen?: boolean
@@ -99,24 +147,13 @@ export function FirstRunCoach({
 
 /**
  * Inline "Load sample content" card. Parked top-right above the existing
- * coach popover so both can coexist on an empty office. Disappears the
- * moment content arrives (the seeder CTA was clicked, or the user
- * started building manually).
- *
- * The copy leans marketing-forward on purpose: an empty canvas is the
- * single lowest-signal moment in the app, and a concrete "50 people,
- * two floors, neighborhoods" promise is what converts "I poked at this
- * for 30s and bounced" into "I see what this tool is for".
+ * coach popover so both can coexist on an empty office.
  */
 function FirstRunDemoSeeder() {
   const [dismissed, setDismissed] = useState<boolean>(() => readDemoDismissed())
   const [loading, setLoading] = useState(false)
   const reducedMotion = useRef(prefersReducedMotion()).current
 
-  // Emptiness check: zero elements in the elements store AND zero
-  // employees. The roster can legitimately have people before any desks
-  // exist (CSV import), so "employees AND elements both empty" is the
-  // only safe "untouched canvas" signal.
   const elementCount = useElementsStore((s) => Object.keys(s.elements).length)
   const employeeCount = useEmployeeStore((s) => Object.keys(s.employees).length)
   const isEmpty = elementCount === 0 && employeeCount === 0
@@ -135,11 +172,6 @@ function FirstRunDemoSeeder() {
     try {
       const payload = buildDemoOfficePayload()
 
-      // Best-effort server-side persist. If the office doesn't yet have a
-      // known loadedVersion (brand-new empty row), skip the save and seed
-      // stores only — the next debounced save from useOfficeSync will push
-      // the content up. Failing to save is not fatal for the onboarding
-      // path; the user sees the content immediately either way.
       if (officeId && loadedVersion) {
         try {
           const res = await saveOffice(
@@ -148,24 +180,20 @@ function FirstRunDemoSeeder() {
             loadedVersion,
           )
           if (res.ok) {
-            // Bump the project store's loadedVersion so subsequent edits
-            // save cleanly against the new server-side timestamp.
             useProjectStore.setState({
               loadedVersion: res.updated_at,
               lastSavedAt: res.updated_at,
               saveState: 'saved',
             })
-          } else {
-            console.warn('[FirstRunDemoSeeder] initial demo save failed', res)
           }
         } catch (err) {
-          console.warn('[FirstRunDemoSeeder] saveOffice threw; seeding stores anyway', err)
+          console.warn(
+            '[FirstRunDemoSeeder] saveOffice threw; seeding stores anyway',
+            err,
+          )
         }
       }
 
-      // Hydrate local stores so the canvas reflects the seed immediately.
-      // This mirrors the ProjectShell load path without going through a
-      // full reload.
       useElementsStore.setState({ elements: payload.elements })
       useEmployeeStore.setState({
         employees: payload.employees,
@@ -198,39 +226,36 @@ function FirstRunDemoSeeder() {
     <div
       role="region"
       aria-labelledby="first-run-demo-title"
-      // Slot the card in the top-right — high enough to be noticed, not
-      // so high it clobbers the TopBar. The existing tour popover lives
-      // bottom-right; keeping this one top-right means a user who sees
-      // BOTH (fresh empty office, tour not yet dismissed) can act on
-      // either without either covering the other.
-      className={`fixed top-3 left-3 right-3 max-h-[calc(100vh-1.5rem)] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-4 z-40 sm:absolute sm:top-4 sm:left-auto sm:right-4 sm:w-[340px] ${
-        reducedMotion ? '' : 'animate-in fade-in slide-in-from-top-2 duration-300'
+      className={`absolute top-4 right-4 z-40 w-[340px] rounded-xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-800 dark:bg-gray-900 ${
+        reducedMotion
+          ? ''
+          : 'animate-in fade-in slide-in-from-top-2 duration-300'
       }`}
     >
       <div className="flex items-start gap-3">
         <div
           aria-hidden="true"
-          className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0"
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
         >
           <Sparkles size={18} aria-hidden="true" />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div
             id="first-run-demo-title"
-            className="font-semibold text-gray-900 dark:text-gray-100 text-sm"
+            className="text-sm font-semibold text-gray-900 dark:text-gray-100"
           >
             New to OandOcraft?
           </div>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 leading-snug">
+          <p className="mt-1 text-sm leading-snug text-gray-600 dark:text-gray-300">
             Load a sample office with{' '}
-            <span className="tabular-nums font-medium">45 people</span>, three
+            <span className="font-medium tabular-nums">45 people</span>, three
             floors, and neighborhoods to see how it all fits together.
           </p>
         </div>
         <button
           type="button"
           onClick={handleDismiss}
-          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 -mr-1 -mt-1 p-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="-mt-1 -mr-1 flex-shrink-0 rounded p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-500 dark:hover:text-gray-300"
           aria-label="Dismiss sample-content card"
         >
           <X size={16} aria-hidden="true" />
@@ -242,7 +267,7 @@ function FirstRunDemoSeeder() {
           type="button"
           onClick={handleLoad}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1"
+          className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:opacity-50"
         >
           <Sparkles size={14} aria-hidden="true" />
           {loading ? 'Loading…' : 'Load sample content'}
@@ -250,7 +275,7 @@ function FirstRunDemoSeeder() {
         <button
           type="button"
           onClick={handleDismiss}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
           Start from scratch
         </button>
@@ -260,15 +285,8 @@ function FirstRunDemoSeeder() {
 }
 
 /**
- * Step-by-step first-run tour. Walks new editors through the editor's
- * main moves (pan, tools, command palette, shortcut sheet, MAP/ROSTER
- * tabs) in a compact step-by-step popover. Persists "seen" via
- * localStorage under `firstRunWelcomeSeen` so it never re-pops once
- * dismissed.
- *
- * Wave 12C: replaced the milestone checklist with a tour-style coach
- * referencing the new editor surfaces shipped by waves 8-11 (drag-pan,
- * Cmd+K command palette, Cmd+F finder, ? cheat sheet, M/R tab jumps).
+ * Comprehensive step-by-step onboarding tour.
+ * Wave 12D: Expanded to cover core workflows with progress persistence.
  */
 function FirstRunCoachTour({
   forceOpen,
@@ -277,10 +295,20 @@ function FirstRunCoachTour({
   forceOpen: boolean
   onDismissed?: () => void
 }) {
-  const [dismissed, setDismissed] = useState<boolean>(() => !forceOpen && readInitialSeen())
-  const [stepIdx, setStepIdx] = useState(0)
+  const wasCompleted = useRef(readOnboardingCompleted())
+  const savedStep = useRef(readOnboardingStep())
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (forceOpen) return false
+    return wasCompleted.current || readInitialSeen()
+  })
+  const [stepIdx, setStepIdx] = useState(() => {
+    if (forceOpen) return 0
+    if (wasCompleted.current) return 0
+    return savedStep.current
+  })
   const cardRef = useRef<HTMLDivElement | null>(null)
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null)
+  const setCommandPaletteOpen = useUIStore((s) => s.setCommandPaletteOpen)
 
   useEffect(() => {
     if (!forceOpen) return
@@ -291,137 +319,230 @@ function FirstRunCoachTour({
   const steps: CoachStep[] = useMemo(
     () => [
       {
-        id: 'fr-step-pan',
-        title: 'Move around the canvas',
+        id: 'welcome',
+        title: 'Welcome to OandOcraft',
+        icon: <Sparkles size={20} />,
         body: (
           <>
-            Drag the empty canvas to <strong>pan</strong>, scroll to{' '}
-            <strong>zoom</strong>. Hold <kbd>Space</kbd> for the classic
-            pan-tool feel — release to snap back to your previous tool.
+            Let's walk through the basics of creating and managing your office
+            space. This tour takes about 2 minutes.
           </>
         ),
       },
       {
-        id: 'fr-step-touch-pan',
-        title: 'Navigate on touch screens',
+        id: 'tools',
+        title: 'Choose Your Tool',
+        icon: <MousePointer size={20} />,
+        highlight: 'tools',
         body: (
           <>
-            On mobile, drag with one finger to pan, pinch to zoom, and
-            double-tap the canvas to zoom toward the spot you touched.
+            The left sidebar contains all your drawing tools. Click any tool to
+            activate it, <strong>or use hotkeys</strong>:{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              V
+            </kbd>{' '}
+            for select,{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              W
+            </kbd>{' '}
+            for walls,{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              T
+            </kbd>{' '}
+            for text.
           </>
         ),
       },
       {
-        id: 'fr-step-tools',
-        title: 'Pick a tool',
+        id: 'place-element',
+        title: 'Place Your First Element',
+        icon: <MousePointerClick size={20} />,
+        highlight: 'canvas',
+        action: 'Try selecting a tool and clicking on the canvas',
         body: (
           <>
-            Tools live in the left sidebar — or press a hotkey:{' '}
-            <kbd>V</kbd> select, <kbd>W</kbd> wall, <kbd>R</kbd> rectangle,{' '}
-            <kbd>E</kbd> ellipse, <kbd>T</kbd> text.
+            With a tool selected, click and drag on the canvas to create
+            elements. Walls: click to start, click to end. Shapes: drag to size.
           </>
         ),
       },
       {
-        id: 'fr-step-place-elements',
-        title: 'Place desks, rooms, and labels',
+        id: 'pan-zoom',
+        title: 'Navigate the Canvas',
+        icon: <Hand size={20} />,
+        highlight: 'canvas',
         body: (
           <>
-            Choose a tool, then tap or drag on the canvas to place desks,
-            rooms, doors, windows, labels, and measurement guides.
+            <strong>Pan:</strong> drag empty space (or hold Space).{' '}
+            <strong>Zoom:</strong> scroll or pinch. <strong>Fit view:</strong>{' '}
+            press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Cmd+0
+            </kbd>
+            . Use the minimap in the corner for quick navigation.
           </>
         ),
       },
       {
-        id: 'fr-step-select-edit',
-        title: 'Select and edit properties',
+        id: 'select-move',
+        title: 'Select and Move',
+        icon: <MousePointer size={20} />,
+        highlight: 'canvas',
         body: (
           <>
-            Select an element to open the properties inspector. Update labels,
-            sizes, colors, assignments, locks, and other details without leaving the map.
+            Press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              V
+            </kbd>{' '}
+            for the select tool. Click elements to select, drag to move.{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Shift+drag
+            </kbd>{' '}
+            for multi-select. Arrow keys nudge by 1px.
           </>
         ),
       },
       {
-        id: 'fr-step-context-menu',
-        title: 'Use the context menu',
+        id: 'context-menu',
+        title: 'Right-Click / Long-Press Menu',
+        icon: <Menu size={20} />,
+        highlight: 'context-menu',
         body: (
           <>
-            Right-click on desktop or long-press on touch devices to duplicate,
-            arrange, align, lock, or delete selected elements.
+            Right-click (or long-press on touch) any element for quick actions:
+            duplicate, delete, lock, assign employee, or edit properties. Try it
+            on any desk or shape!
           </>
         ),
       },
       {
-        id: 'fr-step-floors',
-        title: 'Switch floors',
+        id: 'employees',
+        title: 'Add Your Team',
+        icon: <Users size={20} />,
+        highlight: 'roster',
         body: (
           <>
-            Use the floor controls to move between levels. In presentation mode,
-            arrow keys or swipe navigation walk stakeholders through each floor.
+            Click the <strong>ROSTER</strong> tab or press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              R
+            </kbd>{' '}
+            to manage employees. Import from CSV or add one by one. Then drag
+            them onto desks in the MAP view.
           </>
         ),
       },
       {
-        id: 'fr-step-palette',
-        title: 'Command palette',
+        id: 'assign-seats',
+        title: 'Assign Seats',
+        icon: <MapPin size={20} />,
+        highlight: 'canvas',
         body: (
           <>
-            Press <kbd>Cmd</kbd>+<kbd>K</kbd> to open the command palette —
-            every action in one searchable list. <kbd>Cmd</kbd>+<kbd>F</kbd>{' '}
-            opens the canvas finder to highlight elements by label.
+            Drag employees from the roster directly onto desks, or use the
+            right-click menu on any seat. The assignment is instant and visible.
           </>
         ),
       },
       {
-        id: 'fr-step-finder',
-        title: 'Find items fast',
+        id: 'neighborhoods',
+        title: 'Create Neighborhoods',
+        icon: <MapPin size={20} />,
         body: (
           <>
-            Press <kbd>Cmd</kbd>+<kbd>F</kbd> on the map to find desks, labels,
-            neighborhoods, and other canvas elements by name.
+            Press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Shift+G
+            </kbd>{' '}
+            to draw neighborhoods — zones for teams or departments. Name them
+            and assign colors for easy visual organization.
           </>
         ),
       },
       {
-        id: 'fr-step-presentation',
-        title: 'Present the plan',
+        id: 'search',
+        title: 'Find Anything',
+        icon: <Search size={20} />,
         body: (
           <>
-            Press <kbd>P</kbd> to enter presentation mode. Use ←/→ to move
-            floor by floor, then press <kbd>Escape</kbd> to return to editing.
+            Press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Cmd+K
+            </kbd>{' '}
+            for the command palette — every action at your fingertips.{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Cmd+F
+            </kbd>{' '}
+            finds elements on the canvas by name or label.
           </>
         ),
       },
       {
-        id: 'fr-step-export',
-        title: 'Export when ready',
+        id: 'shortcuts',
+        title: 'Keyboard Shortcuts',
+        icon: <Type size={20} />,
         body: (
           <>
-            Open Export to save the canvas as PNG, PDF, or SVG, or download
-            CSV and JSON data for reporting workflows.
+            Press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              ?
+            </kbd>{' '}
+            or{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Cmd+/
+            </kbd>{' '}
+            anytime to see all shortcuts. We support everything from undo{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Cmd+Z
+            </kbd>{' '}
+            to presentation mode{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              P
+            </kbd>
+            .
           </>
         ),
       },
       {
-        id: 'fr-step-shortcuts',
-        title: 'See every shortcut',
+        id: 'reports',
+        title: 'Reports & Insights',
+        icon: <BarChart3 size={20} />,
+        highlight: 'reports',
         body: (
           <>
-            Press <kbd>?</kbd> at any time to pop the full shortcut cheat
-            sheet. <kbd>P</kbd> toggles presentation mode (←/→ walks through
-            floors).
+            Open the right sidebar to access reports: seating utilization,
+            department distribution, equipment needs, and org chart overlays.
+            Data updates in real-time as you edit.
           </>
         ),
       },
       {
-        id: 'fr-step-tabs',
-        title: 'Switch views',
+        id: 'export',
+        title: 'Export & Share',
+        icon: <FileText size={20} />,
         body: (
           <>
-            <strong>MAP</strong> and <strong>ROSTER</strong> tabs sit at the
-            top of every office. Press <kbd>M</kbd> for the map,{' '}
-            <kbd>R</kbd> for the roster — your selection survives the jump.
+            Export your floor plan as PDF (print-ready), PNG (image), CSV
+            (employee roster), or JSON (full project backup). Use the File menu
+            or{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              Cmd+Shift+E
+            </kbd>
+            .
+          </>
+        ),
+      },
+      {
+        id: 'done',
+        title: "You're Ready!",
+        icon: <Zap size={20} />,
+        body: (
+          <>
+            You now know the essentials. The sample office is loaded — explore,
+            experiment, and make it your own. Press{' '}
+            <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs dark:bg-gray-800">
+              ?
+            </kbd>{' '}
+            anytime for help.
           </>
         ),
       },
@@ -445,6 +566,7 @@ function FirstRunCoachTour({
 
   const handleDismiss = useCallback(() => {
     writeSeen()
+    writeOnboardingCompleted()
     setDismissed(true)
     onDismissed?.()
   }, [onDismissed])
@@ -454,12 +576,28 @@ function FirstRunCoachTour({
       handleDismiss()
       return
     }
-    setStepIdx((i) => Math.min(totalSteps - 1, i + 1))
-  }, [isLastStep, totalSteps, handleDismiss])
+    const nextStep = stepIdx + 1
+    setStepIdx(nextStep)
+    writeOnboardingStep(nextStep)
+  }, [isLastStep, stepIdx, handleDismiss])
 
   const handleBack = useCallback(() => {
-    setStepIdx((i) => Math.max(0, i - 1))
-  }, [])
+    const prevStep = Math.max(0, stepIdx - 1)
+    setStepIdx(prevStep)
+    writeOnboardingStep(prevStep)
+  }, [stepIdx])
+
+  const handleSkip = useCallback(() => {
+    writeSeen()
+    writeOnboardingCompleted()
+    setDismissed(true)
+    onDismissed?.()
+  }, [onDismissed])
+
+  const handleOpenPalette = () => {
+    setCommandPaletteOpen(true)
+    handleDismiss()
+  }
 
   useEffect(() => {
     if (dismissed) return
@@ -474,6 +612,16 @@ function FirstRunCoachTour({
         e.preventDefault()
         e.stopImmediatePropagation()
         handleDismiss()
+        return
+      }
+      if (e.key === 'ArrowRight' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault()
+        handleNext()
+        return
+      }
+      if (e.key === 'ArrowLeft' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault()
+        handleBack()
         return
       }
       if (e.key !== 'Tab') return
@@ -498,29 +646,17 @@ function FirstRunCoachTour({
     return () => {
       window.removeEventListener('keydown', handler, { capture: true })
     }
-  }, [dismissed, handleDismiss])
+  }, [dismissed, handleDismiss, handleNext, handleBack])
 
   if (dismissed) return null
-
-  const handleOpenPalette = () => {
-    // The command palette is the lowest-friction launching pad: it
-    // surfaces "Insert wall", "Add desk", "Assign seats" etc. in one
-    // searchable list without steering the user down a single path.
-    useUIStore.getState().setCommandPaletteOpen(true)
-    handleDismiss()
-  }
 
   return (
     <div
       ref={cardRef}
       role="dialog"
       aria-modal="false"
-      // aria-labelledby points at the dialog's stable title heading so
-      // the accessible name stays "Welcome to OandOcraft" across steps.
-      // The per-step heading inside the body re-announces step copy as
-      // the user advances; we don't shift the dialog's name itself.
       aria-labelledby="first-run-coach-title"
-      className="fixed inset-x-3 bottom-3 max-h-[calc(100vh-1.5rem)] overflow-y-auto bg-white dark:bg-gray-900 shadow-xl rounded-xl border border-gray-200 dark:border-gray-800 p-4 z-40 sm:absolute sm:inset-x-auto sm:bottom-12 sm:right-4 sm:w-[380px] sm:p-5"
+      className="absolute right-4 bottom-12 z-40 w-[380px] max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200 bg-white p-5 shadow-xl dark:border-gray-800 dark:bg-gray-900"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -528,52 +664,56 @@ function FirstRunCoachTour({
         }
       }}
     >
-      <div className="flex items-start gap-3">
+      {/* Progress bar */}
+      <div className="absolute top-0 right-0 left-0 h-1 overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-800">
+        <div
+          className="h-full bg-blue-600 transition-all duration-300 dark:bg-blue-400"
+          style={{ width: `${((stepIdx + 1) / totalSteps) * 100}%` }}
+        />
+      </div>
+
+      <div className="mt-1 flex items-start gap-3">
         <div
           aria-hidden="true"
-          className="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0"
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
         >
-          <Sparkles size={20} aria-hidden="true" />
+          {activeStep.icon}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div
             id="first-run-coach-title"
             className="font-semibold text-gray-900 dark:text-gray-100"
           >
-            Welcome to OandOcraft
+            {activeStep.title}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-            A quick tour of the editor — {totalSteps} steps.
+          <div className="mt-0.5 text-sm text-gray-600 dark:text-gray-300">
+            Step {stepIdx + 1} of {totalSteps}
           </div>
         </div>
         <button
           type="button"
-          onClick={handleDismiss}
-          className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 -mr-1 -mt-1 p-1 rounded"
+          onClick={handleSkip}
+          className="-mt-1 -mr-1 flex-shrink-0 rounded p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           aria-label="Dismiss welcome card"
+          title="Skip tour"
         >
           <X size={16} aria-hidden="true" />
         </button>
       </div>
 
       <div className="mt-4">
-        <h3
-          id={activeStep.id}
-          className="text-sm font-semibold text-gray-900 dark:text-gray-100"
-        >
-          {activeStep.title}
-        </h3>
-        <p className="mt-1.5 text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+        <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200">
           {activeStep.body}
         </p>
+        {activeStep.action && (
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-600 dark:bg-blue-950/30 dark:text-blue-400">
+            <Sparkles size={14} />
+            <span className="font-medium">{activeStep.action}</span>
+          </div>
+        )}
       </div>
 
-      {/*
-        Step indicator: a row of small dots, one per step. The active dot
-        gets the primary blue, completed dots a softer blue, and pending
-        dots stay neutral. Buttons rather than spans so a mouse user can
-        click to jump — keyboard users walk via Next/Back.
-      */}
+      {/* Step dots */}
       <div
         className="mt-5 flex items-center gap-1.5"
         aria-label={`Step ${stepIdx + 1} of ${totalSteps}`}
@@ -594,7 +734,7 @@ function FirstRunCoachTour({
             }`}
           />
         ))}
-        <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 tabular-nums">
+        <span className="ml-auto text-xs text-gray-500 tabular-nums dark:text-gray-400">
           {stepIdx + 1} / {totalSteps}
         </span>
       </div>
@@ -602,8 +742,8 @@ function FirstRunCoachTour({
       <div className="mt-4 flex flex-col gap-3 min-[480px]:flex-row min-[480px]:items-center">
         <button
           type="button"
-          onClick={handleDismiss}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+          onClick={handleSkip}
+          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
           Skip tour
         </button>
@@ -612,21 +752,19 @@ function FirstRunCoachTour({
             <button
               type="button"
               onClick={handleBack}
-              className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              className="flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800/50"
+              title="Previous step (←)"
             >
+              <ChevronLeft size={14} />
               Back
             </button>
           )}
-          {/* Last step gets two CTAs: "Open palette" jumps the user
-              straight into the command palette (the most useful next
-              step), "Done" simply dismisses. Earlier steps just have
-              "Next". */}
           {isLastStep ? (
             <>
               <button
                 type="button"
                 onClick={handleOpenPalette}
-                className="px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800/50"
               >
                 Open palette
               </button>
@@ -634,8 +772,9 @@ function FirstRunCoachTour({
                 ref={primaryBtnRef}
                 type="button"
                 onClick={handleDismiss}
-                className="px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
               >
+                <Check size={14} />
                 Done
               </button>
             </>
@@ -644,13 +783,23 @@ function FirstRunCoachTour({
               ref={primaryBtnRef}
               type="button"
               onClick={handleNext}
-              className="px-3 py-1.5 text-sm font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+              className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
+              title="Next step (→)"
             >
               Next
+              <ChevronRight size={14} />
             </button>
           )}
         </div>
       </div>
+
+      {/* Keyboard hint */}
+      <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 text-[10px] text-gray-400 dark:border-gray-800 dark:text-gray-500">
+        <span>Use ← → arrow keys to navigate</span>
+        <span>ESC to close</span>
+      </div>
     </div>
   )
 }
+
+export default FirstRunCoach

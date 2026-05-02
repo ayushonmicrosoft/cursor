@@ -14,15 +14,58 @@ export function useKeyboardShortcuts() {
   const navigate = useNavigate()
   // Post Phase 6: editor is mounted exclusively at
   // `/t/:teamSlug/o/:officeSlug/*`.
-  const { teamSlug, officeSlug } = useParams<{ teamSlug: string; officeSlug: string }>()
+  const { teamSlug, officeSlug } = useParams<{
+    teamSlug: string
+    officeSlug: string
+  }>()
   // Pathname drives the map-route gate for Cmd+F (the canvas finder is
   // only meaningful when the floor plan is visible). Other shortcuts
   // either work everywhere inside the project shell or self-gate.
   const { pathname } = useLocation()
-  const { selectedIds, clearSelection, setPresentationMode, presentationMode, setShortcutsOverlayOpen } = useUIStore(useShallow((s) => ({ selectedIds: s.selectedIds, clearSelection: s.clearSelection, setPresentationMode: s.setPresentationMode, presentationMode: s.presentationMode, setShortcutsOverlayOpen: s.setShortcutsOverlayOpen })))
-  const { duplicateElements, moveElements, groupElements, ungroupElements } = useElementsStore(useShallow((s) => ({ duplicateElements: s.duplicateElements, moveElements: s.moveElements, groupElements: s.groupElements, ungroupElements: s.ungroupElements })))
+  const {
+    selectedIds,
+    clearSelection,
+    setPresentationMode,
+    presentationMode,
+    setShortcutsOverlayOpen,
+  } = useUIStore(
+    useShallow((s) => ({
+      selectedIds: s.selectedIds,
+      clearSelection: s.clearSelection,
+      setPresentationMode: s.setPresentationMode,
+      presentationMode: s.presentationMode,
+      setShortcutsOverlayOpen: s.setShortcutsOverlayOpen,
+    })),
+  )
+  const { duplicateElements, moveElements, groupElements, ungroupElements } =
+    useElementsStore(
+      useShallow((s) => ({
+        duplicateElements: s.duplicateElements,
+        moveElements: s.moveElements,
+        groupElements: s.groupElements,
+        ungroupElements: s.ungroupElements,
+      })),
+    )
   const elements = useElementsStore((s) => s.elements)
-  const { setActiveTool, toggleGrid, toggleDimensions, toggleNorthArrow, zoomIn, zoomOut, resetZoom } = useCanvasStore(useShallow((s) => ({ setActiveTool: s.setActiveTool, toggleGrid: s.toggleGrid, toggleDimensions: s.toggleDimensions, toggleNorthArrow: s.toggleNorthArrow, zoomIn: s.zoomIn, zoomOut: s.zoomOut, resetZoom: s.resetZoom })))
+  const {
+    setActiveTool,
+    toggleGrid,
+    toggleDimensions,
+    toggleNorthArrow,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+  } = useCanvasStore(
+    useShallow((s) => ({
+      setActiveTool: s.setActiveTool,
+      toggleGrid: s.toggleGrid,
+      toggleDimensions: s.toggleDimensions,
+      toggleNorthArrow: s.toggleNorthArrow,
+      zoomIn: s.zoomIn,
+      zoomOut: s.zoomOut,
+      resetZoom: s.resetZoom,
+    })),
+  )
   // Cmd+Z / Cmd+Shift+Z rewinds every temporal-wrapped store in lock-step
   // so a single undo matches the user's mental model — they just did one
   // thing on the canvas; one keystroke should walk it back regardless of
@@ -55,7 +98,8 @@ export function useKeyboardShortcuts() {
         target.tagName === 'TEXTAREA' ||
         target.tagName === 'SELECT' ||
         target.isContentEditable
-      ) return
+      )
+        return
 
       // Modal guard: while a drawer/dialog owns focus, global shortcuts
       // stand down so Escape closes the modal (not the canvas selection)
@@ -110,6 +154,13 @@ export function useKeyboardShortcuts() {
         return
       }
 
+      // Cmd+/ / Ctrl+/ opens keyboard shortcuts overlay (supplement to ? key)
+      if (mod && e.key === '/') {
+        e.preventDefault()
+        useUIStore.getState().setShortcutsOverlayOpen(true)
+        return
+      }
+
       // Cmd+F / Ctrl+F → canvas finder. Map route only — on the roster /
       // reports views the native browser find still applies (operators
       // expect to be able to search a long list of names). preventDefault
@@ -117,7 +168,10 @@ export function useKeyboardShortcuts() {
       // gets the keystroke. The finder owns its own Escape/Enter
       // handlers via the input's keydown, so we only need to open it.
       if (mod && (e.key === 'f' || e.key === 'F')) {
-        const onMap = pathname.endsWith('/map') || pathname.includes('/map?') || pathname.includes('/map/')
+        const onMap =
+          pathname.endsWith('/map') ||
+          pathname.includes('/map?') ||
+          pathname.includes('/map/')
         if (onMap) {
           e.preventDefault()
           useCanvasFinderStore.getState().openFinder()
@@ -146,11 +200,26 @@ export function useKeyboardShortcuts() {
         return
       }
 
-      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return }
-      if (mod && e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); return }
-      if (mod && e.key === 'Z') { e.preventDefault(); redo(); return }
+      if (mod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        undo()
+        return
+      }
+      if (mod && e.key === 'z' && e.shiftKey) {
+        e.preventDefault()
+        redo()
+        return
+      }
+      if (mod && e.key === 'Z') {
+        e.preventDefault()
+        redo()
+        return
+      }
 
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedIds.length > 0) {
+      if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        selectedIds.length > 0
+      ) {
         e.preventDefault()
         deleteElements(selectedIds)
         clearSelection()
@@ -191,12 +260,20 @@ export function useKeyboardShortcuts() {
         e.preventDefault()
         for (const id of selectedIds) {
           const el = elements[id]
-          if (el) useElementsStore.getState().updateElement(id, { locked: !el.locked })
+          if (el)
+            useElementsStore
+              .getState()
+              .updateElement(id, { locked: !el.locked })
         }
         return
       }
 
-      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      if (
+        e.key === 'ArrowUp' ||
+        e.key === 'ArrowDown' ||
+        e.key === 'ArrowLeft' ||
+        e.key === 'ArrowRight'
+      ) {
         e.preventDefault()
         // Empty selection: arrows pan the canvas viewport (Google Maps /
         // Figma convention — ArrowRight moves the view right, revealing
@@ -204,15 +281,19 @@ export function useKeyboardShortcuts() {
         // content the opposite direction on screen). Shift accelerates.
         if (selectedIds.length === 0) {
           const step = e.shiftKey ? 80 : 20
-          const panX = e.key === 'ArrowLeft' ? step : e.key === 'ArrowRight' ? -step : 0
-          const panY = e.key === 'ArrowUp' ? step : e.key === 'ArrowDown' ? -step : 0
+          const panX =
+            e.key === 'ArrowLeft' ? step : e.key === 'ArrowRight' ? -step : 0
+          const panY =
+            e.key === 'ArrowUp' ? step : e.key === 'ArrowDown' ? -step : 0
           const cs = useCanvasStore.getState()
           cs.setStagePosition(cs.stageX + panX, cs.stageY + panY)
           return
         }
         const amount = e.shiftKey ? 10 : 1
-        const dx = e.key === 'ArrowLeft' ? -amount : e.key === 'ArrowRight' ? amount : 0
-        const dy = e.key === 'ArrowUp' ? -amount : e.key === 'ArrowDown' ? amount : 0
+        const dx =
+          e.key === 'ArrowLeft' ? -amount : e.key === 'ArrowRight' ? amount : 0
+        const dy =
+          e.key === 'ArrowUp' ? -amount : e.key === 'ArrowDown' ? amount : 0
 
         // Walls are rendered at (0, 0) with geometry baked into `points`, so
         // nudging x/y has no visible effect. Shift each point instead.
@@ -236,28 +317,59 @@ export function useKeyboardShortcuts() {
         return
       }
 
-      if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomIn(); return }
-      if (mod && e.key === '-') { e.preventDefault(); zoomOut(); return }
-      if (mod && e.key === '0') { e.preventDefault(); resetZoom(); return }
+      if (mod && (e.key === '=' || e.key === '+')) {
+        e.preventDefault()
+        zoomIn()
+        return
+      }
+      if (mod && e.key === '-') {
+        e.preventDefault()
+        zoomOut()
+        return
+      }
+      if (mod && e.key === '0') {
+        e.preventDefault()
+        resetZoom()
+        return
+      }
 
       if (!mod) {
-        if (e.key === 'v' || e.key === 'V') { setActiveTool('select'); return }
-        if (e.key === 'w' || e.key === 'W') { setActiveTool('wall'); return }
+        if (e.key === 'v' || e.key === 'V') {
+          setActiveTool('select')
+          return
+        }
+        if (e.key === 'w' || e.key === 'W') {
+          setActiveTool('wall')
+          return
+        }
         // Shift+G activates the neighborhood tool. Must be checked BEFORE
         // the plain-G "toggle grid" branch, otherwise Shift+G would fall
         // through to the grid toggle (Shift+G also matches `e.key === 'G'`).
         if (e.shiftKey && (e.key === 'G' || e.key === 'g')) {
           e.preventDefault()
-          setActiveTool('neighborhood'); return
+          setActiveTool('neighborhood')
+          return
         }
-        if (e.key === 'g' || e.key === 'G') { toggleGrid(); return }
-        if (e.key === 'd' || e.key === 'D') { toggleDimensions(); return }
+        if (e.key === 'g' || e.key === 'G') {
+          toggleGrid()
+          return
+        }
+        if (e.key === 'd' || e.key === 'D') {
+          toggleDimensions()
+          return
+        }
         // Plain `N` toggles the floating north-arrow compass. Shift+N
         // (window tool) is checked further down so the modifier-free
         // path here only matches a bare key. `n` is otherwise free —
         // verified against the rest of the editor hotkey table.
-        if (!e.shiftKey && (e.key === 'n' || e.key === 'N')) { toggleNorthArrow(); return }
-        if (e.key === 'p' || e.key === 'P') { setPresentationMode(!presentationMode); return }
+        if (!e.shiftKey && (e.key === 'n' || e.key === 'N')) {
+          toggleNorthArrow()
+          return
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          setPresentationMode(!presentationMode)
+          return
+        }
         // Drawing primitives. D and G are already taken (dimensions/grid);
         // R and M are taken on project routes by roster/map nav (handled
         // below), so rect gets Shift+R as an editor-scoped alternative when
@@ -265,7 +377,8 @@ export function useKeyboardShortcuts() {
         // activates rect-shape directly.
         if (e.shiftKey && (e.key === 'R' || e.key === 'r')) {
           e.preventDefault()
-          setActiveTool('rect-shape'); return
+          setActiveTool('rect-shape')
+          return
         }
         // Shift+D and Shift+N for door/window. Plain D is already
         // "toggle dimensions" and plain W is "wall"; Shift-locking these
@@ -273,27 +386,50 @@ export function useKeyboardShortcuts() {
         // being discoverable from the tool-selector label.
         if (e.shiftKey && (e.key === 'D' || e.key === 'd')) {
           e.preventDefault()
-          setActiveTool('door'); return
+          setActiveTool('door')
+          return
         }
         if (e.shiftKey && (e.key === 'N' || e.key === 'n')) {
           e.preventDefault()
-          setActiveTool('window'); return
+          setActiveTool('window')
+          return
         }
         // Shift+M activates the ruler. Plain M is already "jump to Map
         // view" on project routes, so shift-lock mirrors the door/window
         // Shift+D / Shift+N pattern.
         if (e.shiftKey && (e.key === 'M' || e.key === 'm')) {
           e.preventDefault()
-          setActiveTool('measure'); return
+          setActiveTool('measure')
+          return
         }
-        if (!e.shiftKey && (e.key === 'r' || e.key === 'R') && !(teamSlug && officeSlug)) {
-          setActiveTool('rect-shape'); return
+        if (
+          !e.shiftKey &&
+          (e.key === 'r' || e.key === 'R') &&
+          !(teamSlug && officeSlug)
+        ) {
+          setActiveTool('rect-shape')
+          return
         }
-        if (e.key === 'e' || e.key === 'E') { setActiveTool('ellipse'); return }
-        if (e.key === 'l' || e.key === 'L') { setActiveTool('line-shape'); return }
-        if (e.key === 'a' || e.key === 'A') { setActiveTool('arrow'); return }
-        if (e.key === 't' || e.key === 'T') { setActiveTool('free-text'); return }
-        if (e.key === '?') { setShortcutsOverlayOpen(true); return }
+        if (e.key === 'e' || e.key === 'E') {
+          setActiveTool('ellipse')
+          return
+        }
+        if (e.key === 'l' || e.key === 'L') {
+          setActiveTool('line-shape')
+          return
+        }
+        if (e.key === 'a' || e.key === 'A') {
+          setActiveTool('arrow')
+          return
+        }
+        if (e.key === 't' || e.key === 'T') {
+          setActiveTool('free-text')
+          return
+        }
+        if (e.key === '?') {
+          setShortcutsOverlayOpen(true)
+          return
+        }
         // M / R jump between the MAP and ROSTER views of the current
         // office. Guarded on both params so the hotkeys are inert outside
         // the project shell (and `navigate` is safe to call — we're
@@ -331,7 +467,8 @@ export function useKeyboardShortcuts() {
         t.tagName === 'TEXTAREA' ||
         t.tagName === 'SELECT' ||
         t.isContentEditable
-      ) return
+      )
+        return
       setActiveTool(spacePanPrev)
       spacePanPrev = null
     }
@@ -353,15 +490,37 @@ export function useKeyboardShortcuts() {
     window.addEventListener('keyup', keyupHandler, { capture: true })
     window.addEventListener('blur', blurHandler)
     return () => {
-      window.removeEventListener('keydown', handler, { capture: true } as EventListenerOptions)
-      window.removeEventListener('keyup', keyupHandler, { capture: true } as EventListenerOptions)
+      window.removeEventListener('keydown', handler, {
+        capture: true,
+      } as EventListenerOptions)
+      window.removeEventListener('keyup', keyupHandler, {
+        capture: true,
+      } as EventListenerOptions)
       window.removeEventListener('blur', blurHandler)
     }
   }, [
-    selectedIds, elements, presentationMode,
-    clearSelection, duplicateElements, moveElements,
-    groupElements, ungroupElements, setActiveTool, toggleGrid, toggleDimensions, toggleNorthArrow,
-    zoomIn, zoomOut, resetZoom, setPresentationMode, setShortcutsOverlayOpen,
-    undo, redo, navigate, teamSlug, officeSlug, pathname,
+    selectedIds,
+    elements,
+    presentationMode,
+    clearSelection,
+    duplicateElements,
+    moveElements,
+    groupElements,
+    ungroupElements,
+    setActiveTool,
+    toggleGrid,
+    toggleDimensions,
+    toggleNorthArrow,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    setPresentationMode,
+    setShortcutsOverlayOpen,
+    undo,
+    redo,
+    navigate,
+    teamSlug,
+    officeSlug,
+    pathname,
   ])
 }

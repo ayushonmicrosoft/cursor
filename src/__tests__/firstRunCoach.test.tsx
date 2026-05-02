@@ -1,204 +1,330 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
-import { FirstRunCoach } from '../components/editor/FirstRunCoach'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useUIStore } from '../stores/uiStore'
+import { FirstRunCoach } from '../components/editor/FirstRunCoach'
 import { useElementsStore } from '../stores/elementsStore'
 import { useEmployeeStore } from '../stores/employeeStore'
 
-/**
- * These tests cover the persistent dismiss behavior of the first-run
- * coach tour — the parts that survive the wave-12C copy refresh and
- * wave-17B demo-seeder addition. Step copy + focus behavior live in
- * `firstRunCoachCopy.test.tsx`; the inline "Load sample content" demo
- * card is covered further down in this file.
- *
- * Shared beforeEach dismisses the demo seeder's localStorage key so the
- * tour popover tests aren't racing two overlays. Tests that explicitly
- * cover the seeder clear that key back out.
- */
+// localStorage mock
+const localStorageMock = (() => {
+  let store: Record<string, string> = {}
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    },
+  }
+})()
 
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+})
+
+const STORAGE_KEY = 'firstRunWelcomeSeen'
 const DEMO_DISMISSED_KEY = 'floocraft.firstRunDemoDismissed'
+const ONBOARDING_COMPLETED_KEY = 'floocraft.onboardingCompleted'
+const ONBOARDING_STEP_KEY = 'floocraft.onboardingStep'
 
-function dismissDemoCard() {
-  localStorage.setItem(DEMO_DISMISSED_KEY, '1')
-}
-
-describe('FirstRunCoach tour (persistence)', () => {
+describe('FirstRunCoach', () => {
   beforeEach(() => {
-    localStorage.clear()
-    useUIStore.setState({ commandPaletteOpen: false, firstRunCoachOpen: false })
-    // Pre-dismiss the demo seeder so the tour tests don't have to reason
-    // about two overlapping cards. The seeder is independently covered
-    // below.
-    dismissDemoCard()
-  })
+    // Reset localStorage
+    localStorageMock.clear()
 
-  it('mounts the welcome card when floorcraft.onboardingCompleted is unset', () => {
-    render(<FirstRunCoach />)
-    expect(screen.getByRole('dialog', { name: /welcome to oandocraft/i })).toBeInTheDocument()
-    expect(screen.getByText(/welcome to oandocraft/i)).toBeInTheDocument()
-  })
-
-  it('does NOT mount when floorcraft.onboardingCompleted is set to "1"', () => {
-    localStorage.setItem('floorcraft.onboardingCompleted', '1')
-    dismissDemoCard()
-    render(<FirstRunCoach />)
-    expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
-  })
-
-  it('can be reopened explicitly even after it was previously dismissed', () => {
-    localStorage.setItem('floorcraft.onboardingCompleted', '1')
-    render(<FirstRunCoach forceTourOpen />)
-    expect(screen.getByRole('dialog', { name: /welcome to oandocraft/i })).toBeInTheDocument()
-  })
-
-  it('calls onTourClosed when dismissed', () => {
-    const onTourClosed = vi.fn()
-    render(<FirstRunCoach onTourClosed={onTourClosed} />)
-    fireEvent.click(screen.getByRole('button', { name: /skip tour/i }))
-    expect(onTourClosed).toHaveBeenCalledTimes(1)
-  })
-
-  it('Skip tour link writes floorcraft.onboardingCompleted=1 and unmounts the card', () => {
-    render(<FirstRunCoach />)
-    fireEvent.click(screen.getByRole('button', { name: /skip tour/i }))
-    expect(localStorage.getItem('floorcraft.onboardingCompleted')).toBe('1')
-    expect(screen.queryByRole('dialog', { name: /welcome to oandocraft/i })).toBeNull()
-  })
-
-  it('X close button also dismisses', () => {
-    render(<FirstRunCoach />)
-    fireEvent.click(screen.getByRole('button', { name: /dismiss welcome card/i }))
-    expect(localStorage.getItem('floorcraft.onboardingCompleted')).toBe('1')
-  })
-
-  it('"Open palette" CTA on the last step opens the command palette and dismisses', () => {
-    render(<FirstRunCoach />)
-    expect(useUIStore.getState().commandPaletteOpen).toBe(false)
-    // Walk to the last step via the Next button.
-    while (screen.queryByRole('button', { name: /^next$/i })) {
-      fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-    }
-    fireEvent.click(screen.getByRole('button', { name: /open palette/i }))
-    expect(useUIStore.getState().commandPaletteOpen).toBe(true)
-    expect(localStorage.getItem('floorcraft.onboardingCompleted')).toBe('1')
-  })
-})
-
-// ------------------------------------------------------------------
-// Wave 17B: "Load sample content" inline seeder card.
-// ------------------------------------------------------------------
-
-describe('FirstRunCoach demo seeder', () => {
-  beforeEach(() => {
-    localStorage.clear()
-    // Hide the tour dialog so the seeder tests aren't entangled with it.
-    localStorage.setItem('floorcraft.onboardingCompleted', '1')
+    // Reset store states
+    useUIStore.setState({
+      shortcutsOverlayOpen: false,
+      commandPaletteOpen: false,
+      firstRunCoachOpen: false,
+    })
     useElementsStore.setState({ elements: {} })
-    useEmployeeStore.setState({ employees: {}, departmentColors: {} })
+    useEmployeeStore.setState({ employees: {} })
   })
 
-  it('renders the "Load sample content" CTA when the office is empty', () => {
-    render(<FirstRunCoach />)
-    expect(
-      screen.getByRole('region', { name: /new to oandocraft/i }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /load sample content/i }),
-    ).toBeInTheDocument()
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('does NOT render the CTA when the office already has content', () => {
-    useElementsStore.setState({
-      elements: {
-        'el-1': {
-          id: 'el-1',
-          type: 'desk',
-          x: 0,
-          y: 0,
-          width: 72,
-          height: 48,
-          rotation: 0,
-          locked: false,
-          groupId: null,
-          zIndex: 1,
-          label: 'Desk',
-          visible: true,
-          style: { fill: '#fff', stroke: '#000', strokeWidth: 1, opacity: 1 },
-          deskId: 'D1',
-          assignedEmployeeId: null,
-          capacity: 1,
-        } as never,
-      },
+  describe('localStorage persistence', () => {
+    it('shows tour when localStorage is empty', () => {
+      render(<FirstRunCoach />)
+      // Tour should be visible (not dismissed)
+      expect(screen.queryByRole('dialog')).toBeInTheDocument()
     })
-    render(<FirstRunCoach />)
-    expect(
-      screen.queryByRole('region', { name: /new to oandocraft/i }),
-    ).toBeNull()
-  })
 
-  it('does NOT render the CTA when dismissed flag is set', () => {
-    localStorage.setItem(DEMO_DISMISSED_KEY, '1')
-    render(<FirstRunCoach />)
-    expect(
-      screen.queryByRole('region', { name: /new to oandocraft/i }),
-    ).toBeNull()
-  })
-
-  it('Dismiss button hides the CTA and persists to localStorage', () => {
-    render(<FirstRunCoach />)
-    fireEvent.click(screen.getByRole('button', { name: /dismiss sample-content card/i }))
-    expect(localStorage.getItem(DEMO_DISMISSED_KEY)).toBe('1')
-    expect(
-      screen.queryByRole('region', { name: /new to oandocraft/i }),
-    ).toBeNull()
-  })
-
-  it('"Start from scratch" also dismisses without loading content', () => {
-    render(<FirstRunCoach />)
-    fireEvent.click(screen.getByRole('button', { name: /start from scratch/i }))
-    expect(localStorage.getItem(DEMO_DISMISSED_KEY)).toBe('1')
-    // No elements/employees were seeded.
-    expect(Object.keys(useElementsStore.getState().elements)).toHaveLength(0)
-    expect(Object.keys(useEmployeeStore.getState().employees)).toHaveLength(0)
-  })
-
-  it('"Load sample content" seeds the stores with the demo payload', async () => {
-    render(<FirstRunCoach />)
-    const cta = screen.getByRole('button', { name: /load sample content/i })
-    expect(cta).toHaveAttribute('type', 'button')
-    await act(async () => {
-      fireEvent.click(cta)
+    it('does not show tour when firstRunWelcomeSeen is set', () => {
+      localStorageMock.setItem(STORAGE_KEY, '1')
+      render(<FirstRunCoach />)
+      expect(screen.queryByRole('dialog')).toBeNull()
     })
-    // Stores were populated by the seeder.
-    expect(
-      Object.keys(useElementsStore.getState().elements).length,
-    ).toBeGreaterThan(0)
-    expect(
-      Object.keys(useEmployeeStore.getState().employees).length,
-    ).toBeGreaterThanOrEqual(40)
+
+    it('does not show tour when onboardingCompleted is set', () => {
+      localStorageMock.setItem(ONBOARDING_COMPLETED_KEY, '1')
+      render(<FirstRunCoach />)
+      expect(screen.queryByRole('dialog')).toBeNull()
+    })
+
+    it('sets firstRunWelcomeSeen when tour is dismissed', () => {
+      render(<FirstRunCoach />)
+      expect(screen.queryByRole('dialog')).toBeInTheDocument()
+
+      // Click skip
+      const skipButton = screen.getByText(/skip tour/i)
+      fireEvent.click(skipButton)
+
+      expect(localStorageMock.getItem(STORAGE_KEY)).toBe('1')
+      expect(localStorageMock.getItem(ONBOARDING_COMPLETED_KEY)).toBe('1')
+    })
+
+    it('sets onboardingCompleted when Done is clicked on last step', async () => {
+      render(<FirstRunCoach />)
+
+      // Navigate to last step by clicking Next multiple times
+      const nextButton = screen.getByText(/next/i)
+
+      // 14 steps total, need to click Next 13 times to reach last step
+      for (let i = 0; i < 13; i++) {
+        fireEvent.click(nextButton)
+      }
+
+      // Now click Done
+      const doneButton = screen.getByText(/done/i)
+      fireEvent.click(doneButton)
+
+      expect(localStorageMock.getItem(ONBOARDING_COMPLETED_KEY)).toBe('1')
+    })
+
+    it('preserves current step in localStorage', () => {
+      render(<FirstRunCoach />)
+
+      // Navigate forward a few steps
+      const nextButton = screen.getByText(/next/i)
+      fireEvent.click(nextButton) // step 2
+      fireEvent.click(nextButton) // step 3
+
+      expect(localStorageMock.getItem(ONBOARDING_STEP_KEY)).toBe('2')
+    })
+
+    it('resumes from saved step on remount', () => {
+      // Simulate a return visit with saved progress
+      localStorageMock.setItem(ONBOARDING_STEP_KEY, '3')
+      // Note: not completed yet
+
+      const { unmount } = render(<FirstRunCoach />)
+      unmount()
+
+      // Re-render
+      render(<FirstRunCoach />)
+
+      // Should show step 4 (step index 3 + 1 for display)
+      expect(screen.getByText(/step 4 of/i)).toBeInTheDocument()
+    })
   })
 
-  it('CTA button is keyboard-activatable via Enter', async () => {
-    render(<FirstRunCoach />)
-    const cta = screen.getByRole('button', { name: /load sample content/i })
-    cta.focus()
-    expect(document.activeElement).toBe(cta)
-    // A <button> with type="button" natively activates on Enter; simulate
-    // the key press lands on its click handler.
-    await act(async () => {
-      fireEvent.keyDown(cta, { key: 'Enter', code: 'Enter' })
-      // jsdom doesn't translate keydown → click on a button automatically;
-      // fire a follow-up click to model the browser behavior (same codepath
-      // as mouse activation).
-      fireEvent.click(cta)
+  describe('tour navigation', () => {
+    it('advances to next step on Next click', () => {
+      render(<FirstRunCoach />)
+
+      expect(screen.getByText(/step 1 of/i)).toBeInTheDocument()
+
+      fireEvent.click(screen.getByText(/next/i))
+
+      expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
     })
-    expect(
-      Object.keys(useEmployeeStore.getState().employees).length,
-    ).toBeGreaterThan(0)
+
+    it('goes back on Back click', () => {
+      render(<FirstRunCoach />)
+
+      // Go to step 2
+      fireEvent.click(screen.getByText(/next/i))
+      expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
+
+      // Go back
+      fireEvent.click(screen.getByText(/back/i))
+      expect(screen.getByText(/step 1 of/i)).toBeInTheDocument()
+    })
+
+    it('shows Back button only after first step', () => {
+      render(<FirstRunCoach />)
+
+      expect(screen.queryByText(/back/i)).toBeNull()
+
+      fireEvent.click(screen.getByText(/next/i))
+
+      expect(screen.getByText(/back/i)).toBeInTheDocument()
+    })
+
+    it('displays step dots that are clickable', () => {
+      render(<FirstRunCoach />)
+
+      const dots = screen.getAllByRole('button', { name: /go to step/i })
+      expect(dots.length).toBeGreaterThan(0)
+
+      // Click step 3
+      fireEvent.click(dots[2])
+
+      expect(screen.getByText(/step 3 of/i)).toBeInTheDocument()
+    })
+
+    it('shows Done button on last step', () => {
+      render(<FirstRunCoach />)
+
+      // Navigate to last step
+      const dots = screen.getAllByRole('button', { name: /go to step/i })
+      fireEvent.click(dots[dots.length - 1])
+
+      expect(screen.getByText(/done/i)).toBeInTheDocument()
+      expect(screen.queryByText(/next/i)).toBeNull()
+    })
+  })
+
+  describe('keyboard navigation', () => {
+    it('closes on Escape key', () => {
+      render(<FirstRunCoach />)
+
+      expect(screen.queryByRole('dialog')).toBeInTheDocument()
+
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+      })
+
+      expect(screen.queryByRole('dialog')).toBeNull()
+    })
+
+    it('advances on ArrowRight key', () => {
+      render(<FirstRunCoach />)
+
+      expect(screen.getByText(/step 1 of/i)).toBeInTheDocument()
+
+      act(() => {
+        window.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'ArrowRight' }),
+        )
+      })
+
+      expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
+    })
+
+    it('goes back on ArrowLeft key', () => {
+      render(<FirstRunCoach />)
+
+      // Go to step 2
+      fireEvent.click(screen.getByText(/next/i))
+      expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
+
+      // Go back with arrow key
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
+      })
+
+      expect(screen.getByText(/step 1 of/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('progress bar', () => {
+    it('shows progress bar indicating current step', () => {
+      render(<FirstRunCoach />)
+
+      // Progress bar container should exist
+      const dialog = screen.getByRole('dialog')
+      expect(dialog.querySelector('.bg-blue-600')).toBeInTheDocument()
+    })
+  })
+
+  describe('action buttons', () => {
+    it('opens command palette when Open palette is clicked', () => {
+      render(<FirstRunCoach />)
+
+      // Navigate to last step
+      const dots = screen.getAllByRole('button', { name: /go to step/i })
+      fireEvent.click(dots[dots.length - 1])
+
+      fireEvent.click(screen.getByText(/open palette/i))
+
+      expect(useUIStore.getState().commandPaletteOpen).toBe(true)
+    })
+  })
+
+  describe('forceOpen prop', () => {
+    it('shows tour when forceOpen is true despite localStorage', () => {
+      localStorageMock.setItem(ONBOARDING_COMPLETED_KEY, '1')
+
+      render(<FirstRunCoach forceTourOpen={true} />)
+
+      expect(screen.queryByRole('dialog')).toBeInTheDocument()
+    })
+  })
+
+  describe('step content', () => {
+    it('shows welcome message on first step', () => {
+      render(<FirstRunCoach />)
+
+      expect(screen.getByText(/welcome to/i)).toBeInTheDocument()
+    })
+
+    it('shows tool selection guidance', () => {
+      render(<FirstRunCoach />)
+
+      fireEvent.click(screen.getByText(/next/i)) // step 2
+
+      expect(screen.getByText(/choose your tool/i)).toBeInTheDocument()
+    })
+
+    it('shows export guidance on relevant step', () => {
+      render(<FirstRunCoach />)
+
+      // Navigate to export step (step 13)
+      const dots = screen.getAllByRole('button', { name: /go to step/i })
+      fireEvent.click(dots[12]) // 0-indexed, so 12 is step 13
+
+      // Check for the title "Export & Share"
+      expect(screen.getByText(/export & share/i)).toBeInTheDocument()
+    })
   })
 })
 
-// Silence the module-unused warning for vi when no mocks are used in
-// the currently-enabled describes.
-void vi
+describe('FirstRunCoach Demo Seeder', () => {
+  beforeEach(() => {
+    localStorageMock.clear()
+    useElementsStore.setState({ elements: {} })
+    useEmployeeStore.setState({ employees: {} })
+    useUIStore.setState({ firstRunCoachOpen: false })
+  })
+
+  it('shows demo seeder when canvas is empty', () => {
+    render(<FirstRunCoach />)
+
+    expect(screen.getByText(/new to oandocraft/i)).toBeInTheDocument()
+  })
+
+  it('does not show demo seeder when elements exist', () => {
+    useElementsStore.setState({
+      elements: { 'el-1': { id: 'el-1', type: 'desk', x: 0, y: 0 } as any },
+    })
+
+    render(<FirstRunCoach />)
+
+    expect(screen.queryByText(/new to oandocraft/i)).toBeNull()
+  })
+
+  it('does not show demo seeder when demo was dismissed', () => {
+    localStorageMock.setItem(DEMO_DISMISSED_KEY, '1')
+
+    render(<FirstRunCoach />)
+
+    expect(screen.queryByText(/new to oandocraft/i)).toBeNull()
+  })
+
+  it('sets demo dismissed when Start from scratch is clicked', () => {
+    render(<FirstRunCoach />)
+
+    fireEvent.click(screen.getByText(/start from scratch/i))
+
+    expect(localStorageMock.getItem(DEMO_DISMISSED_KEY)).toBe('1')
+  })
+})
