@@ -59,7 +59,7 @@ describe('FileMenu', () => {
     render(<FileMenu groups={groups} />)
     fireEvent.click(screen.getByTestId('file-menu-trigger'))
     expect(screen.getByTestId('file-menu-panel')).toBeInTheDocument()
-    const headings = screen.getAllByTestId('file-menu-heading').map((h) => h.textContent)
+    const headings = screen.getAllByTestId('file-menu-heading').map((h: HTMLElement) => h.textContent)
     expect(headings).toEqual(['Project', 'Export', 'Access'])
   })
 

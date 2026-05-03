@@ -205,10 +205,10 @@ describe('RosterPage', () => {
     expect(badges.length).toBe(2)
     // And each tooltip should name the *other* person, not a generic
     // "another person shares this email" string.
-    const aliceBadge = badges.find((b) =>
+    const aliceBadge = badges.find((b: HTMLElement) =>
       b.getAttribute('title')?.includes('Bob'),
     )
-    const bobBadge = badges.find((b) =>
+    const bobBadge = badges.find((b: HTMLElement) =>
       b.getAttribute('title')?.includes('Alice'),
     )
     expect(aliceBadge).toBeTruthy()

@@ -47,7 +47,7 @@ describe('Toaster', () => {
     const toasts = screen.getAllByTestId('toast')
     // Store caps at 3 → the three most recent toasts render.
     expect(toasts).toHaveLength(3)
-    expect(toasts.map((t) => t.getAttribute('data-tone'))).toEqual([
+    expect(toasts.map((t: HTMLElement) => t.getAttribute('data-tone'))).toEqual([
       'success',
       'warning',
       'error',

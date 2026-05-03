@@ -137,7 +137,7 @@ describe('Bulk delete — confirmation', () => {
     // Confirm.
     const confirmBtn = screen
       .getAllByRole('button')
-      .find((el) => /^Delete 2$/.test(el.textContent ?? ''))!
+      .find((el: HTMLElement) => /^Delete 2$/.test(el.textContent ?? ''))!
     act(() => { fireEvent.click(confirmBtn) })
     expect(useEmployeeStore.getState().employees.e1).toBeUndefined()
     expect(useEmployeeStore.getState().employees.e2).toBeUndefined()
