@@ -71,7 +71,7 @@ describe('Row delete — confirmation', () => {
     // so we filter to BUTTON elements only.
     const actionButtons = screen
       .getAllByLabelText('Row actions')
-      .filter((el) => el.tagName === 'BUTTON')
+      .filter((el: Element) => el.tagName === 'BUTTON')
     act(() => { fireEvent.click(actionButtons[0]) })
     // Clicking Delete in the menu does NOT wipe the row yet — it stages
     // the confirmation dialog.
@@ -89,13 +89,13 @@ describe('Row delete — confirmation', () => {
     renderAtRoute('/t/acme/o/hq/roster')
     const actionButtons = screen
       .getAllByLabelText('Row actions')
-      .filter((el) => el.tagName === 'BUTTON')
+      .filter((el: Element) => el.tagName === 'BUTTON')
     act(() => { fireEvent.click(actionButtons[0]) })
     act(() => { fireEvent.click(screen.getByRole('button', { name: 'Delete' })) })
     // Now confirm. The danger button label reads "Delete".
     const confirmBtn = screen
       .getAllByRole('button', { name: 'Delete' })
-      .find((el) => el.className.includes('bg-red-600'))!
+      .find((el: HTMLElement) => el.className.includes('bg-red-600'))!
     act(() => { fireEvent.click(confirmBtn) })
     expect(useEmployeeStore.getState().employees.e1).toBeUndefined()
   })
@@ -104,7 +104,7 @@ describe('Row delete — confirmation', () => {
     renderAtRoute('/t/acme/o/hq/roster')
     const actionButtons = screen
       .getAllByLabelText('Row actions')
-      .filter((el) => el.tagName === 'BUTTON')
+      .filter((el: Element) => el.tagName === 'BUTTON')
     act(() => { fireEvent.click(actionButtons[0]) })
     act(() => { fireEvent.click(screen.getByRole('button', { name: 'Delete' })) })
     act(() => {

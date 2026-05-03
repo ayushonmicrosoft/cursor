@@ -372,7 +372,7 @@ describe('PropertiesPanel — multi-select', () => {
     // "—" renders as the mixed-value sentinel for users.
     const placeholders = screen
       .getAllByPlaceholderText('—')
-      .filter((el): el is HTMLInputElement => el.tagName === 'INPUT')
+      .filter((el: Element): el is HTMLInputElement => el.tagName === 'INPUT')
     expect(placeholders.length).toBeGreaterThanOrEqual(1)
     // At least one of those placeholder-only inputs has empty value (the
     // diverging Y), confirming the mixed-value treatment.
