@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b && tsc -p tsconfig.test.json --noEmit",
     "build:oando": "tsc -b && vite build --base=/OandOcraft/",
     "lint": "eslint .",
     "format": "prettier --write .",
