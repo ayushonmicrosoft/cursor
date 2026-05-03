@@ -157,7 +157,7 @@ describe('TopBar view mode switch', () => {
 
     renderTopBar()
     const quickActions = screen.getByTestId('topbar-quick-actions')
-    const ids = Array.from(quickActions.children).map((node) =>
+    const ids = Array.from(quickActions.children).map((node: Element) =>
       node.getAttribute('data-testid'),
     )
     expect(ids).toEqual([

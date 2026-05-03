@@ -105,9 +105,9 @@ describe('Modal', () => {
     )
 
     const dialog = screen.getByRole('dialog', { name: /focus trap/i })
-    const focusables = dialog.querySelectorAll<HTMLElement>(
+    const focusables = dialog.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    )
+    ) as NodeListOf<HTMLElement>
     const first = focusables[0]
     const last = focusables[focusables.length - 1]
 
