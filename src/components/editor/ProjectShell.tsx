@@ -129,10 +129,10 @@ export function ProjectShell() {
     async function load() {
       if (!teamSlug || !officeSlug) return
       setShellState('loading')
-      
+
       // Preload silhouettes at app initialization
       preloadSilhouettes()
-      
+
       try {
         const { data: team, error: teamError } = await supabase
           .from('teams')

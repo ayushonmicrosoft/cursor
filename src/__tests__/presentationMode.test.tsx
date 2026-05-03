@@ -115,7 +115,7 @@ describe('PresentationOverlay - fullscreen integration', () => {
 })
 
 describe('PresentationOverlay - keyboard floor navigation', () => {
-  it('Right arrow during presentation does NOT switch floors', () => {
+  it('Right arrow during presentation switches floors', () => {
     setFloors(['f1', 'f2', 'f3'], 'f1')
     const spy = vi.spyOn(seatAssignment, 'switchToFloor')
     render(<PresentationOverlay />)
@@ -125,11 +125,10 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }))
     })
-    // Keyboard floor navigation was removed from presentation mode
-    expect(spy).not.toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledWith('f2')
   })
 
-  it('Left arrow during presentation does NOT switch floors', () => {
+  it('Left arrow during presentation switches floors', () => {
     setFloors(['f1', 'f2', 'f3'], 'f1')
     const spy = vi.spyOn(seatAssignment, 'switchToFloor')
     render(<PresentationOverlay />)
@@ -139,8 +138,7 @@ describe('PresentationOverlay - keyboard floor navigation', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }))
     })
-    // Keyboard floor navigation was removed from presentation mode
-    expect(spy).not.toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledWith('f3')
   })
 
   it('Home jumps to first floor', () => {

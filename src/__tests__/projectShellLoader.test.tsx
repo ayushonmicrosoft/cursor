@@ -31,6 +31,7 @@ vi.mock('../components/editor/ShareModal', () => ({ ShareModal: () => null }))
 vi.mock('../components/reports/EmployeeDirectory', () => ({ EmployeeDirectory: () => null }))
 vi.mock('../hooks/useKeyboardShortcuts', () => ({ useKeyboardShortcuts: () => {} }))
 vi.mock('../lib/offices/useOfficeSync', () => ({ useOfficeSync: () => ({ overwrite: () => {} }) }))
+vi.mock('../lib/silhouettes/loadSilhouettes', () => ({ preloadSilhouettes: () => {} }))
 
 import { ProjectShell } from '../components/editor/ProjectShell'
 

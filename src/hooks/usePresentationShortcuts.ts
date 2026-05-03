@@ -50,6 +50,18 @@ export function usePresentationShortcuts(): void {
           return
       }
 
+      const active = document.activeElement as HTMLElement | null
+      if (active) {
+        const tag = active.tagName
+        if (
+          tag === 'INPUT' ||
+          tag === 'TEXTAREA' ||
+          tag === 'SELECT' ||
+          active.isContentEditable
+        )
+          return
+      }
+
       if (
         e.key !== 'ArrowLeft' &&
         e.key !== 'ArrowRight' &&

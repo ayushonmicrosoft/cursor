@@ -54,15 +54,13 @@ describe('ExportDialog PDF + PNG wiring', () => {
     useToastStore.setState({ items: [] })
   })
 
-  it('clicking Export button calls exportPdf with stage + project filename when PDF is selected', () => {
+  it('clicking Export button calls exportPdf with stage + project filename when PDF is selected', async () => {
     const fakeStage = { __brand: 'stage' } as unknown as Konva.Stage
     setActiveStage(fakeStage)
     openDialog('office-plan')
     render(<ExportDialog />)
 
-    // PDF is selected by default, click the main Export button in footer
     const exportButtons = screen.getAllByRole('button', { name: /export/i })
-    // The Export button in the footer should be the last one
     const exportButton = exportButtons[exportButtons.length - 1]
     fireEvent.click(exportButton)
 
@@ -70,21 +68,17 @@ describe('ExportDialog PDF + PNG wiring', () => {
     const [stageArg, opts] = exportPdfMock.mock.calls[0]
     expect(stageArg).toBe(fakeStage)
     expect(opts.fileName).toMatch(/office-plan.*\.pdf/)
-    // Dialog closes on success.
     expect(useUIStore.getState().exportDialogOpen).toBe(false)
   })
 
-  it('clicking Export button calls exportPng when PNG is selected', () => {
+  it('clicking Export button calls exportPng when PNG is selected', async () => {
     const fakeStage = { __brand: 'stage' } as unknown as Konva.Stage
     setActiveStage(fakeStage)
     openDialog('office-plan')
     render(<ExportDialog />)
 
-    // First select PNG format
-    const pngOption = screen.getByText('PNG Image')
-    fireEvent.click(pngOption)
+    fireEvent.click(screen.getByText('PNG Image'))
 
-    // Then click the Export button
     const exportButtons = screen.getAllByRole('button', { name: /export/i })
     const exportButton = exportButtons[exportButtons.length - 1]
     fireEvent.click(exportButton)
@@ -96,14 +90,10 @@ describe('ExportDialog PDF + PNG wiring', () => {
     expect(useUIStore.getState().exportDialogOpen).toBe(false)
   })
 
-  // Note: Error toast testing for missing canvas is done at integration level
-  // as mocking the stage registry state is complex in unit tests
-
   it('displays format selection options', () => {
     openDialog()
     render(<ExportDialog />)
 
-    // Should show all four export types - look for the label elements specifically
     expect(screen.getByText('PDF Floor Plan')).toBeInTheDocument()
     expect(screen.getByText('PNG Image')).toBeInTheDocument()
     expect(screen.getByText(/csv employee roster/i)).toBeInTheDocument()
@@ -114,10 +104,8 @@ describe('ExportDialog PDF + PNG wiring', () => {
     openDialog()
     render(<ExportDialog />)
 
-    // Click PNG
     fireEvent.click(screen.getByText('PNG Image'))
 
-    // PNG should now be selected (check for blue border indicator)
     const pngButton = screen.getByText('PNG Image').closest('button')
     expect(pngButton?.className).toContain('border-blue')
   })
@@ -135,10 +123,8 @@ describe('ExportDialog PDF + PNG wiring', () => {
 
     fireEvent.click(screen.getByText(/advanced options/i))
 
-    // Should show paper size, orientation, and DPI options
     expect(screen.getByText(/paper size/i)).toBeInTheDocument()
     expect(screen.getByText(/orientation/i)).toBeInTheDocument()
-    // Look for the label "Print quality" which should be unique
     expect(screen.getByText(/print quality \(dpi\)/i)).toBeInTheDocument()
   })
 

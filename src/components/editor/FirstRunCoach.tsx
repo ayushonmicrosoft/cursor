@@ -34,6 +34,7 @@ const STORAGE_KEY = 'floorcraft.onboardingCompleted'
 const LEGACY_STORAGE_KEY = 'firstRunWelcomeSeen'
 const DEMO_DISMISSED_KEY = 'floocraft.firstRunDemoDismissed'
 const ONBOARDING_COMPLETED_KEY = 'floocraft.onboardingCompleted'
+const LEGACY_ONBOARDING_COMPLETED_KEY = 'firstRunOnboardingCompleted'
 const ONBOARDING_STEP_KEY = 'floocraft.onboardingStep'
 
 function readInitialSeen(): boolean {
@@ -70,7 +71,10 @@ function writeDemoDismissed(): void {
 
 function readOnboardingCompleted(): boolean {
   try {
-    return localStorage.getItem(ONBOARDING_COMPLETED_KEY) === '1'
+    return (
+      localStorage.getItem(ONBOARDING_COMPLETED_KEY) === '1' ||
+      localStorage.getItem(LEGACY_ONBOARDING_COMPLETED_KEY) === '1'
+    )
   } catch {
     return false
   }
@@ -322,6 +326,7 @@ function FirstRunCoachTour({
         id: 'welcome',
         title: 'Welcome to OandOcraft',
         icon: <Sparkles size={20} />,
+        action: 'Use Next or the step dots to move through the tour',
         body: (
           <>
             Let's walk through the basics of creating and managing your office
@@ -772,6 +777,7 @@ function FirstRunCoachTour({
                 ref={primaryBtnRef}
                 type="button"
                 onClick={handleDismiss}
+                aria-label="Done"
                 className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
               >
                 <Check size={14} />
