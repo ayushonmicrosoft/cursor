@@ -9,7 +9,7 @@ import { elementBounds } from '../../lib/elementBounds'
 const MINIMAP_WIDTH = 180
 const MINIMAP_HEIGHT = 120
 const COLLAPSED_SIZE = 40
-const MINIMAP_ANCHOR_CLASS = 'cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900'
+const MINIMAP_ANCHOR_CLASS = 'cursor-grab select-none overflow-hidden touch-none active:cursor-grabbing bg-white dark:bg-gray-900 right-24 bottom-24'
 
 interface Tile {
   id: string

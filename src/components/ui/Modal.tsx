@@ -135,7 +135,7 @@ export function Modal({
         aria-labelledby={resolvedLabelledBy}
         tabIndex={-1}
         className={cn(
-          'glass-panel w-full outline-none',
+          'glass-panel w-full bg-white dark:bg-gray-900 outline-none',
           SIZE_CLASS[size],
         )}
       >

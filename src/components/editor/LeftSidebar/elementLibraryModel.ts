@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid'
 import type { BlockSourceTier } from '../../../blocks/registry'
-import type { BaseElement, ElementStyle, ElementType, TableType } from '../../../types/elements'
+import type { BaseElement, ElementStyle, ElementType } from '../../../types/elements'
 
 export const LIBRARY_DRAG_MIME = 'application/x-oandocraft-library-item'
 
@@ -94,6 +94,30 @@ function baseElement(type: ElementType, x: number, y: number, zIndex: number, la
   }
 }
 
+function parseSvgDimensions(svgSource?: string): { width: number; height: number; unit: string } | null {
+  if (!svgSource) return null
+  const viewBoxMatch = svgSource.match(/viewBox\s*=\s*(["'])([^"']+)\1/i)
+  if (viewBoxMatch) {
+    const parts = viewBoxMatch[2].trim().split(/[\s,]+/).map(Number)
+    if (parts.length === 4 && parts.every((value) => Number.isFinite(value))) {
+      const [, , width, height] = parts
+      if (width > 0 && height > 0) return { width, height, unit: 'px' }
+    }
+  }
+
+  const widthMatch = svgSource.match(/\bwidth\s*=\s*(["'])([^"']+)\1/i)
+  const heightMatch = svgSource.match(/\bheight\s*=\s*(["'])([^"']+)\1/i)
+  if (widthMatch && heightMatch) {
+    const width = Number.parseFloat(widthMatch[2])
+    const height = Number.parseFloat(heightMatch[2])
+    if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+      return { width, height, unit: 'px' }
+    }
+  }
+
+  return null
+}
+
 export function buildLibraryElements(
   item: LibraryItem,
   x: number,
@@ -101,13 +125,10 @@ export function buildLibraryElements(
   zIndex: number,
   _existing: BaseElement[] = [],
 ): BaseElement[] {
-  const dims = item.dimensions ?? { width: 80, height: 80, unit: 'px' }
-  const common = {
-    x,
-    y,
-    zIndex,
-    label: item.label,
-  }
+  const dims =
+    item.type === 'custom-svg'
+      ? item.dimensions ?? parseSvgDimensions(item.svgSource) ?? { width: 80, height: 80, unit: 'px' }
+      : item.dimensions ?? { width: 80, height: 80, unit: 'px' }
 
   if (item.type === 'custom-svg') {
     return [
