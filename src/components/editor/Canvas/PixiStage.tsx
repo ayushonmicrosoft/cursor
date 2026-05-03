@@ -594,7 +594,6 @@ function buildEl(
   const h = Number.isFinite(el.height) ? Math.max(0, el.height) : 0
   const c = new Container()
   c.label = createPixiNodeId(el.id)
-  c.name = createPixiNodeId(el.id)
   const centerAnchored = isCenterAnchoredElement(el)
   c.x = el.x
   c.y = el.y
