@@ -87,10 +87,10 @@ describe('RosterPage', () => {
     // select is at index 0 (header has no select).
     const selects = screen
       .getAllByRole('combobox')
-      .filter((el) => (el as HTMLSelectElement).value === 'active' || (el as HTMLSelectElement).value === 'on-leave')
+      .filter((el: Element) => (el as HTMLSelectElement).value === 'active' || (el as HTMLSelectElement).value === 'on-leave')
     // The status column should include at least one select with 'active'.
     const aliceStatus = selects.find(
-      (el) => (el as HTMLSelectElement).value === 'active',
+      (el: Element) => (el as HTMLSelectElement).value === 'active',
     ) as HTMLSelectElement
     act(() => {
       fireEvent.change(aliceStatus, { target: { value: 'departed' } })
@@ -281,7 +281,7 @@ describe('RosterPage', () => {
     // "Row actions" (it labels the column, not a control).
     const actionButtons = screen
       .getAllByLabelText('Row actions')
-      .filter((el) => el.tagName === 'BUTTON')
+      .filter((el: Element) => el.tagName === 'BUTTON')
     act(() => { fireEvent.click(actionButtons[0]) })
     // The menu renders a link with visible "Send invite…" text pointing at
     // a `mailto:` url containing the employee's encoded address.

@@ -216,14 +216,14 @@ describe('TeamHomePage (Wave 14A polish)', () => {
     fireEvent.change(sortSelect, { target: { value: 'name' } })
     await waitFor(() => {
       const cards = screen.getAllByRole('heading', { level: 3 })
-      expect(cards.map((c) => c.textContent)).toEqual(['Annex', 'HQ'])
+      expect(cards.map((c: HTMLElement) => c.textContent)).toEqual(['Annex', 'HQ'])
     })
 
     // Sort by most employees → HQ (5) before Annex (2).
     fireEvent.change(sortSelect, { target: { value: 'employees' } })
     await waitFor(() => {
       const cards = screen.getAllByRole('heading', { level: 3 })
-      expect(cards.map((c) => c.textContent)).toEqual(['HQ', 'Annex'])
+      expect(cards.map((c: HTMLElement) => c.textContent)).toEqual(['HQ', 'Annex'])
     })
   })
 

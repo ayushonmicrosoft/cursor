@@ -125,7 +125,7 @@ describe('Bulk delete — confirmation', () => {
     // The bulk-action bar's Delete should open the dialog, not delete.
     const bulkDelete = screen
       .getAllByRole('button', { name: 'Delete' })
-      .find((el) => el.className.includes('text-red-700'))!
+      .find((el: HTMLElement) => el.className.includes('text-red-700'))!
     act(() => { fireEvent.click(bulkDelete) })
     expect(useEmployeeStore.getState().employees.e1).toBeTruthy()
     expect(useEmployeeStore.getState().employees.e2).toBeTruthy()
