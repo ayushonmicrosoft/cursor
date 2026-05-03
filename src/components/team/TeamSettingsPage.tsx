@@ -89,16 +89,16 @@ export function TeamSettingsPage() {
           ) : (
             <div
               aria-hidden="true"
-              className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 shrink-0"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/70 text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:bg-slate-950/60 dark:text-slate-400"
             >
               <Building2 size={20} />
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 truncate">
+            <h1 className="truncate text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
               {team.name}
             </h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Team settings and workspace controls
             </p>
           </div>
@@ -109,7 +109,7 @@ export function TeamSettingsPage() {
             elevated rather than floating in whitespace. */}
         <nav
           aria-label="Team settings navigation"
-          className="mb-6 grid gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2 sm:grid-cols-1 dark:border-gray-800 dark:bg-gray-900/60"
+          className="glass-surface mb-6 grid gap-2 rounded-[1.25rem] p-2 sm:grid-cols-1"
         >
           <NavLink end to="." className={tabClass}>
             <div className="flex items-center gap-2 text-sm font-medium">
