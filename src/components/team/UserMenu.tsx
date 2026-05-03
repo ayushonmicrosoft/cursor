@@ -12,6 +12,7 @@ import { useDropdownMenu } from '../../hooks/useDropdownMenu'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { prefersReducedMotion } from '../../lib/prefersReducedMotion'
 import { cn } from '../../lib/cn'
+import { ShieldCheck } from 'lucide-react'
 
 /**
  * Wave 14C polish — TopBar account dropdown.
@@ -133,6 +134,17 @@ export function UserMenu() {
               <UserIcon size={14} aria-hidden="true" />
               <span className="flex-1">Profile</span>
             </button>
+            {email.toLowerCase() === 'ayush@oando.co.in' && (
+              <button
+                type="button"
+                onClick={() => activate(() => navigate('/admin'))}
+                className="flex items-center gap-2 w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 focus:bg-gray-100 dark:focus:bg-gray-800 outline-none"
+                data-testid="user-menu-admin"
+              >
+                <ShieldCheck size={14} aria-hidden="true" />
+                <span className="flex-1">Admin page</span>
+              </button>
+            )}
             <div
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200"
               data-testid="user-menu-theme-row"

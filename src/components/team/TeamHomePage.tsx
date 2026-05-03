@@ -249,16 +249,16 @@ function StatCard({
 }) {
   return (
     <div
-      className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
+      className="glass-panel rounded-[1.25rem] p-3"
       // Stat cards are read-only summary chrome — keep them out of the
       // tab order entirely so keyboard users don't have to click through
       // six non-actions to reach the search input.
       aria-hidden={false}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
         {label}
       </div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+      <div className="mt-1 text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
         {value}
       </div>
     </div>

@@ -90,6 +90,12 @@ const OrgChartPage = lazy(() =>
 const NotFoundPage = lazy(() =>
   import('./components/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
+const AdminPage = lazy(() =>
+  import('./components/admin/AdminPage').then((m) => ({ default: m.AdminPage })),
+)
+const AdminGate = lazy(() =>
+  import('./components/admin/AdminGate').then((m) => ({ default: m.AdminGate })),
+)
 
 function TeamSettingsGeneralBridge() {
   const { team, isAdmin } = useOutletContext<{ team: Team; isAdmin: boolean }>()
@@ -127,6 +133,16 @@ function App() {
               element={
                 <RequireAuth>
                   <AccountPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <RequireAuth>
+                  <AdminGate>
+                    <AdminPage />
+                  </AdminGate>
                 </RequireAuth>
               }
             />

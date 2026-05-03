@@ -1367,7 +1367,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
         pos.x,
         pos.y,
         elementsStore.getMaxZIndex() + 1,
-        elementsStore.elements,
+        Object.values(elementsStore.elements),
       )
       built.forEach((element) => elementsStore.addElement(element))
       useUIStore.getState().setSelectedIds(built.map((element) => element.id))

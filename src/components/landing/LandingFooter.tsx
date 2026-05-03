@@ -47,6 +47,7 @@ const COLUMNS: ReadonlyArray<FooterColumn> = [
       { label: 'Contact', to: '/help' },
       { label: 'Privacy', to: '/help' },
       { label: 'Terms', to: '/help' },
+      { label: 'Admin login', to: '/admin' },
     ],
   },
 ]

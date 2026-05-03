@@ -25,7 +25,13 @@ import {
   clearRecents as clearRecentsStorage,
   getRecents as readPersistedRecents,
 } from '../../../lib/elementLibraryRecents'
-import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem, SHAPE_VARIANT_MAP } from './elementLibraryModel'
+import {
+  LIBRARY_DRAG_MIME,
+  SHAPE_CREATOR_LABELS,
+  buildLibraryElements,
+  type LibraryItem,
+  SHAPE_VARIANT_MAP,
+} from './elementLibraryModel'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useCan } from '../../../hooks/useCan'
@@ -167,21 +173,21 @@ const LIBRARY_ITEMS: LibraryItem[] = [
 ]
 
 const SHAPE_LIBRARY_ITEMS: LibraryItem[] = [
-  { type: 'rect-shape', label: 'Rectangle', category: 'Shapes' },
-  { type: 'ellipse', label: 'Ellipse', category: 'Shapes' },
-  { type: 'line-shape', label: 'Line', category: 'Shapes' },
-  { type: 'arrow', label: 'Arrow', category: 'Shapes' },
-  { type: 'free-text', label: 'Text', category: 'Shapes' },
-  { type: 'rect-shape', label: 'Rounded Rect', category: 'Shapes' },
-  { type: 'rect-shape', label: 'Triangle', category: 'Shapes' },
-  { type: 'ellipse', label: 'Circle', category: 'Shapes' },
-  { type: 'arrow', label: 'Callout', category: 'Shapes' },
-  { type: 'line-shape', label: 'Arc', category: 'Shapes' },
-  { type: 'rect-shape', label: 'Diamond', category: 'Shapes' },
-  { type: 'rect-shape', label: 'Hexagon', category: 'Shapes' },
-  { type: 'rect-shape', label: 'Pentagon', category: 'Shapes' },
-  { type: 'ellipse', label: 'Oval', category: 'Shapes' },
-  { type: 'rect-shape', label: 'Speech Bubble', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Rectangle', category: 'Shapes', shapeVariant: 'rectangle' },
+  { type: 'rect-shape', label: 'Rounded Rect', category: 'Shapes', shapeVariant: 'rounded-rect' },
+  { type: 'rect-shape', label: 'Triangle', category: 'Shapes', shapeVariant: 'triangle' },
+  { type: 'ellipse', label: 'Ellipse', category: 'Shapes', shapeVariant: 'ellipse' },
+  { type: 'ellipse', label: 'Circle', category: 'Shapes', shapeVariant: 'circle' },
+  { type: 'line-shape', label: 'Line', category: 'Shapes', shapeVariant: 'line' },
+  { type: 'arrow', label: 'Arrow', category: 'Shapes', shapeVariant: 'arrow' },
+  { type: 'arrow', label: 'Callout', category: 'Shapes', shapeVariant: 'callout' },
+  { type: 'line-shape', label: 'Arc', category: 'Shapes', shapeVariant: 'arc' },
+  { type: 'rect-shape', label: 'Diamond', category: 'Shapes', shapeVariant: 'diamond' },
+  { type: 'rect-shape', label: 'Hexagon', category: 'Shapes', shapeVariant: 'hexagon' },
+  { type: 'rect-shape', label: 'Pentagon', category: 'Shapes', shapeVariant: 'pentagon' },
+  { type: 'ellipse', label: 'Oval', category: 'Shapes', shapeVariant: 'oval' },
+  { type: 'rect-shape', label: 'Speech Bubble', category: 'Shapes', shapeVariant: 'speech-bubble' },
+  { type: 'free-text', label: 'Text', category: 'Shapes', shapeVariant: 'text' },
 ]
 
 function itemKey(item: LibraryItem): string {
@@ -642,7 +648,7 @@ export function ElementLibrary() {
     // Read elements via getState() so we don't re-subscribe the component
     // to the whole map just to auto-number a new seat.
     const existing = useElementsStore.getState().elements
-    buildLibraryElements(item, x, y, getMaxZIndex() + 1, existing).forEach((element) => addElement(element))
+    buildLibraryElements(item, x, y, getMaxZIndex() + 1, Object.values(existing)).forEach((element) => addElement(element))
     bumpRecent(item)
   }
 
