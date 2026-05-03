@@ -21,7 +21,7 @@ import { useElementsStore } from '../stores/elementsStore'
 
 function mountHook() {
   return renderHook(() => useKeyboardShortcuts(), {
-    wrapper: ({ children }) => <MemoryRouter>{children}</MemoryRouter>,
+    wrapper: ({ children }: { children: React.ReactNode }) => <MemoryRouter>{children}</MemoryRouter>,
   })
 }
 

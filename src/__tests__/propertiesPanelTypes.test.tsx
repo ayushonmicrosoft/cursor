@@ -376,7 +376,7 @@ describe('PropertiesPanel — multi-select', () => {
     expect(placeholders.length).toBeGreaterThanOrEqual(1)
     // At least one of those placeholder-only inputs has empty value (the
     // diverging Y), confirming the mixed-value treatment.
-    expect(placeholders.some((p) => p.value === '')).toBe(true)
+    expect(placeholders.some((p: HTMLInputElement) => p.value === '')).toBe(true)
   })
 
   it('mixed-locked selection shows the Some locked indicator', () => {

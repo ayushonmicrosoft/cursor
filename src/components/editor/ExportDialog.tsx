@@ -248,10 +248,16 @@ export function ExportDialog() {
     }
 
     try {
-      const opts = {
+      const opts: {
+        paperSize?: 'a4' | 'a3' | 'letter'
+        orientation?: 'portrait' | 'landscape'
+        dpi?: 150 | 300
+        fileName?: string
+        title?: string
+      } = {
         paperSize: paperSize === 'legal' ? 'letter' : paperSize,
         orientation,
-        dpi: dpi === 600 ? 300 : dpi,
+        dpi: dpi === 600 ? 300 : (dpi as 150 | 300),
         fileName:
           floorScope === 'all'
             ? `${projectName}-all-floors.pdf`

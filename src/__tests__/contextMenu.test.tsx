@@ -170,8 +170,8 @@ describe('ContextMenu', () => {
     } as any)
     render(<ContextMenu />)
     const menu = screen.getByRole('menu')
-    const first = menu.querySelector<HTMLButtonElement>('button[data-menu-index="0"]')
-    const second = menu.querySelector<HTMLButtonElement>('button[data-menu-index="1"]')
+    const first = menu.querySelector('button[data-menu-index="0"]') as HTMLButtonElement | null
+    const second = menu.querySelector('button[data-menu-index="1"]') as HTMLButtonElement | null
     expect(first).not.toBeNull()
     expect(second).not.toBeNull()
     // First button is auto-focused on mount.

@@ -278,9 +278,9 @@ describe('AnnotationPopover — view flow', () => {
     } as any)
     render(<Harness />)
     const dlg = screen.getByRole('dialog')
-    const focusables = dlg.querySelectorAll<HTMLElement>(
+    const focusables = dlg.querySelectorAll(
       'button:not([disabled]), textarea:not([disabled]), input:not([disabled])',
-    )
+    ) as NodeListOf<HTMLElement>
     expect(focusables.length).toBeGreaterThan(1)
     const last = focusables[focusables.length - 1]
     const first = focusables[0]
