@@ -72,6 +72,9 @@ const HelpPage = lazy(() =>
 const ProjectDocsPage = lazy(() =>
   import('./components/help/ProjectDocsPage').then((m) => ({ default: m.ProjectDocsPage })),
 )
+const LibraryDocsPage = lazy(() =>
+  import('./components/help/LibraryDocsPage').then((m) => ({ default: m.LibraryDocsPage })),
+)
 const ReportsPage = lazy(() =>
   import('./components/reports/ReportsPage').then((m) => ({
     default: m.ReportsPage,
@@ -118,6 +121,8 @@ function App() {
             <Route path="/auth/reset" element={<AuthResetPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/docs" element={<ProjectDocsPage />} />
+            <Route path="/docs/lib" element={<LibraryDocsPage />} />
+            <Route path="/library" element={<LibraryDocsPage />} />
 
             {/* Auth-only */}
             <Route

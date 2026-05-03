@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Dashboard</title>
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --panel: #ffffff;
+        --panel-2: #f1f5f9;
+        --text: #0f172a;
+        --muted: #64748b;
+        --line: #dbe3ef;
+        --accent: #2563eb;
+        --accent-2: #0f766e;
+        --warning: #b45309;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      .shell {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 100vh;
+      }
+      aside {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 28px 22px;
+      }
+      .brand { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+      .sub { color: #94a3b8; font-size: 13px; line-height: 1.5; margin-bottom: 24px; }
+      nav a {
+        display: block;
+        color: #cbd5e1;
+        text-decoration: none;
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 6px;
+      }
+      nav a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+      .main { padding: 28px; }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.7fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+      }
+      .hero h1 { margin: 0 0 10px; font-size: 30px; }
+      .hero p { margin: 0; color: var(--muted); line-height: 1.65; }
+      .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      .badge {
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .stat {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .stat .value { font-size: 24px; font-weight: 700; }
+      .stat .label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+      .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      h2 { font-size: 16px; margin: 0 0 12px; }
+      ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.7; }
+      .section { margin-bottom: 16px; }
+      .table {
+        width: 100%; border-collapse: collapse; font-size: 13px;
+      }
+      .table th, .table td {
+        padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left;
+      }
+      .table th { color: var(--muted); font-weight: 600; }
+      .pill {
+        display: inline-block; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      }
+      .ok { background: #dcfce7; color: #166534; }
+      .warn { background: #fef3c7; color: #92400e; }
+      .info { background: #dbeafe; color: #1d4ed8; }
+      .links a { color: var(--accent); text-decoration: none; }
+      .links a:hover { text-decoration: underline; }
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .step {
+        background: linear-gradient(180deg, #fff, #f8fafc);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .step .num { color: var(--accent-2); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .step h3 { margin: 8px 0; font-size: 15px; }
+      .step p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+      .footer { color: var(--muted); font-size: 12px; margin-top: 18px; }
+      @media (max-width: 1100px) {
+        .shell { grid-template-columns: 1fr; }
+        aside { padding-bottom: 14px; }
+        .hero, .grid2, .stats, .flow { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside>
+        <div class="brand">Library Dashboard</div>
+        <div class="sub">A high-signal overview for blocks, sources, shape variants, and Supabase-backed records.</div>
+        <nav>
+          <a href="#overview">Overview</a>
+          <a href="#status">Status</a>
+          <a href="#model">Model</a>
+          <a href="#shapes">Shapes</a>
+          <a href="#supabase">Supabase</a>
+          <a href="#sources">Sources</a>
+          <a href="#flow">Flow</a>
+        </nav>
+      </aside>
+      <main class="main">
+        <section class="hero" id="overview">
+          <div class="card">
+            <h1>Block library, rendered as a dashboard</h1>
+            <p>
+              This view emphasizes the operating system behind the library: source quality, shape variants,
+              persistence, and renderer alignment. It is designed to make the current state obvious at a glance.
+            </p>
+            <div class="badges">
+              <span class="badge">Canonical-first</span>
+              <span class="badge">Supabase-backed</span>
+              <span class="badge">Konva + Pixi</span>
+              <span class="badge">SVG + BIM sources</span>
+            </div>
+          </div>
+          <div class="card">
+            <h2>System posture</h2>
+            <div class="stat" style="margin-top: 12px;">
+              <div class="value">High quality</div>
+              <div class="label">Generic placeholders removed from the top-level model</div>
+            </div>
+            <div class="stat" style="margin-top: 10px;">
+              <div class="value">Safe writes</div>
+              <div class="label">Upserts go through the anon client with RLS protection</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="stats" id="status">
+          <div class="stat"><div class="value">4</div><div class="label">Source tiers</div></div>
+          <div class="stat"><div class="value">15+</div><div class="label">Shape variants</div></div>
+          <div class="stat"><div class="value">1</div><div class="label">Supabase table</div></div>
+          <div class="stat"><div class="value">2</div><div class="label">Render engines</div></div>
+        </section>
+
+        <section class="grid2">
+          <div class="card section" id="model">
+            <h2>Library model</h2>
+            <ul>
+              <li>One row per block record in Postgres.</li>
+              <li>Fields include model name, category, source tier, canonical flag, and provenance.</li>
+              <li>SVG assets and previews live in storage, not the table.</li>
+              <li>The sidebar loads and updates records through the shared Supabase client.</li>
+            </ul>
+          </div>
+          <div class="card section" id="shapes">
+            <h2>Shape system</h2>
+            <ul>
+              <li>Fast-create shapes for rectangles, circles, lines, arrows, callouts, and text.</li>
+              <li>Variants are explicit so future renderers can distinguish geometry.</li>
+              <li>The UI now supports a dedicated quick-add panel for shape creation.</li>
+              <li>Shape entries are aligned with the element library model.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="grid2">
+          <div class="card section" id="supabase">
+            <h2>Supabase integration</h2>
+            <table class="table">
+              <thead>
+                <tr><th>Layer</th><th>Role</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Client</td><td>Reads/writes block records</td><td><span class="pill ok">Wired</span></td></tr>
+                <tr><td>Table</td><td><code>block_library_records</code></td><td><span class="pill info">Planned</span></td></tr>
+                <tr><td>RLS</td><td>Safe client-side access</td><td><span class="pill ok">Modeled</span></td></tr>
+                <tr><td>Storage</td><td>Assets and SVGs</td><td><span class="pill warn">Next</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card section links" id="sources">
+            <h2>Primary source families</h2>
+            <ul>
+              <li><a href="https://www.hermanmiller.com/resources/3d-models-and-planning-tools/product-models/">Herman Miller models</a></li>
+              <li><a href="https://www.steelcase.com/resources/models/">Steelcase models</a></li>
+              <li><a href="https://www.bimobject.com/en-us/">BIMobject</a></li>
+              <li><a href="https://www.bimobject.com/en-us/practika/product/hatters">Practika Hatters</a></li>
+              <li><a href="https://www.bimobject.com/en-us/modernform-workplace/product/modernform_midbackchair_series12_71x67">Modernform Midback Chair</a></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="card section" id="flow">
+          <h2>Import flow</h2>
+          <div class="flow">
+            <div class="step"><div class="num">01</div><h3>Collect</h3><p>Gather source URLs and asset references from manufacturers and BIM pages.</p></div>
+            <div class="step"><div class="num">02</div><h3>Normalize</h3><p>Assign model names, source tier, category, and canonical status.</p></div>
+            <div class="step"><div class="num">03</div><h3>Persist</h3><p>Upsert the record into Supabase and attach storage URLs for files.</p></div>
+            <div class="step"><div class="num">04</div><h3>Render</h3><p>Use the registry and renderers to keep the UI aligned with the source model.</p></div>
+          </div>
+          <div class="footer">This dashboard variant is intentionally more visual and operational than the documentation mini site.</div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
