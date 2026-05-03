@@ -103,6 +103,7 @@ beforeEach(() => {
 describe('MapView first-load sidebar integration', () => {
   it('starts with a calm canvas when properties are empty', async () => {
     await renderMapView()
+    await waitFor(() => expect(screen.getByTestId('canvas-stage')).toBeInTheDocument())
 
     await waitFor(() => {
       expect(useUIStore.getState().rightSidebarOpen).toBe(false)

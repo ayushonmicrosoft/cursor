@@ -110,7 +110,7 @@ interface CoachStep {
   id: string
   title: string
   body: React.ReactNode
-  icon: React.ReactNode
+  icon?: React.ReactNode
   highlight?: 'tools' | 'canvas' | 'roster' | 'reports' | 'context-menu'
   action?: string
 }

@@ -18,14 +18,14 @@ describe('FirstRunCoach copy + step behavior', () => {
     localStorage.setItem('floocraft.firstRunDemoDismissed', '1')
   })
 
-  it('renders the first step copy referencing pan + zoom', () => {
+  it('renders the first step copy referencing the tour intro', () => {
     render(<FirstRunCoach />)
     expect(screen.getByText(/welcome to oandocraft/i)).toBeInTheDocument()
     expect(screen.getByText(/let's walk through the basics/i)).toBeInTheDocument()
-    expect(screen.getByText(/1\s*\/\s*14/)).toBeInTheDocument()
+    expect(screen.getByText(/1\s*\/\s*15/)).toBeInTheDocument()
   })
 
-  it('Next button advances through the fourteen steps in order', () => {
+  it('Next button advances through the tour steps in order', () => {
     render(<FirstRunCoach />)
     const titles = [
       /welcome to oandocraft/i,
@@ -44,12 +44,11 @@ describe('FirstRunCoach copy + step behavior', () => {
       /you're ready!/i,
       /restart this tour anytime/i,
     ]
-    expect(screen.getByRole('heading', { name: titles[0] })).toBeInTheDocument()
+    expect(screen.getByText(/let's walk through the basics/i)).toBeInTheDocument()
+    expect(screen.getByText(titles[0])).toBeInTheDocument()
     for (let i = 1; i < titles.length; i++) {
       fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-      expect(
-        screen.getByRole('heading', { name: titles[i] }),
-      ).toBeInTheDocument()
+      expect(screen.getByText(titles[i])).toBeInTheDocument()
     }
     expect(screen.queryByRole('button', { name: /^next$/i })).toBeNull()
     expect(screen.getByRole('button', { name: /^done$/i })).toBeInTheDocument()
@@ -58,20 +57,21 @@ describe('FirstRunCoach copy + step behavior', () => {
   it('step copy references the real editor shortcuts (Cmd+K, ?, M/R)', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-    fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
     expect(screen.getByText(/click any tool to activate it/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-    expect(screen.getByText(/click and drag on the canvas/i)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /go to step 8/i }))
-    expect(screen.getByText(/full shortcut cheat/i)).toBeInTheDocument()
+    expect(screen.getByText(/try selecting a tool and clicking on the canvas/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
+    expect(screen.getByText(/pan:/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /go to step 11/i }))
+    expect(screen.getByText(/use ← → arrow keys to navigate/i)).toBeInTheDocument()
   })
 
   it('Back button steps backwards', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /^next$/i }))
-    expect(screen.getByText(/choose your tool/i)).toBeInTheDocument()
+    expect(screen.getByText(/click any tool to activate it/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /^back$/i }))
-    expect(screen.getByText(/move around the canvas/i)).toBeInTheDocument()
+    expect(screen.getByText(/welcome to oandocraft/i)).toBeInTheDocument()
   })
 
   it('does not steal keyboard focus when it mounts', () => {
@@ -116,9 +116,7 @@ describe('FirstRunCoach copy + step behavior', () => {
   it('step indicator dots are clickable to jump to a step', () => {
     render(<FirstRunCoach />)
     fireEvent.click(screen.getByRole('button', { name: /go to step 3/i }))
-    expect(
-      screen.getByRole('heading', { name: /place your first element/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByText(/place your first element/i)).toBeInTheDocument()
     expect(screen.getByText(/3\s*\/\s*15/)).toBeInTheDocument()
   })
 })

@@ -218,12 +218,10 @@ npm run release:manifest
 
 `build:oando` emits assets for `/OandOcraft/`. `release:manifest` writes
 `dist/OandOcraft-release-manifest.json` with per-file SHA-256 values,
-aggregate SHA-256, commit, version label, and artifact name. Use
-`docs/guide/OandOcraft_RELEASE_RUNBOOK.md` and `CHANGELOG.md` for release,
+aggregate SHA-256, commit, version label, and artifact name. Use the
+OandOcraft references under `docs/Reference/OandOcraft/` for release,
 rollback, and sign-off records. Admin and recovery operations are documented in
-`docs/guide/OandOcraft_ADMIN_RUNBOOK.md`,
-`docs/guide/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md`, and
-`docs/guide/OandOcraft_SECURITY_REVIEW.md`.
+the reference folder alongside the integration and playbook materials.
 
 ### Preview Production Build
 
@@ -327,7 +325,7 @@ src/
 
 ## Deployment
 
-For the main-site deployment path, build with `npm run build:oando` and serve the emitted `dist/` bundle from `/OandOcraft/`. The host must rewrite nested client routes such as `/OandOcraft/login`, `/OandOcraft/dashboard`, `/OandOcraft/t/*`, `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and `/OandOcraft/invite/*` back to `/OandOcraft/index.html`. See [docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md](docs/guide/OandOcraft_MAIN_SITE_INTEGRATION.md) for the exact host rules, Supabase redirect URLs, and production env vars.
+For the main-site deployment path, build with `npm run build:oando` and serve the emitted `dist/` bundle from `/OandOcraft/`. The host must rewrite nested client routes such as `/OandOcraft/login`, `/OandOcraft/dashboard`, `/OandOcraft/t/*`, `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and `/OandOcraft/invite/*` back to `/OandOcraft/index.html`. See the OandOcraft integration reference under `docs/Reference/OandOcraft/integration/` for the exact host rules, Supabase redirect URLs, and production env vars.
 
 Edge Functions are deployed to Supabase:
 
@@ -338,10 +336,10 @@ npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://oando.co.in/O
 
 Operational docs:
 
-- [Admin runbook](docs/guide/OandOcraft_ADMIN_RUNBOOK.md)
-- [Supabase recovery runbook](docs/guide/OandOcraft_SUPABASE_RECOVERY_RUNBOOK.md)
-- [Security review](docs/guide/OandOcraft_SECURITY_REVIEW.md)
-- [Release runbook](docs/guide/OandOcraft_RELEASE_RUNBOOK.md)
+- [Integration reference](docs/Reference/OandOcraft/integration/MAIN_SITE_INTEGRATION.md)
+- [Playbook spec](docs/Reference/OandOcraft/plans/PLAYBOOK_SPEC.md)
+- [Playbook checklist](docs/Reference/OandOcraft/plans/PLAYBOOK_CHECKLIST.md)
+- [Playbook walkthrough](docs/Reference/OandOcraft/plans/PLAYBOOK_WALKTHROUGH.md)
 
 ---
 

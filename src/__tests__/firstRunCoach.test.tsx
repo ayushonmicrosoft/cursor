@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useUIStore } from '../stores/uiStore'
 import { FirstRunCoach } from '../components/editor/FirstRunCoach'
 import { useElementsStore } from '../stores/elementsStore'
@@ -28,7 +28,7 @@ Object.defineProperty(window, 'localStorage', {
 
 const STORAGE_KEY = 'firstRunWelcomeSeen'
 const DEMO_DISMISSED_KEY = 'floocraft.firstRunDemoDismissed'
-const ONBOARDING_COMPLETED_KEY = 'floocraft.onboardingCompleted'
+const ONBOARDING_COMPLETED_KEY = 'floorcraft.onboardingCompleted'
 const ONBOARDING_STEP_KEY = 'floocraft.onboardingStep'
 
 describe('FirstRunCoach', () => {
@@ -74,7 +74,7 @@ describe('FirstRunCoach', () => {
       expect(screen.queryByRole('dialog')).toBeInTheDocument()
 
       // Click skip
-      const skipButton = screen.getByText(/skip tour/i)
+      const skipButton = screen.getByRole('button', { name: /dismiss welcome card/i })
       fireEvent.click(skipButton)
 
       expect(localStorageMock.getItem(STORAGE_KEY)).toBe('1')
@@ -85,15 +85,15 @@ describe('FirstRunCoach', () => {
       render(<FirstRunCoach />)
 
       // Navigate to last step by clicking Next multiple times
-      const nextButton = screen.getByText(/next/i)
+      const nextButton = screen.getByRole('button', { name: /next/i })
 
-      // 14 steps total, need to click Next 13 times to reach last step
-      for (let i = 0; i < 13; i++) {
+      // 15 steps total, need to click Next 14 times to reach last step
+      for (let i = 0; i < 14; i++) {
         fireEvent.click(nextButton)
       }
 
       // Now click Done
-      const doneButton = screen.getByText(/done/i)
+      const doneButton = screen.getByRole('button', { name: /done/i })
       fireEvent.click(doneButton)
 
       expect(localStorageMock.getItem(ONBOARDING_COMPLETED_KEY)).toBe('1')
@@ -103,7 +103,7 @@ describe('FirstRunCoach', () => {
       render(<FirstRunCoach />)
 
       // Navigate forward a few steps
-      const nextButton = screen.getByText(/next/i)
+      const nextButton = screen.getByRole('button', { name: /next/i })
       fireEvent.click(nextButton) // step 2
       fireEvent.click(nextButton) // step 3
 
@@ -132,7 +132,7 @@ describe('FirstRunCoach', () => {
 
       expect(screen.getByText(/step 1 of/i)).toBeInTheDocument()
 
-      fireEvent.click(screen.getByText(/next/i))
+      fireEvent.click(screen.getByRole('button', { name: /next/i }))
 
       expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
     })
@@ -141,11 +141,11 @@ describe('FirstRunCoach', () => {
       render(<FirstRunCoach />)
 
       // Go to step 2
-      fireEvent.click(screen.getByText(/next/i))
+      fireEvent.click(screen.getByRole('button', { name: /next/i }))
       expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
 
       // Go back
-      fireEvent.click(screen.getByText(/back/i))
+      fireEvent.click(screen.getByRole('button', { name: /back/i }))
       expect(screen.getByText(/step 1 of/i)).toBeInTheDocument()
     })
 
@@ -154,9 +154,9 @@ describe('FirstRunCoach', () => {
 
       expect(screen.queryByText(/back/i)).toBeNull()
 
-      fireEvent.click(screen.getByText(/next/i))
+      fireEvent.click(screen.getByRole('button', { name: /next/i }))
 
-      expect(screen.getByText(/back/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
     })
 
     it('displays step dots that are clickable', () => {
@@ -178,8 +178,8 @@ describe('FirstRunCoach', () => {
       const dots = screen.getAllByRole('button', { name: /go to step/i })
       fireEvent.click(dots[dots.length - 1])
 
-      expect(screen.getByText(/done/i)).toBeInTheDocument()
-      expect(screen.queryByText(/next/i)).toBeNull()
+      expect(screen.getByRole('button', { name: /done/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /next/i })).toBeNull()
     })
   })
 
@@ -214,7 +214,7 @@ describe('FirstRunCoach', () => {
       render(<FirstRunCoach />)
 
       // Go to step 2
-      fireEvent.click(screen.getByText(/next/i))
+      fireEvent.click(screen.getByRole('button', { name: /next/i }))
       expect(screen.getByText(/step 2 of/i)).toBeInTheDocument()
 
       // Go back with arrow key
@@ -270,7 +270,7 @@ describe('FirstRunCoach', () => {
     it('shows tool selection guidance', () => {
       render(<FirstRunCoach />)
 
-      fireEvent.click(screen.getByText(/next/i)) // step 2
+      fireEvent.click(screen.getByRole('button', { name: /next/i })) // step 2
 
       expect(screen.getByText(/choose your tool/i)).toBeInTheDocument()
     })

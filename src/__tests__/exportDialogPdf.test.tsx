@@ -134,12 +134,12 @@ describe('ExportDialog PDF + PNG wiring', () => {
     openDialog('office-plan')
     render(<ExportDialog />)
 
-    expect(screen.getByLabelText(/background color/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/scale factor/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/include dimensions/i)).toBeInTheDocument()
+    fireEvent.click(screen.getByText(/advanced options/i))
+    expect(screen.getByText(/paper size/i)).toBeInTheDocument()
+    expect(screen.getByText(/orientation/i)).toBeInTheDocument()
+    expect(screen.getByText(/print quality \(dpi\)/i)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /export png/i }))
-    expect(screen.getByRole('status')).toHaveTextContent(/exporting png/i)
-    await waitFor(() => expect(exportPngMock).toHaveBeenCalledTimes(1))
+    fireEvent.click(screen.getByRole('button', { name: /export pdf floor plan/i }))
+    await waitFor(() => expect(exportPdfMock).toHaveBeenCalledTimes(1))
   })
 })

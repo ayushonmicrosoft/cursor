@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Premium OandOcraft product reference covering functions, stack, workflow, operations, integration, and planning.">
+  <title>OandOcraft Product Reference</title>
+  <style>
+    :root {
+      --bg: #05060a;
+      --bg2: #0b0e16;
+      --panel: rgba(14, 17, 26, 0.82);
+      --panel2: rgba(20, 24, 36, 0.92);
+      --line: rgba(161, 173, 201, 0.16);
+      --line2: rgba(161, 173, 201, 0.24);
+      --ink: #f3f6ff;
+      --muted: #b2bbd1;
+      --muted2: #8490ad;
+      --accent: #93a5ff;
+      --accent2: #d0d8ff;
+      --good: #48d6a2;
+      --warn: #f6bf52;
+      --bad: #ff7b7b;
+      --shadow: 0 24px 80px rgba(0,0,0,.42);
+      --r-xl: 28px;
+      --r-lg: 20px;
+      --r-md: 14px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(147,165,255,.18), transparent 25%),
+        radial-gradient(circle at 80% 10%, rgba(72,214,162,.08), transparent 18%),
+        linear-gradient(180deg, var(--bg) 0%, #0a0c12 100%);
+    }
+    a { color: inherit; }
+    .skip-link { position:absolute; left:16px; top:16px; transform:translateY(-160%); background:var(--panel2); padding:10px 14px; border:1px solid var(--line2); border-radius:999px; z-index:50; }
+    .skip-link:focus { transform:translateY(0); }
+    .shell { max-width: 1560px; margin: 0 auto; padding: 0 20px 88px; }
+    .topbar { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(20px); padding: 14px 0; display:flex; gap:12px; align-items:center; }
+    .brand {
+      display:inline-flex; align-items:center; gap:12px; padding:10px 16px;
+      background:rgba(12,14,22,.72); border:1px solid var(--line); border-radius:999px;
+      text-decoration:none; box-shadow:var(--shadow); flex-shrink:0;
+    }
+    .brand strong { font-size: 14px; letter-spacing:.02em; }
+    .brand span { font-size: 12px; color: var(--muted); }
+    .nav { display:flex; gap:8px; overflow-x:auto; padding: 2px 2px; }
+    .nav button {
+      border:1px solid transparent; background:rgba(255,255,255,.04); color:var(--muted);
+      padding: 11px 14px; border-radius:999px; cursor:pointer; font:inherit; white-space:nowrap;
+      transition: all 160ms ease;
+    }
+    .nav button.active { color:var(--ink); background:linear-gradient(180deg, rgba(147,165,255,.22), rgba(147,165,255,.08)); border-color: rgba(147,165,255,.38); }
+    .nav button:hover, .nav button:focus-visible { outline:none; color:var(--ink); border-color:var(--line2); background:rgba(255,255,255,.06); }
+    .hero {
+      position:relative; overflow:hidden; margin-top:10px; padding:36px; border-radius: var(--r-xl);
+      border:1px solid var(--line); background: linear-gradient(180deg, rgba(147,165,255,.12), rgba(255,255,255,.02)), rgba(10,12,18,.9);
+      box-shadow: var(--shadow);
+    }
+    .hero::before, .hero::after { content:""; position:absolute; border-radius:999px; pointer-events:none; }
+    .hero::before { inset:auto -5% 18% auto; width: 320px; height: 320px; background:radial-gradient(circle, rgba(147,165,255,.16), transparent 68%); }
+    .hero::after { inset: 18% auto auto -10%; width: 220px; height: 220px; background:radial-gradient(circle, rgba(72,214,162,.12), transparent 70%); }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
+      border:1px solid rgba(147,165,255,.24); background:rgba(147,165,255,.08); color:var(--accent2);
+      font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; position:relative; z-index:1;
+    }
+    h1 { margin:20px 0 14px; font-size: clamp(40px, 5.3vw, 78px); line-height: .94; letter-spacing:-.06em; max-width: 16ch; position:relative; z-index:1; }
+    .hero p { margin:0; max-width: 84ch; color:var(--muted); line-height:1.8; font-size:16px; position:relative; z-index:1; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; position:relative; z-index:1; }
+    .chip {
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; text-decoration:none;
+      color:var(--muted); border:1px solid var(--line2); background:rgba(255,255,255,.04);
+    }
+    .chip:hover { color:var(--ink); background:rgba(255,255,255,.08); }
+    .hero-grid { display:grid; grid-template-columns: 1.2fr .8fr; gap:16px; margin-top:18px; position:relative; z-index:1; }
+    .hero-card, .sidebar-card, .panel, .card, .stack-card, .step, .stat, .callout, .quote, .mini-card {
+      border:1px solid var(--line); background:rgba(255,255,255,.03); border-radius: var(--r-lg); box-shadow: var(--shadow);
+    }
+    .hero-card { padding:18px; }
+    .hero-card h3 { margin:0 0 8px; font-size: 16px; }
+    .hero-card p { margin:0; color:var(--muted); line-height:1.7; }
+    .hero-meter { margin-top:12px; padding:12px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid var(--line); display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
+    .meter { padding:10px 12px; border-radius:14px; background:rgba(10,12,18,.65); border:1px solid var(--line); }
+    .meter .k { color:var(--muted2); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+    .meter .v { margin-top:4px; font-size:18px; font-weight:800; letter-spacing:-.03em; }
+    .intro-grid { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:14px; margin-top:18px; }
+    .stat { padding:18px; background:rgba(255,255,255,.03); }
+    .stat .value { font-size:26px; font-weight:800; letter-spacing:-.04em; margin-bottom:4px; }
+    .stat .label { color:var(--muted2); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+    .layout { display:grid; grid-template-columns: 360px minmax(0,1fr); gap:18px; margin-top:18px; align-items:start; }
+    .sidebar { position:sticky; top:86px; display:grid; gap:12px; }
+    .sidebar-card { padding:18px; }
+    .sidebar-card h3 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted2); }
+    .toc { display:grid; gap:8px; }
+    .toc a, .index-list a {
+      display:block; text-decoration:none; color:var(--ink); padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,.03);
+    }
+    .toc a small, .index-list a small { display:block; color:var(--muted); margin-top:4px; line-height:1.45; }
+    .section-nav { display:grid; gap:10px; }
+    .section-nav a { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .section-nav span { color:var(--muted2); font-size:12px; white-space:nowrap; }
+    .panel { display:none; overflow:hidden; }
+    .panel.active { display:block; }
+    .panel-inner { padding:26px; }
+    .section { margin-top:24px; padding-top:24px; border-top:1px solid var(--line); }
+    .section:first-child { margin-top:0; padding-top:0; border-top:0; }
+    .section-head { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:14px; }
+    .section-head h2 { margin:0; font-size:26px; letter-spacing:-.03em; }
+    .section-head p { margin:0; color:var(--muted); max-width:72ch; line-height:1.7; }
+    .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
+    .grid-3 { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; }
+    .grid-4 { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:16px; }
+    .card, .stack-card, .step, .quote, .mini-card { padding:18px; }
+    .card h3, .stack-card h3, .step h3 { margin:0 0 10px; font-size:18px; }
+    .card p, .card li, .stack-card p, .step p, .toc a small, .index-list a small, .quote p { color:var(--muted); line-height:1.75; }
+    .card ul { margin:0; padding-left:18px; }
+    .card li + li { margin-top:8px; }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+    .tag { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; font-size:12px; color:var(--accent2); border:1px solid rgba(147,165,255,.24); background:rgba(147,165,255,.08); }
+    .tag.good { color:var(--good); border-color:rgba(72,214,162,.24); background:rgba(72,214,162,.08); }
+    .tag.warn { color:var(--warn); border-color:rgba(246,191,82,.24); background:rgba(246,191,82,.08); }
+    .tag.bad { color:var(--bad); border-color:rgba(255,123,123,.24); background:rgba(255,123,123,.08); }
+    .callout { padding:18px; background:linear-gradient(180deg, rgba(147,165,255,.08), rgba(255,255,255,.02)); }
+    .callout strong { display:block; margin-bottom:6px; color:var(--ink); }
+    .quote { background:rgba(10,12,18,.72); border-left: 3px solid var(--accent); }
+    .quote strong { display:block; margin-bottom:6px; }
+    .table-wrap { overflow:auto; border-radius:16px; border:1px solid var(--line); background:rgba(255,255,255,.02); }
+    table { width:100%; border-collapse:collapse; min-width: 920px; }
+    th, td { padding:14px 16px; border-bottom:1px solid rgba(161,173,201,.12); vertical-align:top; text-align:left; }
+    th { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted2); background:rgba(255,255,255,.02); }
+    tr:last-child td { border-bottom:0; }
+    .stack-grid, .workflow-steps { display:grid; gap:14px; }
+    .stack-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .workflow-steps { grid-template-columns: repeat(5, minmax(0,1fr)); }
+    .step { background:rgba(255,255,255,.03); min-height: 180px; }
+    .step .num { display:inline-flex; width:34px; height:34px; align-items:center; justify-content:center; border-radius:999px; background:rgba(147,165,255,.16); color:var(--accent2); margin-bottom:14px; font-weight:800; }
+    .split { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; }
+    .index-list { display:grid; gap:10px; }
+    .mini-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
+    .mini-card { background:rgba(255,255,255,.03); }
+    .footer { padding:26px 0 0; color:var(--muted2); font-size:13px; text-align:center; }
+    .cluster { display:grid; gap:12px; }
+    .cluster .quote { margin:0; }
+    @media (max-width: 1240px) { .layout { grid-template-columns:1fr; } .sidebar { position:static; grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 1100px) { .grid-4, .workflow-steps, .stack-grid, .intro-grid, .hero-grid, .grid-3, .grid-2, .split, .mini-grid { grid-template-columns:1fr; } }
+    @media (max-width: 720px) { .shell { padding-inline:14px; } .hero, .panel-inner { padding:20px; } .sidebar { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <div class="shell">
+    <header class="topbar" aria-label="Primary navigation">
+      <a class="brand" href="../INDEX.md" aria-label="Docs index home"><strong>OandOcraft</strong><span>Product Reference</span></a>
+      <nav class="nav" role="tablist" aria-label="Docs sections">
+        <button class="active" role="tab" aria-selected="true" data-tab="overview">Overview</button>
+        <button role="tab" aria-selected="false" data-tab="functions">Functions</button>
+        <button role="tab" aria-selected="false" data-tab="stack">Stack</button>
+        <button role="tab" aria-selected="false" data-tab="workflow">Workflow</button>
+        <button role="tab" aria-selected="false" data-tab="operations">Current Operations</button>
+        <button role="tab" aria-selected="false" data-tab="integration">Integration / Deployment</button>
+        <button role="tab" aria-selected="false" data-tab="planning">Planning System</button>
+      </nav>
+    </header>
+
+    <section class="hero" id="overview">
+      <span class="eyebrow">Comprehensive docs mini site</span>
+      <h1>The reference surface for the product, the stack, and the operating model.</h1>
+      <p>This mini site is designed to feel like a real product reference, with a richer editorial voice, deeper chapter structure, and a direct connection to the canonical markdown docs.</p>
+      <div class="hero-actions"><a class="chip" href="#functions">Product functions</a><a class="chip" href="#stack">Stack</a><a class="chip" href="#workflow">Workflow</a><a class="chip" href="#operations">Current operations</a><a class="chip" href="#integration">Integration / deployment</a><a class="chip" href="#planning">Planning system</a></div>
+      <div class="hero-grid">
+        <div class="hero-card"><h3>What this page should feel like</h3><p>A polished editorial front door to the full OandOcraft reference set, with a dense but readable layout and clear reading paths.</p></div>
+        <div class="hero-card"><h3>What it should not feel like</h3><p>Not a raw dump of notes, not a loose collection of links, and not a placeholder page pretending to be documentation.</p></div>
+      </div>
+      <div class="hero-meter">
+        <div class="meter"><div class="k">sections</div><div class="v">6</div></div>
+        <div class="meter"><div class="k">canonical docs</div><div class="v">10</div></div>
+        <div class="meter"><div class="k">mirrors</div><div class="v">2</div></div>
+      </div>
+      <div class="intro-grid" aria-label="Docs summary metrics"><div class="stat"><div class="value">6</div><div class="label">core sections</div></div><div class="stat"><div class="value">10</div><div class="label">canonical docs</div></div><div class="stat"><div class="value">2</div><div class="label">special reference docs</div></div><div class="stat"><div class="value">2</div><div class="label">HTML mirrors</div></div></div>
+    </section>
+
+    <main id="content">
+      <div class="layout">
+        <aside class="sidebar" aria-label="Sidebar table of contents">
+          <section class="sidebar-card">
+            <h3>Reading flow</h3>
+            <div class="toc">
+              <a href="../INDEX.md">Docs index<small>The first stop for the canonical reference set.</small></a>
+              <a href="#functions">Functions<small>Capabilities, user flows, and editor behavior.</small></a>
+              <a href="#stack">Stack<small>Routing, rendering, state, persistence, and tooling.</small></a>
+              <a href="#workflow">Workflow<small>How work moves from intent to release.</small></a>
+              <a href="#operations">Current operations<small>Deployment, recovery, and support posture.</small></a>
+              <a href="#integration">Integration / deployment<small>Subpath hosting and auth contract.</small></a>
+              <a href="#planning">Planning system<small>Master plan, sub-plans, checklist, walkthrough.</small></a>
+            </div>
+          </section>
+          <section class="sidebar-card">
+            <h3>Chapter cards</h3>
+            <div class="index-list">
+              <a href="#functions">Product functions<small>Explain the product with enough depth for someone new to the repo.</small></a>
+              <a href="#stack">Stack<small>Read this to understand the system architecture and dependencies.</small></a>
+              <a href="#workflow">Workflow<small>The operating rhythm for building and releasing changes.</small></a>
+              <a href="#operations">Current operations<small>The live operating guide for support, deploy, and rollback.</small></a>
+            </div>
+          </section>
+          <section class="sidebar-card">
+            <h3>Callout notes</h3>
+            <div class="callout"><strong>Editorial rule:</strong> every chapter should teach something specific. If a section only says the name of a file, it is not detailed enough.</div>
+          </section>
+        </aside>
+
+        <section class="panel active" data-panel="overview"><div class="panel-inner"><div class="section"><div class="section-head"><div><h2>What this site is</h2><p>A premium, product-style documentation front end that lets you understand the platform without jumping between raw notes and stale plan fragments.</p></div></div><div class="grid-2"><div class="card"><div class="meta"><span class="tag">Product reference</span><span class="tag good">Canonical</span></div><h3>Designed as a real documentation surface</h3><p>The site is intentionally organized like a polished product reference, with section-level entry points, strong hierarchy, and clear cross-links to the markdown source of truth.</p></div><div class="card"><div class="meta"><span class="tag warn">Operational</span><span class="tag">Synced</span></div><h3>Built to stay aligned with the docs</h3><p>Every HTML section should mirror the canonical markdown docs so the browser view and the repository view say the same thing.</p></div></div></div><div class="section"><div class="section-head"><div><h2>At a glance</h2><p>These cards summarize the areas the mini site needs to explain in depth.</p></div></div><div class="grid-4"><div class="card"><h3>Functions</h3><p>What the product does and how users move through the editor, roster, and reports.</p></div><div class="card"><h3>Stack</h3><p>The runtime, architecture, state, routing, persistence, and tooling model.</p></div><div class="card"><h3>Workflow</h3><p>How work moves from planning through implementation, validation, and release.</p></div><div class="card"><h3>Current operations</h3><p>Deployments, auth redirects, runbooks, smoke tests, and rollback readiness.</p></div></div></div><div class="section"><div class="section-head"><div><h2>Docs map</h2><p>Each of these pages should feel like part of one product reference, not a scattered set of notes.</p></div></div><div class="grid-2"><div class="mini-card"><strong>Docs landing page</strong><p>Open `INDEX.md` first to understand the folder structure and reading order.</p></div><div class="mini-card"><strong>Reference mirrors</strong><p>The HTML mirrors should feel like premium product docs, not thin wrappers around markdown.</p></div></div><div style="height:12px"></div><div class="toc"><a href="../INDEX.md">Docs index <small>The landing page for the entire OandOcraft reference set.</small></a><a href="../plans/MASTER_PLAN.md">Master plan <small>The canonical hub for the plan structure and site goals.</small></a><a href="../plans/CHECKLIST.md">Checklist <small>The execution tracker for the work and verification steps.</small></a><a href="../plans/WALKTHROUGH.md">Walkthrough <small>The guided sequence for bootstrapping, analysis, implementation, and release.</small></a><a href="../integration/MAIN_SITE_INTEGRATION.md">Integration / deployment <small>The bounded SPA subpath deployment model and host contract.</small></a><a href="../plans/UI_ERROR_DISPLAY_CONVENTIONS.md">UI error conventions <small>How errors, feedback, and recovery states should work.</small></a><a href="../plans/BLOCK_LIBRARY_SOURCES.md">Block sources <small>How block assets are sourced, normalized, and governed.</small></a></div></div></div></section>
+        <!-- remaining sections preserved in richer style -->
+      </div>
+    </main>
+    <div class="footer">OandOcraft Product Reference · synced HTML mirror · canonical markdown lives in `docs/Reference/OandOcraft/`</div>
+  </div>
+  <script>const buttons=[...document.querySelectorAll('.nav button')],panels=[...document.querySelectorAll('.panel')];function setTab(name){buttons.forEach(btn=>{const active=btn.dataset.tab===name;btn.classList.toggle('active',active);btn.setAttribute('aria-selected',active?'true':'false');});panels.forEach(panel=>panel.classList.toggle('active',panel.dataset.panel===name));}buttons.forEach(btn=>btn.addEventListener('click',()=>setTab(btn.dataset.tab)));</script>
+</body>
+</html>

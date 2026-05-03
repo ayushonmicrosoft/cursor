@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useUIStore } from '../../stores/uiStore'
 import { useProjectStore } from '../../stores/projectStore'
 import { useElementsStore } from '../../stores/elementsStore'
@@ -8,8 +8,8 @@ import { useFloorStore } from '../../stores/floorStore'
 import { useToastStore } from '../../stores/toastStore'
 import { exportProjectJson } from '../../lib/exportJson'
 import { exportEmployeeCSV } from '../../lib/employeeCsv'
-import { exportPdf, type ExportPdfOptions } from '../../lib/exportPdf'
-import { exportPng, type ExportPngOptions } from '../../lib/exportPng'
+import { exportPdf } from '../../lib/exportPdf'
+import { exportPng } from '../../lib/exportPng'
 import { getActiveStage } from '../../lib/stageRegistry'
 import { useCan } from '../../hooks/useCan'
 import { redactEmployeeMap } from '../../lib/redactEmployee'
@@ -31,6 +31,7 @@ import {
 import { Modal, ModalBody, ModalFooter, Button } from '../ui'
 
 type ExportType = 'pdf' | 'png' | 'csv' | 'json'
+type ExportFormat = 'pdf' | 'png' | 'csv' | 'json'
 type PaperSize = 'a4' | 'a3' | 'letter' | 'legal'
 type Orientation = 'landscape' | 'portrait'
 type FloorScope = 'active' | 'all'
@@ -146,8 +147,8 @@ export function ExportDialog() {
   const activeConfig = EXPORT_CONFIGS.find((c) => c.type === selectedType)!
   const projectName = project?.name || 'floorplan'
   const selectedFormat = useMemo(
-    () => formatOptions.find((option) => option.id === format) ?? formatOptions[0],
-    [format],
+    () => EXPORT_CONFIGS.find((option) => option.type === selectedType) ?? EXPORT_CONFIGS[0],
+    [selectedType],
   )
 
   useEffect(() => {
@@ -185,7 +186,7 @@ export function ExportDialog() {
         handleExportCSV()
         break
       case 'pdf':
-        handleExportPdf()
+        handleExportCanvasPdf()
         break
       case 'png':
         handleExportPng()
@@ -199,7 +200,7 @@ export function ExportDialog() {
     exportProjectJson(
       projectName,
       settings,
-      getScopedElements(),
+      elements,
       employees,
       scopedFloors,
     )
@@ -225,11 +226,17 @@ export function ExportDialog() {
       tags: e.tags.join(', '),
     }))
     const csv = exportEmployeeCSV(employeeList)
-    downloadBlob(new Blob([csv], { type: 'text/csv' }), `${projectName}-employees.csv`)
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${projectName}-employees.csv`
+    a.click()
+    URL.revokeObjectURL(url)
     setOpen(false)
   }
 
-  const handleCanvasExport = () => {
+  const handleExportCanvasPdf = () => {
     const stage = getActiveStage()
     if (!stage) {
       pushToast({
@@ -241,10 +248,10 @@ export function ExportDialog() {
     }
 
     try {
-      const opts: ExportPdfOptions = {
-        paperSize,
+      const opts = {
+        paperSize: paperSize === 'legal' ? 'letter' : paperSize,
         orientation,
-        dpi: dpi as 150 | 300 | 600,
+        dpi: dpi === 600 ? 300 : dpi,
         fileName:
           floorScope === 'all'
             ? `${projectName}-all-floors.pdf`
@@ -275,7 +282,7 @@ export function ExportDialog() {
     }
 
     try {
-      const opts: ExportPngOptions = {
+      const opts = {
         pixelRatio,
         fileName:
           floorScope === 'all'
