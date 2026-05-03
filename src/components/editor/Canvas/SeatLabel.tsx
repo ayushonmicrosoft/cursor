@@ -388,7 +388,7 @@ function PillLabel({
     )
   }
 
-  const displayName = truncateToWidth(employee.name, nameMaxPx, 11)
+  const displayName = deriveInitials(employee.name)
 
   return (
     <Group
@@ -743,7 +743,7 @@ function BannerLabel({
       />
       {employee ? (
         (() => {
-          const displayName = truncateToWidth(employee.name, textW, 11)
+          const displayName = deriveInitials(employee.name)
           return (
             <Text
               text={displayName}

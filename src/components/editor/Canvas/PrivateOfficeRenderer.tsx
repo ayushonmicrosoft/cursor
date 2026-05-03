@@ -37,7 +37,8 @@ interface PrivateOfficeRendererProps {
 }
 
 export function PrivateOfficeRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds, labelDensity }: PrivateOfficeRendererProps) {
-  const assignedEmployees = element.assignedEmployeeIds
+  const assignedEmployeeIds = Array.isArray(element.assignedEmployeeIds) ? element.assignedEmployeeIds : []
+  const assignedEmployees = assignedEmployeeIds
     .map((id) => employees[id])
     .filter(Boolean)
   const borderColor = isSelected ? SELECTED_STROKE : element.style.stroke
@@ -143,13 +144,8 @@ export function PrivateOfficeRenderer({ element, isSelected, employees, getDepar
             <SeatLabel
               key={emp.id}
               style={seatLabelStyle}
-              employee={{
-                id: emp.id,
-                name: emp.name,
-                department: emp.department,
-                title: emp.title ?? null,
-              }}
-              departmentColor={deptColor}
+              employee={null}
+              departmentColor={null}
               x={labelLeft}
               y={labelTop + i * perLabelH}
               width={labelW}

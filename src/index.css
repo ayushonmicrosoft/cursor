@@ -65,6 +65,17 @@
  * under `.dark` is enough to retheme any utility built on these tokens.
  */
 @layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
   .dark {
     --color-surface: rgb(5 11 23 / 0.78);
     --color-surface-raised: rgb(11 22 40 / 0.92);

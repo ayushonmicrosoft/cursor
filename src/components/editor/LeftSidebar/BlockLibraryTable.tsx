@@ -15,7 +15,7 @@ export function BlockLibraryTable() {
         setLoading(true)
         setError(null)
         const data = await fetchBlockLibraryRecords()
-        if (active) setRecords(data)
+        if (active) setRecords(Array.isArray(data) ? data : [])
       } catch (err) {
         if (active) setError(err instanceof Error ? err.message : 'Failed to load block library records')
       } finally {

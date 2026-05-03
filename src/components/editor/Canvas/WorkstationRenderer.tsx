@@ -34,11 +34,15 @@ interface WorkstationRendererProps {
 }
 
 export function WorkstationRenderer({ element, isSelected, employees, getDepartmentColor, dragState, seatLabelStyle, showDeskIds, labelDensity }: WorkstationRendererProps) {
-  const slotWidth = element.width / element.positions
+  const safePositions = Number.isFinite(element.positions) && element.positions > 0 ? element.positions : 1
+  const assignedEmployeeIds = Array.isArray(element.assignedEmployeeIds)
+    ? element.assignedEmployeeIds
+    : Array.from({ length: safePositions }, () => null)
+  const slotWidth = element.width / safePositions
   const slotTopReserve = showDeskIds ? 14 : 4
   const slotBottomReserve = 6
   const { status, opacityMul } = seatStatusVisuals(element)
-  const hasAssignment = element.assignedEmployeeIds.some(Boolean)
+  const hasAssignment = assignedEmployeeIds.some(Boolean)
   const fillColor = seatFillForStatus(status, hasAssignment)
   const borderColor = isSelected
     ? SELECTED_STROKE
@@ -83,7 +87,7 @@ export function WorkstationRenderer({ element, isSelected, employees, getDepartm
       )}
 
       {/* Divider lines between positions */}
-      {Array.from({ length: element.positions - 1 }, (_, i) => {
+      {Array.from({ length: safePositions - 1 }, (_, i) => {
         const lineX = -element.width / 2 + slotWidth * (i + 1)
         const crispLineX = Math.round(lineX) + 0.5
         return (
@@ -103,7 +107,7 @@ export function WorkstationRenderer({ element, isSelected, employees, getDepartm
         // with any accommodation so the badge still functions as a "this
         // row has accommodations" cue. Wheelchair priority is handled
         // inside `accommodationGlyph`.
-        const accommodated = element.assignedEmployeeIds
+        const accommodated = assignedEmployeeIds
           .map((id) => (id ? employees[id] : null))
           .find((e) => e && e.accommodations && e.accommodations.length > 0)
         if (!accommodated) return null
@@ -133,8 +137,8 @@ export function WorkstationRenderer({ element, isSelected, employees, getDepartm
        * avatar style automatically falls back to a stacked layout
        * there; no slot-layout adjustments needed.
        */}
-      {Array.from({ length: element.positions }, (_, i) => {
-        const employeeId = element.assignedEmployeeIds[i] || null
+      {Array.from({ length: safePositions }, (_, i) => {
+        const employeeId = assignedEmployeeIds[i] || null
         const employee = employeeId ? employees[employeeId] : null
         const slotX = -element.width / 2 + slotWidth * i
         const slotLabelWidth = Math.max(0, slotWidth - 4)
@@ -162,17 +166,8 @@ export function WorkstationRenderer({ element, isSelected, employees, getDepartm
             )}
             <SeatLabel
               style={seatLabelStyle}
-              employee={
-                employee
-                  ? {
-                      id: employee.id,
-                      name: employee.name,
-                      department: employee.department,
-                      title: employee.title ?? null,
-                    }
-                  : null
-              }
-              departmentColor={deptColor}
+              employee={null}
+              departmentColor={null}
               x={slotX + 2}
               y={labelTop}
               width={slotLabelWidth}

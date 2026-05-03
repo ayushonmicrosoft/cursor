@@ -321,6 +321,11 @@ function areClose(a: number, b: number) {
   return Math.abs(a - b) < 1e-6
 }
 
+function normalizeColorInputValue(value: string | undefined, fallback = '#000000') {
+  if (!value) return fallback
+  return /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback
+}
+
 function ExactNumericInput({
   value,
   parse,
@@ -1289,7 +1294,7 @@ export function PropertiesPanel() {
               <input
                 type="color"
                 className="w-full h-8 border border-gray-200 dark:border-gray-800 rounded cursor-pointer disabled:opacity-50"
-                value={firstWall.style.stroke}
+                value={normalizeColorInputValue(firstWall.style.stroke, '#6B7280')}
                 disabled={sharedDisabled}
                 onChange={(e) => {
                   for (const id of selectedIds) {
@@ -1500,7 +1505,7 @@ export function PropertiesPanel() {
             <input
               type="color"
               className="w-full h-8 border border-gray-200 dark:border-gray-800 rounded cursor-pointer disabled:opacity-50"
-              value={el.style.stroke}
+              value={normalizeColorInputValue(el.style.stroke, '#6B7280')}
               disabled={lockedDisabled}
               onChange={(e) => update({ style: { ...el.style, stroke: e.target.value } })}
             />
@@ -1512,7 +1517,7 @@ export function PropertiesPanel() {
               <input
                 type="color"
                 className="w-full h-8 border border-gray-200 dark:border-gray-800 rounded cursor-pointer disabled:opacity-50"
-                value={el.style.fill}
+                value={normalizeColorInputValue(el.style.fill, '#FFFFFF')}
                 disabled={lockedDisabled}
                 onChange={(e) => update({ style: { ...el.style, fill: e.target.value } })}
               />
@@ -1522,7 +1527,7 @@ export function PropertiesPanel() {
               <input
                 type="color"
                 className="w-full h-8 border border-gray-200 dark:border-gray-800 rounded cursor-pointer disabled:opacity-50"
-                value={el.style.stroke}
+                value={normalizeColorInputValue(el.style.stroke, '#6B7280')}
                 disabled={lockedDisabled}
                 onChange={(e) => update({ style: { ...el.style, stroke: e.target.value } })}
               />

@@ -24,7 +24,7 @@ export async function fetchBlockLibraryRecords() {
     .select('*')
     .order('updated_at', { ascending: false })
 
-  if (error) throw error
+  if (error) throw new Error(`Failed to load block library records: ${error.message}`)
   return (data ?? []) as BlockLibraryRecord[]
 }
 
