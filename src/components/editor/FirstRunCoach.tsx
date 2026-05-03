@@ -48,6 +48,7 @@ function readInitialSeen(): boolean {
 function writeSeen(): void {
   try {
     localStorage.setItem(STORAGE_KEY, '1')
+    localStorage.setItem(LEGACY_STORAGE_KEY, '1')
   } catch {
     // Private mode / quota — the card still unmounts via component state.
   }

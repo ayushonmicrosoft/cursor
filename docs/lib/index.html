@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Block Library Reference</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --panel-soft: #f1f5f9;
+        --text: #0f172a;
+        --muted: #475569;
+        --line: #dbe3ea;
+        --accent: #2563eb;
+        --accent-soft: #dbeafe;
+        --success: #15803d;
+        --warning: #b45309;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+      .sidebar { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 24px 18px; border-right: 1px solid var(--line); background: rgba(255,255,255,0.88); backdrop-filter: blur(10px); }
+      .brand { font-size: 14px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+      .sidebar h1 { font-size: 22px; line-height: 1.1; margin: 0 0 10px; }
+      .sidebar p { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+      .toc { display: grid; gap: 8px; }
+      .toc a { display: block; padding: 10px 12px; border: 1px solid transparent; border-radius: 12px; color: var(--text); font-size: 14px; }
+      .toc a:hover { background: var(--panel-soft); border-color: var(--line); text-decoration: none; }
+      .main { padding: 28px; }
+      .hero { display: grid; grid-template-columns: 1.4fr .9fr; gap: 18px; align-items: stretch; margin-bottom: 22px; }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+      .hero .title { font-size: 34px; line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.04em; }
+      .hero p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 15px; }
+      .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .metric { padding: 16px; border-radius: 14px; background: var(--panel-soft); border: 1px solid var(--line); }
+      .metric .k { font-size: 28px; font-weight: 700; line-height: 1; }
+      .metric .l { font-size: 12px; color: var(--muted); margin-top: 6px; }
+      section { margin-top: 18px; }
+      section h2 { font-size: 22px; margin: 0 0 12px; }
+      section p { color: var(--muted); line-height: 1.65; }
+      .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 600; }
+      .list { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+      .list li { padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+      .list strong { display: block; margin-bottom: 4px; }
+      table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+      th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { background: var(--panel-soft); font-size: 13px; }
+      tr:last-child td { border-bottom: none; }
+      .callout { border-left: 4px solid var(--accent); background: #eff6ff; padding: 14px 16px; border-radius: 12px; color: #1e3a8a; }
+      .note { border-left-color: var(--success); background: #f0fdf4; color: #166534; }
+      .warn { border-left-color: var(--warning); background: #fffbeb; color: #92400e; }
+      .link-list { display: grid; gap: 10px; }
+      .link-list a { display: block; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+      .footer { margin: 26px 0 8px; color: var(--muted); font-size: 13px; }
+      @media (max-width: 1080px) {
+        .shell { grid-template-columns: 1fr; }
+        .sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+        .hero, .grid-2, .grid-3, .metrics { grid-template-columns: 1fr; }
+        .main { padding: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">OandOcraft</div>
+        <h1>Block Library Reference</h1>
+        <p>
+          A compact mini site for the canonical block library, source links, shape creation,
+          and the Supabase-backed workflow.
+        </p>
+        <nav class="toc" aria-label="Table of contents">
+          <a href="#overview">Overview</a>
+          <a href="#library-model">Library model</a>
+          <a href="#shape-system">Shape system</a>
+          <a href="#supabase">Supabase flow</a>
+          <a href="#renderers">Konva + Pixi</a>
+          <a href="#sources">Source links</a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <div class="hero">
+          <div class="card">
+            <div class="pill">Canonical library · source governed</div>
+            <h1 class="title" id="overview">High-quality blocks, cleaner sources, safer persistence.</h1>
+            <p>
+              This mini site documents the block library as a real product surface: source quality,
+              model naming, shape creation, renderer sync, and the Supabase record flow all live together.
+            </p>
+          </div>
+          <div class="card">
+            <div class="metrics">
+              <div class="metric">
+                <div class="k">4</div>
+                <div class="l">source tiers</div>
+              </div>
+              <div class="metric">
+                <div class="k">15+</div>
+                <div class="l">shape variants</div>
+              </div>
+              <div class="metric">
+                <div class="k">1</div>
+                <div class="l">shared library table</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section class="card" id="library-model">
+          <h2>Library model</h2>
+          <div class="grid-2">
+            <div>
+              <p>
+                The library uses a single record model for everything the app needs to know about a block:
+                display name, category, asset type, source tier, canonical flag, provenance, and source URLs.
+              </p>
+              <div class="callout note">
+                Model names are the visible label for now. Brand is intentionally omitted from the UI.
+              </div>
+            </div>
+            <ul class="list">
+              <li><strong>Model name</strong>What the library shows first.</li>
+              <li><strong>Category</strong>Used for grouping and filters.</li>
+              <li><strong>Source tier</strong>Canonical, curated, legacy, or fallback.</li>
+              <li><strong>Status</strong>Draft, imported, verified, archived.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="shape-system">
+          <h2>Shape system</h2>
+          <div class="grid-3">
+            <div class="card">
+              <h3>Quick creators</h3>
+              <p>One-click insert buttons for rectangles, ellipses, lines, arrows, text, and more.</p>
+            </div>
+            <div class="card">
+              <h3>Shape variants</h3>
+              <p>Each creator now carries an explicit variant like triangle, diamond, hexagon, or speech bubble.</p>
+            </div>
+            <div class="card">
+              <h3>Renderer path</h3>
+              <p>Variants are ready to flow through the shape insertion path and then into Konva and Pixi renderers.</p>
+            </div>
+          </div>
+          <div class="callout warn" style="margin-top:16px;">
+            The next step is to give each shape its own geometry instead of reusing the same base type.
+          </div>
+        </section>
+
+        <section id="supabase">
+          <h2>Supabase flow</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3>Reads and writes</h3>
+              <p>
+                The library table loads records from <code>block_library_records</code> and upserts by slug.
+                That keeps the client flow simple and lets RLS control the rules.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Schema</h3>
+              <p>
+                The schema includes indexes for category, source tier, and updated time, plus safe status checks.
+                It is ready to apply in Supabase.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="renderers">
+          <h2>Konva + Pixi</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th>Current state</th>
+                <th>Next step</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Konva</td>
+                <td>Main canvas renderer for the map editor.</td>
+                <td>Wire new shape variants and keep block taxonomy in sync.</td>
+              </tr>
+              <tr>
+                <td>Pixi</td>
+                <td>Alternate render engine with fallback logic.</td>
+                <td>Mirror the same block/shape definitions for parity.</td>
+              </tr>
+              <tr>
+                <td>Shared model</td>
+                <td>Registry and library model now carry source and variant metadata.</td>
+                <td>Keep persistence, UI, and rendering aligned on the same schema.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="sources">
+          <h2>Source links</h2>
+          <div class="link-list">
+            <a href="https://www.hermanmiller.com/products/seating/office-chairs/aeron-chair/pro-resources/">Herman Miller resource page</a>
+            <a href="https://www.steelcase.com/resources/models/">Steelcase model resources</a>
+            <a href="https://www.bimobject.com/en-us/practika/product/hatters">Practika Hatters on BIMobject</a>
+            <a href="https://www.bimobject.com/en-us/rockworth/product/rockworth_cabinet_freestanding_cabinet_acl810">Rockworth cabinet ACL810</a>
+            <a href="https://www.bimobject.com/en-us/modernform-workplace/product/modernform_midbackchair_series12_71x67">Modernform midback chair series 12</a>
+          </div>
+        </section>
+
+        <div class="footer">
+          Built as a static docs mini site for the block library and source workflow.
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
