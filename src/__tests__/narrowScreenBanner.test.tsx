@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, act } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { NarrowScreenBanner, MOBILE_BREAKPOINT_PX, MIN_EDITOR_LAYOUT_WIDTH_PX } from '../components/editor/NarrowScreenBanner'
+import { NarrowScreenBanner } from '../components/editor/NarrowScreenBanner'
 
 function setViewportWidth(width: number) {
   Object.defineProperty(window, 'innerWidth', {

@@ -6,7 +6,6 @@ import {
   Maximize2,
   Settings,
   Grid3x3,
-  ChevronUp,
   Layers,
   X,
 } from 'lucide-react'
@@ -43,7 +42,6 @@ export function MobileBottomBar({ isVisible }: MobileBottomBarProps) {
   const zoomIn = useCanvasStore((s) => s.zoomIn)
   const zoomOut = useCanvasStore((s) => s.zoomOut)
   const zoomToContent = useCanvasStore((s) => s.zoomToContent)
-  const resetZoom = useCanvasStore((s) => s.resetZoom)
   const settings = useCanvasStore((s) => s.settings)
   const toggleGrid = useCanvasStore((s) => s.toggleGrid)
 
@@ -51,9 +49,6 @@ export function MobileBottomBar({ isVisible }: MobileBottomBarProps) {
   const setRightSidebarOpen = useUIStore((s) => s.setRightSidebarOpen)
   const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen)
   const setRightSidebarTab = useUIStore((s) => s.setRightSidebarTab)
-  const dockableToolbarVisibility = useUIStore((s) => s.dockableToolbarVisibility)
-  const setDockableToolbarVisible = useUIStore((s) => s.setDockableToolbarVisible)
-
   const [showToolsMenu, setShowToolsMenu] = useState(false)
 
   if (!isVisible) return null

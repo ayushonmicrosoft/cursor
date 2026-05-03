@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useInRouterContext, useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../stores/uiStore'
 import { useToastStore } from '../../stores/toastStore'
@@ -6,33 +6,6 @@ import { MapView } from './MapView'
 import { PixiPreviewPage } from './PixiPreviewPage'
 import type { RenderEngineId } from '../../stores/uiStore'
 import { ENGINE_ROUTE_POLICIES, type EngineRoutePolicyId } from './engineRoutePolicy'
-
-interface EngineRenderBoundaryProps {
-  children: ReactNode
-  onError: () => void
-}
-
-class EngineRenderBoundary extends Component<EngineRenderBoundaryProps, { hasError: boolean }> {
-  constructor(props: EngineRenderBoundaryProps) {
-    super(props)
-    this.state = { hasError: false }
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  componentDidCatch(_error: unknown, _errorInfo: ErrorInfo) {
-    this.props.onError()
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return null
-    }
-    return this.props.children
-  }
-}
 
 interface EngineHostProps {
   routePolicyId?: EngineRoutePolicyId

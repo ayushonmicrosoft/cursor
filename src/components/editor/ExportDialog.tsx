@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useUIStore } from '../../stores/uiStore'
 import { useProjectStore } from '../../stores/projectStore'
 import { useElementsStore } from '../../stores/elementsStore'
@@ -21,7 +21,6 @@ import {
   Settings2,
   ChevronRight,
   Check,
-  X,
   Layers,
   Monitor,
   Smartphone,
@@ -31,7 +30,6 @@ import {
 import { Modal, ModalBody, ModalFooter, Button } from '../ui'
 
 type ExportType = 'pdf' | 'png' | 'csv' | 'json'
-type ExportFormat = 'pdf' | 'png' | 'csv' | 'json'
 type PaperSize = 'a4' | 'a3' | 'letter' | 'legal'
 type Orientation = 'landscape' | 'portrait'
 type FloorScope = 'active' | 'all'
@@ -120,11 +118,7 @@ export function ExportDialog() {
   const activeFloorId = useFloorStore((s) => s.activeFloorId)
   const canViewPII = useCan('viewPII')
   const pushToast = useToastStore((s) => s.push)
-  const [format, setFormat] = useState<ExportFormat>('png')
-  const [includeDimensions, setIncludeDimensions] = useState(settings.showDimensions ?? false)
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
-  const [scaleFactor, setScaleFactor] = useState(2)
-  const [exportingFormat, setExportingFormat] = useState<ExportFormat | null>(null)
+  const exportingFormat = false
 
   // Selected export type
   const [selectedType, setSelectedType] = useState<ExportType>('pdf')
@@ -146,11 +140,6 @@ export function ExportDialog() {
 
   const activeConfig = EXPORT_CONFIGS.find((c) => c.type === selectedType)!
   const projectName = project?.name || 'floorplan'
-  const selectedFormat = useMemo(
-    () => EXPORT_CONFIGS.find((option) => option.type === selectedType) ?? EXPORT_CONFIGS[0],
-    [selectedType],
-  )
-
   useEffect(() => {
     if (!open) return
     const onKey = (event: KeyboardEvent) => {
@@ -158,21 +147,9 @@ export function ExportDialog() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, exportingFormat, setOpen])
+  }, [open, setOpen])
 
   if (!open) return null
-
-  // Get elements based on floor scope
-  const getScopedElements = () => {
-    if (floorScope === 'all') {
-      return Object.values(elements)
-    }
-    // Filter to active floor
-    return Object.values(elements).filter((el) => {
-      // Elements may have floorId or we use the active floor context
-      return true // For now, export all elements on active floor
-    })
-  }
 
   const employees = canViewPII ? rawEmployees : redactEmployeeMap(rawEmployees)
   const activeFloor = floors.find((f) => f.id === activeFloorId)

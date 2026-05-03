@@ -6,7 +6,6 @@ import { useElementsStore } from '../stores/elementsStore'
 import { useFloorStore } from '../stores/floorStore'
 import { useUIStore } from '../stores/uiStore'
 import type { ReactNode } from 'react'
-import { MOBILE_BREAKPOINT_PX, MIN_EDITOR_LAYOUT_WIDTH_PX } from '../components/editor/NarrowScreenBanner'
 
 vi.mock('../components/editor/FloorSwitcher', () => ({
   FloorSwitcher: () => null,

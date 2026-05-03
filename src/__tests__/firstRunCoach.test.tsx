@@ -4,6 +4,7 @@ import { useUIStore } from '../stores/uiStore'
 import { FirstRunCoach } from '../components/editor/FirstRunCoach'
 import { useElementsStore } from '../stores/elementsStore'
 import { useEmployeeStore } from '../stores/employeeStore'
+import type { DeskElement } from '../types/elements'
 
 // localStorage mock
 const localStorageMock = (() => {
@@ -303,8 +304,26 @@ describe('FirstRunCoach Demo Seeder', () => {
   })
 
   it('does not show demo seeder when elements exist', () => {
+    const desk: DeskElement = {
+      id: 'el-1',
+      type: 'desk',
+      x: 0,
+      y: 0,
+      width: 40,
+      height: 24,
+      rotation: 0,
+      locked: false,
+      groupId: null,
+      zIndex: 0,
+      label: 'Desk',
+      visible: true,
+      style: { fill: '#fff', stroke: '#000', strokeWidth: 1, opacity: 1 },
+      deskId: 'D-1',
+      assignedEmployeeId: null,
+      capacity: 1,
+    }
     useElementsStore.setState({
-      elements: { 'el-1': { id: 'el-1', type: 'desk', x: 0, y: 0 } as any },
+      elements: { 'el-1': desk },
     })
 
     render(<FirstRunCoach />)

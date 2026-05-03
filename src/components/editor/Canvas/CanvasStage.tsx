@@ -744,7 +744,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
         setContextMenu(null)
       }
     },
-    [activeTool, canEdit, canAnnotate, clearSelection, setContextMenu, stageX, stageY, stageScale, onWallMouseDown]
+    [activeTool, canEdit, canAnnotate, clearSelection, setContextMenu, stageScale, onWallMouseDown]
   )
 
   const handleMouseMove = useCallback(
@@ -753,7 +753,8 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
         const dx = e.evt.clientX - lastPointer.current.x
         const dy = e.evt.clientY - lastPointer.current.y
         lastPointer.current = { x: e.evt.clientX, y: e.evt.clientY }
-        setStagePosition(stageX + dx, stageY + dy)
+        const { stageX: currentStageX, stageY: currentStageY } = useCanvasStore.getState()
+        setStagePosition(currentStageX + dx, currentStageY + dy)
         // Track whether the press has travelled past the click threshold
         // so mouseup can distinguish "click → deselect" from "drag → pan"
         // when we entered pan from the select tool.
@@ -1248,7 +1249,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
       useUIStore.getState().setSelectedIds([element.id])
       useCanvasStore.getState().setActiveTool('select')
     }
-  }, [activeTool, stageX, stageY, stageScale, onWallMouseUp, marquee, shapePreview, neighborhoodPreview, clearSelection, setContextMenu])
+  }, [activeTool, onWallMouseUp, marquee, shapePreview, neighborhoodPreview, clearSelection, setContextMenu])
 
   // Base cursor per tool. For door/window we additionally flip to
   // `not-allowed` when the cursor is NOT over a wall in snap range — so the
@@ -1333,7 +1334,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
       // the user a "+" cursor showing the drop is valid.
       e.dataTransfer.dropEffect = 'copy'
     }
-  }, [canEdit, stageX, stageY, stageScale])
+  }, [canEdit])
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     if (!canEdit) return
@@ -1346,9 +1347,11 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
     stage.setPointersPositions(e.nativeEvent)
     const pointer = stage.getPointerPosition()
     if (!pointer) return
+    const { stageX: currentStageX, stageY: currentStageY, stageScale: currentStageScale } =
+      useCanvasStore.getState()
     const pos = {
-      x: (pointer.x - stageX) / stageScale,
-      y: (pointer.y - stageY) / stageScale,
+      x: (pointer.x - currentStageX) / currentStageScale,
+      y: (pointer.y - currentStageY) / currentStageScale,
     }
 
     // Library drag: instantiate the element at the drop cursor.
@@ -1456,7 +1459,7 @@ export function CanvasStage({ onStageReady }: CanvasStageProps = {}) {
       assignEmployee(empId, hitId, useFloorStore.getState().activeFloorId, slotIndex)
     }
     useSeatDragStore.getState().reset()
-  }, [stageX, stageY, stageScale, canEdit])
+  }, [canEdit])
 
   return (
     <div

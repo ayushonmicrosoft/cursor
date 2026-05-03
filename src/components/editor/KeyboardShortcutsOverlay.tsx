@@ -44,8 +44,6 @@ type ShortcutRow = {
 }
 
 type ShortcutGroup = { title: string; rows: ShortcutRow[] }
-type GestureRow = { gesture: string; action: string; detail: string }
-type OverlayTab = 'keyboard' | 'touch'
 
 const keyboardShortcutGroups: ShortcutGroup[] = [
   {
