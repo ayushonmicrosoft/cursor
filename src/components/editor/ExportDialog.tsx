@@ -147,7 +147,7 @@ export function ExportDialog() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, setOpen])
+  }, [open, setOpen, exportingFormat])
 
   if (!open) return null
 
@@ -287,7 +287,7 @@ export function ExportDialog() {
   const canExport = () => {
     if (selectedType === 'json' || selectedType === 'csv') return true
     // PDF/PNG need the canvas
-    return !!getActiveStage()
+    return !!getActiveStage() && !exportingFormat
   }
 
   return (

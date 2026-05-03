@@ -21,7 +21,6 @@ import {
   Ruler,
   Grid3x3,
   Compass,
-  Zap,
   Printer,
   Image as ImageIcon,
   Eye,
@@ -46,7 +45,7 @@ import { exportFloorAsPng } from '../../lib/pngExport'
 import { buildExportFilename } from '../../lib/exportFilename'
 import { getActiveStage } from '../../lib/stageRegistry'
 import { useState, useRef, useEffect } from 'react'
-import { NavLink, useLocation, useParams } from 'react-router-dom'
+import { NavLink, useParams } from 'react-router-dom'
 import { useCan } from '../../hooks/useCan'
 import { TeamSwitcher } from '../team/TeamSwitcher'
 import { ScaleSettingsPopover } from './ScaleSettingsPopover'

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Smartphone, X, MonitorSmartphone, RotateCw } from 'lucide-react'
+import { Smartphone, X, MonitorSmartphone } from 'lucide-react'
 
 // Legacy key for migration - was used for dismissing at 1180px
 const LEGACY_DISMISS_KEY = 'narrowScreenBannerDismissed'

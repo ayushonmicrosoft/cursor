@@ -61,8 +61,42 @@ function useBounds(tiles: Tile[]): Bounds {
 const MinimapBackground = memo(function MinimapBackground({ tiles, bounds, minimapScale, selectedSet }: { tiles: Tile[]; bounds: Bounds; minimapScale: number; selectedSet: Set<string> }) {
   const unselected: Tile[] = []
   const selected: Tile[] = []
-  for (const t of tiles) selectedSet.has(t.id) ? selected.push(t) : unselected.push(t)
-  return (<>{unselected.map((t) => <rect key={t.id} x={(t.bounds.x - bounds.x) * minimapScale} y={(t.bounds.y - bounds.y) * minimapScale} width={Math.max(t.bounds.width * minimapScale, 1)} height={Math.max(t.bounds.height * minimapScale, 1)} fill={t.fill} stroke={t.stroke} strokeWidth={0.5} />)}{selected.map((t) => <rect key={t.id} x={(t.bounds.x - bounds.x) * minimapScale} y={(t.bounds.y - bounds.y) * minimapScale} width={Math.max(t.bounds.width * minimapScale, 2)} height={Math.max(t.bounds.height * minimapScale, 2)} fill="#3B82F6" stroke="#1D4ED8" strokeWidth={1} data-testid={`minimap-selected-${t.id}`} />)}</>)
+  for (const t of tiles) {
+    if (selectedSet.has(t.id)) {
+      selected.push(t)
+    } else {
+      unselected.push(t)
+    }
+  }
+  return (
+    <>
+      {unselected.map((t) => (
+        <rect
+          key={t.id}
+          x={(t.bounds.x - bounds.x) * minimapScale}
+          y={(t.bounds.y - bounds.y) * minimapScale}
+          width={Math.max(t.bounds.width * minimapScale, 1)}
+          height={Math.max(t.bounds.height * minimapScale, 1)}
+          fill={t.fill}
+          stroke={t.stroke}
+          strokeWidth={0.5}
+        />
+      ))}
+      {selected.map((t) => (
+        <rect
+          key={t.id}
+          x={(t.bounds.x - bounds.x) * minimapScale}
+          y={(t.bounds.y - bounds.y) * minimapScale}
+          width={Math.max(t.bounds.width * minimapScale, 2)}
+          height={Math.max(t.bounds.height * minimapScale, 2)}
+          fill="#3B82F6"
+          stroke="#1D4ED8"
+          strokeWidth={1}
+          data-testid={`minimap-selected-${t.id}`}
+        />
+      ))}
+    </>
+  )
 })
 
 function MinimapViewport({ bounds, minimapScale }: { bounds: Bounds; minimapScale: number }) {

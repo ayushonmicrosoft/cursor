@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { X, GripHorizontal } from 'lucide-react'
 import { RightSidebar } from './RightSidebar/RightSidebar'
-import { useUIStore } from '../../stores/uiStore'
 
 interface MobilePropertiesSheetProps {
   isOpen: boolean
