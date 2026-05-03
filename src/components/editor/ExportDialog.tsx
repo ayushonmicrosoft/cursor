@@ -257,7 +257,7 @@ export function ExportDialog() {
       } = {
         paperSize: paperSize === 'legal' ? 'letter' : paperSize,
         orientation,
-        dpi: dpi === 600 ? 300 : (dpi as 150 | 300),
+        dpi: (dpi === 600 ? 300 : dpi) as 150 | 300,
         fileName:
           floorScope === 'all'
             ? `${projectName}-all-floors.pdf`
