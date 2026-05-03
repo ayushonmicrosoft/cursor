@@ -86,7 +86,7 @@ export function PlanHealthPill() {
     <>
       <button
         onClick={() => setDrawerOpen(true)}
-        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border ${pillClass}`}
+        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border ${pillClass} shrink-0 whitespace-nowrap`}
         aria-label={ariaLabel}
         data-testid="plan-health-pill"
       >

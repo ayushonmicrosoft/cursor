@@ -49,21 +49,16 @@ export function LandingPage() {
         </Link>
       </div>
     ) : (
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex flex-col justify-center gap-3 sm:flex-row">
         <Link
           to="/signup"
-          className="px-6 py-3 bg-[#1f3653] text-white text-lg font-medium rounded-xl hover:bg-[#172941] shadow-lg shadow-[#1f3653]/20 transition-all text-center"
+          className="inline-flex items-center justify-center rounded-full bg-[#1f3653] px-6 py-3 text-lg font-medium text-white shadow-[0_18px_40px_rgba(31,54,83,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[#10233b]"
         >
           Start planning
         </Link>
         <Link
           to="/help"
-          className="px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800/50 text-lg text-center"
-        >
-        </Link>
-        <Link
-          to="/help"
-          className="px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800/50 text-lg text-center"
+          className="inline-flex items-center justify-center rounded-full border border-white/50 bg-white/70 px-6 py-3 text-lg font-medium text-slate-700 shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:bg-white/90 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-slate-900/80"
         >
           Read the guide
         </Link>
@@ -106,7 +101,7 @@ export function LandingPage() {
 
           <LandingStats />
 
-          <div className="mt-10 sm:mt-12 max-w-3xl mx-auto rounded-2xl border border-gray-200 bg-white/80 px-5 py-4 text-left shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-950/70">
+          <div className="mt-10 sm:mt-12 max-w-3xl mx-auto rounded-3xl border border-white/40 bg-white/70 px-5 py-4 text-left shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7f6a52] dark:text-[#c8b69f]">
@@ -136,7 +131,7 @@ export function LandingPage() {
           <div className="relative mt-16 sm:mt-20 max-w-4xl mx-auto">
             <div
               aria-hidden="true"
-              className="absolute inset-x-8 top-10 bottom-0 rounded-3xl bg-[#9d876c]/20 dark:bg-[#9d876c]/10 blur-3xl"
+              className="absolute inset-x-8 top-10 bottom-0 rounded-[2rem] bg-[#9d876c]/20 blur-3xl dark:bg-[#9d876c]/10"
             />
             <div className="relative">
               <BrowserFrame>
@@ -190,7 +185,7 @@ export function LandingPage() {
         <HowItWorks />
 
         <section aria-labelledby="trusted-heading" className="max-w-4xl mx-auto px-6 pb-20">
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-5 py-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-950/50 dark:text-gray-400">
+          <div className="rounded-3xl border border-white/40 bg-white/70 px-5 py-4 text-sm text-slate-600 shadow-[0_12px_40px_rgba(15,23,42,0.05)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400">
             <h2
               id="trusted-heading"
               className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400"

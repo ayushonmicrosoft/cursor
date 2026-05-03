@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
@@ -85,9 +86,11 @@ export function PlanHealthDrawer({ health, onClose }: Props) {
 
   const total = health.errorCount + health.warningCount + health.infoCount
 
-  return (
+  const node = typeof document !== 'undefined' ? document.body : null
+
+  const content = (
     <div
-      className="fixed inset-0 z-40 flex"
+      className="fixed inset-0 z-[1000] flex items-stretch justify-end"
       data-testid="plan-health-drawer"
     >
       <div
@@ -97,7 +100,7 @@ export function PlanHealthDrawer({ health, onClose }: Props) {
       />
       <aside
         ref={drawerRef}
-        className="relative ml-auto w-[400px] max-w-full h-full bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto flex flex-col"
+        className="relative w-[400px] max-w-full h-full bg-white dark:bg-gray-900 shadow-2xl overflow-y-auto flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-label="Plan health"
@@ -141,6 +144,8 @@ export function PlanHealthDrawer({ health, onClose }: Props) {
       </aside>
     </div>
   )
+
+  return node ? createPortal(content, node) : content
 }
 
 function EmptyState() {

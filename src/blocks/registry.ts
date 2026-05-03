@@ -24,6 +24,8 @@ export type BlockCategory =
   | 'media'       // background images, SVG uploads
 
 // ── Block definition ──────────────────────────────────────────────────────────
+export type BlockSourceTier = 'canonical' | 'curated' | 'legacy' | 'fallback'
+
 export interface BlockMeta {
   label: string
   category: BlockCategory
@@ -37,119 +39,147 @@ export interface BlockMeta {
   polyline: boolean
   /** Emoji/icon char for quick identification in the UI. */
   icon: string
+  /** Governance tier for source quality and replacement priority. */
+  sourceTier: BlockSourceTier
+  /** Is this the preferred canonical block for its family? */
+  canonical: boolean
+  /** Human-readable provenance note for docs and review. */
+  provenance: string
 }
 
 // ── Registry ──────────────────────────────────────────────────────────────────
 export const BLOCK_REGISTRY: Partial<Record<ElementType, BlockMeta>> = {
-  // ── Desks ──────────────────────────────────────────────────────────────
+  // ── Canonical plan blocks ───────────────────────────────────────────────
   desk: {
-    label: 'Desk', category: 'desk', icon: '🖥',
-    defaultSize: { w: 80, h: 60 },
-    defaultStyle: { fill: '#FEF3C7', stroke: '#D97706', strokeWidth: 1.5, opacity: 1 },
+    label: 'Desk', category: 'desk', icon: 'desk',
+    defaultSize: { w: 84, h: 60 },
+    defaultStyle: { fill: '#f5efe2', stroke: '#a16207', strokeWidth: 1.5, opacity: 1 },
     assignable: true, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical assignable desk block for standard single-seat work points.',
   },
   'hot-desk': {
-    label: 'Hot Desk', category: 'desk', icon: '🔄',
-    defaultSize: { w: 80, h: 60 },
-    defaultStyle: { fill: '#EDE9FE', stroke: '#7C3AED', strokeWidth: 1.5, opacity: 1 },
+    label: 'Hot Desk', category: 'desk', icon: 'hot',
+    defaultSize: { w: 84, h: 60 },
+    defaultStyle: { fill: '#ede9fe', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 1 },
     assignable: true, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical flexible desk block for shared or transient assignments.',
   },
   workstation: {
-    label: 'Workstation', category: 'desk', icon: '🖱',
-    defaultSize: { w: 240, h: 70 },
-    defaultStyle: { fill: '#ECFDF5', stroke: '#10B981', strokeWidth: 1.5, opacity: 1 },
+    label: 'Workstation Bench', category: 'desk', icon: 'bench',
+    defaultSize: { w: 240, h: 72 },
+    defaultStyle: { fill: '#ecfdf5', stroke: '#059669', strokeWidth: 1.5, opacity: 1 },
     assignable: true, multiSeat: true, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical multi-seat workstation block for bench-style seating.',
   },
   'private-office': {
-    label: 'Private Office', category: 'desk', icon: '🏢',
+    label: 'Private Office', category: 'desk', icon: 'office',
     defaultSize: { w: 160, h: 140 },
-    defaultStyle: { fill: '#FFF7ED', stroke: '#EA580C', strokeWidth: 1.5, opacity: 1 },
+    defaultStyle: { fill: '#fff7ed', stroke: '#ea580c', strokeWidth: 1.5, opacity: 1 },
     assignable: true, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical enclosed work block for private offices.',
   },
 
-  // ── Rooms ──────────────────────────────────────────────────────────────
   'conference-room': {
-    label: 'Conference Room', category: 'room', icon: '🪑',
+    label: 'Conference Room', category: 'room', icon: 'room',
     defaultSize: { w: 300, h: 200 },
-    defaultStyle: { fill: '#EFF6FF', stroke: '#3B82F6', strokeWidth: 2, opacity: 1 },
+    defaultStyle: { fill: '#eff6ff', stroke: '#2563eb', strokeWidth: 2, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical meeting room block for enclosed collaboration space.',
   },
   'phone-booth': {
-    label: 'Phone Booth', category: 'room', icon: '📞',
-    defaultSize: { w: 80, h: 80 },
-    defaultStyle: { fill: '#F0FDF4', stroke: '#22C55E', strokeWidth: 1.5, opacity: 1 },
+    label: 'Phone Booth', category: 'room', icon: 'booth',
+    defaultSize: { w: 84, h: 84 },
+    defaultStyle: { fill: '#f0fdf4', stroke: '#16a34a', strokeWidth: 1.5, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical quiet-focus room block.',
   },
   'common-area': {
-    label: 'Common Area', category: 'room', icon: '☕',
-    defaultSize: { w: 200, h: 160 },
-    defaultStyle: { fill: '#FFFBEB', stroke: '#F59E0B', strokeWidth: 1.5, opacity: 1 },
+    label: 'Common Area', category: 'room', icon: 'common',
+    defaultSize: { w: 220, h: 160 },
+    defaultStyle: { fill: '#fffbeb', stroke: '#d97706', strokeWidth: 1.5, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical shared amenity block for lounge or kitchen-adjacent space.',
   },
 
-  // ── Walls ──────────────────────────────────────────────────────────────
   wall: {
-    label: 'Wall', category: 'wall', icon: '▬',
+    label: 'Wall', category: 'wall', icon: 'wall',
     defaultSize: { w: 200, h: 8 },
-    defaultStyle: { fill: '#374151', stroke: '#374151', strokeWidth: 8, opacity: 1 },
+    defaultStyle: { fill: '#4b5563', stroke: '#4b5563', strokeWidth: 8, opacity: 1 },
     assignable: false, multiSeat: false, polyline: true,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical structural boundary block.',
   },
   door: {
-    label: 'Door', category: 'wall', icon: '🚪',
+    label: 'Door', category: 'wall', icon: 'door',
     defaultSize: { w: 80, h: 8 },
-    defaultStyle: { fill: '#92400E', stroke: '#92400E', strokeWidth: 4, opacity: 1 },
+    defaultStyle: { fill: '#92400e', stroke: '#92400e', strokeWidth: 4, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical wall interruption block for access points.',
   },
   window: {
-    label: 'Window', category: 'wall', icon: '🪟',
+    label: 'Window', category: 'wall', icon: 'window',
     defaultSize: { w: 80, h: 6 },
-    defaultStyle: { fill: '#BAE6FD', stroke: '#0EA5E9', strokeWidth: 3, opacity: 0.7 },
+    defaultStyle: { fill: '#bae6fd', stroke: '#0ea5e9', strokeWidth: 3, opacity: 0.72 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical transparent wall feature block.',
   },
 
-  // ── Tables ──────────────────────────────────────────────────────────────
   'table-rect': {
-    label: 'Rect Table', category: 'table', icon: '⬜',
+    label: 'Rectangular Table', category: 'table', icon: 'table-rect',
     defaultSize: { w: 160, h: 80 },
-    defaultStyle: { fill: '#F3F4F6', stroke: '#6B7280', strokeWidth: 1.5, opacity: 1 },
+    defaultStyle: { fill: '#f3f4f6', stroke: '#6b7280', strokeWidth: 1.5, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical rectangular shared table block.',
   },
   'table-conference': {
-    label: 'Conference Table', category: 'table', icon: '🔲',
+    label: 'Conference Table', category: 'table', icon: 'table-conf',
     defaultSize: { w: 300, h: 120 },
-    defaultStyle: { fill: '#F3F4F6', stroke: '#6B7280', strokeWidth: 1.5, opacity: 1 },
+    defaultStyle: { fill: '#f3f4f6', stroke: '#6b7280', strokeWidth: 1.5, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical meeting table block.',
   },
   'table-round': {
-    label: 'Round Table', category: 'table', icon: '⭕',
+    label: 'Round Table', category: 'table', icon: 'table-round',
     defaultSize: { w: 100, h: 100 },
-    defaultStyle: { fill: '#F3F4F6', stroke: '#6B7280', strokeWidth: 1.5, opacity: 1 },
+    defaultStyle: { fill: '#f3f4f6', stroke: '#6b7280', strokeWidth: 1.5, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical circular table block.',
   },
   'table-oval': {
-    label: 'Oval Table', category: 'table', icon: '🥚',
+    label: 'Oval Table', category: 'table', icon: 'table-oval',
     defaultSize: { w: 200, h: 100 },
-    defaultStyle: { fill: '#F3F4F6', stroke: '#6B7280', strokeWidth: 1.5, opacity: 1 },
+    defaultStyle: { fill: '#f3f4f6', stroke: '#6b7280', strokeWidth: 1.5, opacity: 1 },
     assignable: false, multiSeat: false, polyline: false,
+    sourceTier: 'canonical', canonical: true,
+    provenance: 'Canonical oval shared table block.',
   },
 
-  // ── Decor ──────────────────────────────────────────────────────────────
-  sofa: { label: 'Sofa', category: 'decor', icon: '🛋', defaultSize: { w: 160, h: 70 }, defaultStyle: { fill: '#E5E7EB', stroke: '#9CA3AF', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
-  plant: { label: 'Plant', category: 'decor', icon: '🌿', defaultSize: { w: 40, h: 40 }, defaultStyle: { fill: '#D1FAE5', stroke: '#059669', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
-  printer: { label: 'Printer', category: 'decor', icon: '🖨', defaultSize: { w: 60, h: 50 }, defaultStyle: { fill: '#F3F4F6', stroke: '#6B7280', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
-  whiteboard: { label: 'Whiteboard', category: 'decor', icon: '📋', defaultSize: { w: 180, h: 10 }, defaultStyle: { fill: '#FFFFFF', stroke: '#D1D5DB', strokeWidth: 2, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
-  decor: { label: 'Decor', category: 'decor', icon: '🪑', defaultSize: { w: 60, h: 60 }, defaultStyle: { fill: '#F3F4F6', stroke: '#9CA3AF', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
+  sofa: { label: 'Sofa', category: 'decor', icon: 'sofa', defaultSize: { w: 160, h: 70 }, defaultStyle: { fill: '#e5e7eb', stroke: '#9ca3af', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'curated', canonical: false, provenance: 'Curated furniture prop block for lounge contexts.' },
+  plant: { label: 'Plant', category: 'decor', icon: 'plant', defaultSize: { w: 40, h: 40 }, defaultStyle: { fill: '#d1fae5', stroke: '#059669', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'curated', canonical: false, provenance: 'Curated environmental prop block.' },
+  printer: { label: 'Printer', category: 'decor', icon: 'printer', defaultSize: { w: 60, h: 50 }, defaultStyle: { fill: '#f3f4f6', stroke: '#6b7280', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'curated', canonical: false, provenance: 'Curated office support prop block.' },
+  whiteboard: { label: 'Whiteboard', category: 'decor', icon: 'whiteboard', defaultSize: { w: 180, h: 10 }, defaultStyle: { fill: '#ffffff', stroke: '#d1d5db', strokeWidth: 2, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'curated', canonical: false, provenance: 'Curated collaborative surface block.' },
+  decor: { label: 'Decor', category: 'decor', icon: 'decor', defaultSize: { w: 60, h: 60 }, defaultStyle: { fill: '#f3f4f6', stroke: '#9ca3af', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'legacy', canonical: false, provenance: 'Legacy catch-all decor block retained for backward compatibility.' },
 
-  // ── Shapes ──────────────────────────────────────────────────────────────
-  'rect-shape': { label: 'Rectangle', category: 'shape', icon: '▭', defaultSize: { w: 100, h: 60 }, defaultStyle: { fill: '#EFF6FF', stroke: '#3B82F6', strokeWidth: 1.5, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
-  ellipse: { label: 'Ellipse', category: 'shape', icon: '⬭', defaultSize: { w: 100, h: 60 }, defaultStyle: { fill: '#EFF6FF', stroke: '#3B82F6', strokeWidth: 1.5, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
-  'line-shape': { label: 'Line', category: 'shape', icon: '╱', defaultSize: { w: 100, h: 4 }, defaultStyle: { fill: '#6B7280', stroke: '#6B7280', strokeWidth: 2, opacity: 1 }, assignable: false, multiSeat: false, polyline: true },
-  arrow: { label: 'Arrow', category: 'shape', icon: '→', defaultSize: { w: 100, h: 4 }, defaultStyle: { fill: '#6B7280', stroke: '#6B7280', strokeWidth: 2, opacity: 1 }, assignable: false, multiSeat: false, polyline: true },
-  'free-text': { label: 'Text', category: 'shape', icon: 'T', defaultSize: { w: 120, h: 24 }, defaultStyle: { fill: 'transparent', stroke: 'transparent', strokeWidth: 0, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
+  'rect-shape': { label: 'Rectangle', category: 'shape', icon: 'rect', defaultSize: { w: 100, h: 60 }, defaultStyle: { fill: '#eff6ff', stroke: '#3b82f6', strokeWidth: 1.5, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'canonical', canonical: true, provenance: 'Canonical drawing primitive.' },
+  ellipse: { label: 'Ellipse', category: 'shape', icon: 'ellipse', defaultSize: { w: 100, h: 60 }, defaultStyle: { fill: '#eff6ff', stroke: '#3b82f6', strokeWidth: 1.5, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'canonical', canonical: true, provenance: 'Canonical drawing primitive.' },
+  'line-shape': { label: 'Line', category: 'shape', icon: 'line', defaultSize: { w: 100, h: 4 }, defaultStyle: { fill: '#6b7280', stroke: '#6b7280', strokeWidth: 2, opacity: 1 }, assignable: false, multiSeat: false, polyline: true, sourceTier: 'canonical', canonical: true, provenance: 'Canonical drawing primitive.' },
+  arrow: { label: 'Arrow', category: 'shape', icon: 'arrow', defaultSize: { w: 100, h: 4 }, defaultStyle: { fill: '#6b7280', stroke: '#6b7280', strokeWidth: 2, opacity: 1 }, assignable: false, multiSeat: false, polyline: true, sourceTier: 'canonical', canonical: true, provenance: 'Canonical drawing primitive.' },
+  'free-text': { label: 'Text', category: 'shape', icon: 'text', defaultSize: { w: 120, h: 24 }, defaultStyle: { fill: 'transparent', stroke: 'transparent', strokeWidth: 0, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'canonical', canonical: true, provenance: 'Canonical annotation primitive.' },
 
-  // ── Media ──────────────────────────────────────────────────────────────
-  'background-image': { label: 'Background Image', category: 'media', icon: '🖼', defaultSize: { w: 400, h: 300 }, defaultStyle: { fill: 'transparent', stroke: '#D1D5DB', strokeWidth: 1, opacity: 0.8 }, assignable: false, multiSeat: false, polyline: false },
-  'custom-svg': { label: 'Custom SVG', category: 'media', icon: '✏️', defaultSize: { w: 80, h: 80 }, defaultStyle: { fill: 'transparent', stroke: '#6B7280', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false },
+  'background-image': { label: 'Background Image', category: 'media', icon: 'image', defaultSize: { w: 400, h: 300 }, defaultStyle: { fill: 'transparent', stroke: '#d1d5db', strokeWidth: 1, opacity: 0.8 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'curated', canonical: true, provenance: 'Canonical media surface for reference imagery.' },
+  'custom-svg': { label: 'Custom SVG', category: 'media', icon: 'svg', defaultSize: { w: 80, h: 80 }, defaultStyle: { fill: 'transparent', stroke: '#6b7280', strokeWidth: 1, opacity: 1 }, assignable: false, multiSeat: false, polyline: false, sourceTier: 'curated', canonical: true, provenance: 'Canonical upload surface for sanitized SVG assets.' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

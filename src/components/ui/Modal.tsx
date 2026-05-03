@@ -124,7 +124,7 @@ export function Modal({
 
   const panel = (
     <div
-      className="fixed inset-0 z-50 bg-black/40 dark:bg-black/60 flex items-center justify-center"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/45 backdrop-blur-sm dark:bg-black/70"
       onMouseDown={onBackdropClick}
       data-testid="modal-backdrop"
     >
@@ -135,7 +135,7 @@ export function Modal({
         aria-labelledby={resolvedLabelledBy}
         tabIndex={-1}
         className={cn(
-          'bg-white dark:bg-gray-900 rounded-lg shadow-lg dark:shadow-xl dark:shadow-black/40 w-full outline-none',
+          'glass-panel w-full outline-none',
           SIZE_CLASS[size],
         )}
       >
@@ -163,7 +163,7 @@ export function ModalHeader({ children, onClose, titleId, className }: ModalHead
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-2 px-6 py-4 border-b border-gray-200 dark:border-gray-800',
+        'flex items-center justify-between gap-2 px-6 py-4 border-b border-white/40 dark:border-white/10',
         className,
       )}
     >
@@ -175,7 +175,7 @@ export function ModalHeader({ children, onClose, titleId, className }: ModalHead
           type="button"
           aria-label="Close"
           onClick={onClose}
-          className="inline-flex items-center justify-center rounded p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 focus-visible:ring-blue-500"
+          className="inline-flex items-center justify-center rounded-full p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
         >
           <X size={16} />
         </button>
@@ -200,7 +200,7 @@ interface ModalFooterProps {
 
 export function ModalFooter({ children, className }: ModalFooterProps) {
   return (
-    <div className={cn('flex justify-end gap-2 px-6 py-4 border-t border-gray-200 dark:border-gray-800', className)}>
+    <div className={cn('flex justify-end gap-2 px-6 py-4 border-t border-white/40 dark:border-white/10', className)}>
       {children}
     </div>
   )

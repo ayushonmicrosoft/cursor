@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../stores/uiStore'
 import { MIN_EDITOR_LAYOUT_WIDTH_PX } from './NarrowScreenBanner'
 import { PixiToolbarHost } from './pixi/PixiToolbarHost'
@@ -19,7 +18,6 @@ interface PixiPreviewPageProps {
 }
 
 export function PixiPreviewPage({ onEngineFailure }: PixiPreviewPageProps = {}) {
-  const navigate = useNavigate()
   const rightSidebarOpen = useUIStore((s) => s.rightSidebarOpen)
   const setRightSidebarOpen = useUIStore((s) => s.setRightSidebarOpen)
   const setRenderEngine = useUIStore((s) => s.setRenderEngine)
@@ -108,7 +106,7 @@ export function PixiPreviewPage({ onEngineFailure }: PixiPreviewPageProps = {}) 
         pixiStageRef={pixiStageRef}
         viewport={viewport}
         onViewportChange={setViewport}
-        onBackToMap={() => navigate('../map', { replace: true })}
+        onBackToMap={undefined}
         leftToolsVisible={leftToolsVisible}
         leftToolsFloating={leftToolsFloating}
         rightSidebarOpen={rightSidebarOpen}

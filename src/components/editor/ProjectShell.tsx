@@ -259,10 +259,10 @@ export function ProjectShell() {
   }
 
   return (
-    <div className="flex h-screen w-full max-w-full min-w-0 flex-col overflow-hidden bg-gray-50 dark:bg-gray-800/50">
+    <div className="surface-gradient flex h-screen w-full max-w-full min-w-0 flex-col overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-slate-950 focus:shadow-[0_20px_60px_rgba(15,23,42,0.15)] dark:focus:bg-slate-900 dark:focus:text-white"
       >
         Skip to main content
       </a>

@@ -1,0 +1,68 @@
+[
+  {
+    "modelName": "Aeron Chair",
+    "category": "Seating",
+    "sourceTier": "canonical",
+    "canonical": true,
+    "assetType": "svg",
+    "sourceUrl": "https://www.hermanmiller.com/products/seating/office-chairs/aeron-chair/pro-resources/",
+    "assetUrl": null,
+    "status": "verified",
+    "notes": "Official product resource page."
+  },
+  {
+    "modelName": "Gesture Chair",
+    "category": "Seating",
+    "sourceTier": "canonical",
+    "canonical": true,
+    "assetType": "svg",
+    "sourceUrl": "https://www.steelcase.com/resources/models/",
+    "assetUrl": null,
+    "status": "verified",
+    "notes": "Official model/resource page."
+  },
+  {
+    "modelName": "Cabinet ACL810",
+    "category": "Storage",
+    "sourceTier": "curated",
+    "canonical": false,
+    "assetType": "bim",
+    "sourceUrl": "https://www.bimobject.com/en-us/rockworth/product/rockworth_cabinet_freestanding_cabinet_acl810",
+    "assetUrl": null,
+    "status": "imported",
+    "notes": "BIMobject product page."
+  },
+  {
+    "modelName": "Cabinet ACU810",
+    "category": "Storage",
+    "sourceTier": "curated",
+    "canonical": false,
+    "assetType": "bim",
+    "sourceUrl": "https://www.bimobject.com/en-us/rockworth/product/rockworth_cabinet_suspended_acu810",
+    "assetUrl": null,
+    "status": "imported",
+    "notes": "BIMobject product page."
+  },
+  {
+    "modelName": "Hatters",
+    "category": "Furniture",
+    "sourceTier": "curated",
+    "canonical": false,
+    "assetType": "bim",
+    "sourceUrl": "https://www.bimobject.com/en-us/practika/product/hatters",
+    "assetUrl": null,
+    "status": "imported",
+    "notes": "BIMobject product page."
+  },
+  {
+    "modelName": "Midback Chair Series 12",
+    "category": "Seating",
+    "sourceTier": "curated",
+    "canonical": false,
+    "assetType": "bim",
+    "sourceUrl": "https://www.bimobject.com/en-us/modernform-workplace/product/modernform_midbackchair_series12_71x67",
+    "assetUrl": null,
+    "status": "imported",
+    "notes": "BIMobject product page."
+  }
+]

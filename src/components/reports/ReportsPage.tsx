@@ -98,24 +98,24 @@ export function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
+    <div className="surface-gradient min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-6 py-10">
-      <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <header className="glass-panel mb-5 flex flex-col gap-3 rounded-[1.5rem] p-5 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
             Reports
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
             Office reports
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
             Track occupancy, department headcount, open seating, and seat-change activity for this office.
           </p>
         </div>
         <button
           type="button"
           onClick={() => downloadCsv('office-summary.csv', summaryCsv(stats))}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800/50"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-white/40 bg-white/70 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:bg-white/90 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-slate-900/80"
         >
           <Download size={14} aria-hidden="true" />
           Download summary
@@ -125,22 +125,22 @@ export function ReportsPage() {
       <StatStrip stats={stats} />
 
       {scenariosHref && (
-        <nav aria-label="Reports navigation" className="flex flex-wrap items-center gap-2 mt-4">
+        <nav aria-label="Reports navigation" className="mt-4 flex flex-wrap items-center gap-2">
           <Link
             to={scenariosHref}
-            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-white/70 px-3 py-1.5 text-xs text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:bg-white/90 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-slate-900/80"
           >
             Capacity scenarios →
           </Link>
         </nav>
       )}
 
-      <div className="sticky top-0 z-10 mt-5 mb-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="glass-surface sticky top-0 z-10 mt-5 mb-4 overflow-hidden rounded-[1.25rem]">
         <div
           role="tablist"
           aria-label="Reports sections"
           onKeyDown={onTablistKeyDown}
-          className="flex min-w-max items-center gap-1 overflow-x-auto"
+          className="flex min-w-max items-center gap-1 overflow-x-auto px-2 py-1"
         >
           {TABS.map((tab) => {
             const selected = tab.id === activeTab
@@ -157,10 +157,10 @@ export function ReportsPage() {
                 aria-selected={selected}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
+                className={`rounded-full px-3 py-2 text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all ${
                   selected
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
-                    : 'text-gray-600 dark:text-gray-300 border-b-2 border-transparent hover:text-gray-800 dark:hover:text-gray-100'
+                    ? 'bg-white text-slate-950 shadow-sm dark:bg-slate-900 dark:text-slate-50'
+                    : 'text-slate-500 hover:bg-white/70 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900/70 dark:hover:text-slate-50'
                 }`}
               >
                 {tab.label}
@@ -333,15 +333,15 @@ function StatCard({
   secondary?: string
 }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+    <div className="glass-panel rounded-[1.25rem] p-3">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
         {label}
       </div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900 dark:text-gray-100">
+      <div className="mt-1 text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
         {value}
       </div>
       {secondary ? (
-        <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 truncate">{secondary}</div>
+        <div className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{secondary}</div>
       ) : null}
     </div>
   )
@@ -357,20 +357,20 @@ function EmptyState({
   const mapHref =
     teamSlug && officeSlug ? `/t/${teamSlug}/o/${officeSlug}/map` : null
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
+    <div className="surface-gradient min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-6 py-10">
       <div
         role="status"
         aria-live="polite"
-        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-10 text-center"
+        className="glass-panel rounded-[1.5rem] p-10 text-center"
       >
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 mb-4">
+        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/70 text-slate-500 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:bg-slate-950/60 dark:text-slate-400">
           <Users size={22} aria-hidden="true" />
         </div>
-        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="text-base font-semibold text-slate-950 dark:text-slate-50">
           Nothing to report yet
         </h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+        <p className="mx-auto mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">
           Import your roster and lay out a floor to unlock occupancy,
           utilisation and churn metrics.
         </p>
@@ -378,7 +378,7 @@ function EmptyState({
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <Link
               to={mapHref}
-              className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-white/70 px-3 py-1.5 text-sm text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:bg-white/90 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-slate-900/80"
             >
               Back to map
             </Link>
@@ -400,16 +400,16 @@ function Card({
   children: React.ReactNode
 }) {
   return (
-    <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+    <section className="glass-panel rounded-[1.5rem] p-4">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
           {title}
         </h2>
         {onExport ? (
           <button
             type="button"
             onClick={onExport}
-            className="inline-flex items-center gap-1.5 self-start text-xs px-2 py-1 border border-gray-200 dark:border-gray-800 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/40 bg-white/70 px-2 py-1 text-xs text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:bg-white/90 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-slate-900/80"
           >
             <Download size={13} aria-hidden="true" />
             Export CSV

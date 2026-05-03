@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { LibraryPreview } from './LibraryPreview'
+import { BlockLibraryTable } from './BlockLibraryTable'
 import { Input } from '../../ui/Input'
 import { useRecentLibraryItems } from '../../../hooks/useRecentLibraryItems'
 import { useLibraryCollapse } from '../../../hooks/useLibraryCollapse'
@@ -24,7 +25,7 @@ import {
   clearRecents as clearRecentsStorage,
   getRecents as readPersistedRecents,
 } from '../../../lib/elementLibraryRecents'
-import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem } from './elementLibraryModel'
+import { LIBRARY_DRAG_MIME, buildLibraryElements, type LibraryItem, SHAPE_VARIANT_MAP } from './elementLibraryModel'
 import { useElementsStore } from '../../../stores/elementsStore'
 import { useCanvasStore } from '../../../stores/canvasStore'
 import { useCan } from '../../../hooks/useCan'
@@ -153,9 +154,34 @@ const LIBRARY_ITEMS: LibraryItem[] = [
   { type: 'printer',           label: 'Printer',         category: 'Furniture' },
   { type: 'whiteboard',        label: 'Whiteboard',      category: 'Furniture' },
 
+  // Shapes
+  { type: 'rect-shape',        label: 'Rectangle Shape',  category: 'Shapes' },
+  { type: 'ellipse',           label: 'Ellipse Shape',    category: 'Shapes' },
+  { type: 'line-shape',        label: 'Line Shape',       category: 'Shapes' },
+  { type: 'arrow',             label: 'Arrow Shape',      category: 'Shapes' },
+  { type: 'free-text',         label: 'Free Text',         category: 'Shapes' },
+
   // Other
   { type: 'custom-shape',      label: 'Custom Shape',    category: 'Other' },
   { type: 'text-label',        label: 'Text Label',      category: 'Other' },
+]
+
+const SHAPE_LIBRARY_ITEMS: LibraryItem[] = [
+  { type: 'rect-shape', label: 'Rectangle', category: 'Shapes' },
+  { type: 'ellipse', label: 'Ellipse', category: 'Shapes' },
+  { type: 'line-shape', label: 'Line', category: 'Shapes' },
+  { type: 'arrow', label: 'Arrow', category: 'Shapes' },
+  { type: 'free-text', label: 'Text', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Rounded Rect', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Triangle', category: 'Shapes' },
+  { type: 'ellipse', label: 'Circle', category: 'Shapes' },
+  { type: 'arrow', label: 'Callout', category: 'Shapes' },
+  { type: 'line-shape', label: 'Arc', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Diamond', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Hexagon', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Pentagon', category: 'Shapes' },
+  { type: 'ellipse', label: 'Oval', category: 'Shapes' },
+  { type: 'rect-shape', label: 'Speech Bubble', category: 'Shapes' },
 ]
 
 function itemKey(item: LibraryItem): string {
@@ -786,6 +812,27 @@ export function ElementLibrary() {
           className="pl-7"
         />
       </div>
+      <div className="mb-3 rounded-md border border-slate-200 bg-white p-2 shadow-sm">
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Shape creators</div>
+            <div className="text-[10px] text-slate-400">Quick-add drawing tools</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {SHAPE_LIBRARY_ITEMS.map((item) => (
+            <button
+              key={`${item.type}-${item.label}`}
+              type="button"
+              onClick={() => handleAddElement(item)}
+              className="rounded-md border border-slate-200 px-2 py-1.5 text-left text-xs text-slate-700 hover:border-blue-400 hover:bg-blue-50"
+            >
+              <div className="font-medium">{item.label}</div>
+              <div className="text-[10px] text-slate-400">{SHAPE_VARIANT_MAP[item.type] ?? 'One-click insert'}</div>
+            </button>
+          ))}
+        </div>
+      </div>
       {canAnnotate && (
         // Pin tool: a one-off entry here (rather than a LibraryItem)
         // because it's a canvas *tool*, not an element factory. Sets
@@ -809,6 +856,24 @@ export function ElementLibrary() {
           )}
         </button>
       )}
+
+      <div className="mb-3 rounded-md border border-slate-200 bg-slate-50 p-2">
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Shape makers</div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {SHAPE_CREATOR_LABELS.map((shape) => (
+            <button
+              key={shape.type}
+              type="button"
+              onClick={() => handleAddElement({ type: shape.type, label: shape.label, category: 'Shapes' } as LibraryItem)}
+              className="rounded border border-slate-200 bg-white px-2 py-1 text-left text-xs text-slate-700 hover:border-blue-400 hover:text-blue-700"
+              title={shape.hint}
+            >
+              <div className="font-medium">{shape.label}</div>
+              <div className="text-[10px] text-slate-500">{shape.hint}</div>
+            </button>
+          ))}
+        </div>
+      </div>
       {/* Recent row — always visible when populated. Search ignores it so
           frequently-used tiles are always one click away even mid-filter.
           Capped at 6 to fill exactly one row at the 3-column lg breakpoint
@@ -1045,6 +1110,9 @@ export function ElementLibrary() {
       {/* Single shared hover tooltip — see HoverTooltip below. Rendered via
           a portal so the sidebar's `overflow:hidden` doesn't clip it, and
           suppressed mid-drag so it doesn't follow the drag image. */}
+      <div className="mt-4">
+        <BlockLibraryTable />
+      </div>
       {hovered && !dragInProgress && (
         <HoverTooltip item={hovered.item} rect={hovered.rect} />
       )}

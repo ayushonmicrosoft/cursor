@@ -77,7 +77,7 @@ export function StatusBar() {
     <div
       role="status"
       aria-label="Canvas status"
-      className="absolute bottom-0 left-0 right-0 z-30 flex h-[30px] items-center justify-between border-t border-gray-200 bg-white px-3 dark:border-gray-800 dark:bg-gray-950 transition-colors duration-200 overflow-x-auto whitespace-nowrap"
+      className="glass-surface absolute bottom-0 left-0 right-0 z-30 flex h-[34px] items-center justify-between px-3 transition-colors duration-200 overflow-x-auto whitespace-nowrap"
       data-testid="status-bar"
       data-fixed-toolbar="canvas-status"
       data-fixed-toolbar-reason="Status telemetry reserves the bottom edge and protects dockable controls from overlapping readouts."
@@ -165,10 +165,10 @@ export function StatusBar() {
         }
         aria-pressed={activeTool === 'calibrate-scale'}
         title="Set canvas scale by clicking two points of a known distance"
-        className={`text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 transition-colors border ${
+        className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] transition-all ${
           activeTool === 'calibrate-scale'
-            ? 'bg-[#1f3653]/10 border-[#1f3653]/20 text-[#1f3653] dark:bg-[#d6c2a6]/10 dark:border-[#d6c2a6]/20 dark:text-[#d6c2a6]'
-            : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.04]'
+            ? 'border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-blue-300'
+            : 'border-white/40 bg-white/50 text-slate-500 backdrop-blur-xl hover:-translate-y-px hover:bg-white/80 hover:text-slate-900 dark:border-white/10 dark:bg-slate-950/50 dark:text-slate-400 dark:hover:bg-slate-900/80 dark:hover:text-slate-100'
         }`}
       >
         Set scale
@@ -231,7 +231,7 @@ function Dot() {
 }
 
 function Bar() {
-  return <span aria-hidden className="w-px h-3.5 bg-gray-200 dark:bg-gray-800" />
+  return <span aria-hidden className="h-3.5 w-px bg-white/60 dark:bg-white/10" />
 }
 
 function Group({ children }: { children: ReactNode }) {

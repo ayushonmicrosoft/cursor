@@ -32,7 +32,7 @@ interface PixiViewportProps {
   pixiStageRef: RefObject<PixiStageHandle | null>
   viewport: PixiViewportState
   onViewportChange: (viewport: PixiViewportState) => void
-  onBackToMap: () => void
+  onBackToMap?: () => void
   leftToolsVisible: boolean
   leftToolsFloating: boolean
   rightSidebarOpen: boolean
@@ -60,11 +60,18 @@ export function PixiViewport({
   minWidthPx,
 }: PixiViewportProps) {
   const adapterRef = useRef<PixiAdapter | null>(null)
+  const hostRef = useRef<HTMLDivElement | null>(null)
+
+  const setContainerRef = useCallback((node: HTMLDivElement | null) => {
+    hostRef.current = node
+    containerRef(node)
+  }, [containerRef])
 
   useEffect(() => {
+    if (!hostRef.current || adapterRef.current) return
     const adapter = new PixiAdapter()
     adapter.init({
-      host: document.createElement('div'),
+      host: hostRef.current,
       emitIntent: (intent) => applyEngineIntent(intent),
       emitEvent: () => undefined,
     })
@@ -87,7 +94,7 @@ export function PixiViewport({
 
   return (
     <div
-      ref={containerRef}
+      ref={setContainerRef}
       className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-slate-100 dark:bg-gray-950"
       style={{ minWidth: `${minWidthPx}px` }}
       data-canvas-toolbar-host
@@ -133,7 +140,9 @@ export function PixiViewport({
           <div className="mt-1 text-xs leading-5">{error}</div>
         </div>
       )}
-      <Minimap />
+      <div className="pointer-events-auto absolute bottom-8 right-8 z-30">
+        <Minimap />
+      </div>
       <StatusBar />
       <AlignDistributeToolbar />
       <PixiActionDock

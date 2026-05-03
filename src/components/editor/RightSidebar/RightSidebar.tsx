@@ -68,28 +68,25 @@ export function RightSidebar() {
   }
 
   return (
-    <div className="flex flex-col h-full min-w-0">
-      <div className="flex items-stretch border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
-        {/* Collapse handle lives at the leftmost slot of the tablist
-            row so it reads as part of the side panel, not part of the
-            top ribbon. The four content tabs follow to the right. */}
+    <div className="glass-panel flex h-full min-w-0 flex-col overflow-hidden">
+      <div className="flex items-stretch border-b border-white/40 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60">
         <SidebarToggle variant="inline" />
         <div
           role="tablist"
           aria-label="Right sidebar"
-          className="flex flex-1 gap-0.5 px-1 py-1"
+          className="flex flex-1 gap-1 px-2 py-2"
           onKeyDown={onKeyDown}
         >
         {tabs.map((t) => {
           const selected = safeTab === t.id
           const baseButtonClass =
-            'relative flex min-w-0 flex-1 items-center justify-center gap-1 rounded-md border px-1.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset'
+            'relative flex min-w-0 flex-1 items-center justify-center gap-1 rounded-full border px-2 py-2 text-[11px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset'
           const selectedClass = t.secondary
-            ? 'border-gray-300 bg-gray-100 text-gray-800 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
-            : 'border-gray-300 bg-gray-100 text-gray-900 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100'
+            ? 'border-slate-300 bg-white text-slate-950 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50'
+            : 'border-slate-300 bg-white text-slate-950 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50'
           const idleClass = t.secondary
-            ? 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-900/70 dark:hover:text-gray-200'
-            : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-900/70 dark:hover:text-gray-200'
+            ? 'border-transparent text-slate-500 hover:-translate-y-px hover:bg-white/90 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/70 dark:hover:text-slate-100'
+            : 'border-transparent text-slate-500 hover:-translate-y-px hover:bg-white/90 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/70 dark:hover:text-slate-100'
           return (
             <button
               key={t.id}
@@ -108,7 +105,7 @@ export function RightSidebar() {
               <span className="flex-shrink-0">{t.icon}</span>
               <span className="truncate">{t.label}</span>
               {t.id === 'insights' && badgeCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white shadow">
                   {badgeCount}
                 </span>
               )}
@@ -121,7 +118,7 @@ export function RightSidebar() {
         role="tabpanel"
         id={panelId(safeTab)}
         aria-labelledby={tabId(safeTab)}
-        className="flex-1 overflow-x-hidden bg-gray-50/60 p-2 dark:bg-gray-950"
+        className="flex-1 overflow-x-hidden bg-transparent p-3"
       >
         {safeTab === 'properties' && <PropertiesPanel />}
         {safeTab === 'reports' && <ReportsPanel />}

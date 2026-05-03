@@ -498,12 +498,12 @@ export function TopBar() {
 
   return (
     <div
-      className="relative z-[60] flex h-12 max-h-12 w-full min-w-0 flex-shrink-0 flex-nowrap items-center border-b border-gray-200/80 bg-white/95 backdrop-blur-md dark:border-gray-800/80 dark:bg-gray-950/95"
+      className="glass-surface relative z-[60] flex h-[60px] max-h-[60px] w-full min-w-0 flex-shrink-0 flex-nowrap items-center border-b border-white/40 bg-gradient-to-r from-white/90 via-white/80 to-slate-50/80 dark:border-white/10 dark:from-slate-950/90 dark:via-slate-950/80 dark:to-slate-900/75"
       data-fixed-toolbar="top-bar"
       data-fixed-toolbar-reason="Top bar owns team switching, file actions, save state, undo/redo, view menu, route links, and user identity outside the canvas dock host."
     >
       <div
-        className="flex h-full min-w-0 w-full flex-nowrap items-center gap-1 touch-none px-2 pr-3 sm:gap-1.5 sm:px-3 sm:pr-4"
+        className="flex h-full min-w-0 w-full flex-nowrap items-center gap-2 touch-none px-3 pr-4 sm:gap-2.5 sm:px-4 sm:pr-5"
         data-testid="topbar-layout-row"
       >
         <TeamSwitcher currentSlug={teamSlug} />
@@ -513,7 +513,7 @@ export function TopBar() {
         {!isNarrow && teamSlug && officeSlug && (
           <nav
             aria-label="Primary office views"
-            className="flex min-w-0 flex-none items-center gap-1  border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900"
+            className="flex min-w-0 flex-none items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-900"
           >
             <NavLink
               to={`/t/${teamSlug}/o/${officeSlug}/map`}
@@ -939,21 +939,6 @@ export function TopBar() {
                   <Maximize2 size={14} />
                   2.5D
                 </NavLink>
-                <NavLink
-                  to={`/t/${teamSlug}/o/${officeSlug}/pixi`}
-                  role="button"
-                  aria-label="Open Pixi editor"
-                  className={({ isActive }) =>
-                    `inline-flex h-8 min-w-[68px] items-center justify-center gap-1.5  px-2.5 text-sm font-semibold transition ${
-                      isActive
-                        ? 'bg-violet-600 text-white shadow-sm'
-                        : 'text-gray-600 hover:bg-white/70 dark:text-gray-300 dark:hover:bg-gray-800/70'
-                    }`
-                  }
-                >
-                  <Zap size={14} />
-                  Pixi
-                </NavLink>
               </>
             ) : (
               <>
@@ -980,8 +965,9 @@ export function TopBar() {
           </div>
         )}
 
-        <div className="ml-auto flex min-w-0 flex-none items-center gap-2 border-l border-gray-200 bg-white/95 pl-2 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
+        <div className="ml-auto flex min-w-0 flex-none items-center gap-2 rounded-full border border-white/50 bg-white/70 px-2 py-1 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60">
           {topbarControlVisibility['health-pill'] && <PlanHealthPill />}
+          <div className="h-6 w-px bg-slate-200/80 dark:bg-slate-800/80" />
           <UserMenu />
         </div>
       </div>

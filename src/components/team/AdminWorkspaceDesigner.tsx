@@ -17,6 +17,7 @@ const TOOLBAR_ORDER: DockableToolbarId[] = [
   'right-inspector',
   'minimap',
   'color-palette',
+  'pixi-minimap',
 ]
 
 const TOOLBAR_LABELS: Record<DockableToolbarId, string> = {
@@ -27,6 +28,7 @@ const TOOLBAR_LABELS: Record<DockableToolbarId, string> = {
   'right-inspector': 'Right Inspector',
   minimap: 'Minimap',
   'color-palette': 'Color Palette',
+  'pixi-minimap': 'Pixi Minimap',
 }
 
 const TOPBAR_CONTROL_ORDER: TopbarControlId[] = [
@@ -99,6 +101,7 @@ export function AdminWorkspaceDesigner() {
         'right-inspector': visibility['right-inspector'] !== false,
         minimap: visibility.minimap !== false,
         'color-palette': visibility['color-palette'] !== false,
+        'pixi-minimap': visibility['pixi-minimap'] !== false,
       },
       topbarControls: {
         'file-menu': topbarControls['file-menu'] !== false,

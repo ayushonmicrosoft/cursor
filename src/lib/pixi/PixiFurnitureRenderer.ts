@@ -34,9 +34,7 @@ export function renderFurniture(g: Graphics, el: CanvasElement, selected: boolea
       tempCtx.drawImage(silhouetteImg, 0, 0)
       
       // Draw the silhouette as a filled shape with the element's fill color
-      g.beginFill(fill)
-      g.drawRect(0, 0, w, h)
-      g.endFill()
+      g.rect(0, 0, w, h).fill({ color: fill })
     }
   } else {
     // Fallback to existing rendering logic

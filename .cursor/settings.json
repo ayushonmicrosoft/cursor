@@ -1,0 +1,28 @@
+{
+  "plugins": {
+    "docs-canvas": {
+      "enabled": true
+    },
+    "linear": {
+      "enabled": true
+    },
+    "browserstack": {
+      "enabled": true
+    },
+    "sentry": {
+      "enabled": true
+    },
+    "supabase": {
+      "enabled": true
+    },
+    "browse": {
+      "enabled": true
+    },
+    "cursor-team-kit": {
+      "enabled": true
+    },
+    "bright-data": {
+      "enabled": true
+    }
+  }
+}

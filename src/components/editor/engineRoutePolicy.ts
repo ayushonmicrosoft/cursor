@@ -19,7 +19,7 @@ export const ENGINE_ROUTE_POLICIES: Record<EngineRoutePolicyId, EngineRoutePolic
   pixi: {
     id: 'pixi',
     preferredEngine: 'pixi',
-    fallbackEngine: 'konva',
-    fallbackRoute: '../map',
+    fallbackEngine: 'pixi',
+    fallbackRoute: null,
   },
 }

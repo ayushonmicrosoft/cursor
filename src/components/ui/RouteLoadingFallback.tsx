@@ -254,7 +254,7 @@ export function RouteLoadingFallback() {
 
   return (
     <div
-      className="min-h-screen w-full bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+      className="surface-gradient min-h-screen w-full bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-slate-100"
       role="status"
       aria-live="polite"
       aria-label={variant.title}

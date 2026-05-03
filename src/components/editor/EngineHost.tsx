@@ -1,7 +1,6 @@
-import { Component, type ErrorInfo, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { Component, type ErrorInfo, type ReactNode, useCallback, useEffect, useState } from 'react'
 import { useInRouterContext, useNavigate } from 'react-router-dom'
 import { useUIStore } from '../../stores/uiStore'
-import { useToastStore } from '../../stores/toastStore'
 import { MapView } from './MapView'
 import { PixiPreviewPage } from './PixiPreviewPage'
 import type { RenderEngineId } from '../../stores/uiStore'
@@ -53,19 +52,11 @@ function resolveRoutePolicy(routePolicyId?: EngineRoutePolicyId, preferredEngine
 function EngineHostBase({ routePolicyId, preferredEngine, navigateToRoute }: EngineHostBaseProps = {}) {
   const renderEngine = useUIStore((s) => s.renderEngine)
   const setRenderEngine = useUIStore((s) => s.setRenderEngine)
-  const setViewMode = useUIStore((s) => s.setViewMode)
-  const hasFallenBackRef = useRef(false)
   const routePolicy = resolveRoutePolicy(routePolicyId, preferredEngine)
   const routePreferredEngine = routePolicy?.preferredEngine ?? preferredEngine
 
   const [preferRouteEngine, setPreferRouteEngine] = useState(Boolean(routePreferredEngine))
   const effectiveEngine = preferRouteEngine ? routePreferredEngine ?? renderEngine : renderEngine
-
-  useEffect(() => {
-    if (effectiveEngine === 'pixi') {
-      hasFallenBackRef.current = false
-    }
-  }, [effectiveEngine])
 
   useEffect(() => {
     setPreferRouteEngine(Boolean(routePreferredEngine))
@@ -78,28 +69,8 @@ function EngineHostBase({ routePolicyId, preferredEngine, navigateToRoute }: Eng
     }
   }, [routePreferredEngine, preferRouteEngine, renderEngine, setRenderEngine])
 
-  const fallbackToKonva = useCallback((reason: string) => {
-    if (hasFallenBackRef.current) return
-    hasFallenBackRef.current = true
-    setPreferRouteEngine(false)
-    setViewMode('2d')
-    setRenderEngine(routePolicy?.fallbackEngine ?? 'konva')
-    if (routePolicy?.fallbackRoute) navigateToRoute?.(routePolicy.fallbackRoute)
-    useToastStore.getState().push({
-      tone: 'warning',
-      title: 'Switched to Konva for stability.',
-      body: reason,
-    })
-  }, [navigateToRoute, routePolicy, setRenderEngine, setViewMode])
-
   if (effectiveEngine === 'pixi') {
-    return (
-      <EngineRenderBoundary onError={() => fallbackToKonva('Pixi failed while rendering the editor host.')}>
-        <PixiPreviewPage
-          onEngineFailure={(reason) => fallbackToKonva(reason)}
-        />
-      </EngineRenderBoundary>
-    )
+    return <PixiPreviewPage />
   }
 
   return <MapView />

@@ -30,25 +30,28 @@ export function PixiToolbarHost({
   children,
 }: PixiToolbarHostProps) {
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden" data-testid="pixi-editor-page">
+    <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-slate-50 dark:bg-slate-950" data-testid="pixi-editor-page">
       {!isCompactEditor && leftToolsVisible && !leftToolsFloating && (
         <div
-          className={`flex flex-shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-950 ${
+          className={`flex flex-shrink-0 flex-col border-r border-slate-200 bg-white/95 backdrop-blur-sm transition-[width] duration-200 dark:border-slate-800 dark:bg-slate-950/95 ${
             leftSidebarOpen ? 'w-[280px] overflow-y-auto overflow-x-hidden' : 'w-10 overflow-hidden'
           }`}
         >
           <button
             type="button"
             onClick={() => setLeftSidebarOpen((v) => !v)}
-            className="flex h-9 w-full items-center justify-center gap-1.5 border-b border-gray-100 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-200"
+            className="flex h-10 w-full items-center justify-between gap-2 border-b border-slate-200 px-3 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100"
             title={leftSidebarOpen ? 'Collapse Pixi sidebar' : 'Expand Pixi sidebar'}
             aria-label={leftSidebarOpen ? 'Collapse Pixi sidebar' : 'Expand Pixi sidebar'}
           >
-            {leftSidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
-            {leftSidebarOpen && <span className="text-[11px] font-medium">Collapse</span>}
+            <span className="inline-flex items-center gap-2">
+              {leftSidebarOpen ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
+              {leftSidebarOpen && <span className="text-[11px] font-medium uppercase tracking-wide">Tools</span>}
+            </span>
+            {leftSidebarOpen && <span className="text-[10px] text-slate-400">Collapse</span>}
           </button>
           {leftSidebarOpen && (
-            <>
+            <div className="space-y-2 p-2">
               <CollapsibleSection title="Pixi Tools" defaultOpen storageKey="pixi-tools">
                 <ToolSelector />
               </CollapsibleSection>
@@ -58,7 +61,7 @@ export function PixiToolbarHost({
               <CollapsibleSection title="Pixi Library" defaultOpen storageKey="pixi-library">
                 <ElementLibrary />
               </CollapsibleSection>
-            </>
+            </div>
           )}
         </div>
       )}
@@ -66,7 +69,7 @@ export function PixiToolbarHost({
       {children}
 
       {rightSidebarOpen && rightInspectorVisible && !rightInspectorFloating && !isCompactEditor && (
-        <div className="w-[320px] flex-shrink-0 overflow-y-auto border-l border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-950">
+        <div className="w-[340px] flex-shrink-0 overflow-y-auto border-l border-slate-200 bg-white/95 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95">
           <RightSidebar />
         </div>
       )}

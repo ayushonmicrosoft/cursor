@@ -33,17 +33,17 @@ export function NewProjectModal() {
   return (
     <Modal open={open} onClose={close} title="New Project" size="lg">
       <ModalBody>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Choose an office template or start with a blank canvas</p>
+        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">Choose an office template or start with a blank canvas</p>
         <div className="grid grid-cols-2 gap-3">
           {TEMPLATES.map((t) => (
             <button
               key={t.id}
               onClick={() => handleSelect(t.id)}
-              className="flex flex-col items-start p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 focus-visible:ring-blue-500"
+              className="flex flex-col items-start rounded-2xl border border-white/40 bg-white/70 p-4 text-left shadow-[0_12px_40px_rgba(15,23,42,0.05)] transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white/90 dark:border-white/10 dark:bg-slate-950/60 dark:hover:border-blue-900/50 dark:hover:bg-slate-900/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              <span className="text-[10px] uppercase font-semibold text-gray-400 dark:text-gray-500 mb-1">{t.category}</span>
-              <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{t.name}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.description}</span>
+              <span className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">{t.category}</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{t.name}</span>
+              <span className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.description}</span>
             </button>
           ))}
         </div>

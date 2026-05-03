@@ -21,6 +21,7 @@ export type DockableToolbarId =
   | 'right-inspector'
   | 'minimap'
   | 'color-palette'
+  | 'pixi-minimap'
 
 export interface DockableToolbarLayout {
   mode: 'docked' | 'floating'
@@ -49,6 +50,7 @@ export const DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS: Record<DockableToolbarId, Dockabl
   'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
   'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
   'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
+  'pixi-minimap': { mode: 'docked', position: { x: 0, y: 0 } },
 }
 
 export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, boolean> = {
@@ -59,6 +61,7 @@ export const DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY: Record<DockableToolbarId, bool
   'right-inspector': true,
   'minimap': true,
   'color-palette': true,
+  'pixi-minimap': true,
 }
 
 export const DEFAULT_TOPBAR_CONTROL_VISIBILITY: Record<TopbarControlId, boolean> = {
@@ -104,6 +107,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
       'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
       'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
+      'pixi-minimap': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -113,6 +117,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'right-inspector': true,
       'minimap': true,
       'color-palette': true,
+      'pixi-minimap': true,
     },
   },
   admin: {
@@ -126,6 +131,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
       'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
       'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
+      'pixi-minimap': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -135,6 +141,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'right-inspector': true,
       'minimap': true,
       'color-palette': true,
+      'pixi-minimap': true,
     },
   },
   review: {
@@ -148,6 +155,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'right-inspector': { mode: 'docked', position: { x: 0, y: 0 } },
       'minimap': { mode: 'docked', position: { x: 0, y: 0 } },
       'color-palette': { mode: 'docked', position: { x: 0, y: 0 } },
+      'pixi-minimap': { mode: 'docked', position: { x: 0, y: 0 } },
     },
     visibility: {
       'canvas-actions': true,
@@ -157,6 +165,7 @@ export const WORKSPACE_PRESET_CONFIGS: Record<
       'right-inspector': true,
       'minimap': true,
       'color-palette': false,
+      'pixi-minimap': true,
     },
   },
 }
@@ -200,6 +209,10 @@ function cloneToolbarLayouts(
       mode: layouts['color-palette']?.mode ?? 'docked',
       position: { ...(layouts['color-palette']?.position ?? {x:0,y:0}) },
     },
+    'pixi-minimap': {
+      mode: layouts['pixi-minimap']?.mode ?? 'docked',
+      position: { ...(layouts['pixi-minimap']?.position ?? {x:0,y:0}) },
+    },
   }
 }
 
@@ -214,6 +227,7 @@ function cloneToolbarVisibility(
     'right-inspector': visibility['right-inspector'],
     'minimap': visibility['minimap'],
     'color-palette': visibility['color-palette'] ?? true,
+    'pixi-minimap': visibility['pixi-minimap'] ?? true,
   }
 }
 
@@ -233,6 +247,7 @@ function readStoredToolbarLayouts(): Record<DockableToolbarId, DockableToolbarLa
       'right-inspector': sanitizeToolbarLayout('right-inspector', 'storage-read', parsed['right-inspector']),
       'minimap': sanitizeToolbarLayout('minimap', 'storage-read', parsed['minimap']),
       'color-palette': sanitizeToolbarLayout('color-palette', 'storage-read', parsed['color-palette']),
+      'pixi-minimap': sanitizeToolbarLayout('pixi-minimap', 'storage-read', parsed['pixi-minimap']),
     }
   } catch {
     return cloneToolbarLayouts(DEFAULT_DOCKABLE_TOOLBAR_LAYOUTS)
@@ -325,6 +340,10 @@ function readStoredToolbarVisibility(): Record<DockableToolbarId, boolean> {
         typeof parsed['color-palette'] === 'boolean'
           ? parsed['color-palette']
           : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['color-palette'],
+      'pixi-minimap':
+        typeof parsed['pixi-minimap'] === 'boolean'
+          ? parsed['pixi-minimap']
+          : DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY['pixi-minimap'],
     }
   } catch {
     return cloneToolbarVisibility(DEFAULT_DOCKABLE_TOOLBAR_VISIBILITY)

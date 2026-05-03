@@ -34,10 +34,10 @@
   --text-icon-md--line-height: 1.25rem;
 
   /* Semantic surface + text tokens (light defaults; dark below). */
-  --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
+  --color-surface: rgb(255 255 255 / 0.78);
+  --color-surface-raised: rgb(255 255 255 / 0.92);
   --color-surface-sunken: #f5f7fa;
-  --color-border: #d2dce7;
+  --color-border: rgb(210 220 231 / 0.8);
   --color-border-strong: #aebbd0;
   --color-text: #050b17;
   --color-text-muted: #4a5c76;
@@ -45,7 +45,7 @@
 
   /* O&O-inspired accents: midnight navy with warm bronze support. */
   --color-accent: #1f3653;
-  --color-accent-soft: #f4efe8;
+  --color-accent-soft: rgb(244 239 232 / 0.9);
   --color-brand-navy: #1f3653;
   --color-brand-navy-strong: #10233b;
   --color-brand-bronze: #9d876c;
@@ -66,10 +66,10 @@
  */
 @layer base {
   .dark {
-    --color-surface: #050b17;
-    --color-surface-raised: #0b1628;
+    --color-surface: rgb(5 11 23 / 0.78);
+    --color-surface-raised: rgb(11 22 40 / 0.92);
     --color-surface-sunken: #030712;
-    --color-border: #223249;
+    --color-border: rgb(34 50 73 / 0.82);
     --color-border-strong: #344765;
     --color-text: #f7f4ef;
     --color-text-muted: #c8d0dc;
@@ -95,6 +95,18 @@
 }
 
 @layer utilities {
+  .glass-surface {
+    @apply border border-white/40 bg-white/70 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)];
+  }
+
+  .glass-panel {
+    @apply border border-white/50 bg-white/80 shadow-[0_24px_80px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/70 dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)];
+  }
+
+  .surface-gradient {
+    background-image: radial-gradient(circle at top left, rgb(31 54 83 / 0.14), transparent 28%), radial-gradient(circle at top right, rgb(157 135 108 / 0.10), transparent 24%);
+  }
+
   .bg-blue-600 {
     background-color: #1f3653;
   }
@@ -233,26 +245,26 @@
   }
   
   .topbar-nav-link-active {
-    @apply bg-white text-gray-950 shadow-sm dark:bg-gray-800 dark:text-white;
+    @apply bg-white/90 text-slate-950 shadow-[0_8px_30px_rgba(15,23,42,0.08)] dark:bg-slate-800/80 dark:text-white;
   }
 
   /* TopBar standard button */
   .topbar-btn {
-    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-md px-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100;
+    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-transparent px-2.5 text-sm font-medium text-slate-600 transition-all hover:-translate-y-px hover:border-slate-200 hover:bg-white/70 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 dark:hover:text-white;
   }
   
   /* TopBar icon-only button */
   .topbar-btn-icon {
-    @apply inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100;
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-slate-600 transition-all hover:-translate-y-px hover:border-slate-200 hover:bg-white/70 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 dark:hover:text-white;
   }
 
   /* Active state for toggle buttons */
   .topbar-btn-active {
-    @apply bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50;
+    @apply border-blue-200 bg-blue-50 text-blue-700 shadow-sm dark:border-blue-900/50 dark:bg-blue-900/30 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50;
   }
 
   /* Vertical divider in TopBar */
   .topbar-divider {
-    @apply mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700;
+    @apply mx-1 h-5 w-px bg-slate-200/80 dark:bg-slate-700/80;
   }
 }

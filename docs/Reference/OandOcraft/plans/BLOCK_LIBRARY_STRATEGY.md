@@ -19,6 +19,12 @@ The block library should behave like a curated product asset system, not an unst
 3. Legacy imported assets
 4. Temporary fallback assets
 
+## Quality policy
+- Canonical assets are the default and preferred choice.
+- Legacy assets should only survive when no canonical replacement exists.
+- Fallback assets are transitional and must be easy to identify.
+- If an asset is visually weak, it should not be promoted into the canonical set.
+
 ## Governance model
 - establish naming rules
 - establish metadata rules
