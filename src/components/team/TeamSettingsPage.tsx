@@ -63,15 +63,12 @@ export function TeamSettingsPage() {
     ].join(' ')
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900">
-      <main id="main-content" className="max-w-5xl mx-auto px-6 py-10">
-        {/* Breadcrumb back-link — small, understated, positioned above
-            the identity header so it reads as "how do I leave this
-            page" rather than a primary action. */}
+    <div className="surface-gradient min-h-screen bg-slate-50 dark:bg-slate-950">
+      <main id="main-content" className="mx-auto max-w-5xl px-6 py-10">
         <div className="mb-4">
           <Link
             to={`/t/${team.slug}`}
-            className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-white/70 px-3 py-1.5 text-xs text-slate-500 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:text-slate-800 dark:border-white/10 dark:bg-slate-950/60 dark:text-slate-400 dark:hover:text-slate-200"
           >
             <ArrowLeft size={12} aria-hidden="true" />
             Back to team
@@ -81,13 +78,13 @@ export function TeamSettingsPage() {
         {/* Team identity header — mirror TeamHomePage so the user
             doesn't feel teleported into a different app when they
             click Settings. Logo-or-placeholder chip + name + subtitle. */}
-        <header className="flex items-center gap-3 mb-6 min-w-0 max-w-full">
+        <header className="glass-panel mb-6 flex min-w-0 max-w-full items-center gap-3 rounded-[1.5rem] p-4">
           {team.logo_url ? (
             <img
               src={team.logo_url}
               alt=""
               aria-hidden="true"
-              className="w-10 h-10 rounded-lg object-cover border border-gray-200 dark:border-gray-800 shrink-0"
+              className="h-10 w-10 shrink-0 rounded-xl border border-white/40 object-cover shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-white/10"
             />
           ) : (
             <div

@@ -86,7 +86,7 @@ export function AuthErrorBanner({ id, message }: { id: string; message: string }
     <div
       id={id}
       role="alert"
-      className="mb-4 flex items-start gap-2.5 rounded-md border border-red-200 border-l-4 border-l-red-500 bg-red-50 px-3 py-2.5 text-sm text-red-800 dark:border-red-900/60 dark:border-l-red-500 dark:bg-red-950/40 dark:text-red-200"
+      className="mb-4 flex items-start gap-2.5 rounded-2xl border border-red-200/70 border-l-4 border-l-red-500 bg-red-50/90 px-3 py-2.5 text-sm text-red-800 shadow-[0_10px_30px_rgba(220,38,38,0.08)] backdrop-blur-xl dark:border-red-900/60 dark:border-l-red-500 dark:bg-red-950/40 dark:text-red-200"
     >
       <AlertCircle size={16} className="mt-0.5 flex-shrink-0" aria-hidden="true" />
       <span>{message}</span>
@@ -96,7 +96,7 @@ export function AuthErrorBanner({ id, message }: { id: string; message: string }
 
 export function AuthLinks({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-xs min-w-0">
+    <div className="mt-6 flex min-w-0 flex-wrap items-center justify-between gap-2 text-xs">
       {children}
     </div>
   )
@@ -106,7 +106,7 @@ function SkeletonBar({ className }: { className: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse rounded bg-gray-200/90 dark:bg-gray-700/80 ${className}`}
+      className={`animate-pulse rounded-full bg-slate-200/90 dark:bg-slate-700/80 ${className}`}
     />
   )
 }
