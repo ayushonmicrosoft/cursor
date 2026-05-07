@@ -1,0 +1,25 @@
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+projectName: oandocraft
+buildName: oandocraft-Build
+
+platforms:
+  - os: Windows
+    osVersion: "11"
+    browserName: chrome
+    browserVersion: latest
+  - os: Windows
+    osVersion: "11"
+    browserName: firefox
+    browserVersion: latest
+  - os: Windows
+    osVersion: "11"
+    browserName: edge
+    browserVersion: latest
+
+parallelsPerPlatform: 1
+browserstackLocal: true
+percy: true
+debug: true
+testObservability: true

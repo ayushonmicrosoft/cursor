@@ -1,0 +1,141 @@
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+import { Button, Input } from '../ui'
+import {
+  AuthShell,
+  AuthHeading,
+  AuthFieldLabel,
+  AuthErrorBanner,
+  AuthLinks,
+} from './AuthShell'
+import { describeAuthError } from './authErrorCopy'
+import {
+  clearRememberedAuthNext,
+  rememberAuthNext,
+  resolveAuthNext,
+  withAuthNext,
+} from './authRedirect'
+
+export function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const next = resolveAuthNext(params.get('next'))
+  const emailRef = useRef<HTMLInputElement>(null)
+
+  const subtitle =
+    next === '/dashboard'
+      ? 'Sign in to open your workspace dashboard.'
+      : 'Sign in to continue where you left off.'
+
+  useEffect(() => {
+    emailRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    rememberAuthNext(next)
+  }, [next])
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+
+    let submitError: unknown = null
+    try {
+      const res = await supabase.auth.signInWithPassword({ email, password })
+      submitError = res.error
+    } catch (error) {
+      submitError = error
+    }
+
+    setBusy(false)
+    if (submitError) {
+      setError(describeAuthError(submitError))
+      return
+    }
+
+    clearRememberedAuthNext()
+    navigate(next, { replace: true })
+  }
+
+  return (
+    <AuthShell>
+      <AuthHeading title="Welcome back" subtitle={subtitle} />
+
+      {error && <AuthErrorBanner id="login-form-error" message={error} />}
+
+      <form onSubmit={onSubmit} className="space-y-4" noValidate aria-busy={busy}>
+        <AuthFieldLabel htmlFor="login-email" label="Email">
+          <Input
+            id="login-email"
+            ref={emailRef}
+            type="email"
+            autoComplete="email"
+            required
+            disabled={busy}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            invalid={!!error}
+            aria-describedby={error ? 'login-form-error' : undefined}
+          />
+        </AuthFieldLabel>
+
+        <AuthFieldLabel htmlFor="login-password" label="Password">
+          <Input
+            id="login-password"
+            type="password"
+            autoComplete="current-password"
+            required
+            disabled={busy}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            invalid={!!error}
+            aria-describedby={error ? 'login-form-error' : undefined}
+          />
+        </AuthFieldLabel>
+
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={busy}
+          className="w-full py-2"
+          leftIcon={
+            busy ? (
+              <Loader2
+                size={14}
+                className="animate-spin motion-reduce:animate-none"
+                aria-hidden="true"
+              />
+            ) : undefined
+          }
+        >
+          {busy ? 'Signing in...' : 'Log in'}
+        </Button>
+      </form>
+
+      <AuthLinks>
+        <Link
+          to={withAuthNext('/forgot', next)}
+          className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+        >
+          Forgot password?
+        </Link>
+        <span className="text-gray-400 dark:text-gray-600">
+          Need an account?{' '}
+          <Link
+            to={withAuthNext('/signup', next)}
+            className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Sign up
+          </Link>
+        </span>
+      </AuthLinks>
+    </AuthShell>
+  )
+}

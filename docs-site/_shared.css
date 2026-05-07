@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #0a0b0f;
+  --bg2: #111318;
+  --bg3: #181b22;
+  --border: #1e2230;
+  --border2: #252a38;
+  --text: #e8eaf0;
+  --text2: #9ba3b8;
+  --text3: #5c6478;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent-glow: rgba(99,102,241,0.15);
+  --green: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --violet: #8b5cf6;
+  --pink: #ec4899;
+  --card-r: 12px;
+  --nav-h: 60px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--nav-h);
+  background: rgba(10,11,15,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 8px;
+}
+nav .logo {
+  font-size: 15px; font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+  margin-right: 24px;
+}
+nav .logo svg { flex-shrink: 0; }
+nav a {
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  text-decoration: none;
+  padding: 6px 12px; border-radius: 8px;
+  transition: all .18s;
+}
+nav a:hover, nav a.active {
+  color: var(--text);
+  background: var(--bg3);
+}
+nav a.active { color: var(--accent2); }
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 80px 24px 60px;
+}
+.hero .tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent2);
+  background: var(--accent-glow);
+  border: 1px solid rgba(99,102,241,.25);
+  padding: 4px 12px; border-radius: 100px; margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 800; line-height: 1.1;
+  background: linear-gradient(135deg, #fff 30%, var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+.hero p {
+  font-size: 17px; color: var(--text2);
+  max-width: 600px; margin: 0 auto 32px;
+}
+
+/* ── LAYOUT ── */
+main { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--card-r);
+  padding: 24px;
+  transition: border-color .2s;
+}
+.card:hover { border-color: var(--border2); }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 32px 0;
+}
+
+/* ── SECTION HEADERS ── */
+.section { margin: 52px 0 24px; }
+.section h2 {
+  font-size: 22px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+.section h2 .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+.section p { color: var(--text2); margin-top: 8px; font-size: 14px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 100px;
+  letter-spacing: .04em;
+}
+.badge-blue { background: rgba(99,102,241,.15); color: var(--accent2); border: 1px solid rgba(99,102,241,.3); }
+.badge-green { background: rgba(16,185,129,.12); color: var(--green); border: 1px solid rgba(16,185,129,.25); }
+.badge-amber { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.25); }
+.badge-red   { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.25); }
+.badge-cyan  { background: rgba(6,182,212,.12); color: var(--cyan); border: 1px solid rgba(6,182,212,.25); }
+.badge-violet{ background: rgba(139,92,246,.12); color: var(--violet); border: 1px solid rgba(139,92,246,.25); }
+
+/* ── CODE ── */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--accent2);
+  background: var(--bg3); padding: 2px 6px; border-radius: 4px;
+}
+
+/* ── TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+.data-table th {
+  text-align: left; padding: 10px 14px;
+  background: var(--bg3); color: var(--text2);
+  font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,.02); }
+
+/* ── SVG DIAGRAMS ── */
+.diagram-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--card-r);
+  padding: 32px;
+  margin: 24px 0;
+  overflow-x: auto;
+}
+.diagram-wrap svg { display: block; margin: 0 auto; max-width: 100%; }
+
+/* ── FLOW NODES (SVG helper classes via inline styles) ── */
+
+/* ── PILL LIST ── */
+.pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.pill {
+  font-size: 12px; font-weight: 500;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); padding: 4px 12px; border-radius: 100px;
+}
+
+/* ── STAT GRID ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; margin: 24px 0; }
+.stat-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; text-align: center;
+}
+.stat-box .num { font-size: 28px; font-weight: 800; color: var(--accent2); }
+.stat-box .lbl { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px; text-align: center;
+  font-size: 12px; color: var(--text3);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp .5s ease both; }
+
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; } 50% { opacity: .3; }
+}
+.pulse { animation: pulse-dot 2s infinite; }

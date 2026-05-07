@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Floorcraft - interactive office floor plan editor. Design, assign seats, and manage your workspace in 2D and 2.5D." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Floorcraft - Office Floor Plan Editor" />
+    <meta property="og:description" content="Design office layouts, assign seats, and share live floor plans with your team." />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Floorcraft - Office Floor Plan Editor" />
+    <meta name="twitter:description" content="Design office layouts, assign seats, and share live floor plans with your team." />
+    <title>Floorcraft - Office Floor Plan Editor</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto !important;
+      }
+
+      body {
+        min-height: 100vh;
+        position: relative;
+      }
+
+      main,
+      #root {
+        min-width: 0;
+        overflow: visible;
+      }
+
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="main-content">
+      <div id="root"></div>
+    </main>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

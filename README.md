@@ -1,0 +1,358 @@
+# OandOcraft
+
+> 
+
+---
+
+## Overview
+
+OandOcraft is a browser-based office floor planner built for IT operations teams, office managers, and workplace administrators. Users draw floor plans with walls, doors, and windows on a Konva canvas, populate the space with desks, conference rooms, phone booths, and decorative elements, then assign employees to seats â€” all persisted in real time to a team-scoped Supabase backend. An AI-style insights engine continuously analyzes seat utilization, team proximity, onboarding readiness, pending moves, and equipment status, surfacing actionable warnings directly in the editor sidebar.
+
+---
+
+## Features
+
+- **Multi-floor canvas editor** â€” draw walls (including curved/arc segments), doors with configurable swing direction, and windows on a snapping grid; switch between floors using a tab bar with drag-to-reorder; zoom in/out with scroll wheel or keyboard shortcuts; pan with middle-mouse or the pan tool
+- **Rich element library** â€” 20+ element types: desks (standard, L-shape, cubicle), hot desks, workstations, private offices (U-shape), conference rooms, phone booths, common areas, chairs, counters, tables (rectangular, conference, round, oval), dividers, planters, text labels, background images, and a full decorative set (armchair, couch, reception desk, kitchen counter, fridge, whiteboard, column, stairs, elevator)
+- **Curved wall segments** â€” per-segment arc bulges rendered as smooth SVG-style arcs on the Konva stage; editing handles let you drag any midpoint to bend a straight segment into a curve
+- **Smart wall attachment** â€” doors and windows snap to the nearest wall and track its position when the wall is moved; a ghost preview shows the snap target before drop
+- **Seat assignment** â€” drag employees from the People panel onto desks, workstations, or private offices; duplicate elements automatically clear occupant fields; assignment mutations atomically update both the element and the employee record
+- **Employee management** â€” full CRUD for employees with name, email, department, team, title, manager (org-chart hierarchy), employment type (full-time/part-time/contractor), status, office days, start/end dates, equipment needs, photo URL, and free-form tags
+- **CSV round-trip** â€” export the full employee roster to CSV (manager exported by name for portability), edit in any spreadsheet app, and re-import with a two-pass resolver that matches manager names back to IDs
+- **Insights engine** â€” six pluggable analyzers run on every canvas + roster change: **utilization** (over/under-occupied zones), **team proximity** (scattered team members), **onboarding** (new-hire seat readiness), **moves** (pending relocation flags), **equipment** (unresolved equipment needs), and **trends** (occupancy patterns); insights are severity-ranked (critical / warning / info), filterable by category, and persistable as dismissed per-project in `localStorage`
+- **Reports panel** â€” four report overlays: Seat Map Color Mode (color seats by department, team, employment type, or office days), Org Chart Overlay (visualize managerâ€“report chains on the canvas), Move Planner (track in-progress employee relocations), and Employee Directory (searchable/filterable full-roster table)
+- **Export** â€” export the active floor as PNG (configurable pixel ratio), PDF (A4/A3/Letter, portrait or landscape, 150 or 300 DPI), or JSON (full project payload for backup/migration)
+- **Undo/redo with temporal Zustand** â€” up to 50-step undo history via `zundo`; assignment fields are deliberately excluded from the undo tree to prevent element â†” employee state desync
+- **Team workspaces** â€” each account belongs to one or more named teams (identified by a URL slug); team admins can rename/delete the team, invite members by email (via a Resend-powered Edge Function), and remove members
+- **Direct office access and permissions** â€” offices can be workspace-edit or restricted; named internal/external people are invited directly and managed from a ShareModal with visibility control, per-person roles (owner / editor / hr editor / space planner / viewer), revoke actions, and admin overwrite-history recovery backed by Supabase RLS
+- **Conflict-safe cloud sync** â€” changes are debounced 2 seconds then saved with an optimistic-lock (`updated_at` predicate); if another session wrote first, a ConflictModal lets the user choose Reload (discard local) or Overwrite (force-save); transient errors retry with exponential backoff up to 30 s
+- **Auth flows** â€” email/password sign-up, login, forgot-password, and email-link verify/reset; invite tokens in email links pre-fill the sign-up form and auto-accept team membership on first sign-in
+- **Code-split lazy loading** â€” the Konva canvas tree and all editor chunks are loaded on demand; the landing page ships the minimum JS bundle
+- **Floor plan templates** â€” four built-in starter templates: Blank Canvas, Open Plan Office (~40 desks), Mixed Office (6 private offices + 30 open desks), and Executive Floor (12 private offices + boardroom)
+- **Keyboard shortcuts** â€” full keyboard shortcut set with a discoverable overlay (`?` key); shortcuts are suppressed when a modal or drawer owns focus via a modal reference count in `uiStore`
+- **Alignment guides** â€” live magenta guide lines appear when dragging elements near the horizontal/vertical edges of other elements (configurable threshold)
+- **Minimap** â€” always-on minimap shows viewport position relative to the full canvas extent
+- **Presentation mode** â€” hides all sidebars and toolbars for clean screen-sharing or screenshot capture
+
+---
+
+## Tech Stack
+
+| Package                         | Version | Purpose                                         |
+| ------------------------------- | ------- | ----------------------------------------------- |
+| `react`                         | 19.2    | UI framework                                    |
+| `react-dom`                     | 19.2    | DOM renderer                                    |
+| `react-router-dom`              | 7.14    | Client-side routing                             |
+| `konva`                         | 10.2    | 2D canvas rendering engine                      |
+| `react-konva`                   | 19.2    | React bindings for Konva                        |
+| `zustand`                       | 5.0     | Client state management                         |
+| `zundo`                         | 2.3     | Temporal (undo/redo) middleware for Zustand     |
+| `@supabase/supabase-js`         | 2.104   | Supabase client (auth + database)               |
+| `tailwindcss`                   | 4.2     | Utility-first CSS (Vite plugin, no config file) |
+| `@radix-ui/react-dialog`        | 1.1     | Accessible modal dialogs                        |
+| `@radix-ui/react-dropdown-menu` | 2.1     | Dropdown menus                                  |
+| `@radix-ui/react-context-menu`  | 2.2     | Right-click context menus                       |
+| `@radix-ui/react-popover`       | 1.1     | Popovers                                        |
+| `@radix-ui/react-tabs`          | 1.1     | Tab navigation                                  |
+| `@radix-ui/react-tooltip`       | 1.2     | Tooltips                                        |
+| `@tanstack/react-virtual`       | 3.13    | Virtualized lists for large rosters             |
+| `jspdf`                         | 4.2     | PDF export                                      |
+| `papaparse`                     | 5.5     | CSV parsing and generation                      |
+| `nanoid`                        | 5.1     | Unique ID generation                            |
+| `lucide-react`                  | 1.8     | Icon library                                    |
+| `vite`                          | 8.0     | Build tool and dev server                       |
+| `typescript`                    | 6.0     | Type safety                                     |
+| `vitest`                        | 4.1     | Unit and component testing                      |
+| `@testing-library/react`        | 16.3    | React component testing utilities               |
+| `eslint`                        | 9.39    | Linting                                         |
+| `supabase` (CLI)                | 1.226   | Database migrations and Edge Functions          |
+
+---
+
+## Architecture
+
+### Canvas Layer (Konva / react-konva)
+
+The editor canvas is a `react-konva` `<Stage>` managed by `CanvasStage.tsx`. Each element type maps to a dedicated renderer component:
+
+- `WallRenderer` â€” polyline walls with optional per-segment arc bulges
+- `DoorRenderer` / `WindowRenderer` â€” wall-attached elements with snap ghosts
+- `DeskRenderer`, `FurnitureRenderer`, `RoomRenderer`, `TableRenderer` â€” seating and space elements
+- `ElementRenderer` â€” dispatcher that routes each `CanvasElement` to the correct renderer
+- `SelectionOverlay` â€” multi-select bounding box with resize handles
+- `AlignmentGuides` â€” live snapping guide lines during drag
+- `GridLayer` â€” background dot/line grid
+- `WallDrawingOverlay` / `WallEditOverlay` â€” overlays that capture pointer events during wall draw/edit sessions
+
+Custom shapes (L-desk, cubicle, U-office, round/oval tables, all decor pieces) live in `src/components/editor/Canvas/shapes/` and are rendered as Konva `Shape` nodes with programmatic path functions.
+
+### State Management (Zustand)
+
+Six Zustand stores provide the full client state:
+
+| Store              | File                      | Manages                                                                                     |
+| ------------------ | ------------------------- | ------------------------------------------------------------------------------------------- |
+| `useCanvasStore`   | `stores/canvasStore.ts`   | Viewport position, zoom scale, active tool, grid settings                                   |
+| `useElementsStore` | `stores/elementsStore.ts` | All canvas elements keyed by ID; wrapped in `zundo` for undo/redo (50-step limit)           |
+| `useFloorStore`    | `stores/floorStore.ts`    | Floor list, active floor, per-floor element snapshots                                       |
+| `useProjectStore`  | `stores/projectStore.ts`  | Project metadata, save state, Supabase office ID, optimistic-lock version, conflict payload |
+| `useEmployeeStore` | `stores/employeeStore.ts` | Employee roster, department color palette, search/filter/sort UI state                      |
+| `useInsightsStore` | `stores/insightsStore.ts` | Insight results, dismissal set (persisted in `localStorage` per project), filter state      |
+
+`useElementsStore` uses `zundo`'s `temporal` middleware. Assignment fields (`assignedEmployeeId`, `assignedEmployeeIds`, seat `assignedGuestId`) are stripped from the undo snapshot via `partialize` so undoing a spatial move cannot desync element and employee state.
+
+### Data Persistence (Supabase)
+
+Supabase provides the full backend:
+
+- **Database** â€” 5 migration files define the schema (`offices`, `profiles`, `team_members`, `invites`, `office_permissions`), RLS helper functions, row-level security policies, triggers (e.g. auto-create profile on signup), and an `accept_invite` RPC
+- **Auth** â€” Supabase Auth with email/password; the `AuthProvider` wraps the app and exposes a `useSession()` hook; `RequireAuth` and `RequireTeam` route guards redirect unauthenticated users
+- **Edge Functions** â€” `send-invite-email` sends team invitation emails via the [Resend](https://resend.com) API
+- **Optimistic locking** â€” `saveOffice()` issues `UPDATE offices SET payload=... WHERE id=? AND updated_at=?`; a `null` result means another session wrote first, triggering the ConflictModal
+- **Repositories** â€” `officeRepository.ts` (CRUD for offices), `permissionsRepository.ts` (per-user role overrides), `teamRepository.ts` (team + member operations)
+
+### Routing (React Router v7)
+
+```
+/                          LandingPage (public)
+/login                     LoginPage
+/signup                    SignupPage
+/forgot                    ForgotPasswordPage
+/auth/verify               AuthVerifyPage (email link callback)
+/auth/reset                AuthResetPage (password reset callback)
+/invite/:token             InvitePage (accept team invite)
+/onboarding/team           TeamOnboardingPage (RequireAuth)
+/account                   AccountPage (RequireAuth)
+/dashboard                 DashboardRedirect â†’ /t/:teamSlug (RequireAuth + RequireTeam)
+/t/:teamSlug               TeamHomePage â€” office grid
+/t/:teamSlug/settings      TeamSettingsPage
+  (index)                    â†’ TeamSettingsGeneral
+  members                    â†’ TeamSettingsMembers
+/t/:teamSlug/o/:officeSlug ProjectShell (editor layout route)
+  (index â†’ map)              MapView â€” Konva canvas
+  roster                     RosterPage â€” employee management
+```
+
+The editor tree (`ProjectShell`, `MapView`, `RosterPage`) is code-split with `React.lazy` to keep the landing page bundle lean.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js 20** (specified in `netlify.toml`; `node -v` should be `>=20`)
+- A **Supabase** project (free tier works fine for development)
+- A **Resend** account (only needed if you want to test team invite emails)
+
+### Installation
+
+```bash
+git clone https://github.com/rcasto123/Floorcraft.git
+cd OandOcraft
+npm install
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in the values:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable                    | Required            | Description                                                                                                                     |
+| --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`         | Yes                 | Your Supabase project URL (e.g. `https://xyz.supabase.co`). Found in Supabase dashboard â†’ Project Settings â†’ API.           |
+| `VITE_SUPABASE_ANON_KEY`    | Yes                 | Supabase `anon` / public key. Same location as above. Injected into the browser bundle â€” safe to expose.                      |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge Functions only | Service role key for server-side operations. Never expose in the browser.                                                       |
+| `RESEND_API_KEY`            | Edge Functions only | API key from [resend.com](https://resend.com) dashboard. Powers team invite emails.                                             |
+| `APP_URL`                   | Edge Functions only | Base URL of the deployed app (for O&O production use `https://oando.co.in/OandOcraft`). Used to construct invite callback URLs. |
+
+> `VITE_*` variables are bundled into the client at build time. The other three are only read inside Supabase Edge Functions and should be set as Supabase secrets, not in `.env.local`.
+
+### Apply Database Migrations
+
+```bash
+npx supabase db push
+# or for local development:
+npx supabase start
+npx supabase db reset
+```
+
+### Seed Demo Data
+
+`supabase/seed.sql` now seeds a full demo workspace (team + demo office payload)
+with multi-floor components, employees, neighborhoods, and annotations.
+
+- Local reset path: `npx supabase db reset` (loads migrations + `seed.sql`)
+- Remote path: run your migration flow, then execute `supabase/seed.sql` against
+  your hosted database if you want the same full demo payload in hosted envs
+- Row counts: `npm run seed:counts -- "<postgres-url>"` prints every public table
+  row count without mutating the database
+- Payload verification: `npm run seed:verify` fails if the SQL contains headings
+  without actual floor objects
+
+### Development
+
+```bash
+npm run dev
+```
+
+Starts the Vite dev server at `http://localhost:5173` with HMR.
+
+### Building
+
+```bash
+npm run build
+```
+
+Runs `tsc -b` (project-references type check) followed by `vite build`. Output is written to `dist/`.
+
+For the O&O main-site subpath build:
+
+```bash
+npm run build:oando
+npm run release:manifest
+```
+
+`build:oando` emits assets for `/OandOcraft/`. `release:manifest` writes
+`dist/OandOcraft-release-manifest.json` with per-file SHA-256 values,
+aggregate SHA-256, commit, version label, and artifact name. Use the
+OandOcraft references under `docs/Reference/OandOcraft/` for release,
+rollback, and sign-off records. Admin and recovery operations are documented in
+the reference folder alongside the integration and playbook materials.
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+### Running Tests
+
+```bash
+npm test          # run once
+npm run test:watch  # watch mode
+```
+
+---
+
+## Project Structure
+
+```
+src/
+â”œâ”€â”€ App.tsx                  # Root component â€” router + AuthProvider + lazy route tree
+â”œâ”€â”€ main.tsx                 # Vite entry point
+â”œâ”€â”€ index.css                # Tailwind v4 base styles
+â”œâ”€â”€ vite-env.d.ts            # Vite env type declarations
+â”‚
+â”œâ”€â”€ components/
+â”‚   â”œâ”€â”€ auth/                # Login, signup, forgot-password, verify/reset, route guards
+â”‚   â”œâ”€â”€ dashboard/           # NewProjectModal (legacy, pre-team)
+â”‚   â”œâ”€â”€ editor/
+â”‚   â”‚   â”œâ”€â”€ Canvas/          # Konva stage + all element renderers + shape library
+â”‚   â”‚   â”œâ”€â”€ LeftSidebar/     # Tool selector + element library drag-to-drop
+â”‚   â”‚   â”œâ”€â”€ RightSidebar/    # Properties, People, Reports, Insights panels
+â”‚   â”‚   â”œâ”€â”€ Share/           # Visibility radio + access table sub-components
+â”‚   â”‚   â””â”€â”€ *.tsx            # Editor-level: ProjectShell, TopBar, StatusBar, MapView,
+â”‚   â”‚                        #   RosterPage, ShareModal, ExportDialog, FloorSwitcher,
+â”‚   â”‚                        #   ConflictModal, Minimap, KeyboardShortcutsOverlay
+â”‚   â”œâ”€â”€ landing/             # LandingPage with session-aware CTAs
+â”‚   â”œâ”€â”€ reports/             # EmployeeDirectory, MovePlanner, OccupancyDashboard,
+â”‚   â”‚                        #   OrgChartOverlay, SeatMapColorMode, UnassignedReport
+â”‚   â””â”€â”€ team/                # TeamHomePage, TeamOnboarding, TeamSettings (General +
+â”‚                            #   Members), TeamSwitcher, UserMenu, AccountPage, InvitePage
+â”‚
+â”œâ”€â”€ stores/                  # Zustand stores (see Architecture section)
+â”‚
+â”œâ”€â”€ hooks/
+â”‚   â”œâ”€â”€ useActiveFloorElements.ts  # Derived selector: elements on the active floor
+â”‚   â”œâ”€â”€ useKeyboardShortcuts.ts    # Global keyboard shortcut registration
+â”‚   â”œâ”€â”€ useTemporalState.ts        # Exposes zundo undo/redo from elementsStore
+â”‚   â””â”€â”€ useWallDrawing.ts          # State machine for the interactive wall drawing tool
+â”‚
+â”œâ”€â”€ lib/
+â”‚   â”œâ”€â”€ analyzers/           # Six insight analyzer modules + composite runner
+â”‚   â”œâ”€â”€ auth/                # AuthProvider, session utilities
+â”‚   â”œâ”€â”€ offices/             # officeRepository, permissionsRepository, useOfficeSync
+â”‚   â”œâ”€â”€ teams/               # teamRepository, useMyTeams hook
+â”‚   â”œâ”€â”€ constants.ts         # Grid size, zoom limits, element defaults, color palettes
+â”‚   â”œâ”€â”€ csv.ts               # Generic CSV parse helpers
+â”‚   â”œâ”€â”€ employeeCsv.ts       # Employee-specific CSV export/import
+â”‚   â”œâ”€â”€ exportJson.ts        # Full project JSON export
+â”‚   â”œâ”€â”€ exportPdf.ts         # jsPDF-based PDF export
+â”‚   â”œâ”€â”€ exportPng.ts         # Konva stage PNG export
+â”‚   â”œâ”€â”€ geometry.ts          # Point/vector math utilities
+â”‚   â”œâ”€â”€ seatAssignment.ts    # Atomic element â†” employee seat assignment mutations
+â”‚   â”œâ”€â”€ seatLayout.ts        # Auto-compute seat positions for tables
+â”‚   â”œâ”€â”€ slug.ts              # URL slug generation
+â”‚   â”œâ”€â”€ supabase.ts          # Singleton Supabase client
+â”‚   â”œâ”€â”€ time.ts              # Date formatting utilities
+â”‚   â”œâ”€â”€ wallAttachment.ts    # Door/window snap-to-wall geometry
+â”‚   â”œâ”€â”€ wallEditing.ts       # Wall node drag/move operations
+â”‚   â””â”€â”€ wallPath.ts          # Arc bulge math (curved wall geometry)
+â”‚
+â”œâ”€â”€ data/
+â”‚   â””â”€â”€ templates/           # Built-in floor plan templates (blank, open-plan, mixed, executive)
+â”‚
+â”œâ”€â”€ types/                   # TypeScript interfaces â€” elements, employee, floor, project,
+â”‚                            #   team, auth, insights, collaboration
+â”‚
+â””â”€â”€ __tests__/               # Vitest unit and component tests (~35 test files)
+    â””â”€â”€ analyzers/           # Per-analyzer unit tests
+```
+
+---
+
+## Scripts
+
+| Script             | Command                                       | Description                                                   |
+| ------------------ | --------------------------------------------- | ------------------------------------------------------------- |
+| `dev`              | `vite`                                        | Start Vite dev server with HMR                                |
+| `build`            | `tsc -b && vite build`                        | Type-check then bundle for production                         |
+| `preview`          | `vite preview`                                | Serve the `dist/` folder locally                              |
+| `lint`             | `eslint .`                                    | Run ESLint across all source files                            |
+| `test`             | `vitest run`                                  | Run the full test suite once                                  |
+| `test:watch`       | `vitest`                                      | Run tests in interactive watch mode                           |
+| `build:oando`      | `tsc -b && vite build --base=/OandOcraft/`    | Build the main-site subpath bundle                            |
+| `audit:pages`      | `node scripts/audit-pages.cjs`                | Smoke-audit built routes for console issues and legacy naming |
+| `release:manifest` | `node scripts/create_release_manifest.cjs`    | Write release artifact metadata and SHA-256 checksums         |
+| `seed:counts`      | `node scripts/report_public_table_counts.cjs` | Report public table counts for a Postgres URL                 |
+| `seed:verify`      | `node scripts/verify_seed_payload.cjs`        | Verify the seed SQL includes actual floor-plan payloads       |
+
+---
+
+## Deployment
+
+For the main-site deployment path, build with `npm run build:oando` and serve the emitted `dist/` bundle from `/OandOcraft/`. The host must rewrite nested client routes such as `/OandOcraft/login`, `/OandOcraft/dashboard`, `/OandOcraft/t/*`, `/OandOcraft/auth/verify`, `/OandOcraft/auth/reset`, and `/OandOcraft/invite/*` back to `/OandOcraft/index.html`. See the OandOcraft integration reference under `docs/Reference/OandOcraft/integration/` for the exact host rules, Supabase redirect URLs, and production env vars.
+
+Edge Functions are deployed to Supabase:
+
+```bash
+npx supabase functions deploy send-invite-email
+npx supabase secrets set RESEND_API_KEY=<your-key> APP_URL=https://oando.co.in/OandOcraft
+```
+
+Operational docs:
+
+- [Integration reference](docs/Reference/OandOcraft/integration/MAIN_SITE_INTEGRATION.md)
+- [Playbook spec](docs/Reference/OandOcraft/plans/PLAYBOOK_SPEC.md)
+- [Playbook checklist](docs/Reference/OandOcraft/plans/PLAYBOOK_CHECKLIST.md)
+- [Playbook walkthrough](docs/Reference/OandOcraft/plans/PLAYBOOK_WALKTHROUGH.md)
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Make your changes and add tests where appropriate
+4. Ensure the test suite and linter pass: `npm test && npm run lint`
+5. Open a pull request against `main` with a clear description of what changed and why
+
+---
+
+## License
+
+[MIT](LICENSE) â€” Â© OandOcraft contributors
